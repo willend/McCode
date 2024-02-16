@@ -74,7 +74,7 @@ def load_config(path=None):
             conda_prefix = str(pathlib.Path(conda_prefix).absolute().resolve())
             for e in entries_with_conda_prefix:
                 if '${CONDA_PREFIX}' in compilation[e]:
-                    compilation[e] = shlex.quote(str(pathlib.Path(compilation[e].replace('${CONDA_PREFIX}',conda_prefix)).absolute().resolve()))
+                    compilation[e] = str(pathlib.Path(compilation[e].replace('${CONDA_PREFIX}',conda_prefix)).absolute().resolve())
 
     platform = obj['platform']
     directories = obj['directories']
