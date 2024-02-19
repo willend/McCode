@@ -24,6 +24,8 @@
 #include <dirent.h>
 #else
 #include "windirent.h">
+#define popen _popen
+#define pclose _pclose
 #endif
 #include <string.h>
 
