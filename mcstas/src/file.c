@@ -23,7 +23,7 @@
 #ifndef _MSC_EXTENSIONS
 #include <dirent.h>
 #else
-#include "windirent.h">
+#include "windirent.h"
 #define popen _popen
 #define pclose _pclose
 #endif
