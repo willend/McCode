@@ -62,6 +62,7 @@ jobs:
            set -u
            set -x
            cd McCode
+           git fetch --tags origin
            export REV=`git describe --tags --abbrev=0`
            if [ "$RUNNER_OS" == "macOS" ]; then ./buildscripts/build_macos_mcstas ${REV}; fi
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcstas ${REV} meta; fi
@@ -74,6 +75,7 @@ jobs:
            set -u
            set -x
            cd McCode
+           git fetch --tags origin
            export REV=`git describe --tags --abbrev=0`
            if [ "$RUNNER_OS" == "Linux" ]; then rm -rf dist; fi
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_windows_mcstas ${REV}; fi
