@@ -43,7 +43,7 @@ jobs:
       id: setup-build-deps
       run: |
            if [ "$RUNNER_OS" == "Linux" ]; then sudo apt-get -y install equivs ; fi
-           if [ "$RUNNER_OS" == "Linux" ]; then sudo apt-get -y mingw-w64 gfortran-mingw-w64 mingw-w64-x86-64-dev libz-mingw-w64-dev ; fi
+           if [ "$RUNNER_OS" == "Linux" ]; then sudo apt-get -y install mingw-w64 gfortran-mingw-w64 mingw-w64-x86-64-dev libz-mingw-w64-dev ; fi
     - name: Check versions
       id: version-checks
       run: |
