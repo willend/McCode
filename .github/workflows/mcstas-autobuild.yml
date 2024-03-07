@@ -68,7 +68,7 @@ jobs:
            tar cfz dist-${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}.tgz dist/
 
     - name: Cross-Build McStas for windows
-      id: mcstas-build
+      id: mcstas-mingw-build
       run: |
            set -e
            set -u
