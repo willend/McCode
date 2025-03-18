@@ -1,30 +1,26 @@
 #!/usr/bin/env python3
 """Compute X-ray reflectivity tables for materials
 The 'reflec_xraydb' command computs the reflectivity of materials vs energy and 
-take-off angle. The 
+take-off angle. 
 
 SYNTAX:
-  reflec_xraydb formula E_min E_max theta_min theta_max density
+  reflec_xraydb formula [...]
   
   All arguments are optional except the material formula.
   
-    python3 reflec_xraydb.py E_min(eV) E_max theta_min(deg) theta_max AtomName density(g/cm^3)
-  
 EXAMPLES:
-  python3 reflec_xraydb.py 5600 46300 0.0001 2 Pd  12.023
-  python3 reflec_xraydb.py 5600 46300 0.0001 2 Pt  21.45
-  python3 reflec_xraydb.py 5600 46300 0.0001 2 B4C  2.52
+  reflec_xraydb.py 5600 46300 0.0001 2 Pd  12.023; 
+  reflec_xraydb.py 5600 46300 0.0001 2 Pt  21.45; 
+  reflec_xraydb.py 5600 46300 0.0001 2 B4C  2.52; 
 
-  python3 reflec_xraydb.py 3400 29000 0.0001 2 Pd  12.023
-  python3 reflec_xraydb.py 3400 29000 0.0001 2 Pt  21.45
-  python3 reflec_xraydb.py 3400 29000 0.0001 2 B4C  2.52
+  reflec_xraydb.py 3400 29000 0.0001 2 Pd  12.023; 
+  reflec_xraydb.py 3400 29000 0.0001 2 Pt  21.45; 
+  reflec_xraydb.py 3400 29000 0.0001 2 B4C  2.52; 
 
-  python3 reflec_xraydb.py 3400 19000 0.0001 2 Pd  12.023
-  python3 reflec_xraydb.py 3400 19000 0.0001 2 Pt  21.45
-  python3 reflec_xraydb.py 3400 19000 0.0001 2 B4C  2.52
+  reflec_xraydb.py 3400 19000 0.0001 2 Pd  12.023; 
+  reflec_xraydb.py 3400 19000 0.0001 2 Pt  21.45; 
+  reflec_xraydb.py 3400 19000 0.0001 2 B4C  2.52; 
 
-input:
-  E_min: minimum energy 
 """
 import numpy as np
 from xraydb import mirror_reflectivity
@@ -105,7 +101,7 @@ if __name__ == "__main__":
     # argparse doc format:
     # https://stackoverflow.com/questions/3853722/how-to-insert-newlines-on-argparse-help-text
     class Formatter(
-      argparse.RawDescriptionHelpFormatter): pass
+      argparse.ArgumentDefaultsHelpFormatter): pass
 
     # read input arguments (after loading the YAML file)
     parser = argparse.ArgumentParser(
