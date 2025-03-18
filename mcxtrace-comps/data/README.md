@@ -5,18 +5,18 @@ structure, dynamics, absorption, geometry, etc.
 
 ## Reflectivity
 
-Use the given script reflec_xraydb to generate reflectivity data vs energy,angle
-for any material.
+Use the given script `reflec_xraydb` to generate reflectivity data vs energy,angle
+for (nearly) any material.
 
 ## Absorption
 
 Most `.txt` files were obtained from NIST: http://physics.nist.gov/cgi-bin/ffast/ffast.pl
 
-1) Use the tool get_xray_db_data - requires bash and wget, e.g. `./get_xray_db_data Mo Mo.txt`
+1) Use the tool `get_xray_db_data` - requires bash and wget, e.g. `./get_xray_db_data Mo Mo.txt`.
 
 2) Edit `Mo.txt` using an editor and strip out any html tag.
 
-3) "Massage" the header to make it similar to
+3) "Massage" the header to make it similar to:
 
 ```
 #Be (Z 4) 

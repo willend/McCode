@@ -1,31 +1,18 @@
 #!/usr/bin/env python3
 """Compute X-ray reflectivity tables for materials
-The 'reflec_xraydb' command computs the reflectivity of materials vs energy and 
-take-off angle. 
-
-SYNTAX:
-  reflec_xraydb formula [...]
-  
-  All arguments are optional except the material formula.
+The 'reflec_xraydb' command computes the reflectivity of materials vs energy and 
+take-off angle. All arguments are optional except the material formula. Use a known material (see them with --list) or a new one when given its density (--density).
   
 EXAMPLES:
-  reflec_xraydb.py 5600 46300 0.0001 2 Pd  12.023; 
-  reflec_xraydb.py 5600 46300 0.0001 2 Pt  21.45; 
-  reflec_xraydb.py 5600 46300 0.0001 2 B4C  2.52; 
-
-  reflec_xraydb.py 3400 29000 0.0001 2 Pd  12.023; 
-  reflec_xraydb.py 3400 29000 0.0001 2 Pt  21.45; 
-  reflec_xraydb.py 3400 29000 0.0001 2 B4C  2.52; 
-
-  reflec_xraydb.py 3400 19000 0.0001 2 Pd  12.023; 
-  reflec_xraydb.py 3400 19000 0.0001 2 Pt  21.45; 
-  reflec_xraydb.py 3400 19000 0.0001 2 B4C  2.52; 
-
+  reflec_xraydb.py --emin 5600 --emax 46300 Pd  --density 12.02; 
+  reflec_xraydb.py --emin 3400 --emax 19000 Pt  --density 21.45; 
+  reflec_xraydb.py --emin 3400 --emax 46300 B4C --density  2.52;
 """
-import numpy as np
-from xraydb import mirror_reflectivity
+
+import numpy  as     np
+from   xraydb import mirror_reflectivity, get_materials, find_material, add_material
 import sys
-import argparse   # to parse input arguments
+import argparse      # to parse input arguments
 
 def compute_reflectivity(formula, E_min=3400, E_max=19000, E_nb=200, theta_min=0.0001, theta_max=2, theta_nb=2000, density=None, verbose=0):
 
@@ -46,17 +33,9 @@ def compute_reflectivity(formula, E_min=3400, E_max=19000, E_nb=200, theta_min=0
     theta     = np.linspace(theta_min, theta_max, theta_nb)
     
     if verbose:
-      print("Material: ", formula)
-      print("E_max-E_min=             ",E_max-E_min)
-      print("E_nb-1=                  ",E_nb-1," E_step",E_step)
-      print("(E_nb-1)*E_step=         ",(E_nb-1)*E_step)
-      print("theta_max-theta_min=     ",(theta_max-theta_min)*180/np.pi)
-      print("theta_nb-1=              ",theta_nb-1," theta_step",theta_step*180/np.pi)
-      print("(theta_nb-1)*theta_step= ",(theta_nb-1)*theta_step*180/np.pi)
-      print("Angles:")
-      print(theta/np.pi*180)
-      print("Energies:")
-      print(liste_e)
+      print( "Material: ", formula)
+      print(f"Energy= {E_min}:{E_max} in {E_nb} steps [eV]")
+      print(f"Angle=  {theta_min*180/np.pi}:{theta_max*180/np.pi} in {theta_nb} steps [deg]")
 
     # now compute the reflectivity with xraydb for each energu,angle and write file.
     filename = formula+".dat"
@@ -109,7 +88,7 @@ if __name__ == "__main__":
         formatter_class=Formatter)
     # required argument
     parser.add_argument('formula', 
-        help="A chemical formula, e.g. 'Pt','B4C'.", nargs='?', default=None, type=str)
+        help="A chemical formula, e.g. 'Pt','B4C'. Use --list to show all known materials, or specify --density to add a new chemical formula.", nargs='?', default=None, type=str)
         
     # optional arguments
     parser.add_argument(
@@ -160,7 +139,7 @@ if __name__ == "__main__":
         '--density', 
         nargs=1,
         metavar="DENSITY",
-        help="Material density in [g/cm^3]. Computed from formula when ommitted.",
+        help="Material density in [g/cm^3]. Obtained from formula when ommitted.",
         type=float, required=False, default=None,
     )
     
@@ -172,11 +151,19 @@ if __name__ == "__main__":
         required=False, default=None,
     )
     
-    # version
+    # verbose
     parser.add_argument(
         '--verbose',
         action="store_true",
         help="Show more information.",
+        required=False, default=0,
+    )
+    
+    # list materials
+    parser.add_argument(
+        '--list',
+        action="store_true",
+        help="Show pre-defined materials. Set a chemical formula and its --density to define a new one.",
         required=False, default=0,
     )
     
@@ -190,7 +177,30 @@ if __name__ == "__main__":
         print("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n")
         print("Written by Antoine Padovani and Emmanuel Farhi <emmanuel.farhi@synchrotron-soleil.fr>")
         exit(0)
+        
+    if args.list:
+        # show all available materials
+        print("Pre-defined materials (xraydb):")
+        for name, m in get_materials().items():
+          print(m)
+        exit(0)
+    
+    if args.formula is None:
+        raise ValueError(f"\nERROR: Please give material. Use --help for help or --list to show known materials, or specify a new chemical formula with its --density.")
+    
+    # check if material exists
+    if find_material(args.formula) is None:
+        if args.density:
+          # we can add material, hoping the formula is OK
+          if args.verbose:
+            print("Using new chemical formula {args.formula} with density {args.density[0]} [g/cm3] (xraydb).")
+          add_material(args.formula, args.formula, args.density[0], categories=['user'])
+        else:
+          raise ValueError(f"\nERROR: Unknown material {args.formula}. Use --help for help or --list to show known materials, or specify a new chemical formula with its --density.")
     
     # compute
-    filename = compute_reflectivity(args.formula[0], args.emin[0], args.emax[0], args.ebin[0], args.amin[0], args.amax[0], args.abin[0], args.density[0] if args.density else None, args.verbose)
+    filename = compute_reflectivity(args.formula, args.emin[0], args.emax[0], args.ebin[0], \
+      args.amin[0], args.amax[0], args.abin[0], \
+      args.density[0] if args.density else None, args.verbose)
 
+    # end of script reflec_xraydb
