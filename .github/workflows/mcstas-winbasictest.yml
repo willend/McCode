@@ -51,7 +51,6 @@ jobs:
         -DENABLE_COMPONENTS=ON
         -DENABLE_CIF2HKL=OFF
         -DENABLE_NEUTRONICS=OFF
-
     - name: CMake build
       shell: cmd
       run: cmake --build build --config Release -j 2
@@ -63,11 +62,10 @@ jobs:
       run: pip install PyYAML ply McStasscript ncrystal mslex
 
     - name: pip install mcpl-core preview
-      run: pip install -v "git+https://github.com/mctools/mcpl@tk_volatile#subdirectory=mcpl_core"
+      run: pip install -v "git+https://github.com/mctools/mcpl@path_to_mcpl2#subdirectory=mcpl_core"
 
     - name: set MCSTAS env var
-      shell: bash
-      run: echo "MCSTAS=$PWD/install/share/mcstas/resources" >> $GITHUB_ENV
+      run: echo MCSTAS=%CD%\install\share\mcstas\resources >> %GITHUB_ENV%
 
     - name: check MCSTAS env var
       run: echo %MCSTAS%
@@ -82,7 +80,16 @@ jobs:
 
     - name: Prepare std instrument
       working-directory: run_std
-      run: copy "%MCSTAS%\examples\BNL\BNL_H8\BNL_H8.instr" "%CD%\test.instr"
+      run: copy ..\install\share\mcstas\resources\examples\BNL\BNL_H8\BNL_H8.instr test.instr
+
     - name: Run
       working-directory: run_std
-      run: mcrun "%CD%\test.instr" "lambda=2.36"
+      run: mcrun test.instr lambda=2.36
+
+    - name: Prepare NCrystal instrument
+      working-directory: run_ncrystal
+      run: copy ..\install\share\mcstas\resources\examples\NCrystal\NCrystal_example\NCrystal_example.instr test.instr
+
+    - name: Run
+      working-directory: run_ncrystal
+      run: mcrun test.instr sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
