@@ -1,0 +1,88 @@
+name: mcstas-winbasictest
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    # More platform information available on:
+    # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: cmd
+
+    strategy:
+      matrix:
+#        os: [windows-2019, windows-2022]
+        os: [windows-2022]
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: src
+
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+
+#    - name: Enable parallel cmake
+#      run: python ./src/devel/bin/ncdevtool nprocs --enable-github-parallel
+
+    - name: choco install deps
+      run: choco install winflexbison3
+
+    - name: CMake cfg
+      run: >
+        cmake -B build -S src
+        "-DCMAKE_INSTALL_PREFIX=./install"
+        -DMCVERSION="3.99.99"
+        -DMCCODE_BUILD_CONDA_PKG=OFF
+        -DCMAKE_INSTALL_LIBDIR=lib
+        -DBUILD_MCSTAS=ON
+        -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
+        -DBUILD_TOOLS=ON
+        -DENABLE_COMPONENTS=ON
+        -DENABLE_CIF2HKL=OFF
+        -DENABLE_NEUTRONICS=OFF
+
+    - name: CMake build
+      shell: cmd
+      run: cmake --build build --config Release -j 2
+
+    - name: CMake install
+      run: cmake --install build --config Release
+
+    - name: pip install deps
+      run: pip install PyYAML ply McStasscript ncrystal mslex
+
+    - name: pip install mcpl-core preview
+      run: pip install -v "git+https://github.com/mctools/mcpl@tk_volatile#subdirectory=mcpl_core"
+
+    - name: set MCSTAS env var
+      shell: bash
+      run: echo "MCSTAS=$PWD/install/share/mcstas/resources" >> $GITHUB_ENV
+
+    - name: check MCSTAS env var
+      run: echo %MCSTAS%
+
+    - run: .\install\bin\mcrun -h
+    - run: .\install\bin\mcstas -v
+    - run: mcpl-config -s
+    - run: ncrystal-config -s
+
+    - name: Prepare rundirs
+      run: mkdir run_std run_mcpl run_union run_ncrystal
+
+    - name: Prepare std instrument
+      working-directory: run_std
+      run: copy "%MCSTAS%\examples\BNL\BNL_H8\BNL_H8.instr" "%CD%\test.instr"
+    - name: Run
+      working-directory: run_std
+      run: mcrun "%CD%\test.instr" "lambda=2.36"
