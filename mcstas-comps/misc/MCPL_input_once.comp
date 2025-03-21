@@ -39,7 +39,7 @@ DEFINE COMPONENT MCPL_input_once
 
 SETTING PARAMETERS (string filename=0, polarisationuse=1, Emin=0, Emax=FLT_MAX, v_smear=0, pos_smear=0, dir_smear=0, int always_smear=0, int preload=0, int verbose=0)
 
-DEPENDENCY "-Wl,-rpath,CMD(mcpl-config --show libdir) -LCMD(mcpl-config --show libdir) -lmcpl -ICMD(mcpl-config --show includedir)"
+DEPENDENCY "@MCPLFLAGS@"
 
 SHARE
 %{

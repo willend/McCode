@@ -78,17 +78,24 @@ function( detect_platform_variables resultvarname )
   if ( BUILD_MCSTAS )
     set( IDFGEN mcdisplay-mantid )
     set( NCRYSTALFLAGS "CMD(ncrystal-config --show buildflags)" )
-
+    set( MCPLFLAGS "CMD(mcpl-config --show buildflags)" )
     # Temporary solution for NCrystal on Windows 'MingW cross-compiled' systems
-    if ( WINDOWS AND NOT MCCODE_BUILD_CONDA_PKG )
+    if ( WINDOWS AND MCCODE_BUILD_WINDOWS_MINGW )
       set( NCRYSTALFLAGS "-Wl,-rpath,CMD(ncrystal-config --show libdir) -Wl,CMD(ncrystal-config --show libpath) -ICMD(ncrystal-config --show includedir)" )
+      set( MCPLFLAGS "-Wl,-rpath,CMD(mcpl-config --show libdir) -Wl,CMD(mcpl-config --show libpath) -ICMD(mcpl-config --show includedir)" )
     endif()
   else()
     set( IDFGEN "" )
     set( NCRYSTALFLAGS "")
+    set( MCPLFLAGS "CMD(mcpl-config --show buildflags)" )
+    # Temporary solution for NCrystal on Windows 'MingW cross-compiled' systems
+    if ( WINDOWS AND MCCODE_BUILD_WINDOWS_MINGW )
+      set( MCPLFLAGS "-Wl,-rpath,CMD(mcpl-config --show libdir) -Wl,CMD(mcpl-config --show libpath) -ICMD(mcpl-config --show includedir)" )
+    endif()
   endif()
   provide_var( IDFGEN )
   provide_var( NCRYSTALFLAGS )
+  provide_var( MCPLFLAGS )
 
   #HDF viewer
   if ( NOT HDFVIEW )

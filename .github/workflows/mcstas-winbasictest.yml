@@ -87,20 +87,52 @@ jobs:
     - run: type .\install\share\mcstas\tools\Python\mccodelib\mccode_config.json
 
     - name: Prepare rundirs
-      run: mkdir run_std run_mcpl run_union run_ncrystal
+      run: mkdir run_std run_mcpl_output run_mcpl_input run_union run_ncrystal
 
     - name: Prepare std instrument
       working-directory: run_std
       run: copy ..\install\share\mcstas\resources\examples\BNL\BNL_H8\BNL_H8.instr test.instr
 
-    - name: Run
+    - name: Run std instrument
       working-directory: run_std
-      run: ..\install\bin\mcrun.bat --verbose test.instr lambda=2.36
+      run: ..\install\bin\mcrun --verbose test.instr -d Single_core lambda=2.36
 
-    - name: Prepare NCrystal instrument
+    - name: Run std instrument MPI
+      working-directory: run_std
+      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c mpi=auto lambda=2.36
+
+   - name: Prepare NCrystal instrument
       working-directory: run_ncrystal
       run: copy ..\install\share\mcstas\resources\examples\NCrystal\NCrystal_example\NCrystal_example.instr test.instr
 
-    - name: Run
+    - name: Run NCrystal instrument
       working-directory: run_ncrystal
-      run: ..\install\bin\mcrun --verbose test.instr sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+      run: ..\install\bin\mcrun --verbose test.instr -d Single_core sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+
+    - name: Run NCrystal instrument MPI
+      working-directory: run_ncrystal
+      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c mpi=auto sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+
+   - name: Prepare MCPL_output instrument
+      working-directory: run_mcpl_output
+      run: copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
+
+    - name: Run MCPL_output instrument
+      working-directory: run_mcpl_output
+      run: ..\install\bin\mcrun --verbose test.instr -d Single_core Ncount=1e3
+
+    - name: Run MCPL_output instrument MPI
+      working-directory: run_mcpl_output
+      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c mpi=auto Ncount=1e3
+
+   - name: Prepare MCPL_input instrument
+      working-directory: run_mcpl_input
+      run: copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
+
+    - name: Run MCPL_input instrument
+      working-directory: run_mcpl_input
+      run: ..\install\bin\mcrun --verbose test.instr -d Single_core Ncount=1e3
+
+    - name: Run MCPL_input instrument MPI
+      working-directory: run_mcpl_input
+      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c mpi=auto Ncount=1e3
