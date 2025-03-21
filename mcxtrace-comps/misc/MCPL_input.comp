@@ -50,6 +50,11 @@ DEPENDENCY "@MCPLFLAGS@"
 SHARE
 %{
 #include <mcpl.h>
+#ifdef _MSC_EXTENSIONS
+#include <windows.h>
+#define sleep Sleep
+#endif
+
 %}
 
 DECLARE
