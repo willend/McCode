@@ -181,7 +181,7 @@ jobs:
            set -e
            set -u
            set -x
-           tar cvfz output.tgz run_*
+           tar cvfz mcstas-${{ matrix.os }}_output.tgz run_*
 
     - name: 'Upload Artifact'
       id: tar-upload
@@ -189,4 +189,4 @@ jobs:
       if: always()
       with:
         name: output.tgz
-        path: "output.tgz"
+        path: "mcstas-${{ matrix.os }}_output.tgz"
