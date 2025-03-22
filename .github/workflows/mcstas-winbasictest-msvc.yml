@@ -53,19 +53,13 @@ jobs:
     - name: Setup MPI cygpath bash...
       shell: bash
       run:   |
-        cygpath -sm "$MSMPI_BIN" > binpath.txt
         cygpath -sm "$MSMPI_INC" > includepath.txt
         cygpath -sm "$MSMPI_LIB64" > libpath.txt
-        ls `cygpath -sm "$MSMPI_BIN"`
 
     - name: Setup MPI cygpath...
       run: |
-        set /p MPIBINVAR=<binpath.txt
         set /p MPIINCVAR=<includepath.txt
         set /p MPILIBVAR=<libpath.txt
-        dir %MPIBINVAR%
-        set MPIBINVAR=%MPIBINVAR%msmpi.lib
-        echo MPIBINVAR=%MPIBINVAR% >> %GITHUB_ENV%
         echo MPIINCVAR=%MPIINCVAR% >> %GITHUB_ENV%
         echo MPILIBVAR=%MPILIBVAR% >> %GITHUB_ENV%
 
@@ -111,17 +105,10 @@ jobs:
     - run: .\install\bin\mcrun -h
     - run: .\install\bin\mcstas -v
     - run: mcpl-config -s
-    - run: mcpl-config --show includedir > mcplinclude.txt
-
-    - name: Look in mcplincludedir
-      run: |
-        set /p MCPLINCLUDE=<mcplinclude.txt
-        dir %MCPLINCLUDE%
-
     - run: ncrystal-config -s
 
     - name: Prepare rundirs
-      run: mkdir run_std run_mcpl_output run_mcpl_input run_union run_ncrystal
+      run: mkdir run_std run_mcpl_output run_mcpl_input run_mcpl_input_once run_union run_ncrystal
 
     - name: Prepare std instrument
       working-directory: run_std
@@ -136,6 +123,12 @@ jobs:
       run: |
         copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
         copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl .
+
+    - name: Prepare MCPL_input_once instrument
+      working-directory: run_mcpl_input_once
+      run: |
+        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\Test_MCPL_input_once.instr test.instr
+        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\voutput.mcpl .
 
     - name: Prepare MCPL_output instrument
       working-directory: run_mcpl_output
@@ -153,6 +146,10 @@ jobs:
       working-directory: run_mcpl_input
       run: ..\install\bin\mcrun --verbose test.instr -d Single_core repeat=1
 
+    - name: Run MCPL_input_once instrument
+      working-directory: run_mcpl_input_once
+      run: ..\install\bin\mcrun --verbose test.instr -d Single_core v_smear=0.1
+
     - name: Run NCrystal instrument
       working-directory: run_ncrystal
       run: ..\install\bin\mcrun --verbose test.instr -d Single_core sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
@@ -161,13 +158,17 @@ jobs:
       working-directory: run_std
       run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto lambda=2.36
 
-    # - name: Run MCPL_output instrument MPI
-    #   working-directory: run_mcpl_output
-    #   run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
+    - name: Run MCPL_output instrument MPI
+      working-directory: run_mcpl_output
+      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
 
     - name: Run MCPL_input instrument MPI
       working-directory: run_mcpl_input
       run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto repeat=1
+
+    - name: Run MCPL_input_once instrument MPI
+      working-directory: run_mcpl_input_once
+      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto v_smear=0.1
 
     - name: Run NCrystal instrument MPI
       working-directory: run_ncrystal
