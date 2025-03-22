@@ -16,8 +16,7 @@ jobs:
 
     strategy:
       matrix:
-#        os: [windows-2019, windows-2022]
-        os: [windows-2022]
+        os: [windows-2019, windows-2022, windows-2025]
 
     steps:
 
@@ -140,9 +139,9 @@ jobs:
       working-directory: run_std
       run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto LENS=0
 
-    # - name: Run MCPL_output instrument MPI
-    #   working-directory: run_mcpl_output
-    #   run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
+    - name: Run MCPL_output instrument MPI
+      working-directory: run_mcpl_output
+      run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
 
     - name: Run MCPL_input instrument MPI
       working-directory: run_mcpl_input
