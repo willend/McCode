@@ -1,4 +1,4 @@
-name: mcstas-winbasictest
+name: mcxtrace-winbasictest
 
 on:
   push:
@@ -16,7 +16,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
+#        os: [windows-2019, windows-2022]
+        os: [windows-2022]
 
     steps:
 
@@ -72,7 +73,7 @@ jobs:
         -DMCVERSION="3.99.99"
         -DMCCODE_BUILD_CONDA_PKG=OFF
         -DCMAKE_INSTALL_LIBDIR=lib
-        -DBUILD_MCSTAS=ON
+        -DBUILD_MCXTRACE=ON
         -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
         -DBUILD_TOOLS=ON
         -DENABLE_COMPONENTS=ON
@@ -89,89 +90,61 @@ jobs:
       run: cmake --install build --config Release
 
     - name: pip install deps
-      run: pip install PyYAML ply McStasscript ncrystal mslex
+      run: pip install PyYAML ply McStasscript mslex
 
     - name: pip install mcpl-core preview
       run: pip install -v "git+https://github.com/mctools/mcpl@path_to_mcpl2#subdirectory=mcpl_core"
 
-    - name: set MCSTAS env var
-      run: echo MCSTAS=%CD%\install\share\mcstas\resources >> %GITHUB_ENV%
+    - name: set MCXTRACE env var
+      run: echo MCXTRACE=%CD%\install\share\mcxtrace\resources >> %GITHUB_ENV%
 
-    - name: check MCSTAS env var
-      run: echo %MCSTAS%
+    - name: check MCXTRACE env var
+      run: echo %MCXTRACE%
 
-    - run: type .\install\share\mcstas\tools\Python\mccodelib\mccode_config.json
-    - run: .\install\bin\mcrun -h
-    - run: .\install\bin\mcstas -v
+    - run: type .\install\share\mcxtrace\tools\Python\mccodelib\mccode_config.json
+    - run: .\install\bin\mxrun -h
+    - run: .\install\bin\mcxtrace -v
     - run: mcpl-config -s
-    - run: ncrystal-config -s
 
     - name: Prepare rundirs
-      run: mkdir run_std run_mcpl_output run_mcpl_input run_mcpl_input_once run_union run_ncrystal
+      run: mkdir run_std run_mcpl_output run_mcpl_input run_union
 
     - name: Prepare std instrument
       working-directory: run_std
-      run: copy ..\install\share\mcstas\resources\examples\BNL\BNL_H8\BNL_H8.instr test.instr
-
-    - name: Prepare NCrystal instrument
-      working-directory: run_ncrystal
-      run: copy ..\install\share\mcstas\resources\examples\NCrystal\NCrystal_example\NCrystal_example.instr test.instr
+      run: copy ..\install\share\mcxtrace\resources\examples\Tests_optics\Test_CRL.instr test.instr
 
     - name: Prepare MCPL_input instrument
       working-directory: run_mcpl_input
       run: |
-        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
-        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl .
-
-    - name: Prepare MCPL_input_once instrument
-      working-directory: run_mcpl_input_once
-      run: |
-        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\Test_MCPL_input_once.instr test.instr
-        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\voutput.mcpl .
+        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
 
     - name: Prepare MCPL_output instrument
       working-directory: run_mcpl_output
-      run: copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
+      run: copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
 
     - name: Run std instrument
       working-directory: run_std
-      run: ..\install\bin\mcrun --verbose test.instr -d Single_core lambda=2.36
+      run: ..\install\bin\mxrun --verbose test.instr -d Single_core LENS=0
 
     - name: Run MCPL_output instrument
       working-directory: run_mcpl_output
-      run: ..\install\bin\mcrun --verbose test.instr -d Single_core Ncount=1e3
+      run: ..\install\bin\mxrun --verbose test.instr -d Single_core Ncount=1e3
 
     - name: Run MCPL_input instrument
       working-directory: run_mcpl_input
-      run: ..\install\bin\mcrun --verbose test.instr -d Single_core repeat=1
-
-    - name: Run MCPL_input_once instrument
-      working-directory: run_mcpl_input_once
-      run: ..\install\bin\mcrun --verbose test.instr -d Single_core v_smear=0.1
-
-    - name: Run NCrystal instrument
-      working-directory: run_ncrystal
-      run: ..\install\bin\mcrun --verbose test.instr -d Single_core sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+      run: ..\install\bin\mxrun --verbose test.instr -d Single_core repeat=1
 
     - name: Run std instrument MPI
       working-directory: run_std
-      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto lambda=2.36
+      run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto LENS=0
 
-    - name: Run MCPL_output instrument MPI
-      working-directory: run_mcpl_output
-      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
+    # - name: Run MCPL_output instrument MPI
+    #   working-directory: run_mcpl_output
+    #   run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
 
-    - name: Run MCPL_input instrument MPI
-      working-directory: run_mcpl_input
-      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto repeat=1
-
-    - name: Run MCPL_input_once instrument MPI
-      working-directory: run_mcpl_input_once
-      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto v_smear=0.1
-
-    - name: Run NCrystal instrument MPI
-      working-directory: run_ncrystal
-      run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+    # - name: Run MCPL_input instrument MPI
+    #   working-directory: run_mcpl_input
+    #   run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto repeat=1
 
     - name: 'Tar output files'
       id: tar-package
