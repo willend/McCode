@@ -172,3 +172,21 @@ jobs:
     - name: Run NCrystal instrument MPI
       working-directory: run_ncrystal
       run: ..\install\bin\mcrun --verbose test.instr -d MPI_multicore -c --mpi=auto sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+
+    - name: 'Tar output files'
+      id: tar-package
+      if: always()
+      shell: bash
+      run: |
+           set -e
+           set -u
+           set -x
+           tar cvfz output.tgz run_*
+
+    - name: 'Upload Artifact'
+      id: tar-upload
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: output.tgz
+        path: "output.tgz"
