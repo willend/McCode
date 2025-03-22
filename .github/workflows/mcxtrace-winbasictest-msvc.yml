@@ -144,9 +144,9 @@ jobs:
     #   working-directory: run_mcpl_output
     #   run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
 
-    # - name: Run MCPL_input instrument MPI
-    #   working-directory: run_mcpl_input
-    #   run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto repeat=1
+    - name: Run MCPL_input instrument MPI
+      working-directory: run_mcpl_input
+      run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto repeat=1
 
     - name: 'Tar output files'
       id: tar-package

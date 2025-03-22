@@ -100,7 +100,7 @@ INITIALIZE
 
 #if defined (USE_MPI)
     /* In case of MPI, simply redefine the filename used by each node */
-    sprintf(tmpstr, "Message(%s): You are using MCPL_output with MPI, hence your will get %i filenames %s.node_#i.mcpl{.gz} as output.\n",NAME_CURRENT_COMP,mpi_node_count,filename);
+    sprintf(tmpstr, "Message(%s): You are using MCPL_output with MPI, hence you will get %i filenames %s.node_#i.mcpl{.gz} as output.\n",NAME_CURRENT_COMP,mpi_node_count,filename);
     sprintf(extension,"node_%i.mcpl",mpi_node_rank);
 #else
     sprintf(extension,"mcpl");
