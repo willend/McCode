@@ -188,5 +188,5 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: output.tgz
+        name: mcstas-${{ matrix.os }}_output.tgz
         path: "mcstas-${{ matrix.os }}_output.tgz"

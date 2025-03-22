@@ -99,7 +99,9 @@ jobs:
       run: echo MCXTRACE=%CD%\install\share\mcxtrace\resources >> %GITHUB_ENV%
 
     - name: check MCXTRACE env var
-      run: echo %MCXTRACE%
+      run: |
+        echo %MCXTRACE%
+        dir %MCXTRACE%
 
     - run: type .\install\share\mcxtrace\tools\Python\mccodelib\mccode_config.json
     - run: .\install\bin\mxrun -h
@@ -111,7 +113,7 @@ jobs:
 
     - name: Prepare std instrument
       working-directory: run_std
-      run: copy ..\install\share\mcxtrace\resources\examples\Tests_optics\Test_CRL.instr test.instr
+      run: copy ..\install\share\mcxtrace\resources\examples\Tests_optics\Test_CRL\Test_CRL.instr test.instr
 
     - name: Prepare MCPL_input instrument
       working-directory: run_mcpl_input
@@ -161,5 +163,5 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: output.tgz
+        name: mcxtrace-${{ matrix.os }}_output.tgz
         path: "mcxtrace-${{ matrix.os }}_output.tgz"
