@@ -1,4 +1,4 @@
-name: mcxtrace-winbasictest
+name: mcxtrace-msvc-winbasictest
 
 on:
   push:
@@ -155,12 +155,12 @@ jobs:
            set -e
            set -u
            set -x
-           tar cvfz mcxtrace-${{ matrix.os }}_output.tgz run_*
+           tar cvfz mcxtrace-msvc-${{ matrix.os }}_output.tgz run_*
 
     - name: 'Upload Artifact'
       id: tar-upload
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: mcxtrace-${{ matrix.os }}_output.tgz
-        path: "mcxtrace-${{ matrix.os }}_output.tgz"
+        name: mcxtrace-msvc-${{ matrix.os }}_output.tgz
+        path: "mcxtrace-msvc-${{ matrix.os }}_output.tgz"

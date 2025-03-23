@@ -1,4 +1,4 @@
-name: mcstas-msvc-winbasictest
+name: mcstas-mingw-winbasictest
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-2019, windows-2022, windows-2025]
+        os: [windows-2022]
 
     steps:
 
@@ -29,20 +29,6 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: 3.11
-
-      #Two ways of enabling cl.exe and other tools. One is via an external action...:
-    - name: Setup VS in shell
-      uses: ilammy/msvc-dev-cmd@v1
-      #...but a simpler one might be to simply invoke the correct vcvars64.bat
-      #file first, like...:
-      #
-      #    - name: whatever
-      #      shell: cmd
-      #      run: |
-      #        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-      #        cl /help
-      #
-      #...but since we also want to support VS 2019, we use the above action for now
 
     - name: Setup MPI
       uses: mpi4py/setup-mpi@v1
@@ -62,15 +48,27 @@ jobs:
         echo MPIINCVAR=%MPIINCVAR% >> %GITHUB_ENV%
         echo MPILIBVAR=%MPILIBVAR% >> %GITHUB_ENV%
 
-    - name: choco install deps
-      run: choco install winflexbison3 wget
+    - name: choco install wget
+      run: choco install wget
+
+    - name: pip install deps
+      run: pip install PyYAML ply McStasscript ncrystal mslex
+
+    - name: pip install mcpl-core preview
+      run: pip install -v "git+https://github.com/mctools/mcpl@path_to_mcpl2#subdirectory=mcpl_core"
+
+    - name: choco install deps2
+      run: choco install mingw make winflexbison3
 
     - name: CMake cfg
       run: >
         cmake -B build -S src
+        -G "Unix Makefiles"
+        -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc.exe 
         "-DCMAKE_INSTALL_PREFIX=./install"
         -DMCVERSION="3.99.99"
         -DMCCODE_BUILD_CONDA_PKG=OFF
+        -DMCCODE_BUILD_WINDOWS_MINGW=ON
         -DCMAKE_INSTALL_LIBDIR=lib
         -DBUILD_MCSTAS=ON
         -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
@@ -87,12 +85,6 @@ jobs:
 
     - name: CMake install
       run: cmake --install build --config Release
-
-    - name: pip install deps
-      run: pip install PyYAML ply McStasscript ncrystal mslex
-
-    - name: pip install mcpl-core preview
-      run: pip install -v "git+https://github.com/mctools/mcpl@path_to_mcpl2#subdirectory=mcpl_core"
 
     - name: set MCSTAS env var
       run: echo MCSTAS=%CD%\install\share\mcstas\resources >> %GITHUB_ENV%
@@ -181,12 +173,12 @@ jobs:
            set -e
            set -u
            set -x
-           tar cvfz mcstas-msvc-${{ matrix.os }}_output.tgz run_*
+           tar cvfz mcstas-mingw-${{ matrix.os }}_output.tgz run_*
 
     - name: 'Upload Artifact'
       id: tar-upload
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: mcstas-msvc-${{ matrix.os }}_output.tgz
-        path: "mcstas-msvc-${{ matrix.os }}_output.tgz"
+        name: mcstas-mingw-${{ matrix.os }}_output.tgz
+        path: "mcstas-mingw-${{ matrix.os }}_output.tgz"
