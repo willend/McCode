@@ -36,7 +36,7 @@ jobs:
 #      run: python ./src/devel/bin/ncdevtool nprocs --enable-github-parallel
 
     - name: choco install deps
-      run: choco install winflexbison3
+      run: choco install winflexbison3 wget
 
     - name: CMake cfg
       run: >
