@@ -74,6 +74,7 @@ jobs:
     - run: .\install\bin\mcstas -v
     - run: mcpl-config -s
     - run: ncrystal-config -s
+    - run: type .\install\share\mcstas\tools\Python\mccodelib\mccode_config.json
 
     - name: Prepare rundirs
       run: mkdir run_std run_mcpl run_union run_ncrystal
@@ -84,7 +85,7 @@ jobs:
 
     - name: Run
       working-directory: run_std
-      run: mcrun test.instr lambda=2.36
+      run: call ..\install\bin\mcrun.bat --verbose test.instr lambda=2.36
 
     - name: Prepare NCrystal instrument
       working-directory: run_ncrystal
@@ -92,4 +93,4 @@ jobs:
 
     - name: Run
       working-directory: run_ncrystal
-      run: mcrun test.instr sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+      run: ..\install\bin\mcrun --verbose test.instr sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
