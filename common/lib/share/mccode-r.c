@@ -4809,7 +4809,9 @@ mcparseoptions(int argc, char *argv[])
     }
   }
   if (mcusedefaults) {
-    printf("Using all default parameter values\n");
+    MPI_MASTER(
+     printf("Using all default parameter values\n");
+    );
     for(j = 0; j < numipar; j++) {
       int status;
       if(mcinputtable[j].val && strlen(mcinputtable[j].val)){
