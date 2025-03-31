@@ -23,16 +23,16 @@
 * and the surrounding ring is at temperature T2.
 * The third Maxwellian distribution at temperature T3 always comes from anywhere in the moderator.
 *
-* Parameters xwidth and yheight must be provided for rectangular moderators, otherwise a circular shape is assumed.
-*
 * Multiple pulses can be simulated over time with the n_pulses parameter,
 * in contrast to the Source_pulsed component, which only simulates a single pulse.
 * Note that the intensity spreads over n_pulses, so that the units of neutrons per second are preserved.
 *
+* Parameters xwidth and yheight must be provided for rectangular moderators, otherwise a circular shape is assumed.
+*
 * Usage example: 
 *   Source_pulsed_multi(xwidth=0.04, yheight=0.04, Lmin=1.0, Lmax=3.0, n_pulses=2,
 *                       dist=0.700, focus_xw=0.020, focus_yh=0.020, freq=96.0, t_pulse=0.000208,
-*                       T1=325.0, I1=7.6e09, tau1=0.000170, I_um=2.7e08, chi_um=2.5)
+*                       T1=325.0, I1=7.6e9, tau1=0.000170, I_um=2.7e8, chi_um=2.5)
 *
 * Parameters for some sources:
 *
