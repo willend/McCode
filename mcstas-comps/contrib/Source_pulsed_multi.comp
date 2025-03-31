@@ -8,7 +8,7 @@
 * Component: Source_pulsed_multi
 *
 * %I
-* Written by: Pablo Gila-Herranz, adapted from component 'Source_pulsed' by Klaus Lieutenant, which was based on 'Moderator' by K. Nielsen, M. Hagen and 'ESS_moderator_long_2001' by K. Lefmann
+* Written by: Pablo Gila-Herranz, based on component 'Source_pulsed' by Klaus Lieutenant, 'Moderator' by K. Nielsen, M. Hagen and 'ESS_moderator_long_2001' by K. Lefmann
 * Date  : March 31, 2025
 * Version: 1.1
 * Origin: Materials Physics Center (CFM-MPC), CSIC-UPV/EHU
@@ -16,27 +16,38 @@
 * A pulsed source for variable proton pulse lengths. Multiple pulses can be simulated over time.
 *
 * %D
-* Produces a custom pulse spectrum with a wavelength distribution as a sum of up to 3 Maxwellian distributions and one of undermoderated neutrons.
+* Custom pulse spectrum with a wavelength distribution as a sum of up to 3 Maxwellian distributions and one of undermoderated neutrons.
 *
 * By default, all Maxwellian distributions are assumed to come from anywhere in the moderator.
 * However, a radious r_i can be defined such that the central circle of radius r_i is at temperature T1,
 * and the surrounding ring is at temperature T2.
 * The third Maxwellian distribution at temperature T3 always comes from anywhere in the moderator.
 *
-* If moderator xwidth and yheight are given, it assumes a rectangular moderator, otherwise it assumes a circular one.
+* Parameters xwidth and yheight must be provided for rectangular moderators, otherwise a circular shape is assumed.
 *
 * Multiple pulses can be simulated over time with the n_pulses parameter,
-* in contrast to the Source_pulsed component, which simulates a single pulse.
+* in contrast to the Source_pulsed component, which only simulates a single pulse.
+* Note that the intensity spreads over n_pulses, so that the units of neutrons per second are preserved.
 *
 * Usage example: 
-*   Source_pulsed_multi(xwidth=0.04, yheight=0.04, Lmin=1.0, Lmax=3.0, n_pulses=2, dist=0.700, focus_xw=0.020, focus_yh=0.020,
-*                 freq=96.0, t_pulse=0.000208, T1=325.0, I1=7.6e09, tau1=0.000170, I_um=2.7e08, chi_um=2.5)
+*   Source_pulsed_multi(xwidth=0.04, yheight=0.04, Lmin=1.0, Lmax=3.0, n_pulses=2,
+*                       dist=0.700, focus_xw=0.020, focus_yh=0.020, freq=96.0, t_pulse=0.000208,
+*                       T1=325.0, I1=7.6e09, tau1=0.000170, I_um=2.7e08, chi_um=2.5)
 *
 * Parameters for some sources:
-*   HBS thermal source: xwidth=0.04, yheight=0.04, T1=325.0, I1=0.68e+12/freq, tau1=0.000125, n_mod=10, I_um=2.47e+10/freq, chi_um=2.5, t_pulse=0.016/freq, freq=96.0 or 24.0  
-*   HBS cold source   : radius=0.010,              T1= 60.0, I1=1.75e+12/freq, tau2=0.000170, n_mod= 5, I_um=3.82e+10/freq, chi_um=0.9, t_pulse=0.016/freq, freq=24.0 or 96.0
-*   HBS bi-spectral   : radius=0.022, r_i=0.010,   T1= 60.0, I1=1.75e+12/freq, tau2=0.000170,                                 
-*                                                  T2=305.0, I2=0.56e+12/freq, tau1=0.000130, n_mod= 5, I_um=3.82e+10/freq, chi_um=2.5, t_pulse=0.016/freq, freq=24.0 or 96.0
+*
+*   HBS thermal source:
+*     xwidth=0.04, yheight=0.04, T1=325.0, I1=0.68e+12/freq, tau1=0.000125,
+*     n_mod=10, I_um=2.47e+10/freq, chi_um=2.5, t_pulse=0.016/freq, freq=96.0 or 24.0
+*
+*   HBS cold source:
+*     radius=0.010,              T1= 60.0, I1=1.75e+12/freq, tau2=0.000170,
+*     n_mod= 5, I_um=3.82e+10/freq, chi_um=0.9, t_pulse=0.016/freq, freq=24.0 or 96.0
+*
+*   HBS bi-spectral:
+*     radius=0.022, r_i=0.010,   T1= 60.0, I1=1.75e+12/freq, tau2=0.000170,                                 
+*     T2=305.0, I2=0.56e+12/freq, tau1=0.000130,
+*     n_mod= 5, I_um=3.82e+10/freq, chi_um=2.5, t_pulse=0.016/freq, freq=24.0 or 96.0
 *
 * %P
 * Input parameters:
@@ -47,8 +58,8 @@
 * r_i:            [m]        Radius of a central circle at temperature T1, sorrounded by a ring at temperature T2; ignored by default
 * Lmin:           [Ang]      Lower edge of the wavelength distribution
 * Lmax:           [Ang]      Upper edge of the wavelength distribution
-* t_pulse:        [s]        Proton pulse length
 * freq:           [Hz]       Frequency of pulses
+* t_pulse:        [s]        Proton pulse length
 * tmax_multiplier [1]        Defined maximum emission time at moderator, tmax = tmax_multiplier * t_pulse
 * n_pulses        [1]        Number of pulses to be simulated (minimum 1)
 * target_index:   [1]        relative index of component to focus at, e.g. next is +1; this is used to compute 'dist' automatically
@@ -77,9 +88,9 @@
 DEFINE COMPONENT Source_pulsed_multi
 DEFINITION PARAMETERS ()
 SETTING PARAMETERS (xwidth=0.0, yheight=0.0, radius=0.010, r_i=0.0,  
-    Lmin, Lmax, t_pulse, freq, tmax_multiplier=3.0, n_pulses=1, 
+    Lmin, Lmax, freq, t_pulse, tmax_multiplier=3.0, int n_pulses=1, 
     int target_index=1, dist=0.0, focus_xw=0.02, focus_yh=0.02,
-    T1, I1, tau1=0.000125,  T2=0.0, I2=0.0, tau2=0.0,  T3=0.0, I3=0.0, tau3=0.0,  n_mod=10,
+    T1=0.0, I1=0.0, tau1=0.000125,  T2=0.0, I2=0.0, tau2=0.0,  T3=0.0, I3=0.0, tau3=0.0,  n_mod=10,
     I_um=0.0, tau_um=0.000012, n_um=5, chi_um=2.5, kap_um=2.2)
 OUTPUT PARAMETERS ()
 /* Neutron parameters: (x,y,z, vx,vy,vz, t, sx,sy,sz, p) */
@@ -143,16 +154,16 @@ SHARE
 
 DECLARE
 %{
-  double area;      /*   [cm^2]  moderator surface area    */
-  double t_period;  /*    [s]    period of the pulse cycle */
-  double alpha;     /*    [1]    duty cycle                */
-  double p_in;      /* [1/Ang/s] flux normalisation factor */
+  double area;      /*   [cm^2]   Moderator surface area    */
+  double t_period;  /*    [s]     Period of the pulse cycle */
+  double alpha;     /*    [1]     Duty cycle                */
+  double p_in;      /* [1/Ang/s]  Flux normalisation factor */
 %}
 
 
 INITIALIZE
 %{
-  /* check of the input parameters */
+  /* Initial check of the input parameters */
   if (   xwidth < 0.0 ||  yheight  < 0.0 ||   radius < 0.0 ||    r_i < 0.0 ||   Lmin < 0.0  ||  Lmax < 0.0
       ||  dist  < 0.0 || focus_xw  < 0.0 || focus_yh < 0.0 ||   freq < 0.0 || t_pulse < 0.0 ||  tmax_multiplier < 0.0
       ||     T1 < 0.0 ||        I1 < 0.0 ||     tau1 < 0.0 ||     T2 < 0.0 ||      I2 < 0.0
@@ -160,17 +171,29 @@ INITIALIZE
       ||   I_um < 0.0 ||    tau_um < 0.0 ||     n_um < 0.0 || chi_um < 0.0 ||  kap_um < 0.0)
   {
       printf("Source_pulsed_multi: %s: Error: negative input parameter!\n"
-             "ERROR          Exiting\n",           NAME_CURRENT_COMP);
+             "ERROR          Exiting\n", NAME_CURRENT_COMP);
       exit(-1);
   }
-  if (Lmax <= Lmin )
+  if (Lmax <= Lmin)
   {
       printf("Source_pulsed_multi: %s: Error: wavelengths should be Lmin < Lmax!\n"
              "ERROR          Exiting\n", NAME_CURRENT_COMP);
       exit(-1);
   }
+  if (T1 == 0.0 && T2 == 0.0 && T3 == 0.0)
+  {
+      printf("Source_pulsed_multi: %s: Error: No temperature T1, T2 nor T3 defined!\n"
+             "ERROR          Exiting\n", NAME_CURRENT_COMP);
+      exit(-1);
+  }
+  if (I1 == 0.0 && I2 == 0.0 && I3 == 0.0)
+  {
+      printf("Source_pulsed_multi: %s: Error: No flux I1, I2 nor I3 defined!\n"
+             "ERROR          Exiting\n", NAME_CURRENT_COMP);
+      exit(-1);
+  }
 
-  /* automatic distance */
+  /* Automatic distance */
   if (target_index > 0 && dist==0.0)
   {
     Coords ToTarget;
@@ -181,11 +204,11 @@ INITIALIZE
     dist=sqrt(tx*tx+ty*ty+tz*tz);
   }
 
-  /* pulse parameters */
+  /* Pulse parameters */
   t_period = 1.0/freq;
   alpha    = t_pulse / t_period;
 
-  /* area for different moderator shapes */
+  /* Area for different moderator shapes */
   if (xwidth > 0.0 && yheight > 0.0)
   { 
     area  = 10000.0 * xwidth * yheight;
@@ -210,18 +233,18 @@ INITIALIZE
 
 TRACE
 %{
-  double phi,    /* [rad]  orientation of the starting point for a spherical moderator */
-         r,      /*  [m]   distance of the starting point from moderator center */
-         v,      /* [m/s]  speed of the neutron      */
-         time,   /*  [s]   */
-         lambda, /* [Ang]  wavelength of the neutron */
-         xf,     /*  [m]   horizontal position on the target */
-         yf,     /*  [m]   vertical position on the target   */
-         rf,     /*  [m]   distance between point on moderator and point on target   */
-         dx,     /*  [m]   horizontal shift from moderator to target */
-         dy,     /*  [m]   vertical shift from moderator to target   */
-         Omega,  /* [sr]   solid angle of the target                 */
-         flux;   /* [1/(cm^2 s Ang sr]  flux(lambda,time)               */
+  double phi,    /* [rad]  Orientation of the starting point for a spherical moderator */
+         r,      /*  [m]   Distance of the starting point from moderator center        */
+         v,      /* [m/s]  Speed of the neutron                                        */
+         time,   /*  [s]   Time                                                        */
+         lambda, /* [Ang]  Wavelength of the neutron                                   */
+         xf,     /*  [m]   Horizontal position on the target                           */
+         yf,     /*  [m]   Vertical position on the target                             */
+         rf,     /*  [m]   Distance between point on moderator and point on target     */
+         dx,     /*  [m]   Horizontal shift from moderator to target                   */
+         dy,     /*  [m]   Vertical shift from moderator to target                     */
+         Omega,  /* [sr]   Solid angle of the target                                   */
+         flux;   /* [1/(cm^2 s Ang sr]  Flux(lambda,time)                              */
 
   /* Choose the starting point on the moderator surface with uniform distribution for different moderator shapes */
   if (xwidth > 0.0 && yheight > 0.0)
@@ -254,7 +277,7 @@ TRACE
   dy = yf - y;
   rf = sqrt(dx*dx + dy*dy + dist*dist);
 
-  /* speed of the neutron */
+  /* Speed of the neutron */
   v  = 3956.0346 / lambda;
   vx = v*dx/rf;
   vy = v*dy/rf;
@@ -271,8 +294,8 @@ TRACE
   /* Assign this neutron to a random pulse */
   t += (double)floor((n_pulses)*rand01())/freq;
   /* The value of p remains consistent since the intensity spreads over n_pulses */
-  p  = flux * area* Omega * p_in;   /*  [1]   neutrons per pulse       */
-  p *= freq;                        /* [1/s]  time averaged intensity  */
+  p  = flux * area* Omega * p_in;  /*  [1]   neutrons per pulse       */
+  p *= freq;                       /* [1/s]  time averaged intensity  */
 
   SCATTER;
 %}
@@ -280,7 +303,7 @@ TRACE
 
 MCDISPLAY
 %{
-  double edge;    /* [m]  x and y position on the circle */
+  double edge;  /* [m]  x and y position on the circle */
 
   if (dist > 0.0) 
   {
