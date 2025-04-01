@@ -5,18 +5,19 @@
 *         DTU Physics, Kongens Lyngby, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Component: Source_pulsed_multi
+* Component: Source_custom
 *
 * %I
-* Written by: Pablo Gila-Herranz, based on component 'Source_pulsed' by K. Lieutenant, 'Moderator' by K. Nielsen, M. Hagen and 'ESS_moderator_long_2001' by K. Lefmann
+* Written by: Pablo Gila-Herranz, based on 'Source_pulsed' by K. Lieutenant, 'Moderator' by K. Nielsen, M. Hagen and 'ESS_moderator_long_2001' by K. Lefmann
 * Date: March 31, 2025
 * Version: 2.0
 * Origin: Materials Physics Center (CFM-MPC), CSIC-UPV/EHU
 *
-* A flexible pulsed source with customisable parameters. Multiple pulses can be simulated over time.
+* A flexible pulsed or continuous source with customisable parameters. Multiple pulses can be simulated over time.
 *
 * %D
 * Produces a custom pulse spectrum with a wavelength distribution as a sum of up to 3 Maxwellian distributions and one of undermoderated neutrons.
+* To simulate a continuous source, set a pulse length equal or greater than the pulse period (e.g. t_pulse=1.0, freq=1.0).
 *
 * By default, all Maxwellian distributions are assumed to come from anywhere in the moderator.
 * However, a custom radius r_i can be defined such that the central circle of radius r_i is at temperature T1,
@@ -30,9 +31,9 @@
 * Parameters xwidth and yheight must be provided for rectangular moderators, otherwise a circular shape is assumed.
 *
 * Usage example: 
-*   Source_pulsed_multi(xwidth=0.04, yheight=0.04, Lmin=1.0, Lmax=3.0, n_pulses=2,
-*                       target_index=1, focus_xw=0.020, focus_yh=0.020, freq=96.0, t_pulse=0.000208,
-*                       T1=325.0, I1=7.6e9, tau1=0.000170, I_um=2.7e8, chi_um=2.5)
+*   Source_custom(xwidth=0.04, yheight=0.04, Lmin=1.0, Lmax=3.0, n_pulses=2,
+*                 target_index=1, focus_xw=0.020, focus_yh=0.020, freq=96.0, t_pulse=0.000208,
+*                 T1=325.0, I1=7.6e9, tau1=0.000170, I_um=2.7e8, chi_um=2.5)
 *
 * Parameters for some sources:
 *
@@ -63,8 +64,8 @@
 * Lmax:           [Ang]      Upper edge of the wavelength distribution
 * freq:           [Hz]       Frequency of pulses
 * t_pulse:        [s]        Proton pulse length
-* tmax_multiplier [1]        Defined maximum emission time at moderator (tmax = tmax_multiplier * t_pulse)
-* n_pulses        [1]        Number of pulses to be simulated (minimum 1)
+* tmax_multiplier [1]        Defined maximum emission time at moderator (tmax = tmax_multiplier * t_pulse); 1 for continuous sources
+* n_pulses        [1]        Number of pulses to be simulated (minimum 1); ignored for continuous sources
 * target_index:   [1]        relative index of component to focus at, e.g. next is +1; used to compute 'dist' automatically
 * dist:           [m]        Distance from the source to the target
 * focus_xw:       [m]        Width of the target (focusing rectangle)
@@ -88,7 +89,7 @@
 * %E
 *******************************************************************************/
 
-DEFINE COMPONENT Source_pulsed_multi
+DEFINE COMPONENT Source_custom
 DEFINITION PARAMETERS ()
 SETTING PARAMETERS (xwidth=0.0, yheight=0.0, radius=0.010, r_i=0.0,
     Lmin, Lmax, freq, t_pulse, tmax_multiplier=3.0, int n_pulses=1,
@@ -175,25 +176,25 @@ INITIALIZE
       ||    n_mod < 0.0 ||      I_um < 0.0 ||           tau_um < 0.0
       ||     n_um < 0.0 ||    chi_um < 0.0 ||           kap_um < 0.0)
   {
-      printf("Source_pulsed_multi: %s: Error: negative input parameter!\n"
+      printf("Source_custom: %s: Error: negative input parameter!\n"
              "ERROR          Exiting\n", NAME_CURRENT_COMP);
       exit(-1);
   }
   if (Lmax <= Lmin)
   {
-      printf("Source_pulsed_multi: %s: Error: wavelengths should be Lmin < Lmax!\n"
+      printf("Source_custom: %s: Error: wavelengths should be Lmin < Lmax!\n"
              "ERROR          Exiting\n", NAME_CURRENT_COMP);
       exit(-1);
   }
   if (T1 == 0.0 && T2 == 0.0 && T3 == 0.0)
   {
-      printf("Source_pulsed_multi: %s: Error: No temperature T1, T2 nor T3 defined!\n"
+      printf("Source_custom: %s: Error: No temperature T1, T2 nor T3 defined!\n"
              "ERROR          Exiting\n", NAME_CURRENT_COMP);
       exit(-1);
   }
   if (I1 == 0.0 && I2 == 0.0 && I3 == 0.0)
   {
-      printf("Source_pulsed_multi: %s: Error: No flux I1, I2 nor I3 defined!\n"
+      printf("Source_custom: %s: Error: No flux I1, I2 nor I3 defined!\n"
              "ERROR          Exiting\n", NAME_CURRENT_COMP);
       exit(-1);
   }
@@ -213,6 +214,17 @@ INITIALIZE
   t_period = 1.0 / freq;
   alpha    = t_pulse / t_period;
 
+  /* The source is assumed to be continuous if the input pulse length is equal or greater than the pulse period.
+  The pulse length is then matched to the pulse period to avoid spurious neutron counts. */
+  if (t_pulse >= t_period)
+  {
+    t_pulse = t_period;
+    if (tmax_multiplier > 1.0)
+      tmax_multiplier = 1.0;
+    if (n_pulses > 1.0)
+      n_pulses = 1.0;
+  }
+
   /* Area for different moderator shapes */
   if (xwidth > 0.0 && yheight > 0.0)
   { 
@@ -224,7 +236,7 @@ INITIALIZE
   }
   else
   {
-    printf("Source_pulsed_multi: %s: Error: The shape of the source is not set! Use xwidth/yheight or radius\n"
+    printf("Source_custom: %s: Error: The shape of the source is not set! Use xwidth/yheight or radius\n"
            "ERROR          Exiting\n", NAME_CURRENT_COMP);
     exit(-1);
   }
