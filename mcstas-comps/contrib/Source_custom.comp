@@ -53,11 +53,6 @@
 *     T2=305.0, I2=0.56e+12/freq, tau2=0.000130,
 *     n_mod=5, I_um=3.82e+10/freq, chi_um=2.5
 *
-*   PSI cold source (continuous):
-*     xwidth=0.1, yheight=0.1, freq=1, t_pulse=1,
-*     T1=296.2, I1=8.5e+11, tau1=???,
-*     T2=40.68, I2=5.2e+11, tau2=???
-*
 * %P
 * Input parameters:
 *
