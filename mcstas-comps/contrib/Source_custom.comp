@@ -44,14 +44,19 @@
 *
 *   HBS cold source:
 *     t_pulse=0.016/freq, freq=24.0 or 96.0, radius=0.010,
-*     T1= 60.0, I1=1.75e+12/freq, tau2=0.000170,
-*     n_mod= 5, I_um=3.82e+10/freq, chi_um=0.9
+*     T1=60.0, I1=1.75e+12/freq, tau1=0.000170,
+*     n_mod=5, I_um=3.82e+10/freq, chi_um=0.9
 *
 *   HBS bi-spectral:
 *     t_pulse=0.016/freq, freq=24.0 or 96.0, radius=0.022, r_i=0.010,
-*     T1= 60.0, I1=1.75e+12/freq, tau2=0.000170,
-*     T2=305.0, I2=0.56e+12/freq, tau1=0.000130,
-*     n_mod= 5, I_um=3.82e+10/freq, chi_um=2.5
+*     T1= 60.0, I1=1.75e+12/freq, tau1=0.000170,
+*     T2=305.0, I2=0.56e+12/freq, tau2=0.000130,
+*     n_mod=5, I_um=3.82e+10/freq, chi_um=2.5
+*
+*   PSI cold source (continuous):
+*     xwidth=0.1, yheight=0.1, freq=1, t_pulse=1,
+*     T1=296.2, I1=8.5e+11, tau1=???,
+*     T2=40.68, I2=5.2e+11, tau2=???
 *
 * %P
 * Input parameters:
@@ -94,7 +99,7 @@ DEFINITION PARAMETERS ()
 SETTING PARAMETERS (xwidth=0.0, yheight=0.0, radius=0.010, r_i=0.0,
     Lmin, Lmax, freq, t_pulse, tmax_multiplier=3.0, int n_pulses=1,
     int target_index=1, dist=0.0, focus_xw=0.02, focus_yh=0.02,
-    T1=0.0, I1=0.0, tau1=0.000125, T2=0.0, I2=0.0, tau2=0.0, T3=0.0, I3=0.0, tau3=0.0, n_mod=10,
+    T1=0.0, I1=0.0, tau1=0.000125, T2=0.0, I2=0.0, tau2=0.000125, T3=0.0, I3=0.0, tau3=0.000125, n_mod=10,
     I_um=0.0, tau_um=0.000012, n_um=5, chi_um=2.5, kap_um=2.2)
 OUTPUT PARAMETERS ()
 /* Neutron parameters: (x,y,z, vx,vy,vz, t, sx,sy,sz, p) */
@@ -116,12 +121,14 @@ SHARE
     return M;
   }
 
-  /* Distribution of under-moderated neutrons */
+  /* Distribution of under-moderated neutrons
+  $\frac{1}{(1+e^{\chi\lambda-\kappa})\lambda}$
+  */
   #pragma acc routine
   double Mezei_N_fct(double lmbd, double chi, double kappa)
   {
     if (lmbd > 0.0)
-      return 1.0 / (1.0 + exp(chi * lmbd - kappa)) / lmbd;
+      return 1.0 / ((1.0 + exp(chi * lmbd - kappa)) * lmbd);
     else
       return 0.0;
   }
