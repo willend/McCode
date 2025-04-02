@@ -9,7 +9,7 @@
 *
 * %I
 * Written by: Pablo Gila-Herranz, based on 'Source_pulsed' by K. Lieutenant, 'Moderator' by K. Nielsen, M. Hagen and 'ESS_moderator_long_2001' by K. Lefmann
-* Date: March 31, 2025
+* Date: April 2025
 * Version: 2.0
 * Origin: Materials Physics Center (CFM-MPC), CSIC-UPV/EHU
 *
@@ -17,16 +17,18 @@
 *
 * %D
 * Produces a custom pulse spectrum with a wavelength distribution as a sum of up to 3 Maxwellian distributions and one of undermoderated neutrons.
-* To simulate a continuous source, set a pulse length equal or greater than the pulse period (e.g. t_pulse=1.0, freq=1.0).
 *
 * By default, all Maxwellian distributions are assumed to come from anywhere in the moderator.
 * However, a custom radius r_i can be defined such that the central circle of radius r_i is at temperature T1,
 * and the surrounding ring is at temperature T2.
 * The third Maxwellian distribution at temperature T3 always comes from anywhere in the moderator.
 *
-* Multiple pulses can be simulated over time with the n_pulses parameter,
-* in contrast to the Source_pulsed component, which only simulates a single pulse.
+* Multiple pulses can be simulated over time with the n_pulses parameter.
 * Note that the intensity spreads over n_pulses, so that the units of neutrons per second are preserved.
+* The input flux is in units of [1/(cm^2 sr s AA)], so to simulate only one pulse the input flux should be divided by the frequency.
+*
+* To simulate a continuous source, set a pulse length equal to the pulse period (e.g. t_pulse=1.0, freq=1.0).
+* Note that this continuous beam is simulated over time, unlike other continuous sources in McStas which produce a Dirac delta at time 0.
 *
 * Parameters xwidth and yheight must be provided for rectangular moderators, otherwise a circular shape is assumed.
 *
@@ -53,6 +55,10 @@
 *     T2=305.0, I2=0.56e+12/freq, tau2=0.000130,
 *     n_mod=5, I_um=3.82e+10/freq, chi_um=2.5
 *
+*   PSI cold source:
+*     t_pulse=1, freq=1, xwidth=0.1, yheight=0.1,
+*     T1=296.2, I1=8.5e+11, T2=40.68, I2=5.2e+11
+*
 * %P
 * Input parameters:
 *
@@ -60,8 +66,8 @@
 * yheight:        [m]        Height of the source
 * radius:         [m]        Outer radius of the source
 * r_i:            [m]        Radius of a central circle at temperature T1, sorrounded by a ring at temperature T2 (ignored by default)
-* Lmin:           [Ang]      Lower edge of the wavelength distribution
-* Lmax:           [Ang]      Upper edge of the wavelength distribution
+* Lmin:           [AA]       Lower edge of the wavelength distribution
+* Lmax:           [AA]       Upper edge of the wavelength distribution
 * freq:           [Hz]       Frequency of pulses
 * t_pulse:        [s]        Proton pulse length
 * tmax_multiplier [1]        Defined maximum emission time at moderator (tmax = tmax_multiplier * t_pulse); 1 for continuous sources
@@ -71,19 +77,19 @@
 * focus_xw:       [m]        Width of the target (focusing rectangle)
 * focus_yh:       [m]        Height of the target (focusing rectangle)
 * T1:             [K]        Temperature of the 1st Maxwellian distribution; for r_i > 0 it is only used for the central radii r < r_i
-* I1:       [1/(cm**2*sr)]   Flux per solid angle of the 1st Maxwellian distribution (integrated over the whole wavelength range)
+* I1:    [1/(cm^2 sr s AA)]  Flux per solid angle of the 1st Maxwellian distribution (integrated over the whole wavelength range)
 * tau1:           [s]        Pulse decay constant of the 1st Maxwellian distribution
 * T2:             [K]        Temperature of the 2nd Maxwellian distribution (0 to disable); for r_i > 0 it is only used for the external ring r > r_i
-* I2:       [1/(cm**2*sr)]   Flux per solid angle of the 2nd Maxwellian distribution
+* I2:    [1/(cm^2 sr s AA)]  Flux per solid angle of the 2nd Maxwellian distribution
 * tau2:           [s]        Pulse decay constant of the 2nd Maxwellian distribution
 * T3:             [K]        Temperature of the 3rd Maxwellian distribution (0 to disable)
-* I3:       [1/(cm**2*sr)]   Flux per solid angle of the 3rd Maxwellian distribution
+* I3:    [1/(cm^2 sr s AA)]  Flux per solid angle of the 3rd Maxwellian distribution
 * tau3:           [s]        Pulse decay constant of the 3rd Maxwellian distribution
 * n_mod:          [1]        Ratio of pulse decay constant to pulse ascend constant of moderated neutrons
-* I_um:     [1/(cm**2*sr)]   Flux per solid angle for the under-moderated neutrons
+* I_um:  [1/(cm^2 sr s AA)]  Flux per solid angle for the under-moderated neutrons
 * tau_um:         [s]        Pulse decay constant of under-moderated neutrons
 * n_um:           [1]        Ratio of pulse decay constant to pulse ascend constant of under-moderated neutrons
-* chi_um:       [1/Ang]      Factor for the wavelength dependence of under-moderated neutrons
+* chi_um:        [1/AA]      Factor for the wavelength dependence of under-moderated neutrons
 * kap_um:         [1]        Scaling factor for the flux of under-moderated neutrons
 *
 * %E
@@ -117,7 +123,7 @@ SHARE
   }
 
   /* Distribution of under-moderated neutrons
-  $\frac{1}{(1+e^{\chi\lambda-\kappa})\lambda}$
+  $\frac{1}{\lambda(1+e^{\chi\lambda-\kappa})}$
   */
   #pragma acc routine
   double Mezei_N_fct(double lmbd, double chi, double kappa)
@@ -305,7 +311,8 @@ TRACE
   vy = v * dy / rf;
   vz = v * dist / rf;
 
-  /* Weight: flux in [1/(cm^2 s Ang sr] */
+  /* The input flux variables Ix are in [1/(cm^2 s AA sr)]
+  The flux variable below gets the flux per pulse */
   flux = I_um * Mezei_N_fct(lambda, chi_um, kap_um) * Mezei_I_fct(t, tau_um, n_um, t_pulse);
   if (r_i==0.0 || r <= r_i)
     flux += I1 * Maxwell(lambda, T1) * Mezei_I_fct(t, tau1, n_mod, t_pulse);
@@ -313,11 +320,12 @@ TRACE
     flux += I2 * Maxwell(lambda, T2) * Mezei_I_fct(t, tau2, n_mod, t_pulse); 
   flux   += I3 * Maxwell(lambda, T3) * Mezei_I_fct(t, tau3, n_mod, t_pulse);
 
-  /* Assign this neutron to a random pulse among the specified n_pulses */
+  /* Assign this neutron to a random pulse among the specified n_pulses.
+  The value of p remains consistent since the intensity now spreads over n_pulses */
   t += (double)floor((n_pulses)*rand01())/freq;
-  /* The value of p remains consistent since the intensity spreads over n_pulses */
-  p  = flux * area* Omega * p_in;  /*  [1]   neutrons per pulse       */
-  p *= freq;                       /* [1/s]  time averaged intensity  */
+  /* The p McStas parameter gets the neutrons per second that reach the target component */
+  p  = flux * area * Omega * p_in;  /*  [1]   neutrons per pulse      */
+  p *= freq;                        /* [1/s]  time averaged intensity */
 
   SCATTER;
 %}
