@@ -150,6 +150,9 @@ NOACC
 /* ========================================================================== */
 
 SHARE %{
+  #ifndef FLUORESCENCE_DECL
+  #define FLUORESCENCE_DECL
+
   #ifndef XRAYLIB_LINES_MAX
   #define XRAYLIB_LINES_MAX 383
   #define FLUORESCENCE 0  // Fluo
@@ -220,21 +223,22 @@ int XRMC_SelectFromDistribution(double x_arr[], int N)
 
 /* XRMC_SelectInteraction: select interaction type Fluo/Compton/Rayleigh
  * Return the interaction type from a random choice within cross sections 'xs'
- *   type = XRMC_SelectInteraction(xs[3]);
+ *   type = XRMC_SelectInteraction(xs[3], 3);
  * 'xs' is computed with XRMC_CrossSections.
  * type is one of FLUORESCENCE | RAYLEIGH | COMPTON
  */
-int XRMC_SelectInteraction(double *xs)
+int XRMC_SelectInteraction(double *xs, int nb_processes)
 {
-  double sum_xs, cum_xs[4];
+  double sum_xs, cum_xs[5];
   int    i;
   
+  if (nb_processes < 1 || nb_processes > 4) return 0;
   cum_xs[0]=sum_xs=0;
-  for (i=0; i< 3; i++) {
+  for (i=0; i< nb_processes; i++) {
     sum_xs += xs[i];
     cum_xs[i+1]= sum_xs;
   }
-  return XRMC_SelectFromDistribution(cum_xs, 4);
+  return XRMC_SelectFromDistribution(cum_xs, nb_processes+1);
 } // XRMC_SelectInteraction
 
 /* XRMC_SelectFluorescenceEnergy: select outgoing fluo photon energy, when incoming with 'E0'
@@ -362,6 +366,8 @@ double XRMC_SelectFluorescenceEnergy(int Z, double E0, double *dE)
     removeSpacesFromStr(formula);
     return(ret);
   } // fluo_get_material
+  
+  #endif // FLUORESCENCE_DECL
 %}
 
 /* ========================================================================== */
@@ -795,7 +801,7 @@ do { /* while (intersect) Loop over multiple scattering events */
     if (dsigma < 1) p *= dsigma; // < 1
 
     /* MC choose process from cross sections 'xs': fluo, Compton, Rayleigh */
-    type = XRMC_SelectInteraction(xs);
+    type = XRMC_SelectInteraction(xs, 3);
     
     /* choose Z (element) on associated XS, taking into account mass-fractions */
     switch (type) {
