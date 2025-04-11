@@ -124,7 +124,7 @@
 *     signal=[var]              Will monitor [var] instead of usual intensity
 *     slit or absorb            Absorb photons that are out detector
 *     source                    The monitor will save photon states
-*     unactivate                To unactivate detector (0D detector)
+*     inactivate                To inactivate detector (0D detector)
 *     verbose                   To display additional informations
 *
 * Detector shape options (specified as xwidth,yheight,zdepth or x/y/z/min/max)

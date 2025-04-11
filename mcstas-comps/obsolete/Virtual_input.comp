@@ -40,7 +40,7 @@
 * To create a 'source' file collecting all neutron states, use:
 *   COMPONENT MySourceCreator = Virtual_output(filename = "MySource.list")
 * at the position where will be the Virtual_input.
-* Then unactivate the part of the simulation description before (and including)
+* Then inactivate the part of the simulation description before (and including)
 * the component MySourceCreator. Put the new instrument source:
 *   COMPONENT Source = Virtual_input(filename="MySource.list")
 * at the same position as 'MySourceCreator'.
@@ -49,7 +49,7 @@
 *
 * %P
 * INPUT PARAMETERS
-* filename: [str]    Name of the neutron input file. Empty string "" unactivates component 
+* filename: [str]    Name of the neutron input file. Empty string "" inactivates component 
 *
 * Optional input parameters
 * repeat_count: [1]  Number of times the source must be generated/repeated 

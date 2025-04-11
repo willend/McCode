@@ -32,7 +32,7 @@
 * In case at least one among m, alpha and W is not null, then Guide_anyshape_g will use these
 * values as input (common for all the faces), ignoring those specified in the OFF file
 *
-* The complex OFF/PLY geometry option handles any closed non-convex polyhedra.
+* The complex OFF/PLY geometry option handles any closed non-convex polyhedral.
 *   It supports the OFF and NOFF file format but not COFF (colored faces).
 *   Standard .OFF files may be generated from XYZ data using:
 *     qhull < coordinates.xyz Qx Qv Tv o > geomview.off

@@ -125,7 +125,7 @@
 *     signal=[var]              Will monitor [var] instead of usual intensity
 *     slit or absorb            Absorb neutrons that are out detector
 *     source                    The monitor will save neutron states
-*     unactivate                To unactivate detector (0D detector)
+*     inactivate                To inactivate detector (0D detector)
 *     verbose                   To display additional informations
 *     3He_pressure=[3 in bars]  The 3He gas pressure in detector. 3He_pressure=0 is perfect detector (default)
 *

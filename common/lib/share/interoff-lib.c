@@ -633,7 +633,7 @@ int off_cleanInOut(intersection* t, int* t_size)
 *        'xwidth,yheight,zdepth' if given as non-zero, apply bounding box.
 *           Specifying only one of these will also use the same ratio on all axes
 *        'notcenter' center the object to the (0,0,0) position in local frame when set to zero
-* RETURN: number of polyhedra and 'data' OFF structure
+* RETURN: number of polyhedral and 'data' OFF structure
 *******************************************************************************/
 long off_init(  char *offfile, double xwidth, double yheight, double zdepth,
                 int notcenter, off_struct* data)
@@ -1018,7 +1018,7 @@ int quadraticSolve(double* eq, double* x1, double* x2)
 * INPUT:  x,y,z and vx,vy,vz are the position and velocity of the neutron
 *         ax, ay, az are the local acceleration vector
 *         data points to the OFF data structure
-* RETURN: the number of polyhedra which trajectory intersects
+* RETURN: the number of polyhedral which trajectory intersects
 *         t0 and t3 are the smallest incoming and outgoing intersection times
 *         n0 and n3 are the corresponding normal vectors to the surface
 *         data is the full OFF structure, including a list intersection type
@@ -1136,7 +1136,7 @@ int off_intersect_all(double* t0, double* t3,
 * ACTION: computes intersection of neutron trajectory with an object.
 * INPUT:  x,y,z and vx,vy,vz are the position and velocity of the neutron
 *         data points to the OFF data structure
-* RETURN: the number of polyhedra which trajectory intersects
+* RETURN: the number of polyhedral which trajectory intersects
 *         t0 and t3 are the smallest incoming and outgoing intersection times
 *         n0 and n3 are the corresponding normal vectors to the surface
 *******************************************************************************/
@@ -1159,7 +1159,7 @@ int off_intersect(double* t0, double* t3,
 * ACTION: computes intersection of an xray trajectory with an object.
 * INPUT:  x,y,z and kx,ky,kz, are spatial coordinates and wavevector of the x-ray
 *         respectively. data points to the OFF data structure.
-* RETURN: the number of polyhedra the trajectory intersects
+* RETURN: the number of polyhedral the trajectory intersects
 *         l0 and l3 are the smallest incoming and outgoing intersection lengths
 *         n0 and n3 are the corresponding normal vectors to the surface
 *******************************************************************************/

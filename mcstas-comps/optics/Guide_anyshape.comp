@@ -26,7 +26,7 @@
 * R0,Qc,alpha,W,m, or from a reflectivity file 'reflect' with a 2 column
 * format [q(Angs-1) R(0-1)].
 *
-* The complex OFF/PLY geometry option handles any closed non-convex polyhedra.
+* The complex OFF/PLY geometry option handles any closed non-convex polyhedral.
 *   It supports the OFF and NOFF file format but not COFF (colored faces).
 *   Such files may be generated from XYZ data using:
 *     qhull < coordinates.xyz Qx Qv Tv o > geomview.off
