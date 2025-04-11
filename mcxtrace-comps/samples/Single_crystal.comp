@@ -80,7 +80,7 @@
 *   sphere:          radius (yheight=0)
 *   any shape:       geometry=OFF/PLY file
 *
-*   The complex geometry option handles any closed non-convex polyhedra.
+*   The complex geometry option handles any closed non-convex polyhedral.
 *   It computes the intersection points of the photon ray with the object
 *   transparently, so that it can be used like a regular sample object.
 *   It supports the PLY, OFF and NOFF file format but not COFF (colored faces).
@@ -193,7 +193,7 @@
 * Optional input parameters
 *
 * p_transmit:        [1] Monte Carlo probability for photons to be transmitted without any scattering. Used to improve statistics from weak reflections
-* sigma_inc:     [barns] Incoherent scattering cross-section per unit cell (uniform). Fully isotropic and constant. Use -1 to unactivate
+* sigma_inc:     [barns] Incoherent scattering cross-section per unit cell (uniform). Fully isotropic and constant. Use -1 to inactivate
 * aa:              [deg] Unit cell angles alpha, beta and gamma. Then uses norms of vectors a,b and c as lattice parameters
 * bb:              [deg] Beta angle
 * cc:              [deg] Gamma angle

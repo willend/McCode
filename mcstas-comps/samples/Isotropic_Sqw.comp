@@ -29,7 +29,7 @@
 * scattering is constant isotropic (Vanadium like).
 * In case you only have one S(q,w) data containing both coherent and
 * incoherent contributions you should e.g. use 'Sqw_coh' and set 'sigma_coh'
-* to the total scattering cross section. Set sigma_coh and sigma_inc to -1 to unactivate.
+* to the total scattering cross section. Set sigma_coh and sigma_inc to -1 to inactivate.
 *
 * The implementation will automatically nornalise S(q,w) so that S(q) -> 1 at
 * large q (parameter norm=-1). Alternatively, the S(q,w) data will be multiplied
@@ -65,7 +65,7 @@
 *   hollow sphere:   radius and thickness>0 (yheight=0)
 *   any shape:       geometry=OFF file
 *
-*   The complex geometry option handles any closed non-convex polyhedra.
+*   The complex geometry option handles any closed non-convex polyhedral.
 *   It computes the intersection points of the neutron ray with the object
 *   transparently, so that it can be used like a regular sample object.
 *   It supports the OFF, PLY and NOFF file format but not COFF (colored faces).
@@ -189,9 +189,9 @@
 * INPUT PARAMETERS:
 * Sqw_coh: [str]              Name of the file containing the values of Q, w and S(Q,w) Coherent part; Q in Angs-1, E in meV, S(q,w) in meV-1. Use 0, NULL or "" to disable.
 * Sqw_inc: [str]              Name of the file containing the values of Q, w and S(Q,w). Incoherent (self) part. Use 0, NULL or "" to scatter isotropically (V-like).
-* sigma_coh: [barns]          Coherent Scattering cross-section. Use -1 to unactivate.
-* sigma_inc: [barns]          Incoherent Scattering cross-section. Use -1 to unactivate.
-* sigma_abs: [barns]          Absorption cross-section at 2200 m/s. Use -1 to unactivate.
+* sigma_coh: [barns]          Coherent Scattering cross-section. Use -1 to inactivate.
+* sigma_inc: [barns]          Incoherent Scattering cross-section. Use -1 to inactivate.
+* sigma_abs: [barns]          Absorption cross-section at 2200 m/s. Use -1 to inactivate.
 * rho: [AA-3]                 Density of scattering elements (nb atoms/unit cell V_0).
 * T: [K]                      Temperature of sample, detailed balance. Use T=-1 to disable it, and T=-2 to guess it from non-classical S(q,w) input.
 *
@@ -211,7 +211,7 @@
 * weight: [g/mol]             atomic/molecular weight of material
 * density: [g/cm^3]           density of material. V_rho=density/weight/1e24*N_A
 * threshold: [1]              Value under which S(Q,w) is not accounted for. to set according to the S(Q,w) values, i.e. not too low.
-* p_interact: [1]             Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 unactivate).
+* p_interact: [1]             Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 inactivate).
 * norm: [1]                   Normalize S(q,w) when -1 (default). Use raw data when 1, multiplier for S(q,w) when norm>0.
 * classical: [1]              Assumes the S(q,w) data from the files is a classical S(q,w), and multiply that data by exp(hw/2kT) on up/down energy sides. Use 0 when obtained from raw experiments, 1 from molecular dynamics. Use -1 to guess from a data set including both energy sides.
 * quantum_correction: [str]   Specify the type of quantum correction to use "Boltzmann"/"Schofield","harmonic"/"Bader" or "standard"/"Frommhold" (default)

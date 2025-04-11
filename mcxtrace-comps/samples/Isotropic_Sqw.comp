@@ -62,7 +62,7 @@
 *   hollow sphere:   radius and thickness>0 (yheight=0)
 *   any shape:       geometry=OFF file
 *
-*   The complex geometry option handles any closed non-convex polyhedra.
+*   The complex geometry option handles any closed non-convex polyhedral.
 *   It computes the intersection points of the photon ray with the object
 *   transparently, so that it can be used like a regular sample object.
 *   It supports the OFF, PLY and NOFF file format but not COFF (colored faces).
@@ -193,7 +193,7 @@
 * density: [g/cm^3]           density of material. V_rho=density/weight/1e24*N_A
 * sigma_coh: [barns]          Thomson cross-section of the material. For an atom, this is f*0.665 barns, where f is the number of free electrons, f -> atomic number Z.
 * threshold: [1]              Value under which S(Q,w) is not accounted for. to set according to the S(Q,w) values, i.e. not too low.
-* p_interact: [1]             Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 unactivate).
+* p_interact: [1]             Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 inactivate).
 * norm: [1]                   Normalize S(q,w) when -1 (default). Use raw data when 1, multiplier for S(q,w) when norm>0.
 * classical: [1]              Assumes the S(q,w) data from the files is a classical S(q,w), and multiply that data by exp(hw/2kT) on up/down energy sides. Use 0 when obtained from raw experiments, 1 from molecular dynamics. Use -1 to guess from a data set including both energy sides.
 * quantum_correction: [str]   Specify the type of quantum correction to use "Boltzmann"/"Schofield","harmonic"/"Bader" or "standard"/"Frommhold" (default)

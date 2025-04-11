@@ -322,7 +322,7 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
           Set_Coord_Mode = DEFS->COORD_FIL;
           if (Flag_No) { strcpy(Vars->Mon_File,""); Vars->Coord_Number = 0; Flag_End = 1; }
         }
-        if (!strcmp(token, "unactivate")) {
+        if (!strcmp(token, "inactivate")) {
           Flag_End = 1; Vars->Coord_Number = 0; iskeyword=1; }
         if (!strcmp(token, "all"))    { Flag_All = 1;  iskeyword=1; }
         if (!strcmp(token, "sphere")) { Vars->Flag_Shape = DEFS->SHAPE_SPHERE; iskeyword=1; }
@@ -780,7 +780,7 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
       }
     }
     if (Vars->Coord_Number == 0 && Vars->Flag_Verbose)
-      printf("Monitor_nD: %s is unactivated (0D)\n", Vars->compcurname);
+      printf("Monitor_nD: %s is inactivated (0D)\n", Vars->compcurname);
     Vars->Cylinder_Height = fabs(Vars->mymax - Vars->mymin);
 
     if (Vars->Flag_Verbose)

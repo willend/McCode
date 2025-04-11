@@ -57,7 +57,7 @@
 * order: [1]                                              Limit multiple scattering up to given order (0: all, 1: first, 2: second, ...)
 * p_transmit: [1]                                         Monte Carlo probability for neutrons to be transmitted without any scattering. Used to improve statistics from weak reflections
 * sigma_abs: [barns]                                      Absorption cross-section per unit cell at 2200 m/s
-* sigma_inc: [barns]                                      Incoherent scattering cross-section per unit cell Use -1 to unactivate
+* sigma_inc: [barns]                                      Incoherent scattering cross-section per unit cell Use -1 to inactivate
 * aa: [deg]                                               Unit cell angles alpha, beta and gamma. Then uses norms of vectors a,b and c as lattice parameters
 * bb: [deg]                                               Beta angle
 * cc: [deg]                                               Gamma angle

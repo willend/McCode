@@ -1572,7 +1572,7 @@ void mcformat_scan_compare(int nb)
         /* find Scan_distances[j] in Scans_to_merge */
         if (Scans_to_merge[scan_index2] >= 0 && Scans_to_merge[scan_index2] == Scan_distances[j]) {
           Monitor_column[k++] = scan_index2;
-          Scans_to_merge[scan_index2]=-1; /*unactivate that scan element */
+          Scans_to_merge[scan_index2]=-1; /*inactivate that scan element */
         }
       }
       /* sort each monitor column with ipar value */
@@ -1614,7 +1614,7 @@ void mcformat_scan_compare(int nb)
     } /* for j */
     Scan.header=header;
 
-    Scans_to_merge[scan_index1]=-1; /* unactivate that scan element */
+    Scans_to_merge[scan_index1]=-1; /* inactivate that scan element */
 
     char *title=str_cat("Scan of ",
       Files_to_Merge[scan_index1].mcinputtable[ipar_var].name, NULL);

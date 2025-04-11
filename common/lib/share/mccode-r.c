@@ -1838,7 +1838,7 @@ static void mccomp_param_nexus(NXhandle nxhandle, char* component, char* paramet
     if (NXopengroup(nxhandle, "instrument", "NXinstrument") == NX_OK) {
       if (NXopengroup(nxhandle, "components", "NXdata") == NX_OK) {
 	if (NXopengroup(nxhandle, component, "NXdata") == NX_OK) {
-	  NXMDisableErrorReporting(); /* unactivate NeXus error messages, as creation may fail */
+	  NXMDisableErrorReporting(); /* inactivate NeXus error messages, as creation may fail */
 	  NXmakegroup(nxhandle, "parameters", "NXdata");
 	  NXMEnableErrorReporting();  /* re-enable NeXus error messages */
 	  if (NXopengroup(nxhandle, "parameters", "NXdata") == NX_OK) {
@@ -1892,7 +1892,7 @@ mcdatainfo_out_nexus(NXhandle f, MCDETECTOR detector)
   /* the NXdetector group has been created in mcinfo_out_nexus (siminfo_init) */
   if (NXopengroup(f, "instrument", "NXinstrument") == NX_OK) {
     if (NXopengroup(f, "components", "NXdata") == NX_OK) {
-      NXMDisableErrorReporting(); /* unactivate NeXus error messages, as creation may fail */
+      NXMDisableErrorReporting(); /* inactivate NeXus error messages, as creation may fail */
       NXmakegroup(f, detector.nexuscomp, "NXdata");
       if (NXopengroup(f, detector.nexuscomp, "NXdata") == NX_OK) {
 	NXmakegroup(f, "output", "NXdetector");
@@ -2014,7 +2014,7 @@ int mcdetector_out_array_nexus(NXhandle f, char *part, double *data, MCDETECTOR 
   if (strcasestr(detector.format, "list")) fulldims[0] = NX_UNLIMITED;
 
   /* create the data set in NXdata group */
-  NXMDisableErrorReporting(); /* unactivate NeXus error messages, as creation may fail */
+  NXMDisableErrorReporting(); /* inactivate NeXus error messages, as creation may fail */
   ret = NXcompmakedata64(f, part, NX_FLOAT64, detector.rank, fulldims, NX_COMPRESSION, dims);
   if (ret != NX_OK) {
     /* failed: data set already exists */

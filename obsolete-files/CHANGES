@@ -829,7 +829,7 @@ Changes in McStas v1.6-ill (alpha), October 29th, 2001.
       -USR2: finish simulation and save results
       -QUIT: end simulation immediately
  - The 2D detectors now also output the errors/counts on signal as 1D detectors.
-   Set p2=NULL in DETECTOR_OUT_2D to unactivate error saving in components.
+   Set p2=NULL in DETECTOR_OUT_2D to inactivate error saving in components.
  - We tried to lower the number of components by merging similar ones.
  - There are now new MACROS for the component programmer.
      * mccompcurindex is the number (index) of the current component

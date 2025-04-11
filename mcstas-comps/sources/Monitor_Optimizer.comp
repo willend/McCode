@@ -129,7 +129,7 @@ TRACE
         if (Vars->Monitor_Counts < 3*Vars->nbins)
         {
           printf("Source_Optimizer: monitor only reached %.1f counts. \n", Vars->Monitor_Counts);
-          printf("* WARNING *       You'd better unactivate it or increase number of neutrons\n");
+          printf("* WARNING *       You'd better inactivate it or increase number of neutrons\n");
         }
       }
     }

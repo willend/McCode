@@ -136,7 +136,7 @@ extension will then be added if the name does not contain a dot (.).
 Finally, the $filename$ parameter may also be used.
 
 The output files format are standard 1D or 2D McStas detector files.
-The \textit{no file} option will \textit{unactivate} monitor, and make it a
+The \textit{no file} option will \textit{inactivate} monitor, and make it a
 single 0D monitor detecting integrated flux and counts.
 The \textit{verbose} option will display the nature of the monitor, and the
 names of the generated files.
@@ -188,7 +188,7 @@ EPSD\_monitor       & \textit{options}="energy bins=$n_E$ limits=[$E_{min} E_{ma
 Hdiv\_monitor       & \textit{options}="dx bins=$nh$ limits=[$-h_{max}/2 h_{max}/2$]" \textit{filename}=$file$ \\
 L\_monitor          & \textit{options}="lambda bins=$nh$ limits=[$-\lambda_{max}/2 \lambda_{max}/2$]" \textit{filename}=$file$ \\
 Monitor\_4PI        & \textit{options}="sphere" \\
-Monitor            & \textit{options}="unactivate" \\
+Monitor            & \textit{options}="inactivate" \\
 PSDcyl\_monitor     & \textit{options}="theta bins=$nr$,y bins=$ny$, cylinder"
 \textit{filename}=$file$ \textit{yheight}=$height$ \textit{xwidth}=2*radius\\
 PSDlin\_monitor     & \textit{options}="x bins=$nx$" \textit{xmin}=$x_{min}$ \textit{xmax}=$x_{max}$ \textit{ymin}=$y_{min}$ \textit{ymax}=$y_{max}$ \textit{filename}=$file$\\
