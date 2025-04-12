@@ -265,8 +265,6 @@ SHARE
       t_Table mat_table;
       int mat_column_order[5]; /*column signification for the coeff. in material data file*/
   };
-
-  off_struct offdata;
   
   // shared functions **********************************************************
   

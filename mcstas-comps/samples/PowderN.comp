@@ -264,7 +264,7 @@ struct line_info_struct
   double neutron_passed;
   long   xs_compute, xs_reuse, xs_calls;
 };
- off_struct offdata;
+
   // PN_list_compare *****************************************************************
 
   int PN_list_compare (void const *a, void const *b)
