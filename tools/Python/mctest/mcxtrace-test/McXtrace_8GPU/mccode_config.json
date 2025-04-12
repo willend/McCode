@@ -15,7 +15,7 @@
     "QSCI": "1",
     "FORMAT": "McCode",
     "IDFGEN": "",
-    "ISCONDAPKG": "0"
+    "ISCONDAPKG": "1"
   },
   "compilation": {
     "CFLAGS": "-g -lm -O2 -std=c99",
