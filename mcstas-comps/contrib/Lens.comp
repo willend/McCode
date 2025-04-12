@@ -23,7 +23,7 @@
 *   parabolic (use focus1 and focus2 as optical focal length).
 *
 * Optionally, you can specify the 'geometry' parameter as a OFF/PLY file name.
-*   The complex geometry option handles any closed non-convex polyhedra.
+*   The complex geometry option handles any closed non-convex polyhedral.
 *   It computes the intersection points of the neutron ray with the object
 *   transparently, so that it can be used like a regular sample object.
 *   It supports the PLY, OFF and NOFF file format but not COFF (colored faces).

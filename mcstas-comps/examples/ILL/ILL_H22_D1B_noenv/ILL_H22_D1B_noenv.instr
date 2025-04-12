@@ -50,7 +50,7 @@
 * R_h: [m]         Height of the collimator
 * R_ttmin: [deg]   Lower scattering angle limit
 * R_ttmax: [deg]   Higher scattering angle limit
-* R_present: [1]   Presence flag for the radial collimator. 0: unactivate component.
+* R_present: [1]   Presence flag for the radial collimator. 0: inactivate component.
 * Inc_Cryo: [1]    Cryostat incoherent fraction
 * Trans_Cryo: [1]  Cryostat event transmission
 * Trans_Spl: [1]   Sample event transmission

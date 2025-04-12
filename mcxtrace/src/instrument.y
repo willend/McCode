@@ -2297,7 +2297,7 @@ check_instrument_formals(List formallist, char *instrname)
         liter2 = list_iterate(formallist);
         while((formal2 = list_next(liter2))) {
         	if (formal != formal2 && strlen(formal2->id) && !strcmp(formal->id, formal2->id)) {
-        		strcpy(formal2->id, "");  /* unactivate recurrent previous definition */
+        		strcpy(formal2->id, "");  /* inactivate recurrent previous definition */
         		if (verbose) print_warn(NULL, "Instrument parameter name %s is used multiple times "
               "in instrument %s. Using last definition %s\n", formal->id, instrname,
               	formal->isoptional ? exp_tostring(formal->default_value) : "");
