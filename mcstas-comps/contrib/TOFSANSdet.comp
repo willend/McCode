@@ -166,10 +166,10 @@ INITIALIZE
   Nqc = floor( ddmin(ddmax(Nq,1.00),2000.0)+ 0.50);
 
   #ifndef USE_MPI
-  printf("Attempting allocation of 3 arrays sized (%lu bytes/double) x %lu elements = %lu Mb\n",sizeof(double),Nxc*Nyc*Ntc*3,sizeof(double)*Nxc*Nyc*Ntc*3/(1024*1024));
+  printf("%s: Attempting allocation of 3 arrays sized (%lu bytes/double) x %lu elements = %lu Mb\n",_comp->_name,sizeof(double),Nxc*Nyc*Ntc*3,sizeof(double)*Nxc*Nyc*Ntc*3/(1024*1024));
   #else
   MPI_MASTER(
-	     printf("Attempting allocation %i copies of 3 arrays sized (%lu double) x %lu elements = %lu Mb\n",mpi_node_count,sizeof(double),Nxc*Nyc*Ntc*3,mpi_node_count*sizeof(double)*Nxc*Nyc*Ntc*3/(1024*1024));
+	     printf("%s: Attempting allocation %i copies of 3 arrays sized (%lu double) x %lu elements = %lu Mb\n",_comp->_name,mpi_node_count,sizeof(double),Nxc*Nyc*Ntc*3,mpi_node_count*sizeof(double)*Nxc*Nyc*Ntc*3/(1024*1024));
   );
   #endif
   TSdNf = (double*)calloc(Nxc*Nyc*Ntc*3,sizeof(double));
