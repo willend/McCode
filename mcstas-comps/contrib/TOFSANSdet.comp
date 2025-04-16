@@ -165,19 +165,19 @@ INITIALIZE
   Ntc = floor( ddmin(ddmax(Nt,10.0),2000.0)+ 0.50);
   Nqc = floor( ddmin(ddmax(Nq,1.00),2000.0)+ 0.50);
 
-  TSdNf = (double*)malloc(sizeof(double)*Nxc*Nyc*Ntc*3);
-  TSdpf = (double*)malloc(sizeof(double)*Nxc*Nyc*Ntc*3);
-  TSdp2f= (double*)malloc(sizeof(double)*Nxc*Nyc*Ntc*3);
-
-  for (i=0; i<Nxc; i++)
-    for (j=0; j<Nyc; j++)
-      for (s=0; s<Ntc; s++)
-        for(k=0; k<3; k++)
-        {
-          TSdN(i,j,s,k)  = 0.0;
-          TSdp(i,j,s,k)  = 0.0;
-          TSdp2(i,j,s,k) = 0.0;
-        };
+  #ifndef USE_MPI
+  printf("Attempting allocation of 3 arrays sized (%lu bytes/double) x %lu elements = %lu Mb\n",sizeof(double),Nxc*Nyc*Ntc*3,sizeof(double)*Nxc*Nyc*Ntc*3/(1024*1024));
+  #else
+  MPI_MASTER(
+	     printf("Attempting allocation %i copies of 3 arrays sized (%lu double) x %lu elements = %lu Mb\n",mpi_node_count,sizeof(double),Nxc*Nyc*Ntc*3,mpi_node_count*sizeof(double)*Nxc*Nyc*Ntc*3/(1024*1024));
+  );
+  #endif
+  TSdNf = (double*)calloc(Nxc*Nyc*Ntc*3,sizeof(double));
+  TSdpf = (double*)calloc(Nxc*Nyc*Ntc*3,sizeof(double));
+  TSdp2f= (double*)calloc(Nxc*Nyc*Ntc*3,sizeof(double));
+  MPI_MASTER(
+	printf("Done with big-array allocations\n");
+  );
 
   ds1c = ddmax(ds1,0.0);
   ds2c = ddmax(ds2,0.0);
