@@ -922,7 +922,6 @@ TRACE
   long   xs_compute = line_info.xs_compute;
   long   xs_reuse   = line_info.xs_reuse;
   long   xs_calls   = line_info.xs_calls;
-  int    flag_warning = line_info.flag_warning;
   double dq = line_info.dq;
 
   double my_s_k2_sum = line_info.my_s_k2_sum;
@@ -1020,10 +1019,10 @@ TRACE
 
     if (l3 < 0) {
       l3=0; /* Already past sample?! */
-      if (flag_warning < 10)
+      if (line_info.flag_warning < 10)
       printf("PowderN: %s: Warning: xray has already passed us? (Skipped).\n"
              "         In concentric geometry, this may be caused by a missing concentric=0 option in 2nd enclosing instance.\n", NAME_CURRENT_COMP);
-      flag_warning++;
+      line_info.flag_warning++;
     } else {
       if (dl<0) { /* Calculate scattering point position */
         dl = fabs(dl)*(l1 - l0); /* 'Forward' part */
@@ -1161,9 +1160,9 @@ TRACE
 
           if (!intersect) {
             /* Strange error: did not hit cylinder */
-            if (flag_warning < 10)
+            if (line_info.flag_warning < 10)
               printf("PowderN: %s: WARNING: Did not hit sample from inside (coh). ABSORB.\n", NAME_CURRENT_COMP);
-            flag_warning++;
+            line_info.flag_warning++;
             ABSORB;
           }
 
@@ -1235,9 +1234,9 @@ TRACE
 
         if (!intersect) {
           /* Strange error: did not hit cylinder */
-          if (flag_warning < 10)
+          if (line_info.flag_warning < 10)
             printf("PowderN: %s: WARNING: Did not hit sample from inside (inc). ABSORB.\n", NAME_CURRENT_COMP);
-          flag_warning++;
+          line_info.flag_warning++;
           ABSORB;
         }
 
@@ -1294,9 +1293,6 @@ TRACE
   line_info.dq=dq;
   line_info.photon_passed = photon_passed;
   #endif
-  // These should be updated in any case
-  #pragma acc atomic write
-  line_info.flag_warning += flag_warning;
 %}
 
 FINALLY
