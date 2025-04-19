@@ -1,0 +1,83 @@
+/*******************************************************************************
+*         McXtrace instrument definition URL=http://www.mcxtrace.org
+*
+* Instrument: Test_FluoPowder
+*
+* %Identification
+* Written by: Emmanuel Farhi (emmanuel.farhi.synchrotron-soleil.fr)
+* Date: 2009
+* Origin: SOLEIL
+* Version: 1.0
+* %INSTRUMENT_SITE: Tests_samples
+*
+* Unit-test instrument for the FluoPowder sample component.
+*
+* %Description
+* Simply a model source illuminating a fluo/powder/sx sample.
+* The default sample itself is an LaB6-powder.
+* The idea is to compare the fluorescence and diffraction patterns.
+*
+* %Example: Test_FluoPowder.instr E0=15 index=1 Detector: Sph_mon_I=7.95304e-16
+* %Example: Test_FluoPowder.instr E0=15 index=2 Detector: Sph_mon_I=8.00171e-16
+* %Example: Test_FluoPowder.instr E0=15 index=3 Detector: Sph_mon_I=7.79059e-16
+* %Example: Test_FluoPowder.instr E0=15 index=4 Detector: Sph_mon_I=7.83812e-16
+*
+* %Parameters
+* E0:          [keV]  Source energy (width 1 keV)
+* L1:          [m]    Source-sample distance
+* reflections: [str]  List of powder reflections, LAU/CIF format.
+* index:       [1]    Index of the sample component to use. 1=PowderN, 2=Single_crystal, 3=FluoPowder, 4=fluorescence
+*
+* %End
+*******************************************************************************/
+DEFINE INSTRUMENT Test_FluoPowder(E0=15, dE=1, L1=10, string material="LaB6.cif",
+    int index=3)
+
+TRACE
+
+REMOVABLE COMPONENT Origin = Progress_bar()
+  AT (0,0,0) ABSOLUTE
+
+COMPONENT src = Source_flat(
+    yheight = 1e-6, xwidth = 1e-6, dist = 10, focus_xw = 1e-6,
+    focus_yh = 1e-6, E0 = E0, dE = dE)
+  AT (0, 0, 0) RELATIVE Origin
+
+// samples --------------------------------------------------------------------
+
+SPLIT COMPONENT sample_cradle = Arm()
+  AT (0, 0, L1) RELATIVE PREVIOUS
+
+COMPONENT Pow = PowderN(
+    radius=0.5e-6, reflections=material)
+WHEN (index == 1)
+AT (0, 0, 0) RELATIVE sample_cradle
+
+COMPONENT SX = Single_crystal(
+    radius=0.5e-6, reflections=material,powder=1, mosaic=5)
+WHEN (index == 2)
+AT (0, 0, 0) RELATIVE sample_cradle
+
+COMPONENT FL_pow = FluoPowder(
+    radius=0.5e-6, material=material
+)WHEN (index == 3)
+AT (0, 0, 0) RELATIVE sample_cradle
+
+COMPONENT Fluo = Fluorescence(
+  radius=0.5e-6, material=material
+)WHEN (index == 4)
+AT (0, 0, 0) RELATIVE sample_cradle
+
+// detectors ------------------------------------------------------------------
+
+COMPONENT Sph_mon = PSD_monitor_4PI(nx=512,ny=512,
+    radius=1, restore_xray=1, filename="Sphere")
+  AT (0, 0, 0) RELATIVE PREVIOUS
+
+COMPONENT E_mon = Monitor_nD(
+    options="energy",
+    bins=1024, radius=1, filename="Energy",restore_xray=1
+)
+AT(0,0,0) RELATIVE PREVIOUS
+
+END
