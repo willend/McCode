@@ -108,12 +108,14 @@
 * flag_rayleigh:[1]   When 0, the Rayleigh scattering is ignored.
 * flag_powder: [1]    When 0, the powder diffraction is ignored.
 * flag_lorentzian:[1] When 1, the line shapes are assumed to be Lorentzian, else Gaussian.
+* powder_barns:   [1] Flag to indicate if |F|^2 from 'material' is in barns or fm^2, (barns=1 for laz, barns=0 for lau type files).
+* powder_d_phi: [deg] Angle corresponding to the vertical angular range to focus to, e.g. detector height. 0 for no focusing.
 * powder_delta_d_d: [AA]   Global relative Delta_d/d spreading when the 'w' column is not available. Use 0 if ideal.
-* powder_format:  [{}]     List of column indexes (see Description). See the PowderN component.
-* powder_barns:   [1]      Flag to indicate if |F|^2 from 'material' is in barns or fm^2, (barns=1 for laz, barns=0 for lau type files).
-* powder_Vc:      [AA^3]   Volume of unit cell=nb atoms per cell/density of atoms.
-* powder_DW:      [1]      Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
-* powder_nb_atoms:[1]      Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
+* powder_DW:      [1] Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
+* powder_format: [{}] List of column indexes (see Description). See the PowderN component.
+* powder_nb_atoms:[1] Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
+* powder_Vc:   [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
+* powder_sign: [1]    Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
 * order:     [1]      Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
@@ -148,7 +150,8 @@ SETTING PARAMETERS(
   target_x = 0, target_y = 0, target_z = 0, focus_r = 0,
   focus_xw=0, focus_yh=0, focus_aw=0, focus_ah=0, int target_index=0,
   int flag_compton=1, int flag_rayleigh=1, int flag_lorentzian=1, flag_powder=1,
-  vector powder_format={0,0,0,0,0,0,0,0}, powder_Vc=0, powder_delta_d_d=0, powder_DW=0, powder_nb_atoms=1, powder_barns=1,
+  vector powder_format={0,0,0,0,0,0,0,0}, powder_Vc=0, powder_delta_d_d=0, powder_DW=0,
+  powder_d_phi=0, powder_nb_atoms=1, powder_barns=1, powder_sign=0,
   int order=1)
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
@@ -392,9 +395,11 @@ DECLARE COPY PowderN EXTEND %{
   int  n_fluo;
   int  n_Compton;
   int  n_Rayleigh;
+  int  n_diff;
   double p_fluo;
   double p_Compton;
   double p_Rayleigh;
+  double p_diff;
   double fluo_rho;
   // offdata is declared in PowderN
   
@@ -457,7 +462,10 @@ INITIALIZE %{
     if (!fluo_get_material(material, formula))
       exit(fprintf(stderr, "ERROR: FluoPowder: %s: file %s does not contain material formulae.\n", NAME_CURRENT_COMP, material));
     
-    fprintf(stderr, "INFO: FluoPowder: %s: found material %s from file %s\n", NAME_CURRENT_COMP, formula, material);
+    MPI_MASTER(
+    fprintf(stderr, "INFO: FluoPowder: %s: found material %s from file %s\n",
+            NAME_CURRENT_COMP, formula, material);
+    );
     
     // load Powder lines, when given as a valid file
     // set powder variable default before reading file
@@ -476,8 +484,10 @@ INITIALIZE %{
       strncpy(line_info.compname, NAME_CURRENT_COMP, 256);
       i = read_line_data(material, &line_info);
       if (i == 0) {
-        fprintf(stderr,"WARNING: FluoPowder: %s: reflection file %s is not valid. Ignoring diffraction process.\n",
+        MPI_MASTER(
+        fprintf(stderr,"WARNING: FluoPowder: %s: reflection file %s is not valid (CIF/LAU/LAZ). Ignoring diffraction process.\n",
                       NAME_CURRENT_COMP, material);
+        );
         flag_powder=0;
       }
     }
@@ -606,8 +616,8 @@ INITIALIZE %{
     );
   }
   
-  n_fluo = n_Compton = n_Rayleigh = 0;
-  p_fluo = p_Compton = p_Rayleigh = 0;
+  n_fluo = n_Compton = n_Rayleigh = n_diff = 0;
+  p_fluo = p_Compton = p_Rayleigh = p_diff = 0;
   
   // cached variables set to 0 (for SPLIT)
   reuse_nb=0;
@@ -700,7 +710,7 @@ do { /* while (intersect) Loop over multiple scattering events */
         intersect=sphere_intersect  (&l0,&l3, x,y,z,kx,ky,kz, radius-thickness);
       #ifdef USE_OFF
       else if (shape == 3)
-        intersect=off_x_intersect(&l0, &l3, NULL, NULL, x, y, z, kx,ky,kz, thread_offdata );
+        intersect=off_x_intersect   (&l0, &l3, NULL, NULL, x, y, z, kx,ky,kz, thread_offdata );
       #endif
     }
 
@@ -792,6 +802,7 @@ do { /* while (intersect) Loop over multiple scattering events */
     /* compute each contribution XS */
     xs[FLUORESCENCE]=xs[COMPTON]=xs[RAYLEIGH]=xs[TRANSMISSION]=xs[POWDER]=sigma_barn=0;
     cum_xs_fluo[0] = cum_xs_Compton[0] = cum_xs_Rayleigh[0] = 0;
+
     if (!reuse) {
       for (i_Z=0; i_Z< compound->nElements; i_Z++) {
         int    Z   = compound->Elements[i_Z];
@@ -888,7 +899,7 @@ do { /* while (intersect) Loop over multiple scattering events */
   if (intersect) { /* scattering event */
     int    i_Z=-1, Z, line=-1;
     double solid_angle;
-    double theta, dsigma;
+    double theta, dsigma, alpha;
     double Ef, dE;
     
     /* correct for XS total(photo+Compton+Rayleigh) > sum(fluo+Compton+Rayleigh) */
@@ -915,8 +926,8 @@ do { /* while (intersect) Loop over multiple scattering events */
         if (!flag_powder) ABSORB;
         if (Nq > 1) line=floor(Nq*rand01());  /* Select between Nq powder lines */
         break;
-      default:
-        printf("WARNING: %s: process %i unknown. Absorb.\n", NAME_CURRENT_COMP, type);
+      default: // should never happen
+        // printf("WARNING: %s: process %i unknown. Absorb.\n", NAME_CURRENT_COMP, type);
         ABSORB;
     }
 
@@ -943,18 +954,41 @@ do { /* while (intersect) Loop over multiple scattering events */
 
     } else if (line >= 0) {
       // powder diffraction
-      double my_s_n = line_info.my_s_k2[line]/(kf*kf);
-      double arg, tmp_kx, tmp_ky, tmp_kz, kout_x, kout_y, kout_z, nx, ny, nz, theta, alpha0;
+      double arg, tmp_kx, tmp_ky, tmp_kz, kout_x, kout_y, kout_z, nx, ny, nz, alpha0, sg=1;
 
       if (line_info.w[line])
         arg = line_info.q[line]*(1+line_info.w[line]*randnorm())/(2.0*kf);
       else
         arg = line_info.q[line]/(2.0*kf);
-      if(fabs(arg) > 1) ABSORB; /* No bragg scattering possible */
-      theta  = asin(arg);       /* Bragg scattering law         */
-      alpha0 = M_PI*randpm1();  /* distribute along the full cone */
+      if(fabs(arg) > 1) ABSORB; /* No bragg scattering possible   */
+      theta  = asin(arg);       /* Bragg scattering law           */
+      if (powder_sign == 0) {
+        sg = randpm1();
+        if (sg > 0) sg = 1; else sg=-1;
+      }
+      else  {
+        sg = powder_sign/fabs(powder_sign);
+      }
 
-      p *= my_s_n/xs[POWDER];
+      /* Choose point on Debye-Scherrer cone */
+      if (powder_d_phi)
+      { /* relate height of detector to the height on DS cone */
+        arg = sin(powder_d_phi*DEG2RAD/2)/sin(2*theta);
+        /* If full Debye-Scherrer cone is within powder_d_phi, don't focus */
+        if (arg < -1 || arg > 1) alpha = 0;
+        /* Otherwise, determine alpha to rotate from scattering plane
+         *    into powder_d_phi focusing area */
+        else alpha = 2*asin(arg);
+      }
+      if (alpha) {
+        /* Focusing */
+        alpha  = fabs(alpha);
+        alpha0 = 0.5*randpm1()*alpha;
+      }
+      else
+        alpha0 = M_PI*randpm1();
+
+      // compute out-going direction
       if (fabs(kx/kf) < fabs(kz/kf)) {
         nx = 1; ny = 0; nz = 0;
       } else {
@@ -963,7 +997,7 @@ do { /* while (intersect) Loop over multiple scattering events */
       vec_prod(tmp_kx,tmp_ky,tmp_kz, kx,ky,kz, nx,ny,nz);
 
       /* k_out = rotate 'k' by 2*theta around tmp_k: Bragg angle */
-      rotate(kout_x,kout_y,kout_z, kx,ky,kz, 2*theta, tmp_kx,tmp_ky,tmp_kz);
+      rotate(kout_x,kout_y,kout_z, kx,ky,kz, 2*sg*theta, tmp_kx,tmp_ky,tmp_kz);
 
       /* tmp_k = rotate k_out by alpha0 around 'k' (Debye-Scherrer cone) */
       rotate(tmp_kx,tmp_ky,tmp_kz, kout_x,kout_y,kout_z, alpha0, kx, ky, kz);
@@ -990,21 +1024,42 @@ do { /* while (intersect) Loop over multiple scattering events */
         break;
         
       case RAYLEIGH:     /* 1 Rayleigh: Coherent, elastic    */
-        n_Rayleigh++;
-        p_Rayleigh += p;
         theta      = acos(scalar_prod(kf_x,kf_y, kf_z,ki_x, ki_y,ki_z)/ki);
         dsigma     = DCSb_Rayl(Z,  Ei, theta, NULL); // [barn/at/st]
         p         *= 4*PI*dsigma/xs[RAYLEIGH];
+        n_Rayleigh++;
+        p_Rayleigh+= p;
         break;
       
       case COMPTON:      /* 2 Compton: Incoherent: choose final energy */
-        n_Compton++;
-        p_Compton += p;
         theta      = acos(scalar_prod(kf_x,kf_y, kf_z,ki_x, ki_y,ki_z)/ki);
         dsigma     = DCS_Compt(Z,  Ei, theta, NULL); // [barn/at/st]
         kf         = ComptonEnergy(Ei, theta, NULL)*E2K; /* XRayLib */
         p         *= 4*PI*dsigma/xs[COMPTON];
+        n_Compton++;
+        p_Compton += p;
         break;
+
+      case POWDER:      /* diffraction: line chosen before */
+        /*weight the outgoing signal according to polarization*/
+        if (Ex!=0 || Ey!=0 || Ez!=0){
+          double EE=sqrt(Ex*Ex+Ey*Ey+Ez*Ez);
+          double s=scalar_prod(kf_x,kf_y,kf_z,Ex,Ey,Ez)/EE;
+          p*=(1-s)*(1-s);
+        }else{
+          /*unpolarized light in - means an effective reduction according to only theta*/
+          p*=(1+cos(theta)*cos(theta))*0.5;
+        }
+        if (alpha) {
+          p    *= alpha/PI;
+        }
+        p      *= line_info.my_s_k2[line]/(kf*kf)/xs[POWDER];
+        n_diff++;
+        p_diff += p;
+        break;
+
+      default:  // should never happen
+        ABSORB;
     }
     Ef = K2E*kf;
     
@@ -1027,8 +1082,8 @@ do { /* while (intersect) Loop over multiple scattering events */
 FINALLY %{
   FreeCompoundData(compound);
 
-  printf("INFO: %s: scattered intensity: fluo=%g Compton=%g Rayleigh=%g\n",
-    NAME_CURRENT_COMP, p_fluo, p_Compton, p_Rayleigh);
+  printf("INFO: %s: scattered intensity: fluo=%g Compton=%g Rayleigh=%g Powder=%g\n",
+    NAME_CURRENT_COMP, p_fluo, p_Compton, p_Rayleigh, p_diff);
 %}
 
 END
