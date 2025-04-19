@@ -1,16 +1,16 @@
 /*******************************************************************************
 *
-* McStas, neutron ray-tracing package
+* McXtrace, X-ray tracing package
 *         Copyright 1997-2002, All rights reserved
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Component: Diaphragm (
+* Component: Diaphragm
 *
 * %I
 * Written by: Peter Willendrup
-* Date: February 2016
-* Origin: DTU
+* Date: February 2025
+* Origin: DTU Physics
 *
 * Rectangular/circular diaphragm (alias of the Slit component)
 *
@@ -25,18 +25,24 @@
 *
 * For <B>INPUT PARAMETERS</B> - please consult <a href="Slit.html">Slit.comp</a> as Diaphragm is a copy of that component.
 *
-* %P
+* %Parameters
+* INPUT PARAMETERS:
 *
-* radius: [m]   Radius of diaphragm in the z=0 plane, centered at Origo 
-* xmin: [m]     Lower x bound 
-* xmax: [m]     Upper x bound 
-* ymin: [m]     Lower y bound 
-* ymax: [m]     Upper y bound 
-* xwidth: [m]   Width of diaphragm. Overrides xmin, xmax. 
-* yheight: [m]  Height of diaphragm. Overrides ymin, ymax. 
+* radius: [m] Radius of slit in the z=0 plane, centered at Origin.
+* xmin: [m]   Lower x bound.
+* xmax: [m]   Upper x bound.
+* ymin: [m]   Lower y bound.
+* ymax: [m]   Upper y bound.
+* xwidth: [m] Width of slit. Overrides xmin,xmax.
+* yheight:[m] Height of slit. Overrides ymin,ymax.
 *
-*
-* %E
+* Optional parameters:
+* focus_xw: [m] Width of resampling window.
+* focus_yh: [m] Height of resampling window.
+* focus_x0: [m] Centre (x) of resampling window.
+* focus_y0: [m] Centre (y) of resampling window.
+* dist:     [m] Distance from slit plane to plane containing resampling target.
+* %End
 *******************************************************************************/
 
 
