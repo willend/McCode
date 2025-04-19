@@ -12,22 +12,21 @@
 * Date:       March 2022
 * Origin:     Synchrotron SOLEIL
 *
-* Sample model handling absorption, fluorescence, Compton and Rayleigh scattering.
+* Sample model handling absorption, fluorescence, Compton, Rayleigh scattering and powder diffraction.
 *
 * %Description
-* Sample that models many photon-matter interactions:
-* - absorption (photon excites an electron and creates a hole)
-* - fluorescence (excited electrons emit light while falling into lower states)
+* Sample that models multiple photon-matter interactions:
+* - absorption          (photon excites an electron and creates a hole)
+* - fluorescence        (excited electrons emit light while falling into lower states)
 * - Compton scattering  (inelastic, incoherent)
 * - Rayleigh scattering (elastic,   coherent)
-*
-* An important option to enhance statistics is to set 'p_interact' to, say,
-* 30 percent (0.3) in order to force a fraction of the beam to scatter. This
-* will result on a larger number of scattered events, retaining intensity.
+* - powder diffraction  (elastic,   coherent)
 *
 * The 'material' specification is given as a chemical formulae, e.g. "LaB6". It
 * may also be given as a file name (CIF/LAU/LAZ/FullProf format) in which case 
-* the formulae is guessed (but may be approximative).
+* the formulae is guessed (but may be approximative), and the powder
+* diffraction is computed, following same options as the <b>PowderN</b>
+* sample component.
 *
 * By setting the 'order' to 1, the absorption along the scattered path is handled.
 * A higher 'order' will handle multiple scattering events, and final absorption.
@@ -73,50 +72,63 @@
 * COMPONENT F_out = COPY(F_in)(concentric=0)
 * AT (0,0,0) RELATIVE sample_position
 *
-* The computation is made via the XRayLib (apt install libxrl-dev).
+* <b>Enhancing computation efficiency</b>
+* An important option to enhance statistics is to set 'p_interact' to, say,
+* 30 percent (0.3) in order to force a fraction of the beam to scatter. This
+* will result on a larger number of scattered events, retaining intensity.
+*
+* In addition, it may be desirable to define a 'target' for the fluorescence
+* processes via e.g. the 'target_index' and the 'focus_xw / focus_yh' options.
+* This target should e.g. be the SDD area.
+* The powder scattering can be focused along an horizontal tore via the
+* 'powder_d_phi' and 'powder_sign' options. To get a vertical tore, rotate
+* the sample by 90 deg around Z.
+*
+* This sample component can advantageously benefit from the SPLIT feature, e.g.
+* SPLIT COMPONENT sample = FluoPowder(...)
 *
 * Example: FluoPowder(material="LaB6",
 *  xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99,
 *  target_index=1, focus_xw=0.0005, focus_yh=0.0005)
 *
-* This sample component can advantageously benefit from the SPLIT feature, e.g.
-* SPLIT COMPONENT pow = FluoPowder(...)
+*
+* The fluorescence is computed via the XRayLib (apt install libxrl-dev).
 *
 * %Parameters
-* material:  [str]    Chemical formulae, e.g. "LaB6", "Pb2SnO4". If may also be a CIF/LAZ/LAU file.
-* weight:    [g/mol]  Atomic/molecular weight of material.
+* material:    [str]  Chemical formulae, e.g. "LaB6", "Pb2SnO4". If may also be a CIF/LAZ/LAU file.
+* weight:     [g/mol] Atomic/molecular weight of material.
 * density:   [g/cm^3] Density of material. V_rho=density/weight/1e24*N_A at/Angs^3.
 * packing_factor: [1] How dense is the material compared to bulk 0-1.
-* radius:    [m]      Outer radius of sample in (x,z) plane. cylinder/sphere.
-* xwidth:    [m]      width for a box sample shape.
-* yheight:   [m]      Height of sample in vertical direction for box/cylinder shapes.
-* zdepth:    [m]      depth for a box sample shape.
-* thickness: [m]      Thickness of hollow sample Negative value extends the hollow volume outside of the box/cylinder.
-* concentric: [1]     Indicate that this component has a hollow geometry and may contain other components. It should then be duplicated after the inside part (only for box, cylinder, sphere) [1]
-* geometry:  [str]    Name of an Object File Format (OFF) or PLY file for complex geometry. The OFF/PLY file may be generated from XYZ coordinates using qhull/powercrust.
-* p_interact: [1]     Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 inactivate).
-* focus_xw:  [m]      Horiz. dimension of a rectangular area.
-* focus_yh:  [m]      Vert.  dimension of a rectangular area.
-* focus_aw:  [deg]    Horiz. angular dimension of a rectangular area.
-* focus_ah:  [deg]    Vert.  angular dimension of a rectangular area.
-* focus_r:   [m]      Radius of disk containing target. Use 0 for full space.
-* target_index: [1]   Relative index of component to focus at, e.g. next is +1.
-* target_x:  [m]      Position of target to focus at, along X.
-* target_y:  [m]      Position of target to focus at, along Y.
-* target_z:  [m]      Position of target to focus at, along Z.
-* flag_compton: [1]   When 0, the Compton  scattering is ignored.
-* flag_rayleigh:[1]   When 0, the Rayleigh scattering is ignored.
-* flag_powder: [1]    When 0, the powder diffraction is ignored.
-* flag_lorentzian:[1] When 1, the line shapes are assumed to be Lorentzian, else Gaussian.
+* radius:         [m] Outer radius of sample in (x,z) plane. cylinder/sphere.
+* xwidth:         [m] Width for a box sample shape.
+* yheight:        [m] Height of sample in vertical direction for box/cylinder shapes.
+* zdepth:         [m] Depth for a box sample shape.
+* thickness:      [m] Thickness of hollow sample Negative value extends the hollow volume outside of the box/cylinder.
+* concentric:     [1] Indicate that this component has a hollow geometry and may contain other components. It should then be duplicated after the inside part (only for box, cylinder, sphere) [1]
+* geometry:     [str] Name of an Object File Format (OFF) or PLY file for complex geometry. The OFF/PLY file may be generated from XYZ coordinates using qhull/powercrust.
+* p_interact:     [1] Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 inactivate).
+* focus_xw:       [m] Horiz. dimension of a rectangular area (for fluorescence).
+* focus_yh:       [m] Vert.  dimension of a rectangular area (for fluorescence).
+* focus_aw:     [deg] Horiz. angular dimension of a rectangular area (for fluorescence).
+* focus_ah:     [deg] Vert.  angular dimension of a rectangular area (for fluorescence).
+* focus_r:        [m] Radius of disk containing target. Use 0 for full space (for fluorescence).
+* target_index:   [1] Relative index of component to focus at, e.g. next is +1 (for fluorescence).
+* target_x:       [m] Position of target to focus at, along X (for fluorescence).
+* target_y:       [m] Position of target to focus at, along Y (for fluorescence).
+* target_z:       [m] Position of target to focus at, along Z (for fluorescence).
+* flag_compton:   [1] When 0, the Compton  scattering is ignored.
+* flag_rayleigh:  [1] When 0, the Rayleigh scattering is ignored.
+* flag_powder:    [1] When 0, the powder diffraction is ignored.
+* flag_lorentzian:[1] When 1, the fluorescence line shapes are assumed to be Lorentzian, else Gaussian.
 * powder_barns:   [1] Flag to indicate if |F|^2 from 'material' is in barns or fm^2, (barns=1 for laz, barns=0 for lau type files).
 * powder_d_phi: [deg] Angle corresponding to the vertical angular range to focus to, e.g. detector height. 0 for no focusing.
 * powder_delta_d_d: [AA]   Global relative Delta_d/d spreading when the 'w' column is not available. Use 0 if ideal.
 * powder_DW:      [1] Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
-* powder_format: [{}] List of column indexes (see Description). See the PowderN component.
+* powder_format: [{}] List of structure file column indexes. See the PowderN component.
 * powder_nb_atoms:[1] Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
+* powder_sign:    [1] Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
 * powder_Vc:   [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
-* powder_sign: [1]    Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
-* order:     [1]      Limit multiple fluorescence up to given order. Last iteration is absorption only.
+* order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
 * type: scattering event type 0=fluorescence, 1=Rayleigh, 2=Compton, 3=transmit
