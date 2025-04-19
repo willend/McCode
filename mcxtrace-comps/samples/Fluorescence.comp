@@ -150,19 +150,19 @@ NOACC
 /* ========================================================================== */
 
 SHARE %{
+  %include "read_table-lib"
+  %include "interoff-lib" // for OFF/PLY geometry
+
   #ifndef FLUORESCENCE_DECL
   #define FLUORESCENCE_DECL
 
-  #ifndef XRAYLIB_LINES_MAX
   #define XRAYLIB_LINES_MAX 383
   #define FLUORESCENCE 0  // Fluo
   #define RAYLEIGH     1  // Coherent
   #define COMPTON      2  // Incoherent
-  #define TRANSMISSION 3
+  #define POWDER       3  // Powder diffraction
+  #define TRANSMISSION 4
   #include <xraylib/xraylib.h>
-  #endif
-  %include "read_table-lib"
-  %include "interoff-lib" // for OFF/PLY geometry
   
 /* See XrayLib code (c) T. Schoonjans
  * /usr/include/xraylib/xraylib-parser.h      for compoundData
