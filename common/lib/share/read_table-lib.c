@@ -26,6 +26,9 @@
 #include "read_table-lib.h"
 #endif
 
+#ifndef READ_TABLE_LIB_C
+#define READ_TABLE_LIB_C "$Revision$"
+
 
 /*******************************************************************************
  * void *Table_File_List_Handler(action, item, item_modifier)
@@ -1415,3 +1418,4 @@ double Table_Interp2d(double x, double y,
 } /* Table_Interp2d */
 
 /* end of read_table-lib.c */
+#endif // READ_TABLE_LIB_C

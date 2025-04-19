@@ -922,7 +922,9 @@ TRACE
   long   xs_compute = line_info.xs_compute;
   long   xs_reuse   = line_info.xs_reuse;
   long   xs_calls   = line_info.xs_calls;
-  int    flag_warning = line_info.flag_warning;
+  // Number of warnings in this specific TRACE run,
+  // added to comp struct end of TRACE
+  int    flag_warning = 0;
   double dq = line_info.dq;
 
   double my_s_k2_sum = line_info.my_s_k2_sum;
@@ -1294,7 +1296,8 @@ TRACE
   line_info.dq=dq;
   line_info.photon_passed = photon_passed;
   #endif
-  // These should be updated in any case
+
+  // Add warning status to comp struct (atomic on GPU)
   #pragma acc atomic write
   line_info.flag_warning += flag_warning;
 %}

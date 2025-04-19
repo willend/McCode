@@ -35,6 +35,9 @@
 #include "interoff-lib.h"
 #endif
 
+#ifndef INTEROFF_LIB_C
+#define INTEROFF_LIB_C "$Revision$"
+
 #pragma acc routine
 double off_F(double x, double y,double z,double A,double B,double C,double D) {
   return ( A*x + B*y + C*z + D );
@@ -1293,3 +1296,4 @@ void off_display(off_struct data)
 } /* off_display */
 
 /* end of interoff-lib.c */
+#endif // INTEROFF_LIB_C
