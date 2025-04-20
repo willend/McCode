@@ -250,16 +250,20 @@ SHARE COPY PowderN EXTEND %{
   */
   int XRMC_SelectInteraction(double *xs, int nb_processes)
   {
-    double sum_xs, cum_xs[5];
+    double sum_xs, *cum_xs;
     int    i;
 
-    if (nb_processes < 1 || nb_processes > 4) return 0;
+    if (nb_processes < 1) return 0;
+    cum_xs = malloc((nb_processes+1)*sizeof(double));
+    if (!cum_xs)          return 0;
     cum_xs[0]=sum_xs=0;
     for (i=0; i< nb_processes; i++) {
       sum_xs += xs[i];
       cum_xs[i+1]= sum_xs;
     }
-    return XRMC_SelectFromDistribution(cum_xs, nb_processes+1);
+    i = XRMC_SelectFromDistribution(cum_xs, nb_processes+1);
+    free(cum_xs);
+    return i;
   } // XRMC_SelectInteraction
 
   /* XRMC_SelectFluorescenceEnergy: select outgoing fluo photon energy, when incoming with 'E0'
@@ -937,7 +941,7 @@ do { /* while (intersect) Loop over multiple scattering events */
         if (!flag_powder) ABSORB;
         if (Nq > 1) {
           // choose a line among those possible, using F2 as relative probability/intensity
-          line = XRMC_SelectFromDistribution(line_info.my_s_k2, Nq);
+          line = XRMC_SelectInteraction(line_info.my_s_k2, Nq);
         } else line = 0;/* Select between Nq powder lines */
         break;
       default: // should never happen
