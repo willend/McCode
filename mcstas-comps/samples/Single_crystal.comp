@@ -391,7 +391,7 @@ struct hkl_data
   //   used to convert CIF/CFL/INS file into F2(hkl)
   //   the CIF2HKL env var can point to a cif2hkl executable
   //   else the McCode binary is attempted, then the system.
-  char *cif2hkl(char *infile, const char *options) {
+  char *cif2hkl(const char *infile, const char *options) {
     char cmd[1024];
     int  ret = 0;
     int  found = 0;

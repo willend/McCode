@@ -95,7 +95,7 @@
 * thickness: [m]      Thickness of hollow sample Negative value extends the hollow volume outside of the box/cylinder.
 * concentric: [1]     Indicate that this component has a hollow geometry and may contain other components. It should then be duplicated after the inside part (only for box, cylinder, sphere) [1]
 * geometry:  [str]    Name of an Object File Format (OFF) or PLY file for complex geometry. The OFF/PLY file may be generated from XYZ coordinates using qhull/powercrust.
-* p_interact: [1]     Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 unactivate).
+* p_interact: [1]     Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 inactivate).
 * focus_xw:  [m]      Horiz. dimension of a rectangular area.
 * focus_yh:  [m]      Vert.  dimension of a rectangular area.
 * focus_aw:  [deg]    Horiz. angular dimension of a rectangular area.
