@@ -231,7 +231,7 @@ SHARE
   struct line_info_struct
   {
       struct line_data *list;     /* Reflection array */
-      int  count;                  /* Number of reflections */
+      int    count;                  /* Number of reflections */
       double Dd;
       double DWfactor;
       double V_0;
@@ -263,7 +263,7 @@ SHARE
       unsigned int photon_passed;
       long   xs_compute, xs_reuse, xs_calls;
       t_Table mat_table;
-      int mat_column_order[5]; /*column signification for the coeff. in material data file*/
+      int    mat_column_order[5]; /*column signification for the coeff. in material data file*/
   };
   
   // shared functions **********************************************************
@@ -282,78 +282,86 @@ SHARE
      else    return (s < 0 ? -1 : 1);
   } /* PN_list_compare */
   
-#ifndef CIF2HKL
-#define CIF2HKL
+  #ifndef CIF2HKL
+  #define CIF2HKL
   // hkl_filename = cif2hkl(file, options)
   //   used to convert CIF/CFL/INS file into F2(hkl)
   //   the CIF2HKL env var can point to a cif2hkl executable
   //   else the McCode binary is attempted, then the system.
-  char *cif2hkl(const char *infile, const char *options) {
+  char *cif2hkl(char *infile, const char *options) {
     char cmd[1024];
     int  ret = 0;
     int  found = 0;
     char *OUTFILE;
-    
+    char *inpath;
+
     // get filename extension
     const char *ext = strrchr(infile, '.');
     if(!ext || ext == infile) return infile;
     else ext++;
-    
+
     // return input when no extension or not a CIF/FullProf/ShelX file
-    if ( strcasecmp(ext, "cif") 
+    if ( strcasecmp(ext, "cif")
       && strcasecmp(ext, "pcr")
       && strcasecmp(ext, "cfl")
       && strcasecmp(ext, "shx")
       && strcasecmp(ext, "ins")
       && strcasecmp(ext, "res")) return infile;
-      
+
     OUTFILE = malloc(1024);
     if (!OUTFILE) return infile;
-    
+    inpath = malloc(1024);
+    if (!inpath) return infile;
+
+    // get input file path from read-table:Open_File
+    FILE *f_infile = Open_File(infile, "r", inpath);
+    if (!f_infile) return infile;
+    fclose(f_infile);
+
     strncpy(OUTFILE, tmpnam(NULL), 1024); // create an output temporary file name
-    
+
     // try in order the CIF2HKL env var, then the system cif2hkl, then the McCode one
     if (!found && getenv("CIF2HKL")) {
       snprintf(cmd,  1024, "%s -o %s %s %s",
-        getenv("CIF2HKL"),
-        OUTFILE, options, infile);
+               getenv("CIF2HKL"),
+               OUTFILE, options, inpath);
       ret = system(cmd);
       if (ret != -1 && ret != 127) found = 1;
     }
     if (!found) {
       // try with cif2hkl command from the system PATH
       snprintf(cmd,  1024, "%s -o %s %s %s",
-        "cif2hkl", OUTFILE, options, infile);
+               "cif2hkl", OUTFILE, options, inpath);
       ret = system(cmd);
       if (ret != -1 && ret != 127) found = 1;
     }
     if (!found) {
       // As a last resort, attempt with cif2hkl from $MCXTRACE/bin
       snprintf(cmd,  1024, "%s%c%s%c%s -o %s %s %s",
-        getenv(FLAVOR_UPPER) ? getenv(FLAVOR_UPPER) : MCXTRACE,
-        MC_PATHSEP_C, "bin", MC_PATHSEP_C, "cif2hkl",
-        OUTFILE, options, infile);
+               getenv(FLAVOR_UPPER) ? getenv(FLAVOR_UPPER) : MCXTRACE,
+               MC_PATHSEP_C, "bin", MC_PATHSEP_C, "cif2hkl",
+               OUTFILE, options, inpath);
       ret = system(cmd);
     }
     // ret = -1:  child process could not be created
-    // ret = 127: shell could not be executed in the child process     
+    // ret = 127: shell could not be executed in the child process
     if (ret == -1 || ret == 127) {
       free(OUTFILE);
       return(NULL);
     }
-      
+
     // test if the result file has been created
     FILE *file = Open_File(OUTFILE,"r", NULL);
-    if (!file) return(NULL);     
+    if (!file) return(NULL);
     MPI_MASTER(
-    printf("%s: INFO: Converting %s into F2(HKL) list %s\n", 
-      __FILE__, infile, OUTFILE);
-    printf ("%s\n",cmd);
+      printf("%s: INFO: Converting %s into F2(HKL) list %s\n",
+             __FILE__, infile, OUTFILE);
+      printf ("%s\n",cmd);
     );
     fflush(NULL);
     return(OUTFILE);
   } // cif2hkl
-#endif
+  #endif
 
   // count = read_line_data(filename, &info)
   //   read the given file to store F2(HKL) reflections and metadata.
@@ -380,6 +388,7 @@ SHARE
       return(0);
     }
     filename = cif2hkl(SC_file, "--mode XRA");
+    if (filename != SC_file) info->flag_barns=1; // cif2hkl returns barns
     long retval = Table_Read(&sTable, filename, 1); /* read 1st block data from SC_file into sTable*/
     if (retval<0) {
       fprintf(stderr,"PowderN: Could not open file %s - exiting!\n", filename);
@@ -442,18 +451,22 @@ SHARE
           info->compname, size, SC_file);
     );
 
-    if (info->column_order[0] == 4 && info->flag_barns !=0)
-    MPI_MASTER(
-      printf("PowderN: %s: Powder file probably of type Crystallographica/Fullprof (lau)\n"
-           "WARNING: but F2 unit is set to barns=1 (barns). Intensity might be 100 times too high.\n",
-           info->compname);
-    );
-    if (info->column_order[0] == 17 && info->flag_barns == 0)
-    MPI_MASTER(
+    if (info->column_order[0] == 4 && info->flag_barns !=0 && filename == SC_file) {
+      MPI_MASTER(
+        printf("PowderN: %s: Powder file probably of type Crystallographica/Fullprof (lau).\n"
+            "WARNING: Assuming F2 given in fm^2 (barns=0).\n",
+            info->compname);
+      );
+      info->flag_barns=0;
+    }
+    if (info->column_order[0] == 17 && info->flag_barns == 0){
+      MPI_MASTER(
       printf("PowderN: %s: Powder file probably of type Lazy Pulver (laz)\n"
-           "WARNING: but F2 unit is set to barns=0 (fm^2). Intensity might be 100 times too low.\n",
+           "WARNING: Assuming F2 given in barns (barns=1).\n",
            info->compname);
-    );
+      );
+      info->flag_barns=1;
+    }
     /* allocate line_data array */
     list = (struct line_data*)malloc(size*sizeof(struct line_data));
 
@@ -922,9 +935,6 @@ TRACE
   long   xs_compute = line_info.xs_compute;
   long   xs_reuse   = line_info.xs_reuse;
   long   xs_calls   = line_info.xs_calls;
-  // Number of warnings in this specific TRACE run,
-  // added to comp struct end of TRACE
-  int    flag_warning = 0;
   double dq = line_info.dq;
 
   double my_s_k2_sum = line_info.my_s_k2_sum;
@@ -1022,10 +1032,10 @@ TRACE
 
     if (l3 < 0) {
       l3=0; /* Already past sample?! */
-      if (flag_warning < 10)
+      if (line_info.flag_warning < 10)
       printf("PowderN: %s: Warning: xray has already passed us? (Skipped).\n"
              "         In concentric geometry, this may be caused by a missing concentric=0 option in 2nd enclosing instance.\n", NAME_CURRENT_COMP);
-      flag_warning++;
+      line_info.flag_warning++;
     } else {
       if (dl<0) { /* Calculate scattering point position */
         dl = fabs(dl)*(l1 - l0); /* 'Forward' part */
@@ -1163,9 +1173,9 @@ TRACE
 
           if (!intersect) {
             /* Strange error: did not hit cylinder */
-            if (flag_warning < 10)
+            if (line_info.flag_warning < 10)
               printf("PowderN: %s: WARNING: Did not hit sample from inside (coh). ABSORB.\n", NAME_CURRENT_COMP);
-            flag_warning++;
+            line_info.flag_warning++;
             ABSORB;
           }
 
@@ -1237,9 +1247,9 @@ TRACE
 
         if (!intersect) {
           /* Strange error: did not hit cylinder */
-          if (flag_warning < 10)
+          if (line_info.flag_warning < 10)
             printf("PowderN: %s: WARNING: Did not hit sample from inside (inc). ABSORB.\n", NAME_CURRENT_COMP);
-          flag_warning++;
+          line_info.flag_warning++;
           ABSORB;
         }
 
@@ -1296,10 +1306,6 @@ TRACE
   line_info.dq=dq;
   line_info.photon_passed = photon_passed;
   #endif
-
-  // Add warning status to comp struct (atomic on GPU)
-  #pragma acc atomic write
-  line_info.flag_warning += flag_warning;
 %}
 
 FINALLY
@@ -1311,7 +1317,7 @@ FINALLY
 
   MPI_MASTER(
   if (line_info.flag_warning)
-    printf("PowderN: %s: Error messages were repeated %i times with absorbed xrays.\n",
+    printf("PowderN: %s: WARNING messages were repeated %i times with absorbed xrays.\n",
       NAME_CURRENT_COMP, line_info.flag_warning);
 
   /* in case this instance is used in a SPLIT, we can recommend the
