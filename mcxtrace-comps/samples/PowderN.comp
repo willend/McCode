@@ -197,8 +197,8 @@ SETTING PARAMETERS (
   vector format={0,0,0,0,0,0,0,0}, vector mat_format={0,0,0,0,0},
   radius=0, yheight=0, xwidth=0, zdepth=0, thickness=0,
   pack=1, Vc=0, delta_d_d=0, p_inc=0.1, p_transmit=0.1,
-  DW=0, nb_atoms=1, d_omega=0, d_phi=0, tth_sign=0, p_interact=0,
-  concentric=0, density=0, weight=0, barns=1, focus_flip=0, int target_index=0)
+  DW=0, int nb_atoms=1, d_omega=0, d_phi=0, int tth_sign=0, p_interact=0,
+  int concentric=0, density=0, weight=0, int barns=1, int focus_flip=0, int target_index=0)
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 SHARE
@@ -218,15 +218,7 @@ SHARE
       double DWfactor;            /* Debye-Waller factor */
       double w;                   /* Intrinsic line width */
     };
-  // absorption data
-  struct abs_data
-  {
-    double E;       /*energy (in keV)*/
-    double k;       /*wavenumber corresponding to E*/
-    double sigma_a; /*absorption cross section for energy E*/
-    double mu;      /*absoprtion coefficient for the energy E*/
-    double cohinc;  /*coherent +incoherent scattering coefficient*/
-  };
+
   // component data
   struct line_info_struct
   {
@@ -238,10 +230,8 @@ SHARE
       double rho;
       double at_weight;
       double at_nb;
-      double sigma_a;
-      double sigma_i;
       char   compname[256];
-      double flag_barns;
+      int    flag_barns;
       int    shape; /* 0 cylinder, 1 box, 2 sphere, 3 OFF file */
       int    column_order[8]; /* column signification */
       int    flag_warning;
@@ -447,8 +437,6 @@ SHARE
 
     MPI_MASTER(
     Table_Info(sTable);
-    printf("PowderN: %s: Reading %d rows from %s\n",
-          info->compname, size, SC_file);
     );
 
     if (filename == SC_file) { // only when not from cif2hkl
@@ -506,8 +494,7 @@ SHARE
       F2       = (F2 >= 0 ? F2 : 0);
       if (j == 0 || q == 0) {
         MPI_MASTER(
-        printf("PowderN: %s: line %i has invalid definition\n"
-               "         (mult=0 or q=0 or d=0)\n", info->compname, i);
+        printf("PowderN: %s: line %i has invalid definition (mult=0 or q=0 or d=0)\n", info->compname, i);
         );
         continue;
       }
@@ -800,10 +787,6 @@ INITIALIZE
     fprintf(stderr,"PowderN: %s: WARNING: p_interact=0, adjusting to 0.01, to avoid algorithm instability\n",NAME_CURRENT_COMP);
     p_interact=1e-2;
   }
-  if (!p_inc){
-    fprintf(stderr,"PowderN: %s: WARNING: p_inc=0, adjusting to 0.01, to avoid algorithm instability\n",NAME_CURRENT_COMP);
-    p_inc     =1e-2;
-  }
   if (!p_transmit){
     fprintf(stderr,"PowderN: %s: WARNING: p_transmit=0, adjusting to 0.01, to avoid algorithm instability\n",NAME_CURRENT_COMP);
     p_transmit=1e-2;
@@ -844,31 +827,17 @@ INITIALIZE
       /(line_info.rho/line_info.at_weight/1e24*6.02214199e23);
   }
 
-  /* the scattering unit cross sections are the chemical formula onces
-   * times the nb of chemical formulae in the scattering element */
-  if (line_info.at_nb > 0) {
-    line_info.sigma_a *= line_info.at_nb; line_info.sigma_i *= line_info.at_nb;
-  }
-
-  if (line_info.sigma_a<0) line_info.sigma_a=0;
-  if (line_info.sigma_i<0) line_info.sigma_i=0;
-
   if (line_info.V_0 <= 0)
   MPI_MASTER(
     printf("PowderN: %s: density/unit cell volume is NULL (Vc). Unactivating component.\n", NAME_CURRENT_COMP);
   );
 
-  if (line_info.V_0 > 0 && p_inc && (!line_info.sigma_i || !(strlen(material) && strcmp(material,"NULL"))) ) {
-  MPI_MASTER(
-    printf("PowderN: %s: WARNING: You have requested statistics for incoherent scattering but not set a material datafile (\'%s\') nor defined sigma_inc!\n", NAME_CURRENT_COMP, material);
-  );
+  if (line_info.V_0 > 0 && p_inc > 0 && (!(strlen(material) && strcmp(material,"NULL"))) ) {
+    p_inc = 0; // no inc scatt (no material file for abs)
   }
 
-  if (line_info.flag_barns) { /* Factor 100 to convert from barns to fm^2 */
-    line_info.XsectionFactor = 100;
-  } else {
-    line_info.XsectionFactor = 1;
-  }
+  /* Factor 100 to convert from barns to fm^2 */
+  line_info.XsectionFactor = line_info.flag_barns ? 100 : 1;
 
   if (line_info.V_0 > 0 && i) {
     L = line_info.list;
@@ -1003,26 +972,26 @@ TRACE
     #ifndef OPENACC
     if ( fabs(k - line_info.k) < 1e-15) {
         line_info.nb_reuses++;
-	my_s_k2_sum=line_info.my_s_k2_sum;
-	my_inc=line_info.my_inc;
-	my_a=line_info.my_a;
+        my_s_k2_sum=line_info.my_s_k2_sum;
+        my_inc=line_info.my_inc;
+        my_a=line_info.my_a;
     } else {
     #endif
         Nq = calc_xsect(k, line_info.q, line_info.my_s_k2, line_info.count, &my_s_k2_sum, &line_info);
         calc_abs_xsect(k, &my_a, &line_info);
         calc_inc_xsect(k, &my_inc, &line_info);
-	if(pack!=1){
-	  /*apply packing factor correction*/
-	  my_a *= pack;
-	  my_inc *= pack;
-	  my_s_k2_sum *=pack;
-	}
+        if(pack!=1){
+          /*apply packing factor correction*/
+          my_a *= pack;
+          my_inc *= pack;
+          my_s_k2_sum *=pack;
+        }
     #ifndef OPENACC
         line_info.my_s_k2_sum=my_s_k2_sum;
         line_info.my_inc=my_inc;
         line_info.my_a=my_a;
-	line_info.Nq = Nq;
-	line_info.k  = k;
+        line_info.Nq = Nq;
+        line_info.k  = k;
         line_info.nb_refl += line_info.Nq;
         line_info.nb_refl_count++;
     }
@@ -1050,7 +1019,7 @@ TRACE
         photontype = 1;
         l = l_full; /* Passing through, full length */
         PROP_DL(l3);
-      } else if (ptype >= p_transmit && ptype < (p_transmit + p_inc)) {
+      } else if (p_inc > 0 && ptype >= p_transmit && ptype < (p_transmit + p_inc)) {
         photontype = 2;
         l = dl;       /* Penetration in sample */
         PROP_DL(dl+l0); /* Point of scattering */
@@ -1076,12 +1045,12 @@ TRACE
           my_s_n = pack*line_info.my_s_k2[line]/(k*k);
           if(fabs(arg) > 1)
             ABSORB;                   /* No bragg scattering possible*/
-	  if (tth_sign == 0) {
-		  sg = randpm1();
-		  if (sg > 0) sg = 1; else sg=-1;
-	  }
-          else  {
-	   sg = tth_sign/fabs(tth_sign);
+          if (tth_sign == 0) {
+            sg = randpm1();
+            if (sg > 0) sg = 1; else sg=-1;
+          }
+          else {
+           sg = tth_sign/fabs(tth_sign);
           }
           theta = asin(arg);          /* Bragg scattering law */
 
@@ -1100,7 +1069,7 @@ TRACE
           if (d_phi_thread) {
             /* Focusing */
             alpha = fabs(alpha);
-	    alpha0 = 0.5*randpm1()*alpha;
+            alpha0 = 0.5*randpm1()*alpha;
             if(focus_flip){
                 alpha0+=M_PI_2;
             }
@@ -1114,26 +1083,26 @@ TRACE
            * Or
            *  (k along X) x (Z axis) -> nearly Y axis
            */
-		   
+
   /* update originating from McStas, added by JS, 1/7/2017
-    If a target is defined, try to define vertical axis as a normal to the plane 
-	defined by the incident particle velocity and target position. 
-	Check that k is not ~ parallel to the target direction.
+     If a target is defined, try to define vertical axis as a normal to the plane
+        defined by the incident particle velocity and target position.
+        Check that k is not ~ parallel to the target direction.
   */
-			double knorm=0.0;
-			if (target_index) {
-				vec_prod(tmp_kx, tmp_ky, tmp_kz, kx,ky,kz, tgt_x, tgt_y, tgt_z);
-				knorm = sqrt(tmp_kx*tmp_kx+tmp_ky*tmp_ky+tmp_kz*tmp_kz)/k;
-			}
-			// no target or direction is nearly parallel to k:
-			if (knorm<0.01) {
-				if (fabs(kx/k) < fabs(kz/k)) {
-					nx = 1; ny = 0; nz = 0;
-				} else {
-					nx = 0; ny = 0; nz = 1;
-				}
-          			vec_prod(tmp_kx,tmp_ky,tmp_kz, kx,ky,kz, nx,ny,nz);
-          		}
+          double knorm=0.0;
+          if (target_index) {
+            vec_prod(tmp_kx, tmp_ky, tmp_kz, kx,ky,kz, tgt_x, tgt_y, tgt_z);
+            knorm = sqrt(tmp_kx*tmp_kx+tmp_ky*tmp_ky+tmp_kz*tmp_kz)/k;
+          }
+          // no target or direction is nearly parallel to k:
+          if (knorm<0.01) {
+            if (fabs(kx/k) < fabs(kz/k)) {
+                    nx = 1; ny = 0; nz = 0;
+            } else {
+                    nx = 0; ny = 0; nz = 1;
+            }
+            vec_prod(tmp_kx,tmp_ky,tmp_kz, kx,ky,kz, nx,ny,nz);
+          }
 
           /* k_out = rotate 'k' by 2*theta around tmp_k: Bragg angle */
           rotate(kout_x,kout_y,kout_z, kx,ky,kz, 2*sg*theta, tmp_kx,tmp_ky,tmp_kz);
@@ -1145,11 +1114,11 @@ TRACE
           kz = tmp_kz;
           
           /*weight the outgoing signal according to polarization*/
-          if (Ex!=0 || Ey!=0 || Ez!=0){
+          if (Ex!=0 || Ey!=0 || Ez!=0) {
               double EE=sqrt(Ex*Ex+Ey*Ey+Ez*Ez);
               double s=scalar_prod(kx,ky,kz,Ex,Ey,Ez)/k/EE;
               p*=(1-s)*(1-s);
-          }else{
+          } else {
               /*unpolarized light in - means an effective reduction according to only theta*/
               p*=(1+cos(theta)*cos(theta))*0.5;
           }
@@ -1197,25 +1166,25 @@ TRACE
 
           pmul  *= Nq*l_full*my_s_n*exp(-(my_a+my_s)*(l+l_1))/(1-(p_inc+p_transmit));
           /* Correction in case of d_phi focusing - BUT only when d_phi != 0 */
-	  if (d_phi_thread) {
-	    pmul *= alpha/PI;
-	    if (tth_sign) pmul *=0.5;
-	  }
+          if (d_phi_thread) {
+            pmul *= alpha/PI;
+            if (tth_sign) pmul *=0.5;
+          }
 
           type = 'c';
           itype = 1;
-	  dq = line_info.q[line];
+          dq = line_info.q[line];
         } /* else transmit <-- No powder lines in file */
       }  /* Coherent scattering event */
-      else if (photontype == 2) {  /* Make incoherent scattering event */
+      else if (p_inc > 0 && photontype == 2) {  /* Make incoherent scattering event */
         /*should be replaced by Compton scattering and/or TDS*/
         if (d_omega && d_phi_thread) {
-			randvec_target_rect_angular(&kx, &ky, &kz, &solid_angle,
-			  tgt_x, tgt_y, tgt_z, d_omega*DEG2RAD, d_phi_thread*DEG2RAD, ROT_A_CURRENT_COMP);
-		} else if (d_phi_thread) {
-			randvec_target_rect_angular(&kx, &ky, &kz, &solid_angle,
-                                      tgt_x, tgt_y, tgt_z,
-                                      2*PI, d_phi_thread*DEG2RAD, ROT_A_CURRENT_COMP);
+          randvec_target_rect_angular(&kx, &ky, &kz, &solid_angle,
+            tgt_x, tgt_y, tgt_z, d_omega*DEG2RAD, d_phi_thread*DEG2RAD, ROT_A_CURRENT_COMP);
+        } else if (d_phi_thread) {
+          randvec_target_rect_angular(&kx, &ky, &kz, &solid_angle,
+                        tgt_x, tgt_y, tgt_z,
+                        2*PI, d_phi_thread*DEG2RAD, ROT_A_CURRENT_COMP);
         } else {
           randvec_target_circle(&kx, &ky, &kz,
                                 &solid_angle, 0, 0, 1, 0);
@@ -1236,12 +1205,12 @@ TRACE
           intersect  = sphere_intersect  (&l0, &l3, x,y,z, kx,ky,kz, radius);
           intersecti = sphere_intersect  (&l1, &l2, x,y,z, kx,ky,kz, line_info.radius_i);
         }
-	#ifdef USE_OFF
-	  else if (line_info.shape == 3) {
+        #ifdef USE_OFF
+          else if (line_info.shape == 3) {
           intersect  = off_x_intersect  (&l0, &l3, NULL, NULL, x,y,z, kx,ky,kz, thread_offdata);
           intersecti = 0;
         }
-	#endif
+        #endif
 
         if (!intersect) {
           /* Strange error: did not hit cylinder */
@@ -1273,7 +1242,7 @@ TRACE
         pmul *= solid_angle/(4*PI);
 
         type = 'i';
-	itype = 2;
+        itype = 2;
 
       }  /* Incoherent scattering event */
       else if (photontype == 1) {
@@ -1282,7 +1251,7 @@ TRACE
         pmul *= exp(-(my_a+my_s)*(l))/(p_transmit);
 
         type = 't';
-	itype = 3;
+        itype = 3;
       }
       p *= pmul;
     } /* Photon leaving since it has passed already */
@@ -1324,7 +1293,7 @@ FINALLY
     double split_iterations = (double)line_info.nb_reuses/line_info.nb_refl_count + 1;
     double split_optimal    = (double)line_info.nb_refl/line_info.nb_refl_count;
     if (split_optimal > split_iterations + 5)
-      printf("PowderN: %s: Info: you may highly improve the computation efficiency by using\n"
+      printf("PowderN: %s: INFO: You may highly improve the computation efficiency by using\n"
         "    SPLIT %i COMPONENT %s=PowderN(...)\n"
         "  in the instrument description %s.\n",
         NAME_CURRENT_COMP, (int)split_optimal, NAME_CURRENT_COMP, instrument_source);
@@ -1405,7 +1374,7 @@ MCDISPLAY
       circle("xy",0,0,0,radius);
       circle("xz",0,0,0,radius);
       circle("yz",0,0,0,radius);
-    } else if (line_info.shape == 3) {	/* OFF file */
+    } else if (line_info.shape == 3) {        /* OFF file */
       off_display(offdata);
     }
   }

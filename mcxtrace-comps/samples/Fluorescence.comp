@@ -445,7 +445,9 @@ INITIALIZE %{
     if (!fluo_get_material(material, formula))
       exit(fprintf(stderr, "ERROR: %s: file %s does not contain material formulae.\n", NAME_CURRENT_COMP, material));
     
+    MPI_MASTER(
     fprintf(stderr, "Fluorescence: INFO: %s: found material %s from file %s\n", NAME_CURRENT_COMP, formula, material);
+    );
     strcpy(material, formula);
     // CIF: _chemical_formula_structural 'chemical_formulae'
     // CIF: _chemical_formula_sum 'chemical_formulae'
@@ -455,7 +457,7 @@ INITIALIZE %{
     // CFL: Title <chemical_formulae>
     // CFL: Atom <at> <trailing>
     
-  } else filename = NULL;
+  }
     
   compound = CompoundParser(material, &error); /* XRayLib */
   if (error != NULL) {
@@ -891,10 +893,12 @@ do { /* while (intersect) Loop over multiple scattering events */
 
 FINALLY %{
   FreeCompoundData(compound);
-  if (filename && filename != material)
-    unlink(filename);
-  printf("%s: scattered intensity: fluo=%g Compton=%g Rayleigh=%g\n", 
-    NAME_CURRENT_COMP, p_fluo, p_Compton, p_Rayleigh);
+
+  if (n_fluo || n_Compton || n_Rayleigh)
+    MPI_MASTER(
+      printf("INFO: %s: scattered intensity: fluo=%g Compton=%g Rayleigh=%g\n",
+             NAME_CURRENT_COMP, p_fluo, p_Compton, p_Rayleigh);
+    );
 %}
 
 END

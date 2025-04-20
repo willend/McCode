@@ -15,19 +15,25 @@
 * %Description
 * Simply a model source illuminating a fluo/powder/sx sample.
 * The default sample itself is an LaB6-powder.
-* The idea is to compare the fluorescence and diffraction patterns.
+* The idea is to compare the fluorescence and diffraction patterns:
+* - index=1: use PowderN              (no fluorescence)
+* - index=2: use Single_crystal       (no fluorescence, very slow)
+* - index=3: use FluoPowder           (exact)
+* - index=4: use Fluorescence         (no diffraction)
+* - index=5: use Fluorescence+PowderN (slow, under estimates contributions)
 *
-* %Example: Test_FluoPowder.instr E0=15 index=1 Detector: Sph_mon_I=2.23971e-20
-* %Example: Test_FluoPowder.instr E0=15 index=2 Detector: Sph_mon_I=2.49656e-20
-* %Example: Test_FluoPowder.instr E0=15 index=3 Detector: Sph_mon_I=7.79059e-19
+* %Example: Test_FluoPowder.instr E0=15 index=1 Detector: Sph_mon_I=2.2379e-18
+* %Example: Test_FluoPowder.instr E0=15 index=2 Detector: Sph_mon_I=2.49656e-18
+* %Example: Test_FluoPowder.instr E0=15 index=3 Detector: Sph_mon_I=3.08166e-18 too small
 * %Example: Test_FluoPowder.instr E0=15 index=4 Detector: Sph_mon_I=7.83812e-19
+* %Example: Test_FluoPowder.instr E0=15 index=5 Detector: Sph_mon_I=2.21276e-18
 *
 * %Parameters
 * E0:          [keV]  Source mean energy of xrays.
 * dE:          [keV]  Source energy half spread of x-rays.
 * L1:          [m]    Source-sample distance.
 * material:    [str]  Material structure/composition as formula or LAU/CIF format.
-* index:       [1]    Index of the sample component to use. 1=PowderN, 2=Single_crystal, 3=FluoPowder, 4=Fluorescence
+* index:       [1]    Index of the sample component to use. 1=PowderN, 2=Single_crystal (much slower), 3=FluoPowder, 4=Fluorescence, 5=Fluorescence+PowderN in a GROUP (slower)
 *
 * %End
 *******************************************************************************/
@@ -48,25 +54,27 @@ INITIALIZE %{
       printf("%s: Using FluoPowder (fluorescence+diffraction)\n", NAME_INSTRUMENT); break;
     case 4:
       printf("%s: Using Fluorescence (pure fluorescence)\n", NAME_INSTRUMENT); break;
+    case 5:
+      printf("%s: Using Fluorescence+PowderN in a GROUP (fluorescence+diffraction)\n", NAME_INSTRUMENT); break;
     default:
-      exit(printf("%s: Unknown sample index. Use index=1-4.", NAME_INSTRUMENT));
+      exit(printf("%s: Unknown sample index %i. Use index=1-4.", NAME_INSTRUMENT, index));
   }
 %}
 
 TRACE
 
 REMOVABLE COMPONENT Origin = Progress_bar()
-  AT (0,0,0) ABSOLUTE
+AT (0,0,0) ABSOLUTE
 
 COMPONENT src = Source_flat(
     yheight = 1e-6, xwidth = 1e-6, dist = 10, focus_xw = 1e-6,
     focus_yh = 1e-6, E0 = E0, dE = dE)
-  AT (0, 0, 0) RELATIVE Origin
+AT (0, 0, 0) RELATIVE Origin
 
 // samples --------------------------------------------------------------------
 
 SPLIT COMPONENT sample_cradle = Arm()
-  AT (0, 0, L1) RELATIVE PREVIOUS
+AT (0, 0, L1) RELATIVE PREVIOUS
 
 COMPONENT Pow = PowderN(
     radius=0.5e-6, reflections=material)
@@ -87,8 +95,8 @@ EXTEND %{
 %}
 
 COMPONENT FL_pow = FluoPowder(
-    radius=0.5e-6, material=material
-)WHEN (index == 3)
+    radius=0.5e-6, material=material)
+WHEN (index == 3)
 AT (0, 0, 0) RELATIVE sample_cradle
 EXTEND %{
   if (!SCATTERED) ABSORB;
@@ -96,12 +104,29 @@ EXTEND %{
 %}
 
 COMPONENT Fluo = Fluorescence(
-  radius=0.5e-6, material=material
-)WHEN (index == 4)
+  radius=0.5e-6, material=material)
+WHEN (index == 4)
 AT (0, 0, 0) RELATIVE sample_cradle
 EXTEND %{
   if (!SCATTERED) ABSORB;
   scatt_type = type;
+%}
+
+COMPONENT FluoG = COPY(Fluo)
+WHEN (index == 5)
+AT (0, 0, 0) RELATIVE sample_cradle
+GROUP FluPow
+EXTEND %{
+  if (SCATTERED) scatt_type = type;
+%}
+
+COMPONENT PowG = COPY(Pow)
+WHEN (index == 5)
+AT (0, 0, 0) RELATIVE sample_cradle
+GROUP FluPow
+EXTEND %{
+  if (SCATTERED) scatt_type=3;
+  else ABSORB;
 %}
 
 // detectors ------------------------------------------------------------------
@@ -119,7 +144,7 @@ COMPONENT Sph_mon_pow = COPY(Sph_mon)(filename="Sphere_pow")
   AT (0, 0, 0) RELATIVE PREVIOUS
 
 COMPONENT E_mon = Monitor_nD(
-    options="energy",
+    options="energy", min=0, max=1.2*E0,
     bins=1024, radius=1, filename="Energy",restore_xray=1)
   AT(0,0,0) RELATIVE PREVIOUS
 
