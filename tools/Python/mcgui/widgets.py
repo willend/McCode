@@ -601,6 +601,7 @@ class Ui_dlgStartSim(object):
         _translate = QtCore.QCoreApplication.translate
         dlgStartSim.setWindowTitle(_translate("dlgStartSim", "Start simulation"))
         self.gbxGrid.setTitle(_translate("dlgStartSim", "Instrument parameters (D=floating point, I=integer, S=string)"))
+        self.gbxGrid.setToolTip(_translate("dlgStartSim", "<html><body>Set single values for simple calculation OR MIN,MAX to scan parameters (set <b>Scan steps</b> or in Optimize mode) OR MIN,START,MAX in optimize mode to set starting value</html></body>"))
         self.lblGridDummy.setText(_translate("dlgStartSim", "lambda (D):"))
         self.lblGridDummy2.setText(_translate("dlgStartSim", "R (D):"))
         self.lblGridDummy3.setText(_translate("dlgStartSim", "R_curve (D):"))
@@ -610,7 +611,7 @@ class Ui_dlgStartSim(object):
         self.cbxSimTrace.setItemText(2, _translate("dlgStartSim", "Optimize"))
         self.edtNeutronCnt.setText(_translate("dlgStartSim", "1000000"))
         self.edtNodes.setText(_translate("dlgStartSim", "auto"))
-        self.lblSimTrace.setText(_translate("dlgStartSim", "Simulation/Trace: "))
+        self.lblSimTrace.setText(_translate("dlgStartSim", "Simulation/Trace/Optimize: "))
         self.lblSimTrace.setToolTip(_translate("dlgStartSim", "<html><body><b>Simulate</b>: Run calcultion <br><b>Trace</b>: View the model geometry <br><b>Optimize</b>: Determine parameters given as MIN,MAX or MIN,START,MAX to maximize all or a given monitor (Inspect)</body></html>"))
         self.lblSweepSteps.setText(_translate("dlgStartSim", "Scan steps (optional):"))
         self.lblSweepSteps.setToolTip(_translate("dlgStartSim", "<html><body>Give the number N of scan steps. Some parameters above should be given as MIN,MAX and will vary in N steps</body></html>"))
