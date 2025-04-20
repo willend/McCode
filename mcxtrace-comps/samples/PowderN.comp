@@ -451,21 +451,19 @@ SHARE
           info->compname, size, SC_file);
     );
 
-    if (info->column_order[0] == 4 && info->flag_barns !=0 && filename == SC_file) {
-      MPI_MASTER(
-        printf("PowderN: %s: Powder file probably of type Crystallographica/Fullprof (lau).\n"
-            "WARNING: Assuming F2 given in fm^2 (barns=0).\n",
-            info->compname);
-      );
-      info->flag_barns=0;
-    }
-    if (info->column_order[0] == 17 && info->flag_barns == 0){
-      MPI_MASTER(
-      printf("PowderN: %s: Powder file probably of type Lazy Pulver (laz)\n"
-           "WARNING: Assuming F2 given in barns (barns=1).\n",
-           info->compname);
-      );
-      info->flag_barns=1;
+    if (filename == SC_file) { // only when not from cif2hkl
+      if (info->column_order[0] == 4 && info->flag_barns !=0 )
+        MPI_MASTER(
+          printf("PowderN: %s: Powder file probably of type Crystallographica/Fullprof (lau)\n"
+          "WARNING: but F2 unit is set to barns=1 (barns). Intensity might be 100 times too high.\n",
+                 info->compname);
+        );
+      if (info->column_order[0] == 17 && info->flag_barns == 0)
+        MPI_MASTER(
+          printf("PowderN: %s: Powder file probably of type Lazy Pulver (laz)\n"
+          "WARNING: but F2 unit is set to barns=0 (fm^2). Intensity might be 100 times too low.\n",
+                 info->compname);
+        );
     }
     /* allocate line_data array */
     list = (struct line_data*)malloc(size*sizeof(struct line_data));
