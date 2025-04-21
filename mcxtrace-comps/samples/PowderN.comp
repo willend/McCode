@@ -378,12 +378,15 @@ SHARE
       return(0);
     }
     filename = cif2hkl(SC_file, "--mode XRA");
-    if (filename != SC_file) info->flag_barns=1; // cif2hkl returns barns
-    long retval = Table_Read(&sTable, filename, 1); /* read 1st block data from SC_file into sTable*/
-    if (retval<0) {
-      fprintf(stderr,"PowderN: Could not open file %s - exiting!\n", filename);
-      exit(-1);
-    }
+    if (filename && filename != SC_file) info->flag_barns=1; // cif2hkl returns barns
+
+    /* read 1st block data from SC_file into sTable*/
+    if (!filename || Table_Read(&sTable, filename, 1) < 0)
+      exit(fprintf(stderr,"PowderN: ERROR: Could not open file %s - exiting!\n", filename));
+
+    // remove temporary F2(hkl) file when giving CFL/CIF/ShelX file
+    if (filename && filename != SC_file)
+      unlink(filename);
 
     /* parsing of header */
     parsing = Table_ParseHeader(sTable.header,
@@ -558,9 +561,6 @@ SHARE
     printf("PowderN: %s: Read %i reflections from file '%s'\n",
       info->compname, list_count, SC_file);
     );
-    // remove temporary F2(hkl) file when giving CFL/CIF/ShelX file
-    if (filename && filename != SC_file)
-      unlink(filename);
 
     info->list  = list;
     info->count = list_count;
@@ -1002,7 +1002,7 @@ TRACE
 
     if (l3 < 0) {
       l3=0; /* Already past sample?! */
-      if (flag_warning < 10)
+      if (line_info.flag_warning < 10)
       printf("PowderN: %s: Warning: xray has already passed us? (Skipped).\n"
              "         In concentric geometry, this may be caused by a missing concentric=0 option in 2nd enclosing instance.\n", NAME_CURRENT_COMP);
       flag_warning++;
@@ -1143,9 +1143,11 @@ TRACE
 
           if (!intersect) {
             /* Strange error: did not hit cylinder */
-            if (flag_warning < 10)
+            if (line_info.flag_warning < 10)
               printf("PowderN: %s: WARNING: Did not hit sample from inside (coh). ABSORB.\n", NAME_CURRENT_COMP);
             flag_warning++;
+            #pragma acc atomic write
+            line_info.flag_warning += flag_warning;
             ABSORB;
           }
 
@@ -1217,9 +1219,11 @@ TRACE
 
         if (!intersect) {
           /* Strange error: did not hit cylinder */
-          if (flag_warning < 10)
+          if (line_info.flag_warning < 10)
             printf("PowderN: %s: WARNING: Did not hit sample from inside (inc). ABSORB.\n", NAME_CURRENT_COMP);
           flag_warning++;
+          #pragma acc atomic write
+          line_info.flag_warning += flag_warning;
           ABSORB;
         }
 
