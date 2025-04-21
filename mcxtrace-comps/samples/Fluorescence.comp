@@ -16,10 +16,10 @@
 *
 * %Description
 * Sample that models many photon-matter interactions:
-* - absorption (photon excites an electron and creates a hole)
-* - fluorescence (excited electrons emit light while falling into lower states)
-* - Compton scattering  (inelastic, incoherent)
-* - Rayleigh scattering (elastic,   coherent)
+* - absorption          (photon excites an electron and creates a hole)
+* - fluorescence        (excited electrons emit light while falling into lower states)
+* - Compton scattering  (inelastic, transfer some energy to an electron,    incoherent)
+* - Rayleigh scattering (elastic,   dipolar radiation of excitated electrons, coherent)
 * - fluorescence detector escape  (energy shift from detector K-alpha)
 * - fluorescence detector pile-up (sum aka time coincidence aka pile-up in detector)
 *
@@ -34,21 +34,9 @@
 * For instance, a value order>=2 handles e.g. fluorescence iterative cascades 
 * in the material. Leaving 'order=0' handles the single scattering only.
 *
-* NOTE: When activating  the escape and time coincidence peaks in a close-by
-* detector, you should further remove these contributions with an ABSORB keyword:
-*
-* USERVARS %{
-*   int fluo_type;
-* %}
-* COMPONENT F = Fluorescence(material="Al", escape_ratio=0.01, pileup_ratio=0.01) AT ...
-* EXTEND %{
-*   if (SCATTERED) fluo_type=type;              // record type of interaction
-* %}
-*
-* COMPONENT E_mon = Monitor_nD(options="energy", ...) AT ...
-* EXTEND %{
-*   if (fluo_type>=FLUORESCENCE_ESCAPE) ABSORB; // remove detector artifacts further
-* %}
+* Example: Fluorescence(material="LaB6",
+*  xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99,
+*  target_index=1, focus_xw=0.0005, focus_yh=0.0005)
 *
 * <b>Sample shape:</b>
 * Sample shape may be a cylinder, a sphere, a box or any other shape
@@ -101,43 +89,64 @@
 * This sample component can advantageously benefit from the SPLIT feature, e.g.
 * SPLIT COMPONENT sample = Fluorescence(...)
 *
-* Example: Fluorescence(material="LaB6",
-*  xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99,
-*  target_index=1, focus_xw=0.0005, focus_yh=0.0005)
+* <b>Detector artifacts:</b>
+* This component also simulates the escape and time coincidence peaks in a close-by
+* detector (e.g. SDD). The first process corresponds with a fluorescence excitation within
+* the detector that subtracts the K-alpha detector level from the sample scattered energy.
+* The second process is related to the detector dead-time, within which time coincidence
+* between two fluorescence photons are summed-up.
+* If you activate these features, with e.g. 'escape_ratio=0.01' and 'pileup_ratio=0.01', you
+* should further remove these contributions for the rest of the simulation beyond the
+* fluorescence detector, with an ABSORB keyword:
+*
+* USERVARS %{
+*   int fluo_type;
+* %}
+* COMPONENT F = Fluorescence(material="Al", escape_ratio=0.01, pileup_ratio=0.01) AT ...
+* EXTEND %{
+*   if (SCATTERED) fluo_type=type;              // record type of interaction
+* %}
+*
+* COMPONENT E_mon = Monitor_nD(options="energy", ...) AT ...
+* EXTEND %{
+*   if (fluo_type>=FLUORESCENCE_ESCAPE) ABSORB; // remove detector artifacts further
+* %}
+*
+* (...)
 *
 *
 * The computation is made via the XRayLib (apt install libxrl-dev).
 *
 * %Parameters
 * material:  [str]    Chemical formulae, e.g. "LaB6", "Pb2SnO4". If may also be a CIF/LAZ/LAU file.
-* weight:    [g/mol]  Atomic/molecular weight of material.
+* weight:     [g/mol] Atomic/molecular weight of material.
 * density:   [g/cm^3] Density of material. V_rho=density/weight/1e24*N_A.
-* rho:       [AA-3]   Density of scattering elements (nb atoms/unit cell V_0).
+* rho:         [AA-3] Density of scattering elements (nb atoms/unit cell V_0).
 * packing_factor: [1] How dense is the material compared to bulk 0-1.
-* radius:    [m]      Outer radius of sample in (x,z) plane. cylinder/sphere.
-* xwidth:    [m]      width for a box sample shape.
-* yheight:   [m]      Height of sample in vertical direction for box/cylinder shapes.
-* zdepth:    [m]      depth for a box sample shape.
-* thickness: [m]      Thickness of hollow sample Negative value extends the hollow volume outside of the box/cylinder.
-* concentric: [1]     Indicate that this component has a hollow geometry and may contain other components. It should then be duplicated after the inside part (only for box, cylinder, sphere) [1]
-* geometry:  [str]    Name of an Object File Format (OFF) or PLY file for complex geometry. The OFF/PLY file may be generated from XYZ coordinates using qhull/powercrust.
-* p_interact: [1]     Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 inactivate).
-* focus_xw:  [m]      Horiz. dimension of a rectangular area.
-* focus_yh:  [m]      Vert.  dimension of a rectangular area.
-* focus_aw:  [deg]    Horiz. angular dimension of a rectangular area.
-* focus_ah:  [deg]    Vert.  angular dimension of a rectangular area.
-* focus_r:   [m]      Radius of disk containing target. Use 0 for full space.
-* target_index: [1]   Relative index of component to focus at, e.g. next is +1.
-* target_x:  [m]      Position of target to focus at, along X.
-* target_y:  [m]      Position of target to focus at, along Y.
-* target_z:  [m]      Position of target to focus at, along Z.
-* flag_compton: [1]   When 0, the Compton  scattering is ignored.
-* flag_rayleigh:[1]   When 0, the Rayleigh scattering is ignored.
+* radius:         [m] Outer radius of sample in (x,z) plane. cylinder/sphere.
+* xwidth:         [m] Width for a box sample shape.
+* yheight:        [m] Height of sample in vertical direction for box/cylinder shapes.
+* zdepth:         [m] Depth for a box sample shape.
+* thickness:      [m] Thickness of hollow sample Negative value extends the hollow volume outside of the box/cylinder.
+* concentric:     [1] Indicate that this component has a hollow geometry and may contain other components. It should then be duplicated after the inside part (only for box, cylinder, sphere).
+* geometry:     [str] Name of an Object File Format (OFF) or PLY file for complex geometry. The OFF/PLY file may be generated from XYZ coordinates using qhull/powercrust.
+* p_interact:     [1] Force a given fraction of the beam to scatter, keeping intensity right, to enhance small signals (-1 inactivate).
+* focus_xw:       [m] Horiz. dimension of a rectangular area.
+* focus_yh:       [m] Vert.  dimension of a rectangular area.
+* focus_aw:     [deg] Horiz. angular dimension of a rectangular area.
+* focus_ah:     [deg] Vert.  angular dimension of a rectangular area.
+* focus_r:        [m] Radius of disk containing target. Use 0 for full space.
+* target_index:   [1] Relative index of component to focus at, e.g. next is +1.
+* target_x:       [m] Position of target to focus at, along X.
+* target_y:       [m] Position of target to focus at, along Y.
+* target_z:       [m] Position of target to focus at, along Z.
+* flag_compton:   [1] When 0, the Compton  scattering is ignored.
+* flag_rayleigh:  [1] When 0, the Rayleigh scattering is ignored.
 * flag_lorentzian:[1] When 1, the line shapes are assumed to be Lorentzian, else Gaussian.
-* escape_ratio: [1]   Detector escape peak ratio,  e.g. 0.01-0.02. 0 inactivates.
+* escape_ratio:   [1] Detector escape peak ratio,  e.g. 0.01-0.02. 0 inactivates.
 * escape_energy:[keV] Detector escape peak energy, e.g. 1.739 for Si, 9.886 for Ge.
 * pileup_ratio:   [1] Sum aka time coincidence aka pile-up detector peak ratio, e.g. 0.01-0.02. 0 inactivates.
-* order:     [1]      Limit multiple fluorescence up to given order. Last iteration is absorption only.
+* order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
 * type: scattering event type 0=fluorescence, 1=Rayleigh, 2=Compton, 3=transmit (absorbsion), 4=diffraction (not handled here), 5=detector escape peak, 6=detector pile-up/sum/coincidence peak
