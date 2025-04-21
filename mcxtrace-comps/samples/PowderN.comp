@@ -784,11 +784,19 @@ INITIALIZE
   }
 
   if (!p_interact){
-    fprintf(stderr,"PowderN: %s: WARNING: p_interact=0, adjusting to 0.01, to avoid algorithm instability\n",NAME_CURRENT_COMP);
-    p_interact=1e-2;
+    if (!p_transmit) {
+      MPI_MASTER(
+      fprintf(stderr,"PowderN: %s: WARNING: p_interact=0, adjusting to 0.01, to avoid algorithm instability\n",NAME_CURRENT_COMP);
+      );
+      p_interact = 1e-2;
+    } else {
+      p_interact = 1-p_transmit-p_inc;
+    }
   }
   if (!p_transmit){
+    MPI_MASTER(
     fprintf(stderr,"PowderN: %s: WARNING: p_transmit=0, adjusting to 0.01, to avoid algorithm instability\n",NAME_CURRENT_COMP);
+    );
     p_transmit=1e-2;
   }
   double p_sum=p_interact+p_inc+p_transmit;
