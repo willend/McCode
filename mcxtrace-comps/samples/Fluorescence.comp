@@ -20,10 +20,10 @@
 * - fluorescence (excited electrons emit light while falling into lower states)
 * - Compton scattering  (inelastic, incoherent)
 * - Rayleigh scattering (elastic,   coherent)
+* - fluorescence detector escape  (energy shift from detector K-alpha)
+* - fluorescence detector pile-up (sum aka time coincidence aka pile-up in detector)
 *
-* An important option to enhance statistics is to set 'p_interact' to, say,
-* 30 percent (0.3) in order to force a fraction of the beam to scatter. This
-* will result on a larger number of scattered events, retaining intensity.
+* Use the <b>FluoPowder</b> sample component to properly handle powder diffraction with fluorescence.
 *
 * The 'material' specification is given as a chemical formulae, e.g. "LaB6". It
 * may also be given as a file name (CIF/LAU/LAZ/FullProf format) in which case 
@@ -33,6 +33,22 @@
 * A higher 'order' will handle multiple scattering events, and final absorption.
 * For instance, a value order>=2 handles e.g. fluorescence iterative cascades 
 * in the material. Leaving 'order=0' handles the single scattering only.
+*
+* NOTE: When activating  the escape and time coincidence peaks in a close-by
+* detector, you should further remove these contributions with an ABSORB keyword:
+*
+* USERVARS %{
+*   int fluo_type;
+* %}
+* COMPONENT F = Fluorescence(material="Al", escape_ratio=0.01, pileup_ratio=0.01) AT ...
+* EXTEND %{
+*   if (SCATTERED) fluo_type=type;              // record type of interaction
+* %}
+*
+* COMPONENT E_mon = Monitor_nD(options="energy", ...) AT ...
+* EXTEND %{
+*   if (fluo_type>=FLUORESCENCE_ESCAPE) ABSORB; // remove detector artifacts further
+* %}
 *
 * <b>Sample shape:</b>
 * Sample shape may be a cylinder, a sphere, a box or any other shape
@@ -73,14 +89,24 @@
 * COMPONENT F_out = COPY(F_in)(concentric=0)
 * AT (0,0,0) RELATIVE sample_position
 *
-* The computation is made via the XRayLib (apt install libxrl-dev).
+* <b>Enhancing computation efficiency:</b>
+* * An important option to enhance statistics is to set 'p_interact' to, say,
+* 30 percent (0.3) in order to force a fraction of the beam to scatter. This
+* will result on a larger number of scattered events, retaining intensity.
+*
+* In addition, it may be desirable to define a 'target' for the fluorescence
+* processes via e.g. the 'target_index' and the 'focus_xw / focus_yh' options.
+* This target should e.g. be the SDD area.
+*
+* This sample component can advantageously benefit from the SPLIT feature, e.g.
+* SPLIT COMPONENT sample = Fluorescence(...)
 *
 * Example: Fluorescence(material="LaB6",
 *  xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99,
 *  target_index=1, focus_xw=0.0005, focus_yh=0.0005)
 *
-* This sample component can advantageously benefit from the SPLIT feature, e.g.
-* SPLIT COMPONENT pow = Fluorescence(...)
+*
+* The computation is made via the XRayLib (apt install libxrl-dev).
 *
 * %Parameters
 * material:  [str]    Chemical formulae, e.g. "LaB6", "Pb2SnO4". If may also be a CIF/LAZ/LAU file.
@@ -107,11 +133,14 @@
 * target_z:  [m]      Position of target to focus at, along Z.
 * flag_compton: [1]   When 0, the Compton  scattering is ignored.
 * flag_rayleigh:[1]   When 0, the Rayleigh scattering is ignored.
-* flag_lorentzian:[1] When 1, the line shapes are assumed to be Lorentzian, else Gaussian
+* flag_lorentzian:[1] When 1, the line shapes are assumed to be Lorentzian, else Gaussian.
+* escape_ratio: [1]   Detector escape peak ratio,  e.g. 0.01-0.02. 0 inactivates.
+* escape_energy:[keV] Detector escape peak energy, e.g. 1.739 for Si, 9.886 for Ge.
+* pileup_ratio:   [1] Sum aka time coincidence aka pile-up detector peak ratio, e.g. 0.01-0.02. 0 inactivates.
 * order:     [1]      Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
-* type: scattering event type 0=fluorescence, 1=Rayleigh, 2=Compton, 3=transmit
+* type: scattering event type 0=fluorescence, 1=Rayleigh, 2=Compton, 3=transmit (absorbsion), 4=diffraction (not handled here), 5=detector escape peak, 6=detector pile-up/sum/coincidence peak
 *
 * %Link
 * The XRayLib https://github.com/tschoonj/xraylib
@@ -141,7 +170,10 @@ SETTING PARAMETERS(
   p_interact=0, 
   target_x = 0, target_y = 0, target_z = 0, focus_r = 0,
   focus_xw=0, focus_yh=0, focus_aw=0, focus_ah=0, int target_index=0,
-  int flag_compton=1, int flag_rayleigh=1, int flag_lorentzian=1, int order=1)
+  int flag_compton=1, int flag_rayleigh=1, int flag_lorentzian=1,
+  escape_ratio=0, escape_energy=1.739,
+  pileup_ratio=0,
+  int order=1)
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 DEPENDENCY " @XRLFLAGS@ -DUSE_OFF "
@@ -162,6 +194,8 @@ SHARE %{
   #define COMPTON      2  // Incoherent
   #define POWDER       3  // Powder diffraction
   #define TRANSMISSION 4
+  #define FLUORESCENCE_ESCAPE 5 // Detector escape      peak fluorescence
+  #define FLUORESCENCE_PILEUP 6 // Detector pile-up/sum peak fluorescence
   #include <xraylib/xraylib.h>
   
 /* See XrayLib code (c) T. Schoonjans
@@ -867,12 +901,27 @@ do { /* while (intersect) Loop over multiple scattering events */
       case COMPTON:      /* 2 Compton: Incoherent: choose final energy */
         n_Compton++;
         p_Compton += p;
-        theta      = acos(scalar_prod(kf_x,kf_y, kf_z,ki_x, ki_y,ki_z)/ki);
+        theta      = acos(scalar_prod(kf_x,kf_y,kf_z, ki_x,ki_y,ki_z)/ki);
         dsigma     = DCS_Compt(Z,  Ei, theta, NULL); // [barn/at/st]
-        kf         = ComptonEnergy(Ei, theta, NULL)*E2K; /* XRayLib */
+        kf         = ComptonEnergy(Ei, theta, NULL)*E2K; /* XRayLib, fraction of emc2=511 keV */
         p         *= 4*PI*dsigma/xs[COMPTON];
         break;
     }
+
+    // handle detector escape peak: just shift energy down by detector K-alpha
+    if (escape_ratio > 0 && escape_energy > 0 && kf > escape_energy*E2K && rand01() < escape_ratio) {
+      kf  -= escape_energy*E2K;
+      type = FLUORESCENCE_ESCAPE;
+
+    } else if (type == FLUORESCENCE && pileup_ratio > 0 && rand01() < pileup_ratio) {
+      // handle detector pile-up peak: get an other fluo line and sum it
+      i_Z = XRMC_SelectFromDistribution(cum_xs_fluo,     compound->nElements+1);
+      Z   = compound->Elements[i_Z];
+      Ef  = XRMC_SelectFluorescenceEnergy(Z, Ei, &dE);
+      kf += Ef*E2K;
+      type= FLUORESCENCE_PILEUP;
+    }
+
     Ef = K2E*kf;
     
     kx = kf*kf_x;

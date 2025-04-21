@@ -21,6 +21,8 @@
 * - Compton scattering  (inelastic, incoherent)
 * - Rayleigh scattering (elastic,   coherent)
 * - powder diffraction  (elastic,   coherent)
+* - fluorescence detector escape  (energy shift from detector K-alpha)
+* - fluorescence detector pile-up (sum aka time coincidence aka pile-up in detector)
 *
 * The 'material' specification is given as a chemical formulae, e.g. "LaB6". It
 * may also be given as a file name (CIF/LAU/LAZ/FullProf format) in which case
@@ -32,6 +34,22 @@
 * A higher 'order' will handle multiple scattering events, and final absorption.
 * For instance, a value order>=2 handles e.g. fluorescence iterative cascades
 * in the material. Leaving 'order=0' handles the single scattering only.
+*
+* NOTE: When activating  the escape and time coincidence peaks in a close-by
+* detector, you should further remove these contributions with an ABSORB keyword:
+*
+* USERVARS %{
+*   int fluo_type;
+* %}
+* COMPONENT F = FluoPowder(material="Al", escape_ratio=0.01, pileup_ratio=0.01) AT ...
+* EXTEND %{
+*   if (SCATTERED) fluo_type=type;              // record type of interaction
+* %}
+*
+* COMPONENT E_mon = Monitor_nD(options="energy", ...) AT ...
+* EXTEND %{
+*   if (fluo_type>=FLUORESCENCE_ESCAPE) ABSORB; // remove detector artifacts further
+* %}
 *
 * <b>Sample shape:</b>
 * Sample shape may be a cylinder, a sphere, a box or any other shape
@@ -72,7 +90,7 @@
 * COMPONENT F_out = COPY(F_in)(concentric=0)
 * AT (0,0,0) RELATIVE sample_position
 *
-* <b>Enhancing computation efficiency</b>
+* <b>Enhancing computation efficiency:</b>
 * An important option to enhance statistics is to set 'p_interact' to, say,
 * 30 percent (0.3) in order to force a fraction of the beam to scatter. This
 * will result on a larger number of scattered events, retaining intensity.
@@ -120,6 +138,9 @@
 * flag_rayleigh:  [1] When 0, the Rayleigh scattering is ignored.
 * flag_powder:    [1] When 0, the powder diffraction is ignored.
 * flag_lorentzian:[1] When 1, the fluorescence line shapes are assumed to be Lorentzian, else Gaussian.
+* escape_ratio:   [1] Detector escape peak ratio,  e.g. 0.01-0.02. 0 inactivates.
+* escape_energy:[keV] Detector escape peak energy, e.g. 1.739 for Si, 9.886 for Ge.
+* pileup_ratio:   [1] Sum aka time coincidence aka pile-up detector peak ratio, e.g. 0.01-0.02. 0 inactivates.
 * powder_barns:   [1] Flag to indicate if |F|^2 from 'material' is in barns or fm^2, (barns=1 for laz, barns=0 for lau type files).
 * powder_d_phi: [deg] Angle corresponding to the vertical angular range to focus to, e.g. detector height. 0 for no focusing.
 * powder_delta_d_d: [AA]   Global relative Delta_d/d spreading when the 'w' column is not available. Use 0 if ideal.
@@ -131,7 +152,7 @@
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
-* type: scattering event type 0=fluorescence, 1=Rayleigh, 2=Compton, 3=transmit, 4=diffraction
+* type: scattering event type 0=fluorescence, 1=Rayleigh, 2=Compton, 3=transmit (absorbsion), 4=diffraction, 5=detector escape peak, 6=detector pile-up/sum/coincidence peak
 *
 * %Link
 * The XRayLib https://github.com/tschoonj/xraylib
@@ -164,6 +185,8 @@ SETTING PARAMETERS(
   int flag_compton=1, int flag_rayleigh=1, int flag_lorentzian=1, int flag_powder=1,
   vector powder_format={0,0,0,0,0,0,0,0}, powder_Vc=0, powder_delta_d_d=0, powder_DW=0,
   powder_d_phi=0, int powder_nb_atoms=1, int powder_barns=1, int powder_sign=0,
+  escape_ratio=0, escape_energy=1.739,
+  pileup_ratio=0,
   int order=1)
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
@@ -182,6 +205,8 @@ SHARE COPY PowderN EXTEND %{
   #define COMPTON      2  // Incoherent
   #define POWDER       3  // Powder diffraction
   #define TRANSMISSION 4
+  #define FLUORESCENCE_ESCAPE 5 // Detector escape      peak fluorescence
+  #define FLUORESCENCE_PILEUP 6 // Detector pile-up/sum peak fluorescence
 
   #include <xraylib/xraylib.h>
 
@@ -1052,7 +1077,7 @@ do { /* while (intersect) Loop over multiple scattering events */
       case COMPTON:      /* 2 Compton: Incoherent: choose final energy */
         theta      = acos(scalar_prod(kf_x,kf_y, kf_z,kx, ky,kz)/kf); // kf is the previous |k|
         dsigma     = DCS_Compt(Z,  Ef, theta, NULL); // [barn/at/st] Ef is the previous particle energy
-        kf         = ComptonEnergy(Ef, theta, NULL)*E2K; /* XRayLib */
+        kf         = ComptonEnergy(Ef, theta, NULL)*E2K; /* XRayLib, fraction of emc2=511 keV */
         p         *= 4*PI*dsigma/xs[COMPTON];
         n_Compton++;
         p_Compton += p;
@@ -1078,6 +1103,21 @@ do { /* while (intersect) Loop over multiple scattering events */
       default:  // should never happen
         ABSORB;
     }
+
+    // handle detector escape peak: just shift energy down by detector K-alpha
+    if (escape_ratio > 0 && escape_energy > 0 && kf > escape_energy*E2K && rand01() < escape_ratio) {
+      kf  -= escape_energy*E2K;
+      type = FLUORESCENCE_ESCAPE;
+
+    } else if (type == FLUORESCENCE && pileup_ratio > 0 && rand01() < pileup_ratio) {
+      // handle detector pile-up peak: get an other fluo line and sum it
+      i_Z = XRMC_SelectFromDistribution(cum_xs_fluo,     compound->nElements+1);
+      Z   = compound->Elements[i_Z];
+      Ef  = XRMC_SelectFluorescenceEnergy(Z, Ei, &dE);
+      kf += Ef*E2K;
+      type= FLUORESCENCE_PILEUP;
+    }
+
     Ef = K2E*kf;
 
     kx = kf*kf_x;
