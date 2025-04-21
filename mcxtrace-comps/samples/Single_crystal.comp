@@ -1188,9 +1188,10 @@ void randderotate(double *nx, double *ny, double *nz, double a, double b, double
       Table_Init(&(abs->table),2,2);
       abs->table.data[0]=0;abs->table.data[1]=0;
       abs->table.data[2]=FLT_MAX;abs->table.data[3]=0;
-      fprintf(stderr,"Single_crystal: %s: Warning: material file %s not found. Absorption set to 0\n",
-        __FILE__, ABS_file);
-        return 0;
+      MPI_MASTER(
+      fprintf(stderr,"Single_crystal: %s: Warning: material file %s not found. Absorption set to 0.\n",
+        __FILE__, ABS_file));
+      return 0;
     }
   } // sx_read_abs_data
   
@@ -1361,11 +1362,13 @@ INITIALIZE
 
   if (hkl_info.sigma_i<0) hkl_info.sigma_i=0;
 
-  if (hkl_info.count)
-    printf("Single_crystal: %s: Read %d reflections from file '%s'\n",
-      NAME_CURRENT_COMP, hkl_info.count, reflections);
-  else printf("Single_crystal: %s: Using uniform incoherent elastic scattering only sigma=%g.\n",
-      NAME_CURRENT_COMP, hkl_info.sigma_i);
+  if (hkl_info.count) {
+    MPI_MASTER(printf("Single_crystal: %s: Read %d reflections from file '%s'\n",
+      NAME_CURRENT_COMP, hkl_info.count, reflections));
+  } else {
+    MPI_MASTER(printf("Single_crystal: %s: Using uniform incoherent elastic scattering only sigma=%g.\n",
+      NAME_CURRENT_COMP, hkl_info.sigma_i));
+  }
       
   if (!sx_read_abs_data(material_datafile, &abs_info, hkl_info )) abs_info.muc=0;
 
