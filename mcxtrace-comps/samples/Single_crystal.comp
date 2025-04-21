@@ -503,9 +503,15 @@ SHARE
       return(0);
       
     filename = cif2hkl(SC_file, "--xtal --mode XRA");
-    if (filename != SC_file) info->flag_barns=1; // cif2hkl returns barns
+    if (filename && filename != SC_file) info->flag_barns=1; // cif2hkl returns barns
     
-    if (!filename || Table_Read(&sTable, filename, 1) < 0) return(0);
+    if (!filename || Table_Read(&sTable, filename, 1) < 0)
+      exit(fprintf(stderr,"Single_crystal: %s: ERROR: Could not open file %s - exiting!\n",
+                   __FILE__, filename));
+
+    // remove temporary F2(hkl) file when giving CFL/CIF/ShelX file
+    if (filename && filename != SC_file)
+      unlink(filename);
     
     if (sTable.columns < 4) {
       MPI_MASTER(
@@ -959,10 +965,6 @@ SHARE
         __FILE__, i, SC_file));
       );
     }
-    
-    // remove temporary F2(hkl) file when giving CFL/CIF/ShelX file
-    if (filename != SC_file)
-      unlink(filename);
 
     /* sort the list with increasing tau */
     qsort(list, J, sizeof(struct hkl_data),  SX_list_compare);
