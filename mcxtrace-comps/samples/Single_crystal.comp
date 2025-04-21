@@ -80,7 +80,7 @@
 *   sphere:          radius (yheight=0)
 *   any shape:       geometry=OFF/PLY file
 *
-*   The complex geometry option handles any closed non-convex polyhedral.
+*   The complex geometry option handles any closed non-convex polyhedra.
 *   It computes the intersection points of the photon ray with the object
 *   transparently, so that it can be used like a regular sample object.
 *   It supports the PLY, OFF and NOFF file format but not COFF (colored faces).
@@ -369,6 +369,7 @@ SHARE
       int    recip;               /* Flag to indicate if recip or direct cell axes given */
       int    shape;               /* 0:cylinder, 1:box, 2:sphere 3:any shape*/
       int    flag_warning;        /* number of warnings */
+      int    flag_barns;          /* 1: F2 in barns, 0: in fm^2 */
       char   type;                /* type of last event: t=transmit,c=coherent or i=incoherent */
       int    h,k,l;               /* last coherent scattering momentum transfer indices */
       int    tau_count;           /* Number of reflections within cutoff */
@@ -408,6 +409,7 @@ SHARE
     int  ret = 0;
     int  found = 0;
     char *OUTFILE;
+    char *inpath;
     
     // get filename extension
     const char *ext = strrchr(infile, '.');
@@ -424,21 +426,28 @@ SHARE
       
     OUTFILE = malloc(1024);
     if (!OUTFILE) return infile;
-    
+    inpath = malloc(1024);
+    if (!inpath) return infile;
+
+    // get input file path from read-table:Open_File
+    FILE *f_infile = Open_File(infile, "r", inpath);
+    if (!f_infile) return infile;
+    fclose(f_infile);
+
     strncpy(OUTFILE, tmpnam(NULL), 1024); // create an output temporary file name
     
     // try in order the CIF2HKL env var, then the system cif2hkl, then the McCode one
     if (!found && getenv("CIF2HKL")) {
       snprintf(cmd,  1024, "%s -o %s %s %s",
         getenv("CIF2HKL"),
-        OUTFILE, options, infile);
+        OUTFILE, options, inpath);
       ret = system(cmd);
       if (ret != -1 && ret != 127) found = 1;
     }
     if (!found) {
       // try with cif2hkl command from the system PATH
       snprintf(cmd,  1024, "%s -o %s %s %s",
-        "cif2hkl", OUTFILE, options, infile);
+        "cif2hkl", OUTFILE, options, inpath);
       ret = system(cmd);
       if (ret != -1 && ret != 127) found = 1;
     }
@@ -447,7 +456,7 @@ SHARE
       snprintf(cmd,  1024, "%s%c%s%c%s -o %s %s %s",
         getenv(FLAVOR_UPPER) ? getenv(FLAVOR_UPPER) : MCXTRACE,
         MC_PATHSEP_C, "bin", MC_PATHSEP_C, "cif2hkl",
-        OUTFILE, options, infile);
+        OUTFILE, options, inpath);
       ret = system(cmd);
     }
     // ret = -1:  child process could not be created
@@ -494,8 +503,15 @@ SHARE
       return(0);
       
     filename = cif2hkl(SC_file, "--xtal --mode XRA");
+    if (filename && filename != SC_file) info->flag_barns=1; // cif2hkl returns barns
     
-    if (!filename || Table_Read(&sTable, filename, 1) < 0) return(0);
+    if (!filename || Table_Read(&sTable, filename, 1) < 0)
+      exit(fprintf(stderr,"Single_crystal: %s: ERROR: Could not open file %s - exiting!\n",
+                   __FILE__, filename));
+
+    // remove temporary F2(hkl) file when giving CFL/CIF/ShelX file
+    if (filename && filename != SC_file)
+      unlink(filename);
     
     if (sTable.columns < 4) {
       MPI_MASTER(
@@ -949,10 +965,6 @@ SHARE
         __FILE__, i, SC_file));
       );
     }
-    
-    // remove temporary F2(hkl) file when giving CFL/CIF/ShelX file
-    if (filename != SC_file)
-      unlink(filename);
 
     /* sort the list with increasing tau */
     qsort(list, J, sizeof(struct hkl_data),  SX_list_compare);
@@ -1176,9 +1188,10 @@ void randderotate(double *nx, double *ny, double *nz, double a, double b, double
       Table_Init(&(abs->table),2,2);
       abs->table.data[0]=0;abs->table.data[1]=0;
       abs->table.data[2]=FLT_MAX;abs->table.data[3]=0;
-      fprintf(stderr,"Single_crystal: %s: Warning: material file %s not found. Absorption set to 0\n",
-        __FILE__, ABS_file);
-        return 0;
+      MPI_MASTER(
+      fprintf(stderr,"Single_crystal: %s: Warning: material file %s not found. Absorption set to 0.\n",
+        __FILE__, ABS_file));
+      return 0;
     }
   } // sx_read_abs_data
   
@@ -1232,6 +1245,7 @@ INITIALIZE
   hkl_info.kix = hkl_info.kiy = hkl_info.kiz = 0;
   hkl_info.nb_reuses = hkl_info.nb_refl = hkl_info.nb_refl_count = 0;
   hkl_info.tau_count = 0;
+  hkl_info.flag_barns= barns;
   
   /*this should not be in hkl_info*/
   hkl_info.shape=-1; /* -1:no shape, 0:cyl, 1:box, 2:sphere, 3:any-shape  */
@@ -1348,11 +1362,13 @@ INITIALIZE
 
   if (hkl_info.sigma_i<0) hkl_info.sigma_i=0;
 
-  if (hkl_info.count)
-    printf("Single_crystal: %s: Read %d reflections from file '%s'\n",
-      NAME_CURRENT_COMP, hkl_info.count, reflections);
-  else printf("Single_crystal: %s: Using uniform incoherent elastic scattering only sigma=%g.\n",
-      NAME_CURRENT_COMP, hkl_info.sigma_i);
+  if (hkl_info.count) {
+    MPI_MASTER(printf("Single_crystal: %s: Read %d reflections from file '%s'\n",
+      NAME_CURRENT_COMP, hkl_info.count, reflections));
+  } else {
+    MPI_MASTER(printf("Single_crystal: %s: Using uniform incoherent elastic scattering only sigma=%g.\n",
+      NAME_CURRENT_COMP, hkl_info.sigma_i));
+  }
       
   if (!sx_read_abs_data(material_datafile, &abs_info, hkl_info )) abs_info.muc=0;
 
@@ -1476,7 +1492,7 @@ TRACE
       //Avogadro number = [mol^-1]
       //mu = [cm squared . g⁻1]
       //therefore convert to barns if barns set to 1, otherwise to fm^2
-      if (barns) { //convert cm^2 into barns
+      if (hkl_info.flag_barns) { //convert cm^2 into barns
         abs_xsect *= 10E24; 
       } else {  //convert cm^2 into fm^2, else we assume fm^2
         abs_xsect *= 10E26;
@@ -1489,7 +1505,7 @@ TRACE
     inc_xsect = hkl_info.sigma_i;
     inc_xlen  = inc_xsect/V0;
 
-    if (barns) {
+    if (hkl_info.flag_barns) {
       /*If cross sections are given in barns, we need a scaling factor of 100 
        to get scattering lengths in m, since V0 is assumed to be in AA*/
     abs_xlen *= 100; inc_xlen *= 100;
@@ -1649,7 +1665,7 @@ TRACE
          in AA**3 = 10**-30 m**2. Hence a factor of 100 is used to convert
          scattering lengths to m**-1 */
       coh_xlen = coh_xsect/V0;
-      if (barns) {
+      if (hkl_info.flag_barns) {
         coh_xlen *= 100;
       } /* else assume fm^2 */
       tot_xlen = abs_xlen + inc_xlen + coh_xlen;

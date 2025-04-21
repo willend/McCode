@@ -51,7 +51,7 @@
 *   hollow sphere:   radius and thickness>0 (yheight=0)
 *   any shape:       geometry=OFF_file
 *
-*   The complex geometry option handles any closed non-convex polyhedral.
+*   The complex geometry option handles any closed non-convex polyhedra.
 *   It computes the intersection points of the neutron ray with the object
 *   transparently, so that it can be used like a regular sample object.
 *   It supports the PLY, OFF and NOFF file format but not COFF (colored faces).
@@ -232,7 +232,7 @@ double Epsilon;             /* Strain=delta_d_d/d shift in ppm */
 struct line_info_struct
 {
   struct line_data *list;     /* Reflection array */
-  int  count;                  /* Number of reflections */
+  int    count;                  /* Number of reflections */
   double Dd;
   double DWfactor;
   double V_0;
@@ -283,11 +283,12 @@ struct line_info_struct
   //   used to convert CIF/CFL/INS file into F2(hkl)
   //   the CIF2HKL env var can point to a cif2hkl executable
   //   else the McCode binary is attempted, then the system.
-  char *cif2hkl(char *infile, char *options) {
+  char *cif2hkl(const char *infile, char *options) {
     char cmd[1024];
     int  ret = 0;
     int  found = 0;
     char *OUTFILE;
+    char *inpath;
     
     // get filename extension
     char *ext = strrchr(infile, '.');
@@ -304,6 +305,13 @@ struct line_info_struct
       
     OUTFILE = malloc(1024);
     if (!OUTFILE) return infile;
+    inpath = malloc(1024);
+    if (!inpath) return infile;
+
+    // get input file path from read-table:Open_File
+    FILE *f_infile = Open_File(infile, "r", inpath);
+    if (!f_infile) return infile;
+    fclose(f_infile);
     
     strncpy(OUTFILE, tmpnam(NULL), 1024); // create an output temporary file name
     
@@ -311,7 +319,7 @@ struct line_info_struct
     if (!found && getenv("CIF2HKL")) {
       snprintf(cmd,  1024, "%s -o %s %s %s",
         getenv("CIF2HKL"),
-        OUTFILE, options, infile);
+        OUTFILE, options, inpath);
       ret = system(cmd);
       if (ret != -1 && ret != 127) found = 1;
     }
@@ -327,7 +335,7 @@ struct line_info_struct
       snprintf(cmd,  1024, "%s%c%s%c%s -o %s %s %s",
         getenv(FLAVOR_UPPER) ? getenv(FLAVOR_UPPER) : MCSTAS,
         MC_PATHSEP_C, "bin", MC_PATHSEP_C, "cif2hkl",
-        OUTFILE, options, infile);
+        OUTFILE, options, inpath);
       ret = system(cmd);
     }
     // ret = -1:  child process could not be created
@@ -345,7 +353,7 @@ struct line_info_struct
     }
     MPI_MASTER(   
     printf("%s: INFO: Converting %s into F2(HKL) list %s\n", 
-      __FILE__, infile, OUTFILE);
+      __FILE__, inpath, OUTFILE);
     printf ("%s\n",cmd);
     );
     fflush(NULL);
@@ -376,6 +384,7 @@ struct line_info_struct
       return(0);
     }
     filename = cif2hkl(SC_file, "--mode NUC");
+    if (filename != SC_file) info->flag_barns=1; // cif2hkl returns barns
     long retval = Table_Read(&sTable, filename, 1); /* read 1st block data from SC_file into sTable*/
     if (retval<0) {
       fprintf(stderr,"PowderN: Could not open file %s - exiting!\n",SC_file);
@@ -447,18 +456,20 @@ struct line_info_struct
           info->compname, size, SC_file);
     );
 
-    if (info->column_order[0] == 4 && info->flag_barns !=0)
-    MPI_MASTER(
-      printf("PowderN: %s: Powder file probably of type Crystallographica/Fullprof (lau)\n"
-           "WARNING: but F2 unit is set to barns=1 (barns). Intensity might be 100 times too high.\n",
-           info->compname);
-    );
-    if (info->column_order[0] == 17 && info->flag_barns == 0)
-    MPI_MASTER(
-      printf("PowderN: %s: Powder file probably of type Lazy Pulver (laz)\n"
-           "WARNING: but F2 unit is set to barns=0 (fm^2). Intensity might be 100 times too low.\n",
-           info->compname);
-    );
+    if (filename == SC_file) { // only when not from cif2hkl
+      if (info->column_order[0] == 4 && info->flag_barns !=0)
+      MPI_MASTER(
+        printf("PowderN: %s: Powder file probably of type Crystallographica/Fullprof (lau)\n"
+            "WARNING: but F2 unit is set to barns=1 (barns). Intensity might be 100 times too high.\n",
+            info->compname);
+      );
+      if (info->column_order[0] == 17 && info->flag_barns == 0)
+      MPI_MASTER(
+        printf("PowderN: %s: Powder file probably of type Lazy Pulver (laz)\n"
+            "WARNING: but F2 unit is set to barns=0 (fm^2). Intensity might be 100 times too low.\n",
+            info->compname);
+      );
+    }
     /* allocate line_data array */
     list = (struct line_data*)malloc(size*sizeof(struct line_data));
 
@@ -879,11 +890,9 @@ TRACE
   double v_min = line_info.v_min;
   double v_max = line_info.v_max;
   double lfree = line_info.lfree;
-  double neutron_passed = line_info.neutron_passed;
   long   xs_compute = line_info.xs_compute;
   long   xs_reuse   = line_info.xs_reuse;
   long   xs_calls   = line_info.xs_calls;
-  int    flag_warning = line_info.flag_warning;
   double dq = line_info.dq;
 
   #ifdef OPENACC
@@ -939,10 +948,10 @@ TRACE
     v = sqrt(vx*vx + vy*vy + vz*vz);
     l_full = v * (t3 - t2 + t1 - t0);
 
-    if (neutron_passed < CHAR_BUF_LENGTH) {
+    if (line_info.neutron_passed < CHAR_BUF_LENGTH) {
       if (v < v_min) v_min = v;
       if (v > v_max) v_max = v;
-      neutron_passed++;
+      line_info.neutron_passed++;
     }
 
     /* Calculate total scattering cross section at relevant velocity - but not on GPU*/
@@ -961,10 +970,10 @@ TRACE
 
     if (t3 < 0) {
       t3=0; /* Already past sample?! */
-      if (flag_warning < 10)
+      if (line_info.flag_warning < 10)
       printf("PowderN: %s: Warning: Neutron has already passed us? (Skipped).\n"
              "         In concentric geometry, this may be caused by a missing concentric=0 option in 2nd enclosing instance.\n", NAME_CURRENT_COMP);
-      flag_warning++;
+      line_info.flag_warning++;
     } else {
       if (dt<0) { /* Calculate scattering point position */
         dt = fabs(dt)*(t1 - t0); /* 'Forward' part */
@@ -1092,9 +1101,9 @@ TRACE
 
 			if (!intersect) {
 				/* Strange error: did not hit cylinder */
-				if (flag_warning < 10)
+				if (line_info.flag_warning < 10)
 				  printf("PowderN: %s: WARNING: Did not hit sample from inside (coh). ABSORB.\n", NAME_CURRENT_COMP);
-				flag_warning++;
+				line_info.flag_warning++;
 				ABSORB;
 			}
 
@@ -1168,9 +1177,9 @@ TRACE
 
         if (!intersect) {
           /* Strange error: did not hit cylinder */
-          if (flag_warning < 10)
+          if (line_info.flag_warning < 10)
             printf("PowderN: %s: WARNING: Did not hit sample from inside (inc). ABSORB.\n", NAME_CURRENT_COMP);
-          flag_warning++;
+          line_info.flag_warning++;
           ABSORB;
         }
 
@@ -1225,13 +1234,7 @@ TRACE
   line_info.xs_reuse=xs_reuse;
   line_info.xs_calls=xs_calls;
   line_info.dq=dq;
-  line_info.neutron_passed = neutron_passed;  
   #endif
-  // These should be updated in any case
-  #pragma acc atomic write
-  line_info.flag_warning += flag_warning;
-  //#pragma acc atomic write
-  //line_info.neutron_passed = neutron_passed;
 
 %}
 

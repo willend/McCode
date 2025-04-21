@@ -15,58 +15,119 @@
 * %Description
 * Simply a model source illuminating a fluo/powder/sx sample.
 * The default sample itself is an LaB6-powder.
-* The idea is to compare the fluorescence and diffraction patterns.
+* The idea is to compare the fluorescence and diffraction patterns:
+* - index=1: use PowderN              (no fluorescence)
+* - index=2: use Single_crystal       (no fluorescence, very slow)
+* - index=3: use FluoPowder           (exact)
+* - index=4: use Fluorescence         (no diffraction)
+* - index=5: use Fluorescence+PowderN (slow, under estimates contributions)
 *
-* %Example: Test_FluoPowder.instr E0=15 index=1 Detector: Sph_mon_I=7.95304e-16
-* %Example: Test_FluoPowder.instr E0=15 index=2 Detector: Sph_mon_I=8.00171e-16
-* %Example: Test_FluoPowder.instr E0=15 index=3 Detector: Sph_mon_I=7.79059e-16
-* %Example: Test_FluoPowder.instr E0=15 index=4 Detector: Sph_mon_I=7.83812e-16
+* %Example: Test_FluoPowder.instr E0=15 index=1 Detector: Sph_mon_I=2.2379e-18
+* %Example: Test_FluoPowder.instr E0=15 index=2 Detector: Sph_mon_I=2.49656e-18
+* %Example: Test_FluoPowder.instr E0=15 index=3 Detector: Sph_mon_I=2.84012e-18
+* %Example: Test_FluoPowder.instr E0=15 index=4 Detector: Sph_mon_I=7.83812e-19
+* %Example: Test_FluoPowder.instr E0=15 index=5 Detector: Sph_mon_I=2.21276e-18
 *
 * %Parameters
-* E0:          [keV]  Source energy (width 1 keV)
-* L1:          [m]    Source-sample distance
-* reflections: [str]  List of powder reflections, LAU/CIF format.
-* index:       [1]    Index of the sample component to use. 1=PowderN, 2=Single_crystal, 3=FluoPowder, 4=fluorescence
+* E0:          [keV]  Source mean energy of xrays.
+* dE:          [keV]  Source energy half spread of x-rays.
+* L1:          [m]    Source-sample distance.
+* material:    [str]  Material structure/composition as formula or LAU/CIF format.
+* index:       [1]    Index of the sample component to use. 1=PowderN, 2=Single_crystal (much slower), 3=FluoPowder, 4=Fluorescence, 5=Fluorescence+PowderN in a GROUP (slower)
 *
 * %End
 *******************************************************************************/
 DEFINE INSTRUMENT Test_FluoPowder(E0=15, dE=1, L1=10, string material="LaB6.cif",
     int index=3)
 
+USERVARS %{
+  int scatt_type; // 3=diff 0=fluo
+%}
+
+INITIALIZE %{
+  switch (index) {
+    case 1:
+      printf("%s: Using PowderN (pure diffraction)\n", NAME_INSTRUMENT); break;
+    case 2:
+      printf("%s: Using Single_crystal (pure diffraction, powder average)\n", NAME_INSTRUMENT); break;
+    case 3:
+      printf("%s: Using FluoPowder (fluorescence+diffraction)\n", NAME_INSTRUMENT); break;
+    case 4:
+      printf("%s: Using Fluorescence (pure fluorescence)\n", NAME_INSTRUMENT); break;
+    case 5:
+      printf("%s: Using Fluorescence+PowderN in a GROUP (fluorescence+diffraction)\n", NAME_INSTRUMENT); break;
+    default:
+      exit(printf("%s: Unknown sample index %i. Use index=1-4.", NAME_INSTRUMENT, index));
+  }
+%}
+
 TRACE
 
 REMOVABLE COMPONENT Origin = Progress_bar()
-  AT (0,0,0) ABSOLUTE
+AT (0,0,0) ABSOLUTE
 
 COMPONENT src = Source_flat(
     yheight = 1e-6, xwidth = 1e-6, dist = 10, focus_xw = 1e-6,
     focus_yh = 1e-6, E0 = E0, dE = dE)
-  AT (0, 0, 0) RELATIVE Origin
+AT (0, 0, 0) RELATIVE Origin
 
 // samples --------------------------------------------------------------------
 
 SPLIT COMPONENT sample_cradle = Arm()
-  AT (0, 0, L1) RELATIVE PREVIOUS
+AT (0, 0, L1) RELATIVE PREVIOUS
 
 COMPONENT Pow = PowderN(
     radius=0.5e-6, reflections=material)
 WHEN (index == 1)
 AT (0, 0, 0) RELATIVE sample_cradle
+EXTEND %{
+  if (!SCATTERED) ABSORB;
+  scatt_type=3;
+%}
 
 COMPONENT SX = Single_crystal(
     radius=0.5e-6, reflections=material,powder=1, mosaic=5)
 WHEN (index == 2)
 AT (0, 0, 0) RELATIVE sample_cradle
+EXTEND %{
+  if (!SCATTERED) ABSORB;
+  scatt_type=3;
+%}
 
 COMPONENT FL_pow = FluoPowder(
-    radius=0.5e-6, material=material
-)WHEN (index == 3)
+    radius=0.5e-6, material=material)
+WHEN (index == 3)
 AT (0, 0, 0) RELATIVE sample_cradle
+EXTEND %{
+  if (!SCATTERED) ABSORB;
+  scatt_type = type;
+%}
 
 COMPONENT Fluo = Fluorescence(
-  radius=0.5e-6, material=material
-)WHEN (index == 4)
+  radius=0.5e-6, material=material)
+WHEN (index == 4)
 AT (0, 0, 0) RELATIVE sample_cradle
+EXTEND %{
+  if (!SCATTERED) ABSORB;
+  scatt_type = type;
+%}
+
+COMPONENT FluoG = COPY(Fluo)
+WHEN (index == 5)
+AT (0, 0, 0) RELATIVE sample_cradle
+GROUP FluPow
+EXTEND %{
+  if (SCATTERED) scatt_type = type;
+%}
+
+COMPONENT PowG = COPY(Pow)
+WHEN (index == 5)
+AT (0, 0, 0) RELATIVE sample_cradle
+GROUP FluPow
+EXTEND %{
+  if (SCATTERED) scatt_type=3;
+  else ABSORB;
+%}
 
 // detectors ------------------------------------------------------------------
 
@@ -74,10 +135,25 @@ COMPONENT Sph_mon = PSD_monitor_4PI(nx=512,ny=512,
     radius=1, restore_xray=1, filename="Sphere")
   AT (0, 0, 0) RELATIVE PREVIOUS
 
+COMPONENT Sph_mon_pow = COPY(Sph_mon)(filename="Sphere_pow")
+  WHEN (scatt_type == 3)
+  AT (0, 0, 0) RELATIVE PREVIOUS
+
+  COMPONENT Sph_mon_flu = COPY(Sph_mon)(filename="Sphere_fluo")
+  WHEN (scatt_type != 3)
+  AT (0, 0, 0) RELATIVE PREVIOUS
+
 COMPONENT E_mon = Monitor_nD(
-    options="energy",
-    bins=1024, radius=1, filename="Energy",restore_xray=1
-)
-AT(0,0,0) RELATIVE PREVIOUS
+    options="energy", min=0, max=1.2*E0,
+    bins=1024, radius=1, filename="Energy",restore_xray=1)
+  AT(0,0,0) RELATIVE PREVIOUS
+
+COMPONENT E_mon_pow = COPY(E_mon)(filename="Energy_pow")
+  WHEN (scatt_type == 3)
+  AT (0, 0, 0) RELATIVE PREVIOUS
+
+COMPONENT E_mon_flu = COPY(E_mon)(filename="Energy_flu")
+  WHEN (scatt_type != 3)
+  AT (0, 0, 0) RELATIVE PREVIOUS
 
 END
