@@ -159,6 +159,7 @@ jobs:
       run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
 
     - name: Run MCPL_input instrument MPI
+      if: matrix.os != 'windows-11-arm'
       working-directory: run_mcpl_input
       run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto repeat=1
 
