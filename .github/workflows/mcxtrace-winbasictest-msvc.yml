@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-2019, windows-2022, windows-2025]
+        os: [windows-2019, windows-2022, windows-2025, windows-11-arm]
 
     steps:
 
@@ -31,7 +31,8 @@ jobs:
         python-version: 3.11
 
       #Two ways of enabling cl.exe and other tools. One is via an external action...:
-    - name: Setup VS in shell
+    - name: Setup VS in shell Intel
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
       uses: ilammy/msvc-dev-cmd@v1
       #...but a simpler one might be to simply invoke the correct vcvars64.bat
       #file first, like...:
@@ -43,6 +44,12 @@ jobs:
       #        cl /help
       #
       #...but since we also want to support VS 2019, we use the above action for now
+
+    - name: Setup VS in shell arm64
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: arm64
 
     - name: Setup MPI
       uses: mpi4py/setup-mpi@v1
@@ -89,8 +96,13 @@ jobs:
     - name: CMake install
       run: cmake --install build --config Release
 
-    - name: pip install deps
-      run: pip install PyYAML ply McStasscript mslex
+    - name: pip install deps Windows Intel
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
+      run: pip install PyYAML ply McStasscript ncrystal mslex
+
+    - name: pip install deps Windows arm64
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      run: pip install PyYAML ply ncrystal mslex
 
     - name: pip install mcpl-core preview
       run: pip install -v "git+https://github.com/mctools/mcpl@path_to_mcpl2#subdirectory=mcpl_core"
@@ -137,10 +149,12 @@ jobs:
       run: ..\install\bin\mxrun --verbose test.instr -d Single_core repeat=1
 
     - name: Run std instrument MPI
+      if: matrix.os != 'windows-11-arm'
       working-directory: run_std
       run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto LENS=0
 
     - name: Run MCPL_output instrument MPI
+      if: matrix.os != 'windows-11-arm'
       working-directory: run_mcpl_output
       run: ..\install\bin\mxrun --verbose test.instr -d MPI_multicore -c --mpi=auto Ncount=1e3
 
