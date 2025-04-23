@@ -3575,7 +3575,7 @@ long sort_absorb_last(_class_particle* particles, _class_particle* pbuffer, long
   // copy non-absorbed block
   #pragma acc parallel loop present(particles[0:buffer_len])
   for (long tidx = 0; tidx < accumlen; tidx++) { // tidx: thread index
-    unsigned long randstate[7];
+    randstate_t randstate[7];
     _class_particle sourcebuffer;
     _class_particle targetbuffer;
     // assign reduced weight to all particles
@@ -4164,14 +4164,14 @@ void _randvec_target_rect_real(double *xo, double *yo, double *zo, double *solid
 #define UPPER_MASK 0x80000000UL /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
-unsigned long mt[N]; /* the array for the state vector  */
+randstate_t mt[N]; /* the array for the state vector  */
 int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
 
 // required for common rng alg interface (see RNG_ALG usage in mccode-r.h)
 void mt_srandom_empty() {}
 
 // initializes mt[N] with a seed
-void mt_srandom(unsigned long s)
+void mt_srandom(randstate_t s)
 {
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<N; mti++) {
@@ -4188,7 +4188,7 @@ void mt_srandom(unsigned long s)
 /* Initialize by an array with array-length.
    Init_key is the array for initializing keys.
    key_length is its length. */
-void init_by_array(unsigned long init_key[], unsigned long key_length)
+void init_by_array(randstate_t init_key[], randstate_t key_length)
 {
     int i, j, k;
     mt_srandom(19650218UL);
@@ -4213,10 +4213,10 @@ void init_by_array(unsigned long init_key[], unsigned long key_length)
     mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
 }
 /* generates a random number on [0,0xffffffff]-interval */
-unsigned long mt_random(void)
+randstate_t mt_random(void)
 {
-    unsigned long y;
-    unsigned long mag01[2]={0x0UL, MATRIX_A};
+    randstate_t y;
+    randstate_t mag01[2]={0x0UL, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if (mti >= N) { /* generate N words at one time */
@@ -4282,11 +4282,11 @@ rng.html>
       2^32*(2^32-1)*(2^63+2^32-1) > 2^127
 */
 
-/* the KISS state is stored as a vector of 7 unsigned long        */
+/* the KISS state is stored as a vector of 7 randstate_t        */
 /*   0  1  2  3  4      5  6   */
 /* [ x, y, z, w, carry, k, m ] */
 
-unsigned long *kiss_srandom(unsigned long state[7], unsigned long seed) {
+randstate_t *kiss_srandom(randstate_t state[7], randstate_t seed) {
   if (seed == 0) seed = 1ul;
   state[0] = seed | 1ul; // x
   state[1] = seed | 2ul; // y
@@ -4298,7 +4298,7 @@ unsigned long *kiss_srandom(unsigned long state[7], unsigned long seed) {
   return NULL;
 }
 
-unsigned long kiss_random(unsigned long state[7]) {
+randstate_t kiss_random(randstate_t state[7]) {
     state[0] = state[0] * 69069ul + 1ul;
     state[1] ^= state[1] << 13ul;
     state[1] ^= state[1] >> 17ul;
