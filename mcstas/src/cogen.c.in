@@ -2389,7 +2389,7 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("#include <inttypes.h>");
   cout("");
 
-  /* McCode-specific typedefs and defines */
+  /* McCode-specific typedefs */
   cout("typedef double MCNUM;");
   cout("typedef struct {MCNUM x, y, z;} Coords;");
   cout("typedef MCNUM Rotation[3][3];");

@@ -619,18 +619,18 @@ void mcdis_sphere(double x, double y, double z, double r);
 
 
 #if RNG_ALG == _RNG_ALG_MT  // MT (currently not functional for gpu)
-#  define MC_RAND_MAX ((uint64_t)0xffffffff)
-#  define randstate_t uint64_t // this could be anything
+#  define MC_RAND_MAX UINT64_C(0xffffffff)
+#  define randstate_t unsigned long // this could be anything
 #  define RANDSTATE_LEN 1
 #  define srandom(seed) mt_srandom_empty()
 #  define random() mt_random()
 #  define _random() mt_random()
 #elif RNG_ALG == _RNG_ALG_KISS  // KISS
 #  ifndef ULONG_MAX
-#    define ULONG_MAX ((uint64_t)0xffffffffffffffffUL)
+#    define ULONG_MAX UINT64_C(0xffffffffffffffffUL)
 #  endif
 #  define MC_RAND_MAX ULONG_MAX
-#  define randstate_t uint64_t
+#  define randstate_t unsigned long
 #  define RANDSTATE_LEN 7
 #  define srandom(seed) kiss_srandom(_particle->randstate, seed)
 #  define random() kiss_random(_particle->randstate)
