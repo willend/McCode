@@ -2386,13 +2386,15 @@ cogen_header(struct instr_def *instr, char *output_name)
   /* Basic includes */
   cout("");
   cout("#include <string.h>");
+  cout("#include <inttypes.h>");
   cout("");
 
-  /* McCode-specific typedefs */
+  /* McCode-specific typedefs and defines */
   cout("typedef double MCNUM;");
   cout("typedef struct {MCNUM x, y, z;} Coords;");
   cout("typedef MCNUM Rotation[3][3];");
   cout("#define MCCODE_BASE_TYPES");
+  cout("#define randstate_t uint64_t");
   cout("");
 
   /* the max number of user variables*/
