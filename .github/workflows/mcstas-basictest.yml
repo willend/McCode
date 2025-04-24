@@ -181,7 +181,7 @@ jobs:
            ../install_mcstas/bin/${MCRUN_EXECUTABLE} Test_RNG_rand01.instr -s1000 seed=1000 -d RNGtest
            export SUM=`grep -v \# RNGtest/rngout.dat | ${MD5SUM}`
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
-           if [[ ${EXPECTED} = ${SUM} ]];
+           if [ "${EXPECTED}" == "${SUM}" ];
            then
               echo RNG test success!
               return 0
