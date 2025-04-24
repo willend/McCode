@@ -608,16 +608,6 @@ void mcdis_sphere(double x, double y, double z, double r);
 
 /* random number generation. ================================================ */
 
-/* available random number generators */
-#define _RNG_ALG_MT         1
-#define _RNG_ALG_KISS       2
-
-/* selection of random number generator */
-#ifndef RNG_ALG
-#  define RNG_ALG  _RNG_ALG_KISS
-#endif
-
-
 #if RNG_ALG == _RNG_ALG_MT  // MT (currently not functional for GPU)
 #  define MC_RAND_MAX ((uint32_t)0xffffffffUL)
 #  define randstate_t uint32_t

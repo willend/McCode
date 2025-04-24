@@ -2394,7 +2394,19 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("typedef struct {MCNUM x, y, z;} Coords;");
   cout("typedef MCNUM Rotation[3][3];");
   cout("#define MCCODE_BASE_TYPES");
+  cout("");
+  cout("/* available random number generators */");
+  cout("#define _RNG_ALG_MT         1");
+  cout("#define _RNG_ALG_KISS       2");
+  cout("/* selection of random number generator */");
+  cout("#ifndef RNG_ALG");
+  cout("#  define RNG_ALG  _RNG_ALG_KISS");
+  cout("#endif");
+  cout("#if RNG_ALG == _RNG_ALG_MT // MT ");
+  cout("#define randstate_t uint32_t");
+  cout("#elif RNG_ALG == _RNG_ALG_KISS  // KISS");
   cout("#define randstate_t uint64_t");
+  cout("#endif");
   cout("");
 
   /* the max number of user variables*/
