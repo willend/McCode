@@ -175,7 +175,7 @@ class McStas:
 
         # Setup cflags, use -lm anywhere else than Windows-conda with cl.exe
         cflags = ''
-        if not os.environ.get('CONDA_PREFIX') and "cl.exe" in mccode_config.compilation['CC'].lower():
+        if not "cl.exe" in mccode_config.compilation['CC'].lower():
             cflags += '-lm ' # math library
 
         # Special support for conda environment with compilers included. To be
@@ -304,7 +304,7 @@ class McStas:
                 cflags=cflags.replace("${CONDA_PREFIX}",os.environ.get('CONDA_PREFIX'))
 
         # Final assembly of compiler commandline
-        if not os.environ.get('CONDA_PREFIX') and "cl.exe" in mccode_config.compilation['CC'].lower():
+        if not "cl.exe" in mccode_config.compilation['CC'].lower():
             args = ['-o', self.binpath, self.cpath] + lexer.split(cflags)
         else:
             args = [self.cpath] + lexer.split(cflags)
