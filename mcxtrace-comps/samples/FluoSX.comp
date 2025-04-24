@@ -217,7 +217,7 @@ SHARE COPY Single_crystal EXTEND %{
   #define FLUORESCENCE 0  // Fluo
   #define RAYLEIGH     1  // Coherent
   #define COMPTON      2  // Incoherent
-  #define POWDER       3  // Powder diffraction
+  #define DIFFRACTION  3  // diffraction
   #define TRANSMISSION 4
   #define FLUORESCENCE_ESCAPE 5 // Detector escape      peak fluorescence
   #define FLUORESCENCE_PILEUP 6 // Detector pile-up/sum peak fluorescence
@@ -559,7 +559,7 @@ INITIALIZE %{
                         hkl_info.ctr_size,hkl_info.ctr_k,hkl_info.ctr_FT2,hkl_info.ctr_dir);
       if (i == 0) {
         MPI_MASTER(
-        fprintf(stderr,"WARNING: FluoSX: %s: mosaic or reflection file %s is not valid (CIF/LAU). Ignoring diffraction process.\n",
+        fprintf(stderr,"WARNING: FluoSX: %s: sx_mosaic or material file %s is not valid (CIF/LAU). Ignoring diffraction process.\n",
                       NAME_CURRENT_COMP, material);
         );
         flag_sx=0;
@@ -567,9 +567,6 @@ INITIALIZE %{
         MPI_MASTER(
           printf("FluoSX: %s: Read %d reflections from file '%s'\n",
                           NAME_CURRENT_COMP, hkl_info.count, material);
-          printf("FluoSX: %s: Vc=%g [Angs] sigma_inc=%g [barn] reflections=%s\n",
-                 NAME_CURRENT_COMP, hkl_info.V0, hkl_info.sigma_i,
-                 material && strlen(material) ? material : "NULL");
           printf("Direct space lattice orientation:\n");
           printf("  a = [%g %g %g]\n", hkl_info.m_ax, hkl_info.m_ay, hkl_info.m_az);
           printf("  b = [%g %g %g]\n", hkl_info.m_bx, hkl_info.m_by, hkl_info.m_bz);
@@ -658,7 +655,7 @@ INITIALIZE %{
   }
   if (!(target_x || target_y || target_z)) {
     MPI_MASTER(
-    printf("WARNING: FluoSX: %s: The target is not defined. Using 4PI.\n",
+    printf("WARNING: FluoSX: %s: The target is not defined. Using 4PI for fluorescence.\n",
       NAME_CURRENT_COMP);
     );
   }
@@ -688,6 +685,9 @@ double aim_x=0, aim_y=0, aim_z=1;   /* Position of target relative to scattering
 int    event_counter   = 0;         /* scattering event counter (multiple fluorescence) */
 int    force_transmit  = 0;         /* Flag to handle cross-section weighting in case of finite order */
 
+// SX stuff
+double coh_xsect = 0, coh_refl = 0; // diffraction stuff
+
 #ifdef OPENACC
 #ifdef USE_OFF
 off_struct thread_offdata = offdata;
@@ -708,6 +708,13 @@ ki   = sqrt(kx*kx+ky*ky+kz*kz); //  Angs-1
 kf   = ki;
 Ei   = K2E*ki; // keV
 pi   = p;      // used to test for multiple fluo weighting and order cutoff
+
+// SX init
+struct tau_data *T;           /* List of reflections close to Ewald sphere */
+struct hkl_data *L;           /* Structure factor list */
+int tau_count;                /* Number of reflections close to Ewald sphere*/
+T = tau_list;
+L = hkl_list;
 
 do { /* while (intersect) Loop over multiple scattering events */
 
@@ -843,10 +850,11 @@ do { /* while (intersect) Loop over multiple scattering events */
 
     /* compute total scattering cross section for incoming photon energy Ei */
     /* compute each contribution XS */
-    xs[FLUORESCENCE]=xs[COMPTON]=xs[RAYLEIGH]=xs[TRANSMISSION]=sigma_barn=0;
+    xs[FLUORESCENCE]=xs[COMPTON]=xs[RAYLEIGH]=xs[TRANSMISSION]=xs[DIFFRACTION]=sigma_barn=0;
     cum_xs_fluo[0] = cum_xs_Compton[0] = cum_xs_Rayleigh[0] = 0;
 
     if (!reuse) {
+
       for (i_Z=0; i_Z< compound->nElements; i_Z++) {
         int    Z   = compound->Elements[i_Z];
         double frac= compound->massFractions[i_Z];
@@ -861,12 +869,30 @@ do { /* while (intersect) Loop over multiple scattering events */
         for (i=0; i<3; i++) { xs[i] += frac*xs_Z[i]; }
       } // for Z in compound
 
+      if (flag_sx) {
+        // we add the diffraction XS
+        double tau_max   = 2*kf/(1 - 5*hkl_info.m_delta_d_d);
+        /* call hkl_search */
+        tau_count = hkl_search(L, T, hkl_info.count, hkl_info.V0,
+                               kx, ky, kz, tau_max,
+                               &coh_refl, &coh_xsect);
+        xs[DIFFRACTION] = coh_xsect;
+        sigma_barn     += xs[DIFFRACTION];
+        printf("DEBUG: xs diff=%g info count=%i tau_count=%i\n", xs[DIFFRACTION], hkl_info.count, tau_count);
+      } else {
+        coh_refl  = 0;
+        coh_xsect = 0;
+        tau_count = 0;
+        xs[DIFFRACTION] = 0;
+      }
+
       // store values into cache for SPLIT
       for (i_Z=0; i_Z< compound->nElements; i_Z++) {
         reuse_cum_xs_fluo[i_Z+1]     = cum_xs_fluo[i_Z+1];
         reuse_cum_xs_Compton[i_Z+1]  = cum_xs_Compton[i_Z+1];
         reuse_cum_xs_Rayleigh[i_Z+1] = cum_xs_Rayleigh[i_Z+1];
       }
+      reuse_cum_xs_diffraction  = xs[DIFFRACTION];
       reuse_sigma_barn          = sigma_barn;
 
     } else {
@@ -878,9 +904,15 @@ do { /* while (intersect) Loop over multiple scattering events */
         xs[FLUORESCENCE]      += reuse_cum_xs_fluo[i_Z+1];
         xs[COMPTON]           += reuse_cum_xs_Compton[i_Z+1];
         xs[RAYLEIGH]          += reuse_cum_xs_Rayleigh[i_Z+1];
+        xs[DIFFRACTION]        = reuse_cum_xs_diffraction;
       }
 
       sigma_barn = reuse_sigma_barn;
+      if (flag_sx) {
+        coh_refl  = hkl_info.coh_refl;
+        coh_xsect = hkl_info.coh_xsect;
+        tau_count = hkl_info.tau_count;
+      }
     }
 
     /* probability to absorb/scatter */
@@ -926,17 +958,17 @@ do { /* while (intersect) Loop over multiple scattering events */
   } /* if intersect (propagate) */
 
   if (intersect) { /* scattering event */
-    int    i_Z=-1, Z, line=-1;
+    int    i_Z=-1, Z, j=-1;
     double solid_angle;
     double theta, dsigma, alpha;
-    double Ef, dE;
+    double Ef, dE, sum;
 
-    /* correct for XS total(photo+Compton+Rayleigh+Powder) > sum(fluo+Compton+Rayleigh) */
-    dsigma = (xs[FLUORESCENCE]+xs[RAYLEIGH]+xs[COMPTON])/sigma_barn;
+    /* correct for XS total(photo+Compton+Rayleigh+SX) > sum(fluo+Compton+Rayleigh+SX) */
+    dsigma = (xs[FLUORESCENCE]+xs[RAYLEIGH]+xs[COMPTON]+xs[DIFFRACTION])/sigma_barn;
     if (dsigma < 1) p *= dsigma; // < 1
 
     /* MC choose process from cross sections 'xs': fluo, Compton, Rayleigh, diff */
-    type = XRMC_SelectInteraction(xs, 3);
+    type = XRMC_SelectInteraction(xs, 4);
 
     /* choose Z (element) on associated XS, taking into account mass-fractions */
     switch (type) {
@@ -951,6 +983,15 @@ do { /* while (intersect) Loop over multiple scattering events */
         if (!flag_compton) ABSORB;
         i_Z = XRMC_SelectFromDistribution(cum_xs_Compton,  compound->nElements+1);
         break;
+      case DIFFRACTION:
+        if (!flag_sx) ABSORB;
+        if (tau_count > 1) {
+          sum=0;
+          // choose a line among those possible, using F2 as relative probability/intensity
+          j = hkl_select(T, tau_count, coh_refl, &sum,_particle);
+          if(j >= tau_count) j = tau_count - 1;
+        } else j = 0;/* Select between tau_count Bragg spots */
+          break;
       default: // should never happen
         // printf("WARNING: %s: process %i unknown. Absorb.\n", NAME_CURRENT_COMP, type);
         ABSORB;
@@ -977,6 +1018,30 @@ do { /* while (intersect) Loop over multiple scattering events */
       }
       p *= solid_angle/(4*PI); // correct for selected solid-angle
 
+    } else if (j >= 0) {
+      // SX diffraction
+      int i = T[j].index;
+      /* Pick scattered wavevector kf from 2D Gauss distribution. */
+      double z1 = randnorm();
+      double z2 = randnorm();
+      double y1 = T[j].l11*z1 + T[j].y0x;
+      double y2 = T[j].l12*z1 + T[j].l22*z2 + T[j].y0y;
+      double kfx = T[j].rho_x + T[j].ox + T[j].b1x*y1 + T[j].b2x*y2;
+      double kfy = T[j].rho_y + T[j].oy + T[j].b1y*y1 + T[j].b2y*y2;
+      double kfz = T[j].rho_z + T[j].oz + T[j].b1z*y1 + T[j].b2z*y2;
+
+      /* Normalize kf to length of ki, to account for planer
+         approximation of the Ewald sphere. */
+      double adjust = kf/sqrt(kfx*kfx + kfy*kfy + kfz*kfz);
+      kfx *= adjust;
+      kfy *= adjust;
+      kfz *= adjust;
+      /* Adjust photon weight (see manual for explanation). */
+      double pmul = T[j].xsect*coh_refl/(coh_xsect*T[j].refl);
+      if (!isnan(pmul)) p *= pmul;
+      kf_x = L[i].u1x*kfx + L[i].u2x*kfy + L[i].u3x*kfz;
+      kf_y = L[i].u1y*kfx + L[i].u2y*kfy + L[i].u3y*kfz;
+      kf_z = L[i].u1z*kfx + L[i].u2z*kfy + L[i].u3z*kfz;
     } else ABSORB; // should never happen
 
     NORM(kf_x, kf_y, kf_z);  // normalize the outout direction |kf|=1
@@ -1010,6 +1075,11 @@ do { /* while (intersect) Loop over multiple scattering events */
         p         *= 4*PI*dsigma/xs[COMPTON];
         n_Compton++;
         p_Compton += p;
+        break;
+
+      case DIFFRACTION:  /* 3 diffraction: line chosen before */
+        n_diff++;
+        p_diff += p;
         break;
 
       default:  // should never happen

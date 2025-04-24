@@ -201,7 +201,7 @@ SHARE %{
   #define FLUORESCENCE 0  // Fluo
   #define RAYLEIGH     1  // Coherent
   #define COMPTON      2  // Incoherent
-  #define POWDER       3  // Powder diffraction
+  #define DIFFRACTION  3  // diffraction
   #define TRANSMISSION 4
   #define FLUORESCENCE_ESCAPE 5 // Detector escape      peak fluorescence
   #define FLUORESCENCE_PILEUP 6 // Detector pile-up/sum peak fluorescence

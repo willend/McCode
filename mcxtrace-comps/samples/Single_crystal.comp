@@ -404,7 +404,7 @@ SHARE
   //   used to convert CIF/CFL/INS file into F2(hkl)
   //   the CIF2HKL env var can point to a cif2hkl executable
   //   else the McCode binary is attempted, then the system.
-  char *cif2hkl(const char *infile, const char *options) {
+  char *cif2hkl(char *infile, char *options) {
     char cmd[1024];
     int  ret = 0;
     int  found = 0;
@@ -660,22 +660,22 @@ SHARE
       MPI_MASTER(
       if (!info->recip) {
         printf("Single_crystal: %s structure a=[%g,%g,%g] b=[%g,%g,%g] c=[%g,%g,%g] ",
-	       SC_file, info->m_ax ,info->m_ay ,info->m_az,
-	       info->m_bx ,info->m_by ,info->m_bz,
-	       info->m_cx ,info->m_cy ,info->m_cz);
+         SC_file, info->m_ax ,info->m_ay ,info->m_az,
+         info->m_bx ,info->m_by ,info->m_bz,
+         info->m_cx ,info->m_cy ,info->m_cz);
       } else {
         printf("Single_crystal: %s structure a*=[%g,%g,%g] b*=[%g,%g,%g] c*=[%g,%g,%g] ",
-	       SC_file, info->m_ax ,info->m_ay ,info->m_az,
-	       info->m_bx ,info->m_by ,info->m_bz,
-	       info->m_cx ,info->m_cy ,info->m_cz);
+         SC_file, info->m_ax ,info->m_ay ,info->m_az,
+         info->m_bx ,info->m_by ,info->m_bz,
+         info->m_cx ,info->m_cy ,info->m_cz);
       }
       );
     }
     /* Compute reciprocal or direct lattice vectors. */
     if (!info->recip) {
       vec_prod(tmp_x, tmp_y, tmp_z,
-	       info->m_bx, info->m_by, info->m_bz,
-	       info->m_cx, info->m_cy, info->m_cz);
+         info->m_bx, info->m_by, info->m_bz,
+         info->m_cx, info->m_cy, info->m_cz);
       info->V0 = fabs(scalar_prod(info->m_ax, info->m_ay, info->m_az, tmp_x, tmp_y, tmp_z));
       if (!info->V0 || isnan(info->V0)) {
         MPI_MASTER(
@@ -706,10 +706,10 @@ SHARE
       info->csz = info->m_cz;
 
       vec_prod(tmp_x, tmp_y, tmp_z,
-	       info->bsx/(2*PI), info->bsy/(2*PI), info->bsz/(2*PI),
-	       info->csx/(2*PI), info->csy/(2*PI), info->csz/(2*PI));
-	    info->V0 = scalar_prod(info->asx/(2*PI), info->asy/(2*PI), info->asz/(2*PI), tmp_x, tmp_y, tmp_z);
-	    if (!info->V0 || isnan(info->V0)) {
+         info->bsx/(2*PI), info->bsy/(2*PI), info->bsz/(2*PI),
+         info->csx/(2*PI), info->csy/(2*PI), info->csz/(2*PI));
+      info->V0 = scalar_prod(info->asx/(2*PI), info->asy/(2*PI), info->asz/(2*PI), tmp_x, tmp_y, tmp_z);
+      if (!info->V0 || isnan(info->V0)) {
         MPI_MASTER(
           fprintf(stderr,
               "Single_crystal: %s: ERROR: Lattice reciprocal cell volume is found invalid V0=%g. Check crystal cell parameters.\n", __FILE__, info->V0));
@@ -1531,7 +1531,7 @@ TRACE
         intersect = sphere_intersect(&l1, &l2, x, y, z, kx, ky, kz, radius);
       #ifdef USE_OFF
       else if (hkl_info.shape == 3)
-	      intersect = off_x_intersect(&l1, &l2, NULL, NULL, x, y, z, kx, ky, kz, thread_offdata );
+        intersect = off_x_intersect(&l1, &l2, NULL, NULL, x, y, z, kx, ky, kz, thread_offdata );
       #endif
       if(!intersect || l2 < -1e-7 || l1 > 1e-7)
       {
@@ -1550,9 +1550,9 @@ TRACE
       }
 
       l_full = l2;
-	  
+
       if (   (order && !(extra_order) && event_counter >= order)
-  		  || (order && extra_order && event_counter >= order + extra_order)) {
+          || (order && extra_order && event_counter >= order + extra_order)) {
         // Exit due to truncated order, weight with relevant cross-sections to distance l_full
         p*=exp(-abs_xlen*l_full);
         intersect=0; 
@@ -1606,9 +1606,9 @@ TRACE
       /* (2). Intersection of Ewald sphere with reciprocal lattice points */
 
       double coh_xsect = 0, coh_refl = 0;
-	  
-	  // Condition to skip calculation of coherent cross section when, needed for extra_order feature	  
-	  if (order==0 || extra_order==0 || event_counter < order) {	  
+
+    // Condition to skip calculation of coherent cross section when, needed for extra_order feature
+    if (order==0 || extra_order==0 || event_counter < order) {
       /* in case we use 'SPLIT' then consecutive photons can be identical when entering here
          and we may skip the hkl_search call */
 #ifndef OPENACC
@@ -1643,23 +1643,23 @@ TRACE
           hkl_info.kiy = kiy;
           hkl_info.kiz = kiz;
 
-	        /* Store for potential re-use (e.g. SPLIT) */
-	        hkl_info.coh_refl  = coh_refl;
-	        hkl_info.coh_xsect = coh_xsect;
-	        hkl_info.tau_count = tau_count;
-	        hkl_info.nb_refl += tau_count;
-	        hkl_info.nb_refl_count++;
-	      }
+          /* Store for potential re-use (e.g. SPLIT) */
+          hkl_info.coh_refl  = coh_refl;
+          hkl_info.coh_xsect = coh_xsect;
+          hkl_info.tau_count = tau_count;
+          hkl_info.nb_refl += tau_count;
+          hkl_info.nb_refl_count++;
+        }
       }
 #endif
       } else {
         // When extra_order used, disable coherent scattering after order reached, but continue
-  	    // Set coherent cross section to zero to ignore coherent part
+        // Set coherent cross section to zero to ignore coherent part
         coh_refl = 0;
         coh_xsect = 0;
         tau_count = 0;
       }
-	  
+
       /* (3). Probabilities of the different possible interactions. */
       /* Cross-sections are in barns = 10**-28 m**2, and unit cell volumes are
          in AA**3 = 10**-30 m**2. Hence a factor of 100 is used to convert
@@ -1698,7 +1698,7 @@ TRACE
 
         break; 
         /* This break means that we are leaving the while-loop, exiting the
-	   crystal by "tunneling". */
+           crystal by "tunneling". */
       }
 
       /* Scattering "proper", i.e. coh or incoh */
@@ -1740,7 +1740,7 @@ TRACE
         kx = kix; /* ki vector is used as tmp var with norm v */
         ky = kiy;
         kz = kiz; /* Go for next scattering event */
-	
+
         type = 'i';
         if (!itype) itype = 2;
 #ifndef OPENACC
@@ -1776,7 +1776,7 @@ TRACE
         kfz = T[j].rho_z + T[j].oz + T[j].b1z*y1 + T[j].b2z*y2;
 
         /* Normalize kf to length of ki, to account for planer
-          approximation of the Ewald sphere. */
+           approximation of the Ewald sphere. */
         adjust = ki/sqrt(kfx*kfx + kfy*kfy + kfz*kfz);
         kfx *= adjust;
         kfy *= adjust;
@@ -1799,7 +1799,7 @@ TRACE
           if (yheight < thickness_threshold) ky += 2*PI/yheight/1e10*randnorm();
         }
         
-	
+
         type = 'c';
         if (!itype) itype = 3;
 #ifndef OPENACC
@@ -1866,7 +1866,7 @@ FINALLY
 
 MCDISPLAY
 %{
-  if (hkl_info.shape == 0) {	/* cylinder */
+  if (hkl_info.shape == 0) {  /* cylinder */
     circle("xz", 0,  yheight/2.0, 0, radius);
     circle("xz", 0, -yheight/2.0, 0, radius);
     line(-radius, -yheight/2.0, 0, -radius, +yheight/2.0, 0);
@@ -1874,7 +1874,7 @@ MCDISPLAY
     line(0, -yheight/2.0, -radius, 0, +yheight/2.0, -radius);
     line(0, -yheight/2.0, +radius, 0, +yheight/2.0, +radius);
   }
-  else if (hkl_info.shape == 1) { 	/* box */
+  else if (hkl_info.shape == 1) {   /* box */
     double xmin = -0.5*xwidth;
     double xmax =  0.5*xwidth;
     double ymin = -0.5*yheight;
@@ -1896,12 +1896,12 @@ MCDISPLAY
     line(xmin, ymax, zmin, xmin, ymax, zmax);
     line(xmax, ymax, zmin, xmax, ymax, zmax);
   }
-  else if (hkl_info.shape == 2) {	/* sphere */
+  else if (hkl_info.shape == 2) {  /* sphere */
     circle("xy", 0,  0.0, 0, radius);
     circle("xz", 0,  0.0, 0, radius);
     circle("yz", 0,  0.0, 0, radius);
   }
-  else if (hkl_info.shape == 3) {	/* OFF file */
+  else if (hkl_info.shape == 3) {  /* OFF file */
     off_display(offdata);
   }
 %}

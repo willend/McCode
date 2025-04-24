@@ -212,7 +212,7 @@ SHARE COPY PowderN EXTEND %{
   #define FLUORESCENCE 0  // Fluo
   #define RAYLEIGH     1  // Coherent
   #define COMPTON      2  // Incoherent
-  #define POWDER       3  // Powder diffraction
+  #define DIFFRACTION  3  // diffraction
   #define TRANSMISSION 4
   #define FLUORESCENCE_ESCAPE 5 // Detector escape      peak fluorescence
   #define FLUORESCENCE_PILEUP 6 // Detector pile-up/sum peak fluorescence
@@ -653,7 +653,7 @@ INITIALIZE %{
   }
   if (!(target_x || target_y || target_z)) {
     MPI_MASTER(
-    printf("WARNING: FluoPowder: %s: The target is not defined. Using 4PI.\n",
+    printf("WARNING: FluoPowder: %s: The target is not defined. Using 4PI for fluorescence.\n",
       NAME_CURRENT_COMP);
     );
   }
@@ -842,7 +842,7 @@ do { /* while (intersect) Loop over multiple scattering events */
 
     /* compute total scattering cross section for incoming photon energy Ei */
     /* compute each contribution XS */
-    xs[FLUORESCENCE]=xs[COMPTON]=xs[RAYLEIGH]=xs[TRANSMISSION]=xs[POWDER]=sigma_barn=0;
+    xs[FLUORESCENCE]=xs[COMPTON]=xs[RAYLEIGH]=xs[TRANSMISSION]=xs[DIFFRACTION]=sigma_barn=0;
     cum_xs_fluo[0] = cum_xs_Compton[0] = cum_xs_Rayleigh[0] = 0;
 
     if (!reuse) {
@@ -867,12 +867,12 @@ do { /* while (intersect) Loop over multiple scattering events */
         line_info.my_s_k2_sum = my_s_k2_sum;
         line_info.Nq          = Nq;
         line_info.k           = kf;
-        xs[POWDER]            = my_s_k2_sum/(kf*kf)/100/fluo_rho; // 100: fm^2 -> barn
-        sigma_barn           += xs[POWDER];
+        xs[DIFFRACTION]       = my_s_k2_sum/(kf*kf)/100/fluo_rho; // 100: fm^2 -> barn
+        sigma_barn           += xs[DIFFRACTION];
       } else {
-        xs[POWDER]  = 0;
-        Nq          = 0;
-        my_s_k2_sum = 0;
+        xs[DIFFRACTION] = 0;
+        Nq              = 0;
+        my_s_k2_sum     = 0;
       }
 
       // store values into cache for SPLIT
@@ -881,7 +881,7 @@ do { /* while (intersect) Loop over multiple scattering events */
         reuse_cum_xs_Compton[i_Z+1]  = cum_xs_Compton[i_Z+1];
         reuse_cum_xs_Rayleigh[i_Z+1] = cum_xs_Rayleigh[i_Z+1];
       }
-      reuse_cum_xs_diffraction  = xs[POWDER];
+      reuse_cum_xs_diffraction  = xs[DIFFRACTION];
       reuse_sigma_barn          = sigma_barn;
 
     } else {
@@ -893,7 +893,7 @@ do { /* while (intersect) Loop over multiple scattering events */
         xs[FLUORESCENCE]      += reuse_cum_xs_fluo[i_Z+1];
         xs[COMPTON]           += reuse_cum_xs_Compton[i_Z+1];
         xs[RAYLEIGH]          += reuse_cum_xs_Rayleigh[i_Z+1];
-        xs[POWDER]             = reuse_cum_xs_diffraction;
+        xs[DIFFRACTION]        = reuse_cum_xs_diffraction;
       }
 
       sigma_barn = reuse_sigma_barn;
@@ -951,8 +951,8 @@ do { /* while (intersect) Loop over multiple scattering events */
     double theta, dsigma, alpha;
     double Ef, dE;
 
-    /* correct for XS total(photo+Compton+Rayleigh+Powder) > sum(fluo+Compton+Rayleigh) */
-    dsigma = (xs[FLUORESCENCE]+xs[RAYLEIGH]+xs[COMPTON]+xs[POWDER])/sigma_barn;
+    /* correct for XS total(photo+Compton+Rayleigh+Powder) > sum(fluo+Compton+Rayleigh+Powder) */
+    dsigma = (xs[FLUORESCENCE]+xs[RAYLEIGH]+xs[COMPTON]+xs[DIFFRACTION])/sigma_barn;
     if (dsigma < 1) p *= dsigma; // < 1
 
     /* MC choose process from cross sections 'xs': fluo, Compton, Rayleigh, diff */
@@ -971,7 +971,7 @@ do { /* while (intersect) Loop over multiple scattering events */
         if (!flag_compton) ABSORB;
         i_Z = XRMC_SelectFromDistribution(cum_xs_Compton,  compound->nElements+1);
         break;
-      case POWDER:
+      case DIFFRACTION:
         if (!flag_powder) ABSORB;
         if (Nq > 1) {
           // choose a line among those possible, using F2 as relative probability/intensity
@@ -1092,7 +1092,7 @@ do { /* while (intersect) Loop over multiple scattering events */
         p_Compton += p;
         break;
 
-      case POWDER:       /* 3 diffraction: line chosen before */
+      case DIFFRACTION:  /* 3 diffraction: line chosen before */
         /*weight the outgoing signal according to polarization*/
         if (Ex!=0 || Ey!=0 || Ez!=0){
           double EE=sqrt(Ex*Ex+Ey*Ey+Ez*Ez);
