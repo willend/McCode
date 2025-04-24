@@ -304,7 +304,10 @@ class McStas:
                 cflags=cflags.replace("${CONDA_PREFIX}",os.environ.get('CONDA_PREFIX'))
 
         # Final assembly of compiler commandline
-        args = ['-o', self.binpath, self.cpath] + lexer.split(cflags)
+        if not os.environ.get('CONDA_PREFIX') and "cl.exe" in mccode_config.compilation['CC'].lower():
+            args = ['-o', self.binpath, self.cpath] + lexer.split(cflags)
+        else:
+            args = [self.cpath] + lexer.split(cflags)
         Process(lexer.quote(options.cc)).run(args)
 
     def run(self, pipe=False, extra_opts=None, override_mpi=None):
