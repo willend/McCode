@@ -259,7 +259,7 @@ function( detect_platform_variables resultvarname )
     set( MCCODE_CFLAGS "${MCCODE_CFLAGS} -I\$\{CONDA_PREFIX\}/include -Wl,-rpath,\$\{CONDA_PREFIX\}/lib -L\$\{CONDA_PREFIX\}/lib" )
   endif()
 
-  foreach( flag "-fno-PIC" "-fPIE" "-flto" "-O3" "-mtune=native" "-march=native" "-fno-math-errno" "-ftree-vectorize" "-g" "-DNDEBUG" "-D_POSIX_SOURCE" "-std=c99" )
+  foreach( flag "-fno-PIC" "-fPIE" "-flto" "-O3" "-mtune=native" "-march=native" "-fno-math-errno" "-ftree-vectorize" "-g" "-DNDEBUG" "-D_POSIX_SOURCE" "-std=c99" "-lm" )
     #NB: plethora of "unset(tmp_test_c_flag_result ...)" statements below is
     #added for safety, to prevent CMake's CACHE system to give unpredictable
     #results.
