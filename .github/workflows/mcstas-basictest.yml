@@ -186,10 +186,10 @@ jobs:
            if [ "${EXPECTED}" == "${SUM}" ];
            then
               echo RNG test success!
-              return 0
+              true
            else
               echo RNG test failure!
-              return 1
+              false
            fi
 
     - name: Launch BNL_H8 instrument
