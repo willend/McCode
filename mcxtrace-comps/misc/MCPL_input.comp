@@ -125,13 +125,13 @@ INITIALIZE
     MPI_MASTER(
     	     fprintf(stdout, "\n\n Warning: You are using MCPL_input with a repeat_count of %lu:\n - Minimum photon count requested is %lu x %lu <= %lu",
 	       (long unsigned)repeat_count,(long unsigned)nparticles,
-	       (long unsigned)repeat_count,(long unsigned)repeat_cnt*nparticles); 
+		     (long unsigned)repeat_count,(long unsigned)repeat_cnt*(long unsigned)nparticles); 
 	           );
 
     char tmpstr[CHAR_BUF_LENGTH];
 #if defined (USE_MPI)
   sprintf(tmpstr, " x %i MPI nodes = %lu photons total\n",
-    mpi_node_count,(long unsigned)mpi_node_count*repeat_cnt*nparticles);
+    mpi_node_count,(long unsigned)mpi_node_count*(long unsigned)repeat_cnt*(long unsigned)nparticles);
 #else
     sprintf(tmpstr, " photons total\n\n");
 #endif

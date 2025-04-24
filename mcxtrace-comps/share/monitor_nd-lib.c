@@ -902,7 +902,7 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
     {
       Vars->Mon2D_Buffer  = (double *)realloc(Vars->Mon2D_Buffer, (Vars->Coord_Number+1)*(ParticleCount+Vars->Buffer_Block)*sizeof(double));
       if (Vars->Mon2D_Buffer == NULL)
-            { printf("Monitor_nD: %s cannot reallocate Vars->Mon2D_Buffer[%li] (%li). Skipping.\n", Vars->compcurname, i, (long int)(ParticleCount+Vars->Buffer_Block)*sizeof(double)); Vars->Flag_List = 1; }
+            { printf("Monitor_nD: %s cannot reallocate Vars->Mon2D_Buffer[%li] (%zi). Skipping.\n", Vars->compcurname, i, (long int)(ParticleCount+Vars->Buffer_Block)*sizeof(double)); Vars->Flag_List = 1; }
       else { Vars->Buffer_Counter = 0; Vars->Buffer_Size = ParticleCount+Vars->Buffer_Block; }
     }
   } /* end if Buffer realloc */
