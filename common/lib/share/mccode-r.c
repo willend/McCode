@@ -4280,34 +4280,42 @@ rng.html>
  The z's are a simple multiply-with-carry sequence with period
  2^63+2^32-1.  The period of KISS is thus
       2^32*(2^32-1)*(2^63+2^32-1) > 2^127
+
+ In 2025 adapted for consistent 64-bit behavior across platforms.
 */
 
-/* the KISS state is stored as a vector of 7 randstate_t        */
+/* the KISS state is stored as a vector of 7 uint64_t        */
 /*   0  1  2  3  4      5  6   */
 /* [ x, y, z, w, carry, k, m ] */
 
-randstate_t *kiss_srandom(randstate_t state[7], randstate_t seed) {
-  if (seed == 0) seed = UINT64_C(1);
-  state[0] = seed | UINT64_C(1); // x
-  state[1] = seed | UINT64_C(2); // y
-  state[2] = seed | UINT64_C(4); // z
-  state[3] = seed | UINT64_C(8); // w
-  state[4] = UINT64_C(0); // carry
-  state[5] = UINT64_C(0); // carry
-  state[6] = UINT64_C(0); // carry
-  return NULL;
+uint64_t *kiss_srandom(uint64_t state[7], uint64_t seed) {
+    if (seed == 0) seed = 1ull;
+    state[0] = seed | 1ull; // x
+    state[1] = seed | 2ull; // y
+    state[2] = seed | 4ull; // z
+    state[3] = seed | 8ull; // w
+    state[4] = 0ull;        // carry
+    state[5] = 0ull;        // k
+    state[6] = 0ull;        // m
+    return state;
 }
 
-randstate_t kiss_random(randstate_t state[7]) {
-    state[0] = state[0] * UINT64_C(69069) + UINT64_C(1);
-    state[1] ^= state[1] << UINT64_C(13);
-    state[1] ^= state[1] >> UINT64_C(17);
-    state[1] ^= state[1] << UINT64_C(5);
-    state[5] = (state[2] >> UINT64_C(2)) + (state[3] >> UINT64_C(3)) + (state[4] >> UINT64_C(2));
+uint64_t kiss_random(uint64_t state[7]) {
+    // Linear congruential generator
+    state[0] = state[0] * 69069ull + 1ull;
+
+    // Xorshift
+    state[1] ^= state[1] << 13ull;
+    state[1] ^= state[1] >> 17ull;
+    state[1] ^= state[1] << 5ull;
+
+    // Multiply-with-carry
+    state[5] = (state[2] >> 2ull) + (state[3] >> 3ull) + (state[4] >> 2ull);
     state[6] = state[3] + state[3] + state[2] + state[4];
     state[2] = state[3];
     state[3] = state[6];
-    state[4] = state[5] >> UINT64_C(30);
+    state[4] = state[5] >> 62ull;  // Top bit of carry (adjusted for 64-bit)
+
     return state[0] + state[1] + state[3];
 }
 /* end of "KISS" rng */
