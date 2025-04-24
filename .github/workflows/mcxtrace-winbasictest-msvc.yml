@@ -159,7 +159,7 @@ jobs:
           false
         fi
 
-        - name: Run std instrument
+    - name: Run std instrument
       working-directory: run_std
       run: ..\install\bin\mxrun --verbose test.instr -d Single_core LENS=0
 
