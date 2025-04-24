@@ -173,7 +173,9 @@ jobs:
              export MCRUN_EXECUTABLE="mcrun.bat"
            fi
            if [ "$RUNNER_OS" == "macOS" ];
+           then
              export MD5SUM="md5"
+           fi
            test -f ./install_mcstas/bin/${MCSTAS_EXECUTABLE}
            ./install_mcstas/bin/${MCSTAS_EXECUTABLE} --version
            mkdir run_RNG && cd run_RNG
