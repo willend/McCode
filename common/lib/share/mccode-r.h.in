@@ -184,7 +184,7 @@ clock_t times (struct tms *__buffer) {
 
 #ifdef WIN32
 #  define mkdir(a,b) mkdir(a)
-#  define getpid() NULL
+#  define getpid() _getpid()
 #endif
 
 /* the version string is replaced when building distribution with mkdist */

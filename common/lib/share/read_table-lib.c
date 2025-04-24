@@ -586,7 +586,7 @@ void *Table_File_List_store(t_Table *tab){
                     malloc_size = count_in_array*1.5;
                     Datatmp = (double*) realloc(Data, malloc_size*sizeof(double));
                     if (Datatmp == NULL) {
-                      fprintf(stderr, "Error: Can not re-allocate memory %li (Table_Read_Handle).\n",
+                      fprintf(stderr, "Error: Can not re-allocate memory %zi (Table_Read_Handle).\n",
                               malloc_size*sizeof(double));
 		      free(Data);
                       return (-1);
@@ -1220,7 +1220,7 @@ MCDETECTOR Table_Write(t_Table Table, char *file, char *xl, char *yl,
     /* first allocate an initial empty t_Table array */
     Table_Array = (t_Table *)malloc(allocated*sizeof(t_Table));
     if (!Table_Array) {
-      fprintf(stderr, "Error: Can not allocate memory %li (Table_Read_Array).\n",
+      fprintf(stderr, "Error: Can not allocate memory %zi (Table_Read_Array).\n",
          allocated*sizeof(t_Table));
       *blocks = 0;
       return (NULL);
@@ -1245,7 +1245,7 @@ MCDETECTOR Table_Write(t_Table Table, char *file, char *xl, char *yl,
               Table_Arraytmp = (t_Table *)realloc(Table_Array,
                       allocated*sizeof(t_Table));
               if (!Table_Arraytmp) {
-                  fprintf(stderr, "Error: Can not re-allocate memory %li (Table_Read_Array).\n",
+                  fprintf(stderr, "Error: Can not re-allocate memory %zi (Table_Read_Array).\n",
                           allocated*sizeof(t_Table));
                   free(Table_Array);
                   *blocks = 0;
