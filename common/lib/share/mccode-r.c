@@ -3575,7 +3575,7 @@ long sort_absorb_last(_class_particle* particles, _class_particle* pbuffer, long
   // copy non-absorbed block
   #pragma acc parallel loop present(particles[0:buffer_len])
   for (long tidx = 0; tidx < accumlen; tidx++) { // tidx: thread index
-    unsigned long randstate[7];
+    randstate_t randstate[7];
     _class_particle sourcebuffer;
     _class_particle targetbuffer;
     // assign reduced weight to all particles
@@ -4157,84 +4157,82 @@ void _randvec_target_rect_real(double *xo, double *yo, double *zo, double *solid
    email: matumoto@math.keio.ac.jp
 */
 #include <stdio.h>
+#include <stdint.h>   // for uint32_t
+#include <stddef.h>   // for size_t
+
 /* Period parameters */
 #define N 624
 #define M 397
-#define MATRIX_A 0x9908b0dfUL   /* constant vector a */
-#define UPPER_MASK 0x80000000UL /* most significant w-r bits */
-#define LOWER_MASK 0x7fffffffUL /* least significant r bits */
+#define MATRIX_A 0x9908b0dfU   /* constant vector a */
+#define UPPER_MASK 0x80000000U /* most significant w-r bits */
+#define LOWER_MASK 0x7fffffffU /* least significant r bits */
 
-unsigned long mt[N]; /* the array for the state vector  */
-int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
+static uint32_t mt[N]; /* the array for the state vector  */
+static int mti = N + 1; /* mti==N+1 means mt[N] is not initialized */
 
-// required for common rng alg interface (see RNG_ALG usage in mccode-r.h)
-void mt_srandom_empty() {}
+// Required for compatibility with common RNG interface (e.g., kiss/mt polymorphism)
+void mt_srandom_empty(void) {}
 
-// initializes mt[N] with a seed
-void mt_srandom(unsigned long s)
-{
-    mt[0]= s & 0xffffffffUL;
-    for (mti=1; mti<N; mti++) {
-        mt[mti] =
-            (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+// Initializes mt[N] with a seed
+void mt_srandom(uint32_t seed) {
+    mt[0] = seed;
+    for (mti = 1; mti < N; mti++) {
+        mt[mti] = 1812433253U * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti;
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
         /* 2002/01/09 modified by Makoto Matsumoto             */
-        mt[mti] &= 0xffffffffUL;
+        mt[mti] &= 0xffffffffU;
         /* for >32 bit machines */
     }
 }
 /* Initialize by an array with array-length.
    Init_key is the array for initializing keys.
    key_length is its length. */
-void init_by_array(unsigned long init_key[], unsigned long key_length)
-{
-    int i, j, k;
-    mt_srandom(19650218UL);
-    i=1; j=0;
-    k = (N>key_length ? N : key_length);
+void init_by_array(uint32_t init_key[], size_t key_length) {
+    size_t i = 1, j = 0, k;
+    mt_srandom(19650218U);
+    k = (N > key_length ? N : key_length);
     for (; k; k--) {
-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
-          + init_key[j] + j; /* non linear */
-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525U))
+              + init_key[j] + (uint32_t)j;
+        mt[i] &= 0xffffffffU;
         i++; j++;
-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
-        if (j>=key_length) j=0;
+        if (i >= N) { mt[0] = mt[N - 1]; i = 1; }
+        if (j >= key_length) j = 0;
     }
-    for (k=N-1; k; k--) {
-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
-          - i; /* non linear */
-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
+    for (k = N - 1; k; k--) {
+        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941U))
+              - (uint32_t)i;
+        mt[i] &= 0xffffffffU;
         i++;
-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+        if (i >= N) { mt[0] = mt[N - 1]; i = 1; }
     }
-
-    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
+    mt[0] = 0x80000000U; /* MSB is 1; ensuring non-zero initial array */
 }
-/* generates a random number on [0,0xffffffff]-interval */
-unsigned long mt_random(void)
-{
-    unsigned long y;
-    unsigned long mag01[2]={0x0UL, MATRIX_A};
+
+// Generates a random number on [0, 0xffffffff]-interval
+uint32_t mt_random(void) {
+    uint32_t y;
+    static const uint32_t mag01[2] = { 0x0U, MATRIX_A };
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if (mti >= N) { /* generate N words at one time */
         int kk;
 
-        if (mti == N+1)   /* if mt_srandom() has not been called, */
-            mt_srandom(5489UL); /* a default initial seed is used */
+        if (mti == N + 1)   /* if mt_srandom() has not been called, */ 
+            mt_srandom(5489U);  /* a default initial seed is used */
 
-        for (kk=0;kk<N-M;kk++) {
-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-            mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        for (kk = 0; kk < N - M; kk++) {
+            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+            mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1U];
         }
-        for (;kk<N-1;kk++) {
-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-            mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        for (; kk < N - 1; kk++) {
+            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+            mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1U];
         }
-        y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
-        mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
+        mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1U];
 
         mti = 0;
     }
@@ -4243,8 +4241,8 @@ unsigned long mt_random(void)
 
     /* Tempering */
     y ^= (y >> 11);
-    y ^= (y << 7) & 0x9d2c5680UL;
-    y ^= (y << 15) & 0xefc60000UL;
+    y ^= (y << 7) & 0x9d2c5680U;
+    y ^= (y << 15) & 0xefc60000U;
     y ^= (y >> 18);
 
     return y;
@@ -4280,34 +4278,42 @@ rng.html>
  The z's are a simple multiply-with-carry sequence with period
  2^63+2^32-1.  The period of KISS is thus
       2^32*(2^32-1)*(2^63+2^32-1) > 2^127
+
+ In 2025 adapted for consistent 64-bit behavior across platforms.
 */
 
-/* the KISS state is stored as a vector of 7 unsigned long        */
+/* the KISS state is stored as a vector of 7 uint64_t        */
 /*   0  1  2  3  4      5  6   */
 /* [ x, y, z, w, carry, k, m ] */
 
-unsigned long *kiss_srandom(unsigned long state[7], unsigned long seed) {
-  if (seed == 0) seed = 1ul;
-  state[0] = seed | 1ul; // x
-  state[1] = seed | 2ul; // y
-  state[2] = seed | 4ul; // z
-  state[3] = seed | 8ul; // w
-  state[4] = 0ul;        // carry
-  state[5] = 0ul;        // carry
-  state[6] = 0ul;        // carry
-  return NULL;
+uint64_t *kiss_srandom(uint64_t state[7], uint64_t seed) {
+    if (seed == 0) seed = 1ull;
+    state[0] = seed | 1ull; // x
+    state[1] = seed | 2ull; // y
+    state[2] = seed | 4ull; // z
+    state[3] = seed | 8ull; // w
+    state[4] = 0ull;        // carry
+    state[5] = 0ull;        // k
+    state[6] = 0ull;        // m
+    return state;
 }
 
-unsigned long kiss_random(unsigned long state[7]) {
-    state[0] = state[0] * 69069ul + 1ul;
-    state[1] ^= state[1] << 13ul;
-    state[1] ^= state[1] >> 17ul;
-    state[1] ^= state[1] << 5ul;
-    state[5] = (state[2] >> 2ul) + (state[3] >> 3ul) + (state[4] >> 2ul);
+uint64_t kiss_random(uint64_t state[7]) {
+    // Linear congruential generator
+    state[0] = state[0] * 69069ull + 1ull;
+
+    // Xorshift
+    state[1] ^= state[1] << 13ull;
+    state[1] ^= state[1] >> 17ull;
+    state[1] ^= state[1] << 5ull;
+
+    // Multiply-with-carry
+    state[5] = (state[2] >> 2ull) + (state[3] >> 3ull) + (state[4] >> 2ull);
     state[6] = state[3] + state[3] + state[2] + state[4];
     state[2] = state[3];
     state[3] = state[6];
-    state[4] = state[5] >> 30ul;
+    state[4] = state[5] >> 62ull;  // Top bit of carry (adjusted for 64-bit)
+
     return state[0] + state[1] + state[3];
 }
 /* end of "KISS" rng */

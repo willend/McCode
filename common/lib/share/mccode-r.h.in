@@ -608,29 +608,19 @@ void mcdis_sphere(double x, double y, double z, double r);
 
 /* random number generation. ================================================ */
 
-/* available random number generators */
-#define _RNG_ALG_MT         1
-#define _RNG_ALG_KISS       2
-
-/* selection of random number generator */
-#ifndef RNG_ALG
-#  define RNG_ALG  _RNG_ALG_KISS
-#endif
-
-
-#if RNG_ALG == _RNG_ALG_MT  // MT (currently not functional for gpu)
-#  define MC_RAND_MAX ((unsigned long)0xffffffff)
-#  define randstate_t unsigned long // this could be anything
+#if RNG_ALG == _RNG_ALG_MT  // MT (currently not functional for GPU)
+#  define MC_RAND_MAX ((uint32_t)0xffffffffUL)
+#  define randstate_t uint32_t
 #  define RANDSTATE_LEN 1
 #  define srandom(seed) mt_srandom_empty()
 #  define random() mt_random()
 #  define _random() mt_random()
 #elif RNG_ALG == _RNG_ALG_KISS  // KISS
-#  ifndef ULONG_MAX
-#    define ULONG_MAX ((unsigned long)0xffffffffffffffffUL)
+#  ifndef UINT64_MAX
+#    define UINT64_MAX ((uint64_t)0xffffffffffffffffULL)
 #  endif
-#  define MC_RAND_MAX ULONG_MAX
-#  define randstate_t unsigned long
+#  define MC_RAND_MAX UINT64_MAX
+#  define randstate_t uint64_t
 #  define RANDSTATE_LEN 7
 #  define srandom(seed) kiss_srandom(_particle->randstate, seed)
 #  define random() kiss_random(_particle->randstate)
@@ -640,9 +630,8 @@ void mcdis_sphere(double x, double y, double z, double r);
 #pragma acc routine
 double _randnorm2(randstate_t* state);
 
-
-// component writers interface
-#define randnorm() _randnorm2(_particle->randstate) // NOTE: can not use _randnorm on gpu
+// Component writer interface
+#define randnorm() _randnorm2(_particle->randstate)        // NOTE: can't use _randnorm on GPU
 #define rand01() _rand01(_particle->randstate)
 #define randpm1() _randpm1(_particle->randstate)
 #define rand0max(p1) _rand0max(p1, _particle->randstate)
@@ -650,15 +639,15 @@ double _randnorm2(randstate_t* state);
 #define randtriangle() _randtriangle(_particle->randstate)
 
 // Mersenne Twister rng
-unsigned long mt_random(void);
-void mt_srandom (unsigned long x);
+uint32_t mt_random(void);
+void mt_srandom (uint32_t x);
 void mt_srandom_empty();
 
 // KISS rng
 #pragma acc routine
-unsigned long *kiss_srandom(unsigned long state[7], unsigned long seed);
+uint64_t *kiss_srandom(uint64_t state[7], uint64_t seed);
 #pragma acc routine
-unsigned long kiss_random(unsigned long state[7]);
+uint64_t kiss_random(uint64_t state[7]);
 
 // Scrambler / hash function
 #pragma acc routine seq

@@ -2386,6 +2386,7 @@ cogen_header(struct instr_def *instr, char *output_name)
   /* Basic includes */
   cout("");
   cout("#include <string.h>");
+  cout("#include <inttypes.h>");
   cout("");
 
   /* McCode-specific typedefs */
@@ -2393,6 +2394,19 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("typedef struct {MCNUM x, y, z;} Coords;");
   cout("typedef MCNUM Rotation[3][3];");
   cout("#define MCCODE_BASE_TYPES");
+  cout("");
+  cout("/* available random number generators */");
+  cout("#define _RNG_ALG_MT         1");
+  cout("#define _RNG_ALG_KISS       2");
+  cout("/* selection of random number generator */");
+  cout("#ifndef RNG_ALG");
+  cout("#  define RNG_ALG  _RNG_ALG_KISS");
+  cout("#endif");
+  cout("#if RNG_ALG == _RNG_ALG_MT // MT ");
+  cout("#define randstate_t uint32_t");
+  cout("#elif RNG_ALG == _RNG_ALG_KISS  // KISS");
+  cout("#define randstate_t uint64_t");
+  cout("#endif");
   cout("");
 
   /* the max number of user variables*/
@@ -2446,7 +2460,7 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("  double _mctmp_b; /* temp b */");
   cout("  double _mctmp_c; /* temp c */");
   //cout("  randstate_t randstate[RANDSTATE_LEN]");
-  cout("  unsigned long randstate[7];"); // for the KISS generator
+  cout("  randstate_t randstate[7];"); // for the KISS generator
   cout("  double t, p;     /* time, event weight */");
   cout("  long long _uid;  /* Unique event ID */");
   cout("  long _index;     /* component index where to send this event */");
