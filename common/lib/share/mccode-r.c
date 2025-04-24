@@ -4157,84 +4157,82 @@ void _randvec_target_rect_real(double *xo, double *yo, double *zo, double *solid
    email: matumoto@math.keio.ac.jp
 */
 #include <stdio.h>
+#include <stdint.h>   // for uint32_t
+#include <stddef.h>   // for size_t
+
 /* Period parameters */
 #define N 624
 #define M 397
-#define MATRIX_A UINT64_C(0x9908b0df)   /* constant vector a */
-#define UPPER_MASK UINT64_C(0x80000000) /* most significant w-r bits */
-#define LOWER_MASK UINT64_C(0x7fffffff) /* least significant r bits */
+#define MATRIX_A 0x9908b0dfU   /* constant vector a */
+#define UPPER_MASK 0x80000000U /* most significant w-r bits */
+#define LOWER_MASK 0x7fffffffU /* least significant r bits */
 
-randstate_t mt[N]; /* the array for the state vector  */
-int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
+static uint32_t mt[N]; /* the array for the state vector  */
+static int mti = N + 1; /* mti==N+1 means mt[N] is not initialized */
 
-// required for common rng alg interface (see RNG_ALG usage in mccode-r.h)
-void mt_srandom_empty() {}
+// Required for compatibility with common RNG interface (e.g., kiss/mt polymorphism)
+void mt_srandom_empty(void) {}
 
-// initializes mt[N] with a seed
-void mt_srandom(randstate_t s)
-{
-    mt[0]= s & UINT64_C(0xffffffff);
-    for (mti=1; mti<N; mti++) {
-        mt[mti] =
-            (UINT64_C(1812433253) * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+// Initializes mt[N] with a seed
+void mt_srandom(uint32_t seed) {
+    mt[0] = seed;
+    for (mti = 1; mti < N; mti++) {
+        mt[mti] = 1812433253U * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti;
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
         /* 2002/01/09 modified by Makoto Matsumoto             */
-        mt[mti] &= UINT64_C(0xffffffff);
+        mt[mti] &= 0xffffffffU;
         /* for >32 bit machines */
     }
 }
 /* Initialize by an array with array-length.
    Init_key is the array for initializing keys.
    key_length is its length. */
-void init_by_array(randstate_t init_key[], randstate_t key_length)
-{
-    int i, j, k;
-    mt_srandom(UINT64_C(19650218));
-    i=1; j=0;
-    k = (N>key_length ? N : key_length);
+void init_by_array(uint32_t init_key[], size_t key_length) {
+    size_t i = 1, j = 0, k;
+    mt_srandom(19650218U);
+    k = (N > key_length ? N : key_length);
     for (; k; k--) {
-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * UINT64_C(1664525)))
-          + init_key[j] + j; /* non linear */
-        mt[i] &= UINT64_C(0xffffffff); /* for WORDSIZE > 32 machines */
+        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525U))
+              + init_key[j] + (uint32_t)j;
+        mt[i] &= 0xffffffffU;
         i++; j++;
-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
-        if (j>=key_length) j=0;
+        if (i >= N) { mt[0] = mt[N - 1]; i = 1; }
+        if (j >= key_length) j = 0;
     }
-    for (k=N-1; k; k--) {
-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * UINT64_C(1566083941)))
-          - i; /* non linear */
-        mt[i] &= UINT64_C(0xffffffff); /* for WORDSIZE > 32 machines */
+    for (k = N - 1; k; k--) {
+        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941U))
+              - (uint32_t)i;
+        mt[i] &= 0xffffffffU;
         i++;
-        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+        if (i >= N) { mt[0] = mt[N - 1]; i = 1; }
     }
-
-    mt[0] = UINT64_C(0x80000000); /* MSB is 1; assuring non-zero initial array */
+    mt[0] = 0x80000000U; /* MSB is 1; ensuring non-zero initial array */
 }
-/* generates a random number on [0,0xffffffff]-interval */
-randstate_t mt_random(void)
-{
-    randstate_t y;
-    randstate_t mag01[2]={UINT64_C(0x0), MATRIX_A};
+
+// Generates a random number on [0, 0xffffffff]-interval
+uint32_t mt_random(void) {
+    uint32_t y;
+    static const uint32_t mag01[2] = { 0x0U, MATRIX_A };
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if (mti >= N) { /* generate N words at one time */
         int kk;
 
-        if (mti == N+1)   /* if mt_srandom() has not been called, */
-            mt_srandom(UINT64_C(5489)); /* a default initial seed is used */
+        if (mti == N + 1)   /* if mt_srandom() has not been called, */ 
+            mt_srandom(5489U);  /* a default initial seed is used */
 
-        for (kk=0;kk<N-M;kk++) {
-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-            mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & UINT64_C(0x1)];
+        for (kk = 0; kk < N - M; kk++) {
+            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+            mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1U];
         }
-        for (;kk<N-1;kk++) {
-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-            mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & UINT64_C(0x1)];
+        for (; kk < N - 1; kk++) {
+            y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
+            mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1U];
         }
-        y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
-        mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & UINT64_C(0x1)];
+        y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
+        mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1U];
 
         mti = 0;
     }
@@ -4243,8 +4241,8 @@ randstate_t mt_random(void)
 
     /* Tempering */
     y ^= (y >> 11);
-    y ^= (y << 7) & UINT64_C(0x9d2c5680);
-    y ^= (y << 15) & UINT64_C(0xefc60000);
+    y ^= (y << 7) & 0x9d2c5680U;
+    y ^= (y << 15) & 0xefc60000U;
     y ^= (y >> 18);
 
     return y;
