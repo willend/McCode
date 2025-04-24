@@ -155,6 +155,42 @@ jobs:
              python3 -mpip install PyYAML ply McStasscript
            fi
 
+    - name: Launch RNG test instrument
+      id: RNG-test
+      # Status: Works on Windows + Unixes
+      run: |
+           set -e
+           set -u
+           set -x
+           export MCXTRACE_EXECUTABLE="mcxtrace"
+           export MCXTRACE_PYGEN_EXECUTABLE="mcxtrace-pygen"
+           export MXRUN_EXECUTABLE="mxrun"
+           export MD5SUM="md5sum"
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export MCXTRACE_EXECUTABLE="mcxtrace.exe"
+             export MCXTRACE_PYGEN_EXECUTABLE="mcxtrace-pygen.exe"
+             export MXRUN_EXECUTABLE="mxrun.bat"
+           fi
+           if [ "$RUNNER_OS" == "macOS" ];
+           then
+             export MD5SUM="md5"
+           fi
+           test -f ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE}
+           ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE} --version
+           mkdir run_RNG && cd run_RNG
+           cp ../install_mcxtrace/share/mcxtrace/resources/examples/Tests_RNG/Test_RNG_rand01/Test_RNG_rand01.instr .
+           ../install_mcxtrace/bin/${MXRUN_EXECUTABLE} Test_RNG_rand01.instr -s1000 seed=1000 -d RNGtest
+           export SUM=`grep -v \# RNGtest/rngout.dat | ${MD5SUM} | cut -f1 -d\ `
+           export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
+           if [ "${EXPECTED}" == "${SUM}" ];
+           then
+              echo RNG test success!
+              true
+           else
+              echo RNG test failure!
+              false
+           fi
 
     - name: Launch JJ_SAXS instrument
       id: JJ_SAXS-basic
