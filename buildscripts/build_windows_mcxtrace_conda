@@ -8,6 +8,7 @@ if [ "x$1" = "x" ]; then
     echo Please provide one argument,e.g : $0 2.0
     exit 1;
 fi
+mkdir -p dist
 if [ "x$2" != "x" ]; then
     # Build the meta-packages also
     cd meta-pkgs/windows/Support
