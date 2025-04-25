@@ -776,7 +776,7 @@ MCDETECTOR mcdetector_statistics(
   if (detector.rank == 1 && strcasestr(detector.format,"McCode")) {
     this_p1 = (double *)calloc(detector.m*detector.n*detector.p*4, sizeof(double));
     if (!this_p1)
-      exit(-fprintf(stderr, "Error: Out of memory creating %li 1D " MCCODE_STRING " data set for file '%s' (detector_import)\n",
+      exit(-fprintf(stderr, "Error: Out of memory creating %zi 1D " MCCODE_STRING " data set for file '%s' (detector_import)\n",
         detector.m*detector.n*detector.p*4*sizeof(double*), detector.filename));
   }
 

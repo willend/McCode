@@ -52,10 +52,7 @@ jobs:
       run: choco install wget
 
     - name: pip install deps
-      run: pip install PyYAML ply McStasscript mslex
-
-    - name: pip install mcpl-core preview
-      run: pip install -v "git+https://github.com/mctools/mcpl@path_to_mcpl2#subdirectory=mcpl_core"
+      run: pip install PyYAML ply McStasscript mslex mcpl mcpl-core mcpl-extra
 
     - name: choco install deps2
       run: choco install mingw make winflexbison3
@@ -99,7 +96,11 @@ jobs:
     - run: mcpl-config -s
 
     - name: Prepare rundirs
-      run: mkdir run_std run_mcpl_output run_mcpl_input run_union
+      run: mkdir run_rng run_std run_mcpl_output run_mcpl_input run_union
+
+    - name: Prepare rng instrument
+      working-directory: run_rng
+      run: copy ..\install\share\mcxtrace\resources\examples\Tests_RNG\Test_RNG_rand01\Test_RNG_rand01.instr test.instr
 
     - name: Prepare std instrument
       working-directory: run_std
@@ -113,6 +114,25 @@ jobs:
     - name: Prepare MCPL_output instrument
       working-directory: run_mcpl_output
       run: copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
+
+    - name: Run rng instrument
+      working-directory: run_rng
+      run: ..\install\bin\mxrun --verbose test.instr -s1000 seed=1000 -d RNGtest
+
+    - name: Test RNG instrument output
+      working-directory: run_rng
+      shell: bash
+      run:   |
+        export SUM=`grep -v \# RNGtest/rngout.dat | dos2unix | md5sum | cut -f1 -d\ `
+        export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
+        if [ "${EXPECTED}" == "${SUM}" ];
+        then
+          echo RNG test success!
+          true
+        else
+          echo RNG test failure!
+          false
+        fi
 
     - name: Run std instrument
       working-directory: run_std
