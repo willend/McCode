@@ -27,7 +27,8 @@
 *
 * The 'material' specification is given as a chemical formulae, e.g. "LaB6". It
 * may also be given as a file name (CIF/LAU/LAZ/FullProf format) in which case 
-* the formulae is guessed (but may be approximative).
+* the formulae is guessed (but may be approximative). Atoms from Z=5 to Z=90 are
+* handled.
 *
 * By setting the 'order' to 1, the absorption along the scattered path is handled.
 * A higher 'order' will handle multiple scattering events, and final absorption.
@@ -149,7 +150,7 @@
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
-* type: scattering event type 0=fluorescence, 1=Rayleigh, 2=Compton, 3=transmit (absorbsion), 4=diffraction (not handled here), 5=detector escape peak, 6=detector pile-up/sum/coincidence peak
+* type: scattering event type 0=FLUORESCENCE fluorescence, 1=RAYLEIGH Rayleigh, 2=COMPTON Compton, 3=TRANSMISSION Transmit (absorbsion), 4=DIFFRACTION Diffraction (not handled here), 5=FLUORESCENCE_ESCAPE Detector escape peak, 6=FLUORESCENCE_PILEUP Detector pile-up/sum/coincidence peak
 *
 * %Link
 * The XRayLib https://github.com/tschoonj/xraylib
