@@ -52,10 +52,7 @@ jobs:
       run: choco install wget
 
     - name: pip install deps
-      run: pip install PyYAML ply McStasscript mslex
-
-    - name: pip install mcpl-core preview
-      run: pip install -v "git+https://github.com/mctools/mcpl@path_to_mcpl2#subdirectory=mcpl_core"
+      run: pip install PyYAML ply McStasscript mslex mcpl mcpl-core mcpl-extra
 
     - name: choco install deps2
       run: choco install mingw make winflexbison3
