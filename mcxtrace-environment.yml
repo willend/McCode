@@ -31,7 +31,6 @@ dependencies:
   - hdf5
   - xraylib
   - mcpl
-  - mcpl-core
   - mcpl-extra
   - mcxtrace
   - jupytext

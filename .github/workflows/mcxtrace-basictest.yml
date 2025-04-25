@@ -139,15 +139,15 @@ jobs:
            set -x
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             python3 -mpip install PyYAML ply McStasscript mcpl mcpl-core mcpl-extra
+             python3 -mpip install PyYAML ply McStasscript mcpl mcpl-extra
            fi
            if [ "$RUNNER_OS" == "macOS" ];
            then
-             python3 -mpip install PyYAML ply McStasScript mcpl mcpl-core mcpl-extra --break-system-packages
+             python3 -mpip install PyYAML ply McStasScript mcpl mcpl-extra --break-system-packages
            fi
            if [ "$RUNNER_OS" == "Linux" ];
            then
-             python3 -mpip install PyYAML ply McStasscript mcpl mcpl-core mcpl-extra
+             python3 -mpip install PyYAML ply McStasscript mcpl mcpl-extra
            fi
 
     - name: Launch RNG test instrument
