@@ -31,6 +31,6 @@ if [ "x$2" != "x" ]; then
     cat McXtrace-${1}-metapackage64-CONDA.iss
     ./iscc McXtrace-${1}-metapackage64-CONDA.iss
     find .
-    mv Output/setup.exe dist/McXtrace-Metapackage-${1}-win64.exe
+    mv Output/McXtrace-Metapackage-${1}-CONDA-win64.exe dist/
     cp $WORK/INSTALL-McXtrace/Windows/README.md dist/
 fi
