@@ -5,7 +5,7 @@
 #define MyAppVersion "@VERSION@"
 #define MyAppPublisher "McXtrace"
 #define MyAppURL "http://www.mcxtrace.org"
-#define MyAppExeName "setup.exe"
+#define MyAppExeName "McXtrace-Metapackage-@VERSION@-win64.exe"
 
 
 [Setup]
@@ -24,7 +24,7 @@ CreateAppDir=no
 LicenseFile=license_mcx\COPYING.txt
 InfoBeforeFile=license_mcx\Welcome.txt
 InfoAfterFile=license_mcx\Description.txt
-OutputBaseFilename=setup
+OutputBaseFilename=McXtrace-Metapackage-@VERSION@-win64
 Compression=lzma
 SolidCompression=yes
 
@@ -48,7 +48,6 @@ Source: "dist\mcxtrace-tools-python-mxdisplay-webgl-NSIS64-@VERSION@-mingw64.exe
 Source: "dist\mcxtrace-tools-python-mxdisplay-pyqtgraph-NSIS64-@VERSION@-mingw64.exe"; DestDir: "{tmp}"
 Source: "dist\mcxtrace-tools-python-mxdisplay-matplotlib-NSIS64-@VERSION@-mingw64.exe"; DestDir: "{tmp}"
 Source: "dist\mcxtrace-tools-python-mxdoc-NSIS64-@VERSION@-mingw64.exe"; DestDir: "{tmp}"
-Source: "dist\mcxtrace-mcpl-NSIS64-@VERSION@-mingw64.exe"; DestDir: "{tmp}"
 Source: "Support\Miniforge3-Windows-x86_64.exe"; DestDir: "{tmp}"
 
 [Run]
@@ -66,7 +65,6 @@ Filename: "{tmp}\mcxtrace-tools-python-mxdisplay-webgl-NSIS64-@VERSION@-mingw64.
 Filename: "{tmp}\mcxtrace-tools-python-mxdisplay-pyqtgraph-NSIS64-@VERSION@-mingw64.exe"; Parameters: "/S"
 Filename: "{tmp}\mcxtrace-tools-python-mxdisplay-matplotlib-NSIS64-@VERSION@-mingw64.exe"; Parameters: "/S"
 Filename: "{tmp}\mcxtrace-tools-python-mxdoc-NSIS64-@VERSION@-mingw64.exe"; Parameters: "/S"
-Filename: "{tmp}\mcxtrace-mcpl-NSIS64-@VERSION@-mingw64.exe"; Parameters: "/S"
 Filename: "{tmp}\docupdate.bat";
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

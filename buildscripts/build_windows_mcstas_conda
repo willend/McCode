@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+export CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL:-$(python3 -c "import os;print(os.cpu_count())")}
+
+PATH=$PATH:$PWD/tools/download-tool
+
+if [ "x$1" = "x" ]; then
+    # No arguments
+    echo Please provide one argument,e.g : $0 2.0
+    exit 1;
+fi
+mkdir -p dist
+export WORK=${PWD}
+if [ "x$2" != "x" ]; then
+    # Build the meta-packages also
+    cd meta-pkgs/windows/Support
+    if [  -f Miniforge3-Windows-x86_64.exe ]; then
+	rm Miniforge3-Windows-x86_64.exe
+    fi
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
+    cd ..
+
+    rm -f python-install.bat.in.* python-install.bat docupdate.bat.in.* docupdate.bat
+    
+    sed s/@VERSION@/${1}/g conda-python-install.bat.in > python-install.bat.in.2
+    sed s/@FLAVOR@/mcstas/g python-install.bat.in.2 > python-install.bat.in.3
+    sed s/@P@/mc/g python-install.bat.in.3 > python-install.bat
+    sed s/@VERSION@/${1}/g conda-docupdate.bat.in > docupdate.bat.in.2
+    sed s/@P@/mc/g docupdate.bat.in.2 >docupdate.bat.in.3
+    sed s/@FLAVOR@/mcstas/g docupdate.bat.in.3 > docupdate.bat
+
+    sed s/@VERSION@/${1}/g McStas-metapackage64-CONDA.iss > McStas-${1}-metapackage64-CONDA.iss
+    ./iscc McStas-${1}-metapackage64-CONDA.iss
+    mv Output/McStas-Metapackage-${1}-CONDA-win64.exe dist/
+    cp $WORK/INSTALL-McStas/Windows/README.md dist/
+fi

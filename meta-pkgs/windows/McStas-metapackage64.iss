@@ -5,7 +5,7 @@
 #define MyAppVersion "@VERSION@"
 #define MyAppPublisher "McStas"
 #define MyAppURL "http://www.mcstas.org"
-#define MyAppExeName "setup.exe"
+#define MyAppExeName "McStas-Metapackage-@VERSION@-win64.exe"
 
 
 [Setup]
@@ -24,7 +24,7 @@ CreateAppDir=no
 LicenseFile=license_etc\COPYING.txt
 InfoBeforeFile=license_etc\Description.rtf
 InfoAfterFile=license_etc\Description.rtf
-OutputBaseFilename=setup
+OutputBaseFilename=McStas-Metapackage-@VERSION@-win64
 Compression=lzma
 SolidCompression=yes
 
@@ -53,7 +53,6 @@ Source: "dist\mcstas-tools-python-mcdisplay-pyqtgraph-NSIS64-@VERSION@-mingw64.e
 Source: "dist\mcstas-tools-python-mcdisplay-matplotlib-NSIS64-@VERSION@-mingw64.exe"; DestDir: "{tmp}"
 Source: "dist\mcstas-tools-python-mcdisplay-mantid-NSIS64-@VERSION@-mingw64.exe"; DestDir: "{tmp}"
 Source: "dist\mcstas-tools-python-mcdoc-NSIS64-@VERSION@-mingw64.exe"; DestDir: "{tmp}"
-Source: "dist\mcstas-mcpl-NSIS64-@VERSION@-mingw64.exe"; DestDir: "{tmp}"
 Source: "Support\Miniforge3-Windows-x86_64.exe"; DestDir: "{tmp}"
 
 [Run]
@@ -76,7 +75,6 @@ Filename: "{tmp}\mcstas-tools-python-mcdisplay-pyqtgraph-NSIS64-@VERSION@-mingw6
 Filename: "{tmp}\mcstas-tools-python-mcdisplay-matplotlib-NSIS64-@VERSION@-mingw64.exe"; Parameters: "/S"
 Filename: "{tmp}\mcstas-tools-python-mcdisplay-mantid-NSIS64-@VERSION@-mingw64.exe"; Parameters: "/S"
 Filename: "{tmp}\mcstas-tools-python-mcdoc-NSIS64-@VERSION@-mingw64.exe"; Parameters: "/S"
-Filename: "{tmp}\mcstas-mcpl-NSIS64-@VERSION@-mingw64.exe"; Parameters: "/S"
 Filename: "{tmp}\docupdate.bat";
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
