@@ -26,6 +26,9 @@ dependencies:
   - nexusformat
   - nexpy
   - hdf5
+  - mcpl
+  - mcpl-core
+  - mcpl-extra
   - ncrystal
   - xraylib
   - jupytext

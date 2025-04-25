@@ -54,7 +54,6 @@ export MCCODE_USE_LEGACY_DESTINATIONS=ON
 ./mkdist mcxtrace-tools-python-mxdisplay-webgl-classic $1 tools/Python/mcdisplay/webgl-classic/ "" mingw64 "" -- nsis64
 ./mkdist mcxtrace-manuals $1 docpkg/manuals/mcxtrace/ "" mingw64 "o" -- nsis64
 ./mkdist mcxtrace-tools-python-mxdoc $1 tools/Python/mcdoc/ "" mingw64 "" -- nsis64
-./mkdist mcxtrace-mcpl $1 3rdparty/mcpl-package "" mingw64 "" -- nsis64
 
 if [ "x$2" != "x" ]; then
     # Build the meta-packages also
@@ -78,6 +77,5 @@ if [ "x$2" != "x" ]; then
     mv Output/setup.exe dist/McXtrace-Metapackage-${1}-win64.exe
     cp $WORK/INSTALL-McXtrace/Windows/README.md dist/
     mkdir dist/single-packages
-    cp -rp $WORK/support/Win32/extras dist/extras
     mv dist/mcxtrace-* dist/single-packages
 fi
