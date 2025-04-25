@@ -30,6 +30,9 @@ dependencies:
   - mcpl-core
   - mcpl-extra
   - ncrystal
+  - mcpl
+  - mcpl-core
+  - mcpl-extra
   - xraylib
   - jupytext
   - jupyterlab
