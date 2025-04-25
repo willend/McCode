@@ -27,7 +27,10 @@ if [ "x$2" != "x" ]; then
     sed s/@FLAVOR@/mcstas/g docupdate.bat.in.3 > docupdate.bat
 
     sed s/@VERSION@/${1}/g McStas-metapackage64-CONDA.iss > McStas-${1}-metapackage64-CONDA.iss
+    ls -l McStas-${1}-metapackage64-CONDA.iss
+    cat McStas-${1}-metapackage64-CONDA.iss
     ./iscc McStas-${1}-metapackage64-CONDA.iss
+    find .
     mv Output/setup.exe dist/McStas-Metapackage-${1}-CONDA-win64.exe
     cp $WORK/INSTALL-McStas/Windows/README.md dist/
 fi
