@@ -101,8 +101,8 @@ jobs:
       run: pip install PyYAML ply McStasscript mslex mcpl mcpl-core mcpl-extra
 
     - name: pip install deps Windows arm64
-      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm' mcpl mcpl-core mcpl-extra
-      run: pip install PyYAML ply mslex
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm' 
+      run: pip install PyYAML ply mslex mcpl mcpl-core mcpl-extra
 
     - name: pip install mcpl-core preview
       run: pip install -v "git+https://github.com/mctools/mcpl@path_to_mcpl2#subdirectory=mcpl_core"
