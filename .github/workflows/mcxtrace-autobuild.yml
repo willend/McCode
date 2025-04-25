@@ -72,7 +72,7 @@ jobs:
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcxtrace ${REV} meta && mv dist mcxtrace-debian-x86_64 && tar cfz mcxtrace-debian-x86_64.tgz  mcxtrace-debian-x86_64/; fi
 
     - name: Package conda wrapper McXtrace for windows
-      id: mcxtrace-mingw-build
+      id: mcxtrace-conda-build
       run: |
            set -e
            set -u

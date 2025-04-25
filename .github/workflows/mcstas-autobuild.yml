@@ -72,7 +72,7 @@ jobs:
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcstas ${REV} meta && mv dist mcstas-debian-x86_64 && tar cfz mcstas-debian-x86_64.tgz mcstas-debian-x86_64/; fi
 
     - name: Package conda wrapper McStas for windows
-      id: mcstas-mingw-build
+      id: mcstas-conda-build
       run: |
            set -e
            set -u
