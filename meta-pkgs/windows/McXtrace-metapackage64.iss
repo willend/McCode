@@ -24,7 +24,7 @@ CreateAppDir=no
 LicenseFile=license_mcx\COPYING.txt
 InfoBeforeFile=license_mcx\Welcome.txt
 InfoAfterFile=license_mcx\Description.txt
-OutputBaseFilename=setup
+OutputBaseFilename=McXtrace-Metapackage-@VERSION@-win64
 Compression=lzma
 SolidCompression=yes
 

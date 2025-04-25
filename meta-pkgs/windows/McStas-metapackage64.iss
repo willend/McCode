@@ -24,7 +24,7 @@ CreateAppDir=no
 LicenseFile=license_etc\COPYING.txt
 InfoBeforeFile=license_etc\Description.rtf
 InfoAfterFile=license_etc\Description.rtf
-OutputBaseFilename=setup
+OutputBaseFilename=McStas-Metapackage-@VERSION@-win64
 Compression=lzma
 SolidCompression=yes
 
