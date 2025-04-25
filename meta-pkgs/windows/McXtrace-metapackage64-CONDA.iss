@@ -5,7 +5,7 @@
 #define MyAppVersion "@VERSION@"
 #define MyAppPublisher "McXtrace"
 #define MyAppURL "http://www.mcxtrace.org"
-#define MyAppExeName "setup.exe"
+#define MyAppExeName "McXtrace-Metapackage-@VERSION@-CONDA-win64.exe"
 
 
 [Setup]

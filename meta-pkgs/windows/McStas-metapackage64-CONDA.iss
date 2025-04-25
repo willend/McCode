@@ -5,7 +5,7 @@
 #define MyAppVersion "@VERSION@"
 #define MyAppPublisher "McStas"
 #define MyAppURL "http://www.mcstas.org"
-#define MyAppExeName "setup.exe"
+#define MyAppExeName "McStas-Metapackage-@VERSION@-CONDA-win64.exe"
 
 
 [Setup]
