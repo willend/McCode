@@ -125,7 +125,7 @@ WHEN (index == 5)
 AT (0, 0, 0) RELATIVE sample_cradle
 GROUP FluPow
 EXTEND %{
-  if (SCATTERED) scatt_type=3;
+  if (SCATTERED) scatt_type=DIFFRACTION;
   else ABSORB;
 %}
 
@@ -136,11 +136,11 @@ COMPONENT Sph_mon = PSD_monitor_4PI(nx=512,ny=512,
   AT (0, 0, 0) RELATIVE PREVIOUS
 
 COMPONENT Sph_mon_pow = COPY(Sph_mon)(filename="Sphere_pow")
-  WHEN (scatt_type == 3)
+  WHEN (scatt_type == DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
 
   COMPONENT Sph_mon_flu = COPY(Sph_mon)(filename="Sphere_fluo")
-  WHEN (scatt_type != 3)
+  WHEN (scatt_type != DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
 
 COMPONENT E_mon = Monitor_nD(
@@ -149,11 +149,11 @@ COMPONENT E_mon = Monitor_nD(
   AT(0,0,0) RELATIVE PREVIOUS
 
 COMPONENT E_mon_pow = COPY(E_mon)(filename="Energy_pow")
-  WHEN (scatt_type == 3)
+  WHEN (scatt_type == DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
 
 COMPONENT E_mon_flu = COPY(E_mon)(filename="Energy_flu")
-  WHEN (scatt_type != 3)
+  WHEN (scatt_type != DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
 
 END

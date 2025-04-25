@@ -510,8 +510,7 @@ SHARE
                    __FILE__, filename));
 
     // remove temporary F2(hkl) file when giving CFL/CIF/ShelX file
-    if (filename && filename != SC_file)
-      unlink(filename);
+    if (filename && filename != SC_file) unlink(filename);
     
     if (sTable.columns < 4) {
       MPI_MASTER(
@@ -812,6 +811,7 @@ SHARE
         list[J].u3y = b2[1];
         list[J].u3z = b2[2];
         sig3 = FWHM2RMS*list[J].tau*MIN2RAD*SC_mosaic;
+        
       } else if(SC_mosaic_a > 0 && SC_mosaic_b > 0 && SC_mosaic_c > 0) {
         /* Use anisotropic mosaic. */
         MPI_MASTER(
@@ -867,7 +867,9 @@ SHARE
         /*with the jacobian we can compute the sigmas in terms of the orthogonal vectors u2 and u3*/
         sig2=sig_fi_a*fabs(J_v_fia) + sig_fi_b*fabs(J_v_fib) + sig_fi_c*fabs(J_v_fic);
         sig3=sig_fi_a*fabs(J_n_fia) + sig_fi_b*fabs(J_n_fib) + sig_fi_c*fabs(J_n_fic);
+        
       } else if (SC_mosaic_AB[0]!=0 && SC_mosaic_AB[1]!=0){
+        /* Use isotropic mosaic via mosaic matrix */
         if ( (SC_mosaic_AB[2]==0 && SC_mosaic_AB[3]==0 && SC_mosaic_AB[4]==0) || (SC_mosaic_AB[5]==0 && SC_mosaic_AB[6]==0 && SC_mosaic_AB[7]==0) ){
           MPI_MASTER(
           fprintf(stderr,"Single_crystal: %s: ERROR: in-plane mosaics are specified but one (or both)\n"
@@ -930,7 +932,7 @@ SHARE
         /*protect against collapsing gaussians. These seem to be sensible values.*/
         if (sig2<1e-5) sig2=1e-5;
         if (sig3<1e-5) sig3=1e-5;
-      }
+      } /* end moisaic stuff */
       else {
         MPI_MASTER(
         fprintf(stderr,
@@ -939,23 +941,20 @@ SHARE
         );
         return(0);
       }
+      
       list[J].sig123 = sig1*sig2*sig3;
       list[J].m1 = 1/(2*sig1*sig1);
       list[J].m2 = 1/(2*sig2*sig2);
       list[J].m3 = 1/(2*sig3*sig3);
       /* Set Gauss cutoff to 5 times the maximal sigma. */
       if(sig1 > sig2)
-        if(sig1 > sig3)
-          list[J].cutoff = 5*sig1;
-        else
-          list[J].cutoff = 5*sig3;
+        list[J].cutoff = 5*(sig1 > sig3 ? sig1 : sig3);
       else
-        if(sig2 > sig3)
-          list[J].cutoff = 5*sig2;
-        else
-          list[J].cutoff = 5*sig3;
+        list[J].cutoff = 5*(sig2 > sig3 ? sig2 : sig3);
+
       if (!isnan(list[J].F2) && !isnan(list[J].cutoff) && !isnan(list[J].tau))
         J++; // switch to next HKL Bragg element in hkl_data
+      if (J < 10) printf("DEBUG: J=%i F2=%g tau=%g\n", J, list[J].F2, list[J].tau);
     } // for i, j
     Table_Free(&sTable);
     

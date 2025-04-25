@@ -28,7 +28,7 @@
 * may also be given as a file name (CIF/LAU/LAZ/FullProf format) in which case
 * the formulae is guessed (but may be approximative), and the powder
 * diffraction is computed, following same options as the <b>PowderN</b>
-* sample component.
+* sample component. The fluorescence is handled for atoms from Z=5 to Z=90.
 *
 * By setting the 'order' to 1, the absorption along the scattered path is handled.
 * A higher 'order' will handle multiple scattering events, and final absorption.
