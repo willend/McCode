@@ -80,6 +80,9 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcdisplay.in" "${WORK}/${P}display" 
 # Put package.json in $WORK
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/package.json" "${WORK}/package.json" @ONLY)
 
+# Configure index.html template
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/index.html.in" "${WORK}/index.html" @ONLY)
+
 # Create folder for node_modules later installed by npm
 execute_process(COMMAND "mkdir" "node_modules"
   WORKING_DIRECTORY "${WORK}")
@@ -127,8 +130,14 @@ install(
         RENAME "${P}display.py"
     )
 
+# Configured index.html
+install(
+    FILE "${WORK}/index.html"
+    DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+)
+
 # Other .py infrastructure
-foreach(NAME start-vite.js package.json mcdisplay.js Lut.js OrbitControls.js dat.gui.min.js jquery.min.js three.min.js template.html __init__.py common.css main.tsx App.tsx index.html)
+foreach(NAME start-vite.js package.json mcdisplay.js Lut.js OrbitControls.js dat.gui.min.js jquery.min.js three.min.js template.html __init__.py common.css main.tsx App.tsx)
   install(
     FILES "${PROJECT_SOURCE_DIR}/${NAME}"
     DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"

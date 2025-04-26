@@ -26,7 +26,6 @@ dependencies:
   - nexpy
   - hdf5
   - mcpl
-  - mcpl-core
   - mcpl-extra
   - ncrystal
   - jupytext

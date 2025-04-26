@@ -31,7 +31,6 @@ dependencies:
   - hdf5
   - ncrystal
   - mcpl
-  - mcpl-core
   - mcpl-extra
   - mcstas
   - jupytext

@@ -52,7 +52,7 @@ jobs:
       run: choco install wget
 
     - name: pip install deps
-      run: pip install PyYAML ply McStasscript mslex mcpl mcpl-core mcpl-extra
+      run: pip install PyYAML ply McStasscript mslex mcpl mcpl-extra
 
     - name: choco install deps2
       run: choco install mingw make winflexbison3

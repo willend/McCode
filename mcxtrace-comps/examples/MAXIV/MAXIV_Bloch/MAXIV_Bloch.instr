@@ -66,11 +66,11 @@
 *******************************************************************************/
 DEFINE INSTRUMENT MAXIV_Bloch(
     Wanted_energy=0.378,m=3,cff=0,
-    r_rho=800, // blazed=0,blazed_angle=0,
+    r_rho=800,
     SourceChoice=0,E0=0.6, dE=0.4,
     undK=5.6,Nper=187,
     grating_mode=-1,
-    zm_mirror2=2,R0_M2=1,// R0_PG=1,
+    zm_mirror2=2,R0_M2=1,
     zm_mirror1=14,theta_mirror1=3,R0_M1=1,
     zm_mirror3=1,theta_mirror3=3,R0_M3=1,
     zm_mirror4=19,theta_mirror4=3,R0_M4=1,

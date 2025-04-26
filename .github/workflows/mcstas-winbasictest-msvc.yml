@@ -98,11 +98,11 @@ jobs:
 
     - name: pip install deps Windows Intel
       if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
-      run: pip install PyYAML ply McStasscript ncrystal mslex mcpl mcpl-core mcpl-extra
+      run: pip install PyYAML ply McStasscript ncrystal mslex mcpl mcpl-extra
 
     - name: pip install deps Windows arm64
       if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
-      run: pip install PyYAML ply ncrystal mslex mcpl mcpl-core mcpl-extra
+      run: pip install PyYAML ply ncrystal mslex mcpl mcpl-extra
 
     - name: set MCSTAS env var
       run: echo MCSTAS=%CD%\install\share\mcstas\resources >> %GITHUB_ENV%
