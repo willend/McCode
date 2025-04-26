@@ -132,7 +132,7 @@ install(
 
 # Configured index.html
 install(
-    FILE "${WORK}/index.html"
+    FILES "${WORK}/index.html"
     DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
 )
 
