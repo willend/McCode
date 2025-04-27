@@ -606,18 +606,13 @@ off_struct thread_offdata = offdata;
 #define thread_offdata offdata
 #endif
 
-double ki_x,ki_y,ki_z,ki,Ei, pi;
-double kf_x,kf_y,kf_z,kf,Ef;
+double k, E;
+double ki,pi;
 
 /* Store Initial photon state */
-
-ki_x = kx;
-ki_y = ky;
-ki_z = kz;
-ki   = sqrt(kx*kx+ky*ky+kz*kz); //  Angs-1
-kf   = ki;
-Ei   = K2E*ki; // keV
-pi   = p;      // used to test for multiple fluo weighting and order cutoff
+k  = ki = sqrt(kx*kx+ky*ky+kz*kz); //  Angs-1
+E  = K2E*k; // keV
+pi = p;      // used to test for multiple fluo weighting and order cutoff
 
 do { /* while (intersect) Loop over multiple scattering events */
 
@@ -762,8 +757,8 @@ do { /* while (intersect) Loop over multiple scattering events */
         double xs_Z[3];
 
         // get Fluorescence xs
-        XRMC_CrossSections(Z, Ei, xs_Z); // [barn/atom]
-        sigma_barn            += frac*CSb_Total(Z, Ei, NULL); // Photo+Compton+Rayleigh
+        XRMC_CrossSections(Z, E, xs_Z); // [barn/atom]
+        sigma_barn            += frac*CSb_Total(Z, E, NULL); // Photo+Compton+Rayleigh
         cum_xs_fluo[i_Z+1]     = cum_xs_fluo[i_Z]    +frac*xs_Z[FLUORESCENCE];
         cum_xs_Compton[i_Z+1]  = cum_xs_Compton[i_Z] +frac*xs_Z[COMPTON];
         cum_xs_Rayleigh[i_Z+1] = cum_xs_Rayleigh[i_Z]+frac*xs_Z[RAYLEIGH];
@@ -841,6 +836,7 @@ do { /* while (intersect) Loop over multiple scattering events */
     double solid_angle;
     double theta, dsigma;
     double Ef, dE;
+    double kf=k, kf_x, kf_y, kf_z;  // next particle direction
     
     /* correct for XS total(photo+Compton+Rayleigh) > sum(fluo+Compton+Rayleigh) */
     dsigma = (xs[FLUORESCENCE]+xs[RAYLEIGH]+xs[COMPTON])/sigma_barn;
@@ -868,7 +864,7 @@ do { /* while (intersect) Loop over multiple scattering events */
     }
     Z   = compound->Elements[i_Z];
     
-    /* select outgoing vector */
+    /* select outgoing vector (kf_x, kf_y, kf_z) and |kf| */
     if ((target_x || target_y || target_z)) {
       aim_x = target_x-x;       /* Vector pointing at target (anal./det.) */
       aim_y = target_y-y;
@@ -886,12 +882,12 @@ do { /* while (intersect) Loop over multiple scattering events */
     p *= solid_angle/(4*PI); // correct for selected solid-angle
     NORM(kf_x, kf_y, kf_z);  // normalize the outout direction |kf|=1
     
-    // determine final energy
+    // determine final energyn (kf)
     switch (type) {
       case FLUORESCENCE: /* 0 Fluo: choose line */
         n_fluo++;
         p_fluo += p;
-        Ef      = XRMC_SelectFluorescenceEnergy(Z, Ei, &dE);      // dE in keV
+        Ef      = XRMC_SelectFluorescenceEnergy(Z, E, &dE);      // dE in keV
         if (dE) {
           if (flag_lorentzian) dE  *= tan(PI/2*randpm1()); // Lorentzian distribution
           else                 dE  *= randnorm();          // Gaussian distribution
@@ -903,40 +899,40 @@ do { /* while (intersect) Loop over multiple scattering events */
       case RAYLEIGH:     /* 1 Rayleigh: Coherent, elastic    */
         n_Rayleigh++;
         p_Rayleigh += p;
-        theta      = acos(scalar_prod(kf_x,kf_y, kf_z,ki_x, ki_y,ki_z)/ki);
-        dsigma     = DCSb_Rayl(Z,  Ei, theta, NULL); // [barn/at/st]
+        theta      = acos(scalar_prod(kf_x,kf_y, kf_z, kx,ky,kz)/k);
+        dsigma     = DCSb_Rayl(Z,  E, theta, NULL); // [barn/at/st]
         p         *= 4*PI*dsigma/xs[RAYLEIGH];
         break;
       
       case COMPTON:      /* 2 Compton: Incoherent: choose final energy */
         n_Compton++;
         p_Compton += p;
-        theta      = acos(scalar_prod(kf_x,kf_y,kf_z, ki_x,ki_y,ki_z)/ki);
-        dsigma     = DCS_Compt(Z,  Ei, theta, NULL); // [barn/at/st]
-        kf         = ComptonEnergy(Ei, theta, NULL)*E2K; /* XRayLib, fraction of emc2=511 keV */
+        theta      = acos(scalar_prod(kf_x,kf_y,kf_z, kx,ky,kz)/k);
+        dsigma     = DCS_Compt(Z,  E, theta, NULL); // [barn/at/st]
+        kf         = ComptonEnergy(E, theta, NULL)*E2K; /* XRayLib, fraction of emc2=511 keV */
         p         *= 4*PI*dsigma/xs[COMPTON];
         break;
     }
 
     // handle detector escape peak: just shift energy down by detector K-alpha
     if (escape_ratio > 0 && escape_energy > 0 && kf > escape_energy*E2K && rand01() < escape_ratio) {
-      kf  -= escape_energy*E2K;
+      kf  -= escape_energy*E2K; // escape
       type = FLUORESCENCE_ESCAPE;
 
     } else if (type == FLUORESCENCE && pileup_ratio > 0 && rand01() < pileup_ratio) {
       // handle detector pile-up peak: get an other fluo line and sum it
       i_Z = XRMC_SelectFromDistribution(cum_xs_fluo,     compound->nElements+1);
       Z   = compound->Elements[i_Z];
-      Ef  = XRMC_SelectFluorescenceEnergy(Z, Ei, &dE);
-      kf += Ef*E2K;
+      Ef  = XRMC_SelectFluorescenceEnergy(Z, E, &dE);
+      kf += Ef*E2K;             // pile-up
       type= FLUORESCENCE_PILEUP;
     }
-
-    Ef = K2E*kf;
     
     kx = kf*kf_x;
     ky = kf*kf_y;
     kz = kf*kf_z;
+    k  = kf;
+    E  = k*K2E;
     SCATTER;
     event_counter++;
     
