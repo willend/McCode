@@ -9,10 +9,10 @@
 *
 * %Identification
 * Written by: E. Farhi
-* Date:       March 2022
+* Date:       April 2025
 * Origin:     Synchrotron SOLEIL
 *
-* Sample model handling absorption, fluorescence, Compton, Rayleigh scattering and powder diffraction.
+* Sample model handling absorption, fluorescence, Compton, Rayleigh scattering and single crystal diffraction.
 *
 * %Description
 * Sample that models multiple photon-matter interactions:
@@ -20,7 +20,7 @@
 * - fluorescence        (excited electrons emit light while falling into lower states)
 * - Compton scattering  (inelastic, incoherent)
 * - Rayleigh scattering (elastic,   coherent)
-* - powder diffraction  (elastic,   coherent)
+* - crystal diffraction (elastic,   coherent)
 * - fluorescence detector escape  (energy shift from detector K-alpha)
 * - fluorescence detector pile-up (sum aka time coincidence aka pile-up in detector)
 *
@@ -156,6 +156,7 @@
 * sx_DW:      [1] Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
 * sx_format: [{}] List of structure file column indexes. See the PowderN component.
 * sx_nb_atoms:[1] Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
+* sx_refl:  [str] A CIF/LAZ/LAU reflection file as for PowderN. When not given, 'material' is used. Specify it when 'material' is a chemical formula.
 * sx_sign:    [1] Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
 * sx_Vc:   [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
@@ -192,6 +193,7 @@ SETTING PARAMETERS(
   target_x = 0, target_y = 0, target_z = 0, focus_r = 0,
   focus_xw=0, focus_yh=0, focus_aw=0, focus_ah=0, int target_index=0,
   int flag_compton=1, int flag_rayleigh=1, int flag_lorentzian=1,
+  string sx_refl="",
   int flag_sx=1, sx_delta_d_d=1e-4, int sx_barns=1, vector sx_mosaic_AB={0,0, 0,0,0, 0,0,0},
   sx_recip_cell=0,
   sx_ax = 0, sx_ay = 0, sx_az = 0,
@@ -556,18 +558,20 @@ INITIALIZE %{
       hkl_info.flag_barns= sx_barns;
       double* mosaic_ABin = sx_mosaic_AB;
 
-      i = read_hkl_data(material, &hkl_info, &hkl_list, sx_mosaic, sx_mosaic_a, sx_mosaic_b, sx_mosaic_c, mosaic_ABin,
+      if (!sx_refl || !strlen(sx_refl) || !strcmp(sx_refl, "NULL") || !strcmp(sx_refl, "0"))
+        strcpy(sx_refl, material);
+      i = read_hkl_data(sx_refl, &hkl_info, &hkl_list, sx_mosaic, sx_mosaic_a, sx_mosaic_b, sx_mosaic_c, mosaic_ABin,
                         hkl_info.ctr_size,hkl_info.ctr_k,hkl_info.ctr_FT2,hkl_info.ctr_dir);
       if (i == 0) {
         MPI_MASTER(
         fprintf(stderr,"WARNING: FluoCrystal: %s: sx_mosaic or material file %s is not valid (CIF/LAU). Ignoring diffraction process.\n",
-                      NAME_CURRENT_COMP, material);
+                      NAME_CURRENT_COMP, sx_refl);
         );
         flag_sx=0;
       } else if (hkl_info.count) {
         MPI_MASTER(
           printf("FluoCrystal: %s: Read %d reflections from file '%s'\n",
-                          NAME_CURRENT_COMP, hkl_info.count, material);
+                          NAME_CURRENT_COMP, hkl_info.count, sx_refl);
           printf("Direct space lattice orientation: Vc=%g [Angs^3]\n", hkl_info.V0);
           printf("  a  = [%g %g %g]\n", hkl_info.m_ax, hkl_info.m_ay, hkl_info.m_az);
           printf("  b  = [%g %g %g]\n", hkl_info.m_bx, hkl_info.m_by, hkl_info.m_bz);
@@ -697,7 +701,8 @@ off_struct thread_offdata = offdata;
 #define thread_offdata offdata
 #endif
 
-double k,ki, E, pi;
+double k, E;
+double ki,pi;
 
 /* Store Initial photon state */
 k  = ki = sqrt(kx*kx+ky*ky+kz*kz); //  Angs-1
@@ -847,15 +852,14 @@ do { /* while (intersect) Loop over multiple scattering events */
     cum_xs_fluo[0] = cum_xs_Compton[0] = cum_xs_Rayleigh[0] = 0;
 
     if (!reuse) {
-
       for (i_Z=0; i_Z< compound->nElements; i_Z++) {
         int    Z   = compound->Elements[i_Z];
         double frac= compound->massFractions[i_Z];
         double xs_Z[3];
 
         // get Fluorescence xs
-        XRMC_CrossSections(Z, Ei, xs_Z); // [barn/atom]
-        sigma_barn            += frac*CSb_Total(Z, Ei, NULL); // Fluo+Compton+Rayleigh
+        XRMC_CrossSections(Z, E, xs_Z); // [barn/atom]
+        sigma_barn            += frac*CSb_Total(Z, E, NULL); // Fluo+Compton+Rayleigh
         cum_xs_fluo[i_Z+1]     = cum_xs_fluo[i_Z]    +frac*xs_Z[FLUORESCENCE];
         cum_xs_Compton[i_Z+1]  = cum_xs_Compton[i_Z] +frac*xs_Z[COMPTON];
         cum_xs_Rayleigh[i_Z+1] = cum_xs_Rayleigh[i_Z]+frac*xs_Z[RAYLEIGH];
@@ -864,10 +868,10 @@ do { /* while (intersect) Loop over multiple scattering events */
 
       if (flag_sx) {
         // we add the diffraction XS
-        double tau_max   = 2*kf/(1 - 5*hkl_info.m_delta_d_d);
+        double tau_max   = 2*k/(1 - 5*hkl_info.m_delta_d_d);
         /* call hkl_search */
         tau_count = hkl_search(L, T, hkl_info.count, hkl_info.V0,
-                               kf_x, kf_y, kf_z, tau_max,
+                               kx, ky, kz, tau_max,
                                &coh_refl, &coh_xsect);
         xs[DIFFRACTION] = coh_xsect;
         sigma_barn     += xs[DIFFRACTION];
@@ -953,7 +957,8 @@ do { /* while (intersect) Loop over multiple scattering events */
     int    i_Z=-1, Z, j=-1;
     double solid_angle;
     double theta, dsigma, alpha;
-    double dE, sum;
+    double Ef, dE, sum;
+    double kf=k, kf_x, kf_y, kf_z;  // next particle direction
 
     /* correct for XS total(photo+Compton+Rayleigh+SX) > sum(fluo+Compton+Rayleigh+SX) */
     dsigma = (xs[FLUORESCENCE]+xs[RAYLEIGH]+xs[COMPTON]+xs[DIFFRACTION])/sigma_barn;
@@ -1044,7 +1049,7 @@ do { /* while (intersect) Loop over multiple scattering events */
       case FLUORESCENCE: /* 0 Fluo: choose line */
         n_fluo++;
         p_fluo += p;
-        Ef      = XRMC_SelectFluorescenceEnergy(Z, Ei, &dE);      // dE in keV
+        Ef      = XRMC_SelectFluorescenceEnergy(Z, E, &dE);      // dE in keV
         if (dE) {
           if (flag_lorentzian) dE  *= tan(PI/2*randpm1()); // Lorentzian distribution
           else                 dE  *= randnorm();          // Gaussian distribution
@@ -1054,15 +1059,15 @@ do { /* while (intersect) Loop over multiple scattering events */
         break;
 
       case RAYLEIGH:     /* 1 Rayleigh: Coherent, elastic    */
-        theta      = acos(scalar_prod(kf_x,kf_y, kf_z,kx, ky,kz)/kf); // kf is the previous |k|
-        dsigma     = DCSb_Rayl(Z,  Ei, theta, NULL); // [barn/at/st]
+        theta      = acos(scalar_prod(kf_x,kf_y,kf_z, kx, ky,kz)/k); // kf is the previous |k|
+        dsigma     = DCSb_Rayl(Z,  E, theta, NULL); // [barn/at/st]
         p         *= 4*PI*dsigma/xs[RAYLEIGH];
         n_Rayleigh++;
         p_Rayleigh+= p;
         break;
 
       case COMPTON:      /* 2 Compton: Incoherent: choose final energy */
-        theta      = acos(scalar_prod(kf_x,kf_y, kf_z,kx, ky,kz)/kf); // kf is the previous |k|
+        theta      = acos(scalar_prod(kf_x,kf_y, kf_z, kx,ky,kz)/k); // kf is the previous |k|
         dsigma     = DCS_Compt(Z,  Ef, theta, NULL); // [barn/at/st] Ef is the previous particle energy
         kf         = ComptonEnergy(Ef, theta, NULL)*E2K; /* XRayLib, fraction of emc2=511 keV */
         p         *= 4*PI*dsigma/xs[COMPTON];
@@ -1088,16 +1093,16 @@ do { /* while (intersect) Loop over multiple scattering events */
       // handle detector pile-up peak: get an other fluo line and sum it
       i_Z = XRMC_SelectFromDistribution(cum_xs_fluo,     compound->nElements+1);
       Z   = compound->Elements[i_Z];
-      Ef  = XRMC_SelectFluorescenceEnergy(Z, Ei, &dE);
+      Ef  = XRMC_SelectFluorescenceEnergy(Z, E, &dE);
       kf += Ef*E2K;
       type= FLUORESCENCE_PILEUP;
     }
 
-    Ef = K2E*kf;
-
-    kx = kf*kf_x; kf_x=kx;
-    ky = kf*kf_y; kf_y=ky;
-    kz = kf*kf_z; kf_z=kz;
+    kx = kf*kf_x;
+    ky = kf*kf_y;
+    kz = kf*kf_z;
+    k  = kf;
+    E  = K2E*kf;
     SCATTER;
     event_counter++;
 

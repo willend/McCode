@@ -9,7 +9,7 @@
 *
 * %Identification
 * Written by: E. Farhi
-* Date:       March 2022
+* Date:       April 2025
 * Origin:     Synchrotron SOLEIL
 *
 * Sample model handling absorption, fluorescence, Compton, Rayleigh scattering and powder diffraction.
@@ -156,7 +156,7 @@
 * powder_DW:      [1] Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
 * powder_format: [{}] List of structure file column indexes. See the PowderN component.
 * powder_nb_atoms:[1] Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
-* powder_refl:[  str] A CIF/LAZ/LAU reflection file as for PowderN. When not given, 'material' is used. Specify it when 'material' is a chemical formula.
+* powder_refl:  [str] A CIF/LAZ/LAU reflection file as for PowderN. When not given, 'material' is used. Specify it when 'material' is a chemical formula.
 * powder_sign:    [1] Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
 * powder_Vc:   [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
