@@ -1490,9 +1490,9 @@ TRACE
       //mu = [cm squared . g⁻1]
       //therefore convert to barns if barns set to 1, otherwise to fm^2
       if (hkl_info.flag_barns) { //convert cm^2 into barns
-        abs_xsect *= 10E24; 
-      } else {  //convert cm^2 into fm^2, else we assume fm^2
         abs_xsect *= 10E26;
+      } else {  //convert cm^2 into fm^2, else we assume fm^2
+        abs_xsect *= 10E24;
       }
     }
     V0= hkl_info.V0;
@@ -1505,7 +1505,7 @@ TRACE
     if (hkl_info.flag_barns) {
       /*If cross sections are given in barns, we need a scaling factor of 100 
        to get scattering lengths in m, since V0 is assumed to be in AA*/
-    abs_xlen *= 100; inc_xlen *= 100;
+      abs_xlen *= 100; inc_xlen *= 100;
     } /* else assume fm^2 */
     L = hkl_list;
     
