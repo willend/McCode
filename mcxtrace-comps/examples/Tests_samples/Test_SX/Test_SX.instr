@@ -15,18 +15,21 @@
 * Simply a model source illuminating a SX sample.
 * The sample itself is a Mo bulk crystal.
 *
-* %Example: TTH=13.4 index=1 Detector: psd4pi_I=7.95747e-10
-* %Example: TTH=13.4 index=2 Detector: psd4pi_I=7.95747e-10
+* %Example: index=1 Detector: psd4pi_I=1.18843e-13
+* %Example: index=2 Detector: psd4pi_I=4.80386e-13
 *
 * %Parameters
-* TTH:         [deg] Two theta rotation. Only places the last detector.
 * reflections: [str] List of powder reflections, LAU/CIF format.
 * index:       [1]   Index of the sample component to use. 1=Single_crystal, 2=FluoCrystal
 *
 * %End
 *******************************************************************************/
 
-DEFINE INSTRUMENT Test_SX(TTH=13.4, string reflections="Mo.lau", index=1)
+DEFINE INSTRUMENT Test_SX(string reflections="Mo.lau", index=1)
+
+USERVARS %{
+  int Stype;
+%}
 
 TRACE
 COMPONENT src = Source_flat(
@@ -34,39 +37,34 @@ COMPONENT src = Source_flat(
     focus_yh = 1e-3, E0 = 7, dE = 6.9)
 AT (0, 0, 0) ABSOLUTE
 
-COMPONENT psd0 = PSD_monitor(
-    nx = 100, ny = 100, filename = "psd0", xwidth = 2e-3, yheight = 2e-3)
-AT (0, 0, 1e-9) RELATIVE src
-
 COMPONENT sample_pos=Arm()
 AT (0, 0, 10) RELATIVE PREVIOUS
 
 COMPONENT sample = Single_crystal(reflections=reflections, material_datafile="NULL", 
-    radius = .5e-4, yheight = 1e-3,mosaic=1e-4)
+    radius = .5e-4, yheight = 1e-3, mosaic=1)
     WHEN(index==1)
 AT (0, 0, 0) RELATIVE sample_pos
-/*EXTEND %{*/
-/*  if(!SCATTERED) ABSORB;*/
-/*%}*/
+EXTEND %{
+  if(!SCATTERED) ABSORB;
+  else Stype=DIFFRACTION;
+%}
 
 COMPONENT sampleF = FluoCrystal(material=reflections,
-    radius = .5e-4, yheight = 1e-3,sx_mosaic=5)
+    radius = .5e-4, yheight = 1e-3, sx_mosaic=5)
     WHEN(index==2)
 AT (0, 0, 0) RELATIVE sample_pos
+EXTEND %{
+  if(!SCATTERED) ABSORB;
+  else Stype=type;
+%}
 
 COMPONENT psd4pi = PSD_monitor_4PI(
     nx = 180, ny = 180, filename = "psd4pi", radius = 0.1, restore_xray = 1)
 AT (0, 0, 0) RELATIVE sample
 
-/*COMPONENT detector = PSD_monitor(*/
-/*    nx=200, ny=200, xwidth=0.1, yheight=0.1, filename="psd1",restore_xray=1)*/
-/*AT(0,0,0.1) RELATIVE sample*/
-/**/
-/*COMPONENT ttharm= Arm()*/
-/*AT(0,0,0) RELATIVE sample*/
-/*ROTATED (TTH,TTH,0) RELATIVE sample*/
-/**/
-/*COMPONENT detector2 = PSD_monitor(*/
-/*    nx=200, ny=200, xwidth=2e-3, yheight=1e-2, filename="psd2",restore_xray=1)*/
-/*AT(0,0,0.1) RELATIVE ttharm*/
+COMPONENT psd_Diff = PSD_monitor_4PI(
+    nx = 180, ny = 180, filename = "psd4pi_diff", radius = 0.1, restore_xray = 1)
+WHEN (Stype == DIFFRACTION)
+AT (0, 0, 0) RELATIVE sample
+
 END
