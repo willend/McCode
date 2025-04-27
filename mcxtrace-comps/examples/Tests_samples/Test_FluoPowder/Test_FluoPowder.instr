@@ -45,6 +45,7 @@ USERVARS %{
 %}
 
 INITIALIZE %{
+  MPI_MASTER(
   switch (index) {
     case 1:
       printf("%s: Using PowderN (pure diffraction)\n", NAME_INSTRUMENT); break;
@@ -58,7 +59,7 @@ INITIALIZE %{
       printf("%s: Using Fluorescence+PowderN in a GROUP (fluorescence+diffraction)\n", NAME_INSTRUMENT); break;
     default:
       exit(printf("%s: Unknown sample index %i. Use index=1-4.", NAME_INSTRUMENT, index));
-  }
+  });
 %}
 
 TRACE
@@ -95,7 +96,8 @@ EXTEND %{
 %}
 
 COMPONENT FL_pow = FluoPowder(
-    radius=0.5e-6, material=material)
+    radius=0.5e-6, material=material,
+    escape_ratio=0.01, pileup_ratio=0.01)
 WHEN (index == 3)
 AT (0, 0, 0) RELATIVE sample_cradle
 EXTEND %{
@@ -155,5 +157,10 @@ COMPONENT E_mon_pow = COPY(E_mon)(filename="Energy_pow")
 COMPONENT E_mon_flu = COPY(E_mon)(filename="Energy_flu")
   WHEN (scatt_type != DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
+
+// ideal "banana" detector
+COMPONENT det_angle = Monitor_nD(options="abs theta limits=[5 90]",
+                                 radius=0.6, yheight=1e-2, bins=10000)
+AT (0,0,0) RELATIVE PREVIOUS
 
 END
