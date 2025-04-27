@@ -36,8 +36,7 @@
 * in the material. Leaving 'order=0' handles the single scattering only.
 *
 * Example: FluoCrystal(material="LaB6.cif",
-*  xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99,
-*  target_index=1, focus_xw=0.0005, focus_yh=0.0005)
+*  xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99, mosaic=1)
 *
 * <b>Sample shape:</b>
 * Sample shape may be a cylinder, a sphere, a box or any other shape
@@ -844,9 +843,7 @@ do { /* while (intersect) Loop over multiple scattering events */
     int    flag=0;
     double d_path, p_trans, p_scatt, mc_trans, mc_scatt;
 
-    /* actual fluorescence calculation */
-
-    /* compute total scattering cross section for incoming photon energy Ei */
+    /* compute total scattering cross section ------------------------------ */
     /* compute each contribution XS */
     xs[FLUORESCENCE]=xs[COMPTON]=xs[RAYLEIGH]=xs[TRANSMISSION]=xs[DIFFRACTION]=sigma_barn=0;
     cum_xs_fluo[0] = cum_xs_Compton[0] = cum_xs_Rayleigh[0] = 0;
@@ -911,7 +908,8 @@ do { /* while (intersect) Loop over multiple scattering events */
       }
     }
 
-    /* probability to absorb/scatter */
+    /* probability to absorb/scatter --------------------------------------- */
+    /* determine scattering location in sample */
     my_s   = fluo_rho*100*sigma_barn; /* mu 100: convert from barns to fm^2. my_s in [1/m] */
     d_path = ( dl0 +dl2 );            /* total path lenght in sample */
 
@@ -953,6 +951,7 @@ do { /* while (intersect) Loop over multiple scattering events */
 
   } /* if intersect (propagate) */
 
+  /* select scattering line ------------------------------------------------ */
   if (intersect) { /* scattering event */
     int    i_Z=-1, Z, j=-1;
     double solid_angle;
@@ -986,15 +985,15 @@ do { /* while (intersect) Loop over multiple scattering events */
           sum=0;
           // choose a line among those possible, using F2 as relative probability/intensity
           j = hkl_select(T, tau_count, coh_refl, &sum,_particle);
-          printf("DEBUG: %s: DIFF j=%i sum=%g\n", NAME_CURRENT_COMP, j, sum);
           if(j >= tau_count) j = tau_count - 1;
-        } else j = 0;/* Select between tau_count Bragg spots */
+        } else j = 0; /* Select between tau_count Bragg spots */
           break;
       default: // should never happen
         // printf("WARNING: %s: process %i unknown. Absorb.\n", NAME_CURRENT_COMP, type);
         ABSORB;
     }
 
+    // select scattering direction --------------------------------------------
     if (i_Z >= 0) {
       // fluorescence/Rayleigh/Compton: 4PI scattering
       Z   = compound->Elements[i_Z];
@@ -1028,14 +1027,15 @@ do { /* while (intersect) Loop over multiple scattering events */
       double kfy = T[j].rho_y  + T[j].oy     + T[j].b1y*y1 + T[j].b2y*y2;
       double kfz = T[j].rho_z  + T[j].oz     + T[j].b1z*y1 + T[j].b2z*y2;
 
-      /* kf(x,y,z) is already normalized to kf (in) */
+      /* Normalize kf to length of ki, to account for planer
+         approximation of the Ewald sphere. */
+      double adjust = ki/sqrt(kfx*kfx + kfy*kfy + kfz*kfz);
+      kfx *= adjust;
+      kfy *= adjust;
+      kfz *= adjust;
 
       /* Adjust photon weight (see manual for explanation). */
       double pmul = T[j].xsect*coh_refl/(coh_xsect*T[j].refl);
-      printf("DEBUG: L[%i] hkl=[%i %i %i] pmul=%g\n",
-             i, L[i].h, L[i].k, L[i].l, pmul);
-      printf("       kf(in)=%g %g %g -> kf(xyz)=%g %g %g \n",
-             kf_x, kf_y, kf_z, kfx, kfy, kfz);
       if (!isnan(pmul)) p *= pmul;
       kf_x = L[i].u1x*kfx + L[i].u2x*kfy + L[i].u3x*kfz;
       kf_y = L[i].u1y*kfx + L[i].u2y*kfy + L[i].u3y*kfz;
@@ -1123,8 +1123,6 @@ FINALLY %{
     MPI_MASTER(
       printf("FluoCrystal: %s: scattered intensity: fluo=%g Compton=%g Rayleigh=%g Diffraction=%g\n",
         NAME_CURRENT_COMP, p_fluo, p_Compton, p_Rayleigh, p_diff);
-      printf("FluoCrystal: %s: scattered events   : fluo=%i Compton=%i Rayleigh=%i Diffraction=%i\n",
-             NAME_CURRENT_COMP, n_fluo, n_Compton, n_Rayleigh, n_diff);
     );
 %}
 
