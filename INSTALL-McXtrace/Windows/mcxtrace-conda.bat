@@ -4,10 +4,40 @@
 @set URL=https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-win-64
 @curl -L -o micromamba.exe %URL%
 @echo Requesting init of micromamba on the shell
-.\micromamba.exe shell init --shell cmd.exe
-.\micromamba.exe shell hook -s cmd.exe
-.\micromamba config append channels conda-forge
-.\micromamba config set channel_priority strict
-.\micromamba.exe create -n mcxtrace mcxtrace -y
+@.\micromamba.exe shell init --shell cmd.exe
+@.\micromamba.exe shell hook -s cmd.exe
+@.\micromamba config append channels conda-forge
+@.\micromamba config set channel_priority strict
+@echo Checking for existing mcxtrace environment
+@.\micromamba env list > tmpfile
+@setlocal
 
-echo start %USERPROFILE%\AppData\Roaming\mamba\condabin\micromamba activate mcxtrace > %USERPROFILE%\Desktop\mcxtrace-shell-conda.bat
+@set FOUND=N
+@for /f %%i in ('@findstr mcxtrace tmpfile') do (
+  @echo Found existing environment called %%i!
+  @set FOUND=Y
+)
+
+@if /I %FOUND%==N goto INSTALL
+
+:CHOICE
+@choice /C YN /M "Press Y to remove mcxtrace env or N to Cancel."
+@if '%ERRORLEVEL%'=='1' goto REMOVE
+@if '%ERRORLEVEL%'=='2' goto END
+
+:REMOVE
+@echo Removing mcxtrace env
+@.\micromamba env remove -n mcxtrace -y
+
+:INSTALL
+@echo Starting installation of McXtrace and dependencies
+@.\micromamba.exe create -n mcxtrace mcxtrace -y
+
+@echo Creating desktop shortcut to new environment
+
+@echo start %USERPROFILE%\AppData\Roaming\mamba\condabin\micromamba activate mcxtrace > %USERPROFILE%\Desktop\mcxtrace-shell-conda.bat
+
+:END
+@echo End of script
+@pause
+@endlocal
