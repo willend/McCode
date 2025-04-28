@@ -59,14 +59,15 @@ AT(0,0,3) RELATIVE Origin
 
 COMPONENT sample=Fluorescence(material=material,
   xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99,
-  target_index=1, focus_xw=0.0005, focus_yh=0.0005)
+  target_index=1, focus_xw=0.0005, focus_yh=0.0005, 
+  escape_ratio=0.01, pileup_ratio=0.01)
 AT (0,0,0) RELATIVE sample_mount_point
 EXTEND %{
   if (!SCATTERED) ABSORB;
   Stype=type;
 %}
 
-COMPONENT emon = E_monitor(restore_xray=1,nE=2001,Emin=0, Emax=1.2*E0, 
+COMPONENT emon = E_monitor(restore_xray=1,nE=2001,Emin=0, Emax=1.5*E0, 
   filename="emon.dat",xwidth=0.007, yheight=0.007)
 AT(0,0,0.1) RELATIVE PREVIOUS
 
@@ -83,6 +84,14 @@ AT(0,0,0.1) RELATIVE PREVIOUS
 
 COMPONENT emon_Rayleigh = COPY(emon)(filename="Rayleigh.dat")
 WHEN (Stype == RAYLEIGH)
+AT(0,0,0.1) RELATIVE PREVIOUS
+
+COMPONENT emon_Escape = COPY(emon)(filename="Si_Escape.dat")
+WHEN (Stype == FLUORESCENCE_ESCAPE)
+AT(0,0,0.1) RELATIVE PREVIOUS
+
+COMPONENT emon_PileUp = COPY(emon)(filename="Si_PileUp.dat")
+WHEN (Stype == FLUORESCENCE_PILEUP)
 AT(0,0,0.1) RELATIVE PREVIOUS
 
 

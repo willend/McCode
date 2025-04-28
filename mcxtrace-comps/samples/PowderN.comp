@@ -130,36 +130,36 @@
 *
 * %Parameters
 * INPUT PARAMETERS
-* radius: [m]          Outer radius of sample in (x,z) plane.
-* xwidth: [m]          Horiz. dimension of sample, as a width.
-* yheight: [m]         Height of sample y direction.
-* zdepth: [m]          Depth of box sample.
-* thickness: [m]       Thickness of hollow sample. Negative value extends the hollow volume outside of the box/cylinder.
-* reflections: [str]   Input file for reflections (LAZ LAU CIF, FullProf, ShelX). Use only incoherent scattering if NULL or "".
+* radius:        [m] Outer radius of sample in (x,z) plane.
+* xwidth:        [m] Horiz. dimension of sample, as a width.
+* yheight:       [m] Height of sample y direction.
+* zdepth:        [m] Depth of box sample.
+* thickness:     [m] Thickness of hollow sample. Negative value extends the hollow volume outside of the box/cylinder.
+* reflections: [str] Input file for reflections (LAZ LAU CIF, FullProf, ShelX). Use only incoherent scattering if NULL or "".
 *
 * Optional parameters:
-* d_phi: [deg]      Angle corresponding to the vertical angular range to focus to, e.g. detector height. 0 for no focusing.
-* d_omega: [deg]       Horizontal focus range (only for incoherent scattering), 0 for no focusing.
-* tth_sign: [1]        Sign of the scattering angle. If 0, the sign is chosen randomly (left and right). ONLY functional in combination with d_phi and ONLY applies to bragg lines.
-* focus_flip:   [1] Controls the sense of d_phi. If 0 d_phi is measured against the xz-plane. If !=0 d_phi is measured against zy-plane.
-* tth_sign: [1]     Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
-* pack: [1]         Packing factor
-* delta_d_d: [AA]   Global relative Delta_d/d spreading when the 'w' column is not available. Use 0 if ideal.
-* format:  [{}]     Name of the format, or list of column indexes (see Description). N.b. no quotes!
-* p_inc:   [1]      Fraction of incoherently scattered rays.
-* p_transmit: [1]   Fraction of transmitted (only attenuated) rays.
-* p_interact: [1]   Fraction of events interacting with sample, e.g. 1-p_transmit-p_inc.
-* concentric: [1]   Indicate that this component has a hollow geometry and may contain other components. It should then be duplicated after the inside part (only for box, cylinder, sphere).
-* geometry:   [str] Name of an Object File Format (OFF) or PLY file for complex geometry. The OFF/PLY file may be generated from XYZ coordinates using qhull/powercrust.
-* barns:   [1]      Flag to indicate if |F|^2 from 'reflections' is in barns or fm^2, (barns=1 for laz, barns=0 for lau type files).
-* Vc:      [AA^3]   Volume of unit cell=nb atoms per cell/density of atoms.
-* DW:      [1]      Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
-* weight:  [g/mol]  Atomic/molecular weight of material.
-* density: [g/cm^3] Density of material. rho=density/weight/1e24*N_A.
-* nb_atoms:[1]      Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
+* d_phi:       [deg] Angle corresponding to the vertical angular range to focus to, e.g. detector height. 0 for no focusing.
+* d_omega:     [deg] Horizontal focus range (only for incoherent scattering), 0 for no focusing.
+* tth_sign:      [1] Sign of the scattering angle. If 0, the sign is chosen randomly (left and right). ONLY functional in combination with d_phi and ONLY applies to bragg lines.
+* focus_flip:    [1] Controls the sense of d_phi. If 0 d_phi is measured against the xz-plane. If !=0 d_phi is measured against zy-plane.
+* tth_sign:      [1] Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
+* pack:          [1] Packing factor
+* delta_d_d:     [1] Global relative Delta_d/d spreading when the 'w' column is not available. Use 0 if ideal.
+* format:       [{}] Name of the format, or list of column indexes (see Description). N.b. no quotes!
+* p_inc:         [1] Fraction of incoherently scattered rays.
+* p_transmit:    [1] Fraction of transmitted (only attenuated) rays.
+* p_interact:    [1] Fraction of events interacting with sample, e.g. 1-p_transmit-p_inc.
+* concentric:    [1] Indicate that this component has a hollow geometry and may contain other components. It should then be duplicated after the inside part (only for box, cylinder, sphere).
+* geometry:    [str] Name of an Object File Format (OFF) or PLY file for complex geometry. The OFF/PLY file may be generated from XYZ coordinates using qhull/powercrust.
+* barns:         [1] Flag to indicate if |F|^2 from 'reflections' is in barns or fm^2, (barns=1 for laz, barns=0 for lau type files).
+* Vc:         [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
+* DW:            [1] Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
+* weight:    [g/mol] Atomic/molecular weight of material.
+* density:  [g/cm^3] Density of material. rho=density/weight/1e24*N_A.
+* nb_atoms:      [1] Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
 * material: [Be.txt] File where the material parameters for the absorption may be found. Format is similar to what may be found off the NIST website. 
-* mat_format: [{}]  Format of the asorption parameter file.
-* target_index: [1]    Relative index of component to focus incoherent scattering at, e.g. next is +1
+* mat_format:   [{}] Format of the asorption parameter file.
+* target_index:  [1] Relative index of component to focus incoherent scattering at, e.g. next is +1
 *
 * CALCULATED PARAMETERS:
 * line_info: [struct]     Internal structure containing many members/info
@@ -1011,7 +1011,7 @@ TRACE
     if (l3 < 0) {
       l3=0; /* Already past sample?! */
       if (line_info.flag_warning < 10)
-      printf("PowderN: %s: Warning: xray has already passed us? (Skipped).\n"
+      printf("PowderN: %s: WARNING: xray has already passed us? (Skipped).\n"
              "         In concentric geometry, this may be caused by a missing concentric=0 option in 2nd enclosing instance.\n", NAME_CURRENT_COMP);
       flag_warning++;
     } else {
@@ -1302,8 +1302,8 @@ FINALLY
   free(line_info.my_s_k2);
 
   MPI_MASTER(
-  if (line_info.flag_warning)
-    printf("PowderN: %s: WARNING messages were repeated %i times with absorbed xrays.\n",
+  if (line_info.flag_warning > 10)
+    printf("PowderN: %s: Warning messages were repeated %i times with absorbed xrays.\n",
       NAME_CURRENT_COMP, line_info.flag_warning);
 
   /* in case this instance is used in a SPLIT, we can recommend the
