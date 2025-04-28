@@ -26,7 +26,7 @@
 *
 * The 'material' specification is given as a chemical formulae, e.g. "LaB6". It
 * may also be given as a file name (CIF/LAU/LAZ/FullProf format) in which case
-* the formulae is guessed (but may be approximative), and the powder
+* the formulae is guessed (but may be approximative), and the crystal
 * diffraction is computed, following same options as the <b>PowderN</b>
 * sample component. The fluorescence is handled for atoms from Z=5 to Z=90.
 *
@@ -85,7 +85,7 @@
 * In addition, it may be desirable to define a 'target' for the fluorescence
 * processes via e.g. the 'target_index' and the 'focus_xw / focus_yh' options.
 * This target should e.g. be the SDD area.
-* The powder scattering can be focused along an horizontal tore via the
+* The crystal scattering can be focused along an horizontal tore via the
 * 'sx_d_phi' and 'sx_sign' options. To get a vertical tore, rotate
 * the sample by 90 deg around Z.
 *
@@ -144,7 +144,7 @@
 * target_z:       [m] Position of target to focus at, along Z (for fluorescence).
 * flag_compton:   [1] When 0, the Compton  scattering is ignored.
 * flag_rayleigh:  [1] When 0, the Rayleigh scattering is ignored.
-* flag_sx:    [1] When 0, the powder diffraction is ignored.
+* flag_sx:    [1] When 0, the crystal diffraction is ignored.
 * flag_lorentzian:[1] When 1, the fluorescence line shapes are assumed to be Lorentzian, else Gaussian.
 * escape_ratio:   [1] Detector escape peak ratio,  e.g. 0.01-0.02. 0 inactivates.
 * escape_energy:[keV] Detector escape peak energy, e.g. 1.739 for Si, 9.886 for Ge.
@@ -158,6 +158,21 @@
 * sx_refl:  [str] A CIF/LAZ/LAU reflection file as for PowderN. When not given, 'material' is used. Specify it when 'material' is a chemical formula.
 * sx_sign:    [1] Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
 * sx_Vc:   [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
+* sx_mosaic:   [arc minutes] Crystal mosaic (isotropic), gaussian RMS. Puts the crystal in the isotropic mosaic model state, thus disregarding other mosaicity parameters.
+* sx_mosaic_a: [arc minutes] Horizontal (rotation around lattice vector a) mosaic (anisotropic), gaussian RMS. Put the crystal in the anisotropic crystal vector state. I.e. model mosaicity through rotation around the crystal lattice vectors. Has precedence over in-plane mosaic model.
+* sx_mosaic_b: [arc minutes] Vertical (rotation around lattice vector b) mosaic (anisotropic), gaussian RMS.
+* sx_mosaic_c: [arc minutes] Out-of-plane (Rotation around lattice vector c) mosaic (anisotropic), gaussian RMS
+* sx_mosaic_AB: [arc_minutes, arc_minutes,1, 1, 1, 1, 1, 1]  In Plane mosaic rotation and plane vectors (anisotropic), mosaic_A, mosaic_B, A_h,A_k,A_l, B_h,B_k,B_l. Puts the crystal in the in-plane mosaic state. Vectors A and B define plane in which  the crystal roation is defined, and mosaic_A, mosaic_B, denotes the resp. mosaicities (gaussian RMS) with respect to the two reflections chosen by A and B (Miller indices).
+* sx_recip_cell:        [1] Choice of direct/reciprocal (0/1) unit cell definition
+* sx_ax:      [AA or AA^-1] Coordinates of first (direct/recip) unit cell vector
+* sx_ay:      [AA or AA^-1]   a on y axis
+* sx_az:      [AA or AA^-1]   a on z axis
+* sx_bx:      [AA or AA^-1] Coordinates of second (direct/recip) unit cell vector
+* sx_by:      [AA or AA^-1]   b on y axis
+* sx_bz:      [AA or AA^-1]   b on z axis
+* sx_cx:      [AA or AA^-1] Coordinates of third (direct/recip) unit cell vector
+* sx_cy:      [AA or AA^-1]   c on y axis
+* sx_cz:      [AA or AA^-1]   c on z axis
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
