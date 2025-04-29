@@ -1079,7 +1079,7 @@ TRACE
           }
           if (d_phi_thread) {
             /* Focusing */
-            alpha = fabs(alpha);
+            alpha  = fabs(alpha);
             alpha0 = 0.5*randpm1()*alpha;
             if(focus_flip){
                 alpha0+=M_PI_2;
