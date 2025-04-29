@@ -31,7 +31,7 @@
 
 :INSTALL
 @echo Starting installation of McXtrace and dependencies
-@.\micromamba.exe create -n mcxtrace mcxtrace -y
+@.\micromamba.exe create -n mcxtrace mcxtrace -c conda-forge -c nodefaults -y
 
 @echo Creating desktop shortcut to new environment
 
