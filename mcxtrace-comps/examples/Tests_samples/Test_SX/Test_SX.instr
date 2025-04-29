@@ -14,13 +14,18 @@
 *
 * Simply a model source illuminating a SX sample.
 * The sample itself is a Mo bulk crystal.
+* The idea is to compare the fluorescence and diffraction patterns:
+* - index=1: use Single_crystal
+* - index=2: use FluoCrystal
+* - index=3: use Fluorescence+Single_crystal in a GROUP
 *
 * %Example: index=1 Detector: psd4pi_I=1.18843e-13
-* %Example: index=2 Detector: psd4pi_I=4.80386e-13
+* %Example: index=2 Detector: psd4pi_I=6.89931e-12
+* %Example: index=3 Detector: psd4pi_I=4.4547e-13
 *
 * %Parameters
 * reflections: [str] List of powder reflections, LAU/CIF format.
-* index:       [1]   Index of the sample component to use. 1=Single_crystal, 2=FluoCrystal
+* index:       [1]   Index of the sample component to use. 1=Single_crystal, 2=FluoCrystal, 3=Fluorescence+Single_crystal in a GROUP
 *
 * %End
 *******************************************************************************/
@@ -56,6 +61,24 @@ AT (0, 0, 0) RELATIVE sample_pos
 EXTEND %{
   if(!SCATTERED) ABSORB;
   else Stype=type;
+%}
+
+COMPONENT FluoG = Fluorescence(
+  radius = .5e-4, yheight = 1e-3, material=reflections)
+WHEN (index == 3)
+AT (0, 0, 0) RELATIVE sample_pos
+GROUP FluSX
+EXTEND %{
+  if (SCATTERED) Stype = type;
+%}
+
+COMPONENT SX = COPY(sample)(sigma_inc=-1)
+WHEN (index == 3)
+AT (0, 0, 0) RELATIVE sample_pos
+GROUP FluSX
+EXTEND %{
+  if (SCATTERED) Stype=DIFFRACTION;
+  else ABSORB;
 %}
 
 COMPONENT psd4pi = PSD_monitor_4PI(
