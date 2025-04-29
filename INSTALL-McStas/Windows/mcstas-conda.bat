@@ -31,7 +31,7 @@
 
 :INSTALL
 @echo Starting installation of McStas and dependencies
-@.\micromamba.exe create -n mcstas mcstas -y
+@.\micromamba.exe create -n mcstas mcstas -c conda-forge -c nodefaults -y
 
 @echo Creating desktop shortcut to new environment
 
