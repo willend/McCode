@@ -17,6 +17,7 @@ jobs:
       matrix:
         include:
         - { os: ubuntu-latest, CC: gcc,      CXX: g++,        python: '3.11' }
+        - { os: ubuntu-24.04-arm, CC: gcc,      CXX: g++,        python: '3.11' }
         - { os: macos-latest,      CC: clang,    CXX: clang++,    python: "3.11" }
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.python-${{ matrix.python }}
@@ -39,8 +40,9 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
 
-    - name: Setup build-deps
-      id: setup-build-deps
+    - name: Setup build-deps-linux-intel
+      id: setup-build-deps-linux-intel
+      if: matrix.os == 'ubuntu-latest'
       run: |
            if [ "$RUNNER_OS" == "Linux" ]; then sudo apt-get update && sudo apt-get -y install equivs ; fi
            if [ "$RUNNER_OS" == "Linux" ]; then sudo apt-get -y install xvfb mingw-w64 gfortran-mingw-w64 mingw-w64-x86-64-dev libz-mingw-w64-dev dos2unix nsis wine64; fi
@@ -48,6 +50,12 @@ jobs:
            ( if [ "$RUNNER_OS" == "Linux" ]; then Xvfb :0 -screen 0 1024x768x16 ; fi ) &
            if [ "$RUNNER_OS" == "Linux" ]; then mkdir /tmp/innosetup && cd /tmp/innosetup && wget https://jrsoftware.org/download.php/is.exe && DISPLAY=:0 wine ./is.exe /SP- /VERYSILENT /ALLUSERS /SUPPRESSMSGBOXES /DOWNLOADISCRYPT=1 ; fi
            if [ "$RUNNER_OS" == "Linux" ]; then killall -9 Xvfb ; fi
+
+    - name: Setup build-deps-linux-arm
+      id: setup-build-deps-linux-arm
+      if: matrix.os == 'ubuntu-24.04-arm'
+      run: |
+           if [ "$RUNNER_OS" == "Linux" ]; then sudo apt-get update && sudo apt-get -y install equivs ; fi
 
     - name: Check versions
       id: version-checks
@@ -61,6 +69,7 @@ jobs:
 
     - name: Build McStas
       id: mcstas-build
+      if: matrix.os != 'ubuntu-24.04-arm'
       run: |
            if [ "$RUNNER_OS" == "macOS" ]; then export SDKROOT=$(xcrun --sdk macosx --show-sdk-path); fi
            set -e
@@ -71,8 +80,20 @@ jobs:
            if [ "$RUNNER_OS" == "macOS" ]; then ./buildscripts/build_macos_mcstas ${REV} && tar cfz mcstas-macOS-conda.tgz  mcstas-macOS-arm64/ mcstas-macOS-x86_64/; fi;
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcstas ${REV} meta && mv dist mcstas-debian-x86_64 && tar cfz mcstas-debian-x86_64.tgz mcstas-debian-x86_64/; fi
 
+    - name: Build McStas arm Linux
+      id: mcstas-build-arm
+      if: matrix.os == 'ubuntu-24.04-arm'
+      run: |
+           set -e
+           set -u
+           set -x
+           cd McCode
+           export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`
+           if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcstas_arm64 ${REV} meta && mv dist mcstas-debian-arm64 && tar cfz mcstas-debian-arm64.tgz mcstas-debian-arm64/; fi
+
     - name: Cross-Build McStas for windows
       id: mcstas-mingw-build
+      if: matrix.os == 'ubuntu-latest'
       run: |
            set -e
            set -u
