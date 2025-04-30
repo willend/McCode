@@ -93,6 +93,7 @@ jobs:
 
     - name: Cross-Build McStas for windows
       id: mcstas-mingw-build
+      if: matrix.os == 'ubuntu-latest'
       run: |
            set -e
            set -u
