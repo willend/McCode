@@ -21,9 +21,10 @@
 @if /I %FOUND%==N goto INSTALL
 
 :CHOICE
-@choice /C YN /M "Press Y to remove mcxtrace env or N to Cancel."
+@choice /C YIN /M "Press Y to remove above env, I to ignore, or N to Cancel."
 @if '%ERRORLEVEL%'=='1' goto REMOVE
-@if '%ERRORLEVEL%'=='2' goto END
+@if '%ERRORLEVEL%'=='2' goto INSTALL
+@if '%ERRORLEVEL%'=='3' goto END
 
 :REMOVE
 @echo Removing mcxtrace env
