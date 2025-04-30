@@ -3,7 +3,7 @@
 
 * Please either of:
   1. **Recommended:**
-    * Install [Visual Studio including c/c++ support](https://learn.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-170#download-and-install-the-tools) (Any version of Visual Studio itself should do. Please install at minumum "Desktop development with c++" selecting VS2019 build tools. You can also use newer VS2022 build tools, but VS2019 must be present also.
+    * Install [Visual Studio including c/c++ support](https://learn.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-170#download-and-install-the-tools) (Any version of Visual Studio itself should do. Please install at minumum "Desktop development with c++" selecting VS2019 build tools. You can also use newer VS2022 build tools, but VS2019 must be present also. Option 1 *may* function also on arm64 Windows, but will require installation of Visual Studio including both arm64 and x64_64 build tools for c++.
 	* Use the [mcstas-conda](mcstas-conda.bat) batch script to install the latest mcstas from `conda-forge` 
   2. **Legacy:**
     * install the legacy-style MinGW based [McStas 3.5.27 metapackage](https://download.mcstas.org/mcstas-3.5.27/Windows/McStas-Metapackage-3.5.27-win64.exe) - now includes MCPL. Option 2 is also functional on `arm64` processors.
