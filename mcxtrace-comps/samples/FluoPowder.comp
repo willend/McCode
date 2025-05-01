@@ -8,9 +8,10 @@
 * Component: FluoPowder
 *
 * %Identification
-* Written by: E. Farhi
+* Written by: Emmanuel Farhi (emmanuel.farhi.synchrotron-soleil.fr)
 * Date:       April 2025
 * Origin:     Synchrotron SOLEIL
+* Release:    McXtrace 3.5
 *
 * Sample model handling absorption, fluorescence, Compton, Rayleigh scattering and powder diffraction.
 *
@@ -87,7 +88,7 @@
 * processes via e.g. the 'target_index' and the 'focus_xw / focus_yh' options.
 * This target should e.g. be the SDD area.
 * The powder scattering can be focused along an horizontal tore via the
-* 'powder_d_phi' and 'powder_sign' options. To get a vertical tore, rotate
+* 'd_phi' and 'tth_sign' options. To get a vertical tore, rotate
 * the sample by 90 deg around Z.
 *
 * This sample component can advantageously benefit from the SPLIT feature, e.g.
@@ -150,16 +151,16 @@
 * escape_ratio:   [1] Detector escape peak ratio,  e.g. 0.01-0.02. 0 inactivates.
 * escape_energy:[keV] Detector escape peak energy, e.g. 1.739 for Si, 9.886 for Ge.
 * pileup_ratio:   [1] Sum aka time coincidence aka pile-up detector peak ratio, e.g. 0.01-0.02. 0 inactivates.
-* powder_barns:   [1] Flag to indicate if |F|^2 from 'material' is in barns or fm^2, (barns=1 for laz, barns=0 for lau type files).
-* powder_d_phi: [deg] Angle corresponding to the vertical angular range to focus to, e.g. detector height. 0 for no focusing.
-* powder_delta_d_d: [AA] Global relative Delta_d/d spreading when the 'w' column is not available. Use 0 if ideal.
-* powder_DW:      [1] Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
-* powder_format: [{}] List of structure file column indexes. See the PowderN component.
-* powder_nb_atoms:[1] Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
-* powder_refl:  [str] A CIF/LAZ/LAU reflection file as for PowderN. When not given, 'material' is used. Specify it when 'material' is a chemical formula.
-* powder_sign:    [1] Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
-* powder_Vc:   [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
+* barns:          [1] Flag to indicate if |F|^2 from 'material' is in barns or fm^2, (barns=1 for laz/cif, barns=0 for lau type files).
+* d_phi:        [deg] Angle corresponding to the difraction vertical angular range to focus to, e.g. detector height. 0 for no focusing. You may as well define focus_ah or focus_yh and target.
+* delta_d_d:     [AA] Global relative difraction Delta_d/d spreading when the 'w' column is not available. Use 0 if ideal.
+* DW:             [1] Global difraction Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
+* nb_atoms:       [1] Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
+* powder_format: [{}] List of structure file column indexes. See the PowderN component.
+* powder_refl:  [str] A CIF/LAZ/LAU reflection file as for PowderN. When not given, 'material' is used. Specify it when 'material' is a chemical formula.
+* tth_sign:       [1] Sign of the diffraction angle. If 0, the sign is chosen randomly (left and right).
+* Vc:          [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
 *
 * CALCULATED PARAMETERS:
 * type: scattering event type 0=FLUORESCENCE fluorescence, 1=RAYLEIGH Rayleigh, 2=COMPTON Compton, 3=TRANSMISSION Transmit (absorbsion), 4=DIFFRACTION Diffraction, 5=FLUORESCENCE_ESCAPE Detector escape peak, 6=FLUORESCENCE_PILEUP Detector pile-up/sum/coincidence peak
@@ -194,8 +195,8 @@ SETTING PARAMETERS(
   focus_xw=0, focus_yh=0, focus_aw=0, focus_ah=0, int target_index=0,
   int flag_compton=1, int flag_rayleigh=1, int flag_lorentzian=1, int flag_powder=1,
   string powder_refl="",
-  vector powder_format={0,0,0,0,0,0,0,0}, powder_Vc=0, powder_delta_d_d=0, powder_DW=0,
-  powder_d_phi=0, int powder_nb_atoms=1, int powder_barns=1, int powder_sign=0,
+  vector powder_format={0,0,0,0,0,0,0,0}, Vc=0, delta_d_d=0, DW=0,
+  d_phi=0, int nb_atoms=1, int barns=1, int tth_sign=0,
   escape_ratio=0, escape_energy=1.739,
   pileup_ratio=0,
   int order=1)
@@ -238,6 +239,7 @@ SHARE COPY PowderN EXTEND %{
     int    i_line;
 
     if (xs == NULL) return 0;
+    for(i_line=0; i_line<=COMPTON; i_line++) xs[i_line]=0;
 
     // loop on possible fluorescence lines
     for (i_line=0; i_line<XRAYLIB_LINES_MAX; i_line++) {
@@ -260,6 +262,7 @@ SHARE COPY PowderN EXTEND %{
   */
   int XRMC_SelectFromDistribution(double x_arr[], int N)
   {
+    if (x_arr == NULL || N <=0) return (0);
     double x=rand01()*x_arr[N-1];
     if (x<x_arr[0]) {    // x is smaller than lower limit
       return 0;
@@ -289,7 +292,7 @@ SHARE COPY PowderN EXTEND %{
     double sum_xs, *cum_xs;
     int    i;
 
-    if (nb_processes < 1) return 0;
+    if (xs == NULL || nb_processes < 1 || nb_processes > TRANSMISSION) return 0;
     cum_xs = malloc((nb_processes+1)*sizeof(double));
     if (!cum_xs)          return 0;
     cum_xs[0]=sum_xs=0;
@@ -331,6 +334,7 @@ SHARE COPY PowderN EXTEND %{
   {
       // non_space_count to keep the frequency of non space characters
       int non_space_count = 0;
+      if (string == NULL) return NULL;
 
       //Traverse a string and if it is non space character then, place it at index non_space_count
       for (int i = 0; string[i] != '\0'; i++)
@@ -354,7 +358,8 @@ SHARE COPY PowderN EXTEND %{
 
     int  ret = 0;
     char Line[65535];
-    int flag_found_cif=0;
+    int  flag_found_cif=0;
+    if (filename == NULL || formula == NULL) return (0);
     FILE *file = Open_File(filename, "r", NULL);
     if (!file)
       exit(fprintf(stderr, "%s: ERROR: can not open file %s\n",
@@ -518,16 +523,16 @@ INITIALIZE %{
     // set powder variable default before reading file
     if (flag_powder) {
       columns             = powder_format;
-      line_info.V_0       = powder_Vc;
+      line_info.V_0       = Vc;
       for (i=0; i< 8; i++) {
         line_info.column_order[i] = (int)columns[i];
       }
-      line_info.DWfactor  = powder_DW;
-      line_info.Dd        = powder_delta_d_d;
+      line_info.DWfactor  = DW;
+      line_info.Dd        = delta_d_d;
       line_info.rho       = density;
       line_info.at_weight = weight;
-      line_info.at_nb     = powder_nb_atoms;
-      line_info.flag_barns= powder_barns;
+      line_info.at_nb     = nb_atoms;
+      line_info.flag_barns= barns;
       strncpy(line_info.compname, NAME_CURRENT_COMP, 256);
       if (!powder_refl || !strlen(powder_refl) || !strcmp(powder_refl, "NULL") || !strcmp(powder_refl, "0"))
         strcpy(powder_refl, material);
@@ -660,6 +665,14 @@ INITIALIZE %{
     printf("WARNING: FluoPowder: %s: The target is not defined. Using 4PI for fluorescence.\n",
       NAME_CURRENT_COMP);
     );
+  }
+  // checks for d_pĥi focusing
+  if (flag_powder && !d_phi) {
+    if (focus_ah) d_phi=focus_ah;
+    else if (focus_yh && (target_x || target_y || target_z)) {
+      double target_dist2=target_x*target_x+target_y*target_y+target_z*target_z;
+      d_phi = atan2(focus_yh,sqrt(target_dist2));
+    }
   }
 
   n_fluo = n_Compton = n_Rayleigh = n_diff = 0;
@@ -947,7 +960,7 @@ do { /* while (intersect) Loop over multiple scattering events */
   if (intersect) { /* scattering event */
     int    i_Z=-1, Z, line=-1;
     double solid_angle;
-    double theta, dsigma, alpha=0;
+    double theta, dsigma, alpha;
     double Ef, dE;
     double kf=k, kf_x, kf_y, kf_z;  // next particle direction
 
@@ -956,7 +969,7 @@ do { /* while (intersect) Loop over multiple scattering events */
     if (dsigma < 1) p *= dsigma; // < 1
 
     /* MC choose process from cross sections 'xs': fluo, Compton, Rayleigh, diff */
-    type = XRMC_SelectInteraction(xs, 4);
+    type = XRMC_SelectInteraction(xs, DIFFRACTION+1); // up to DIFFRACTION
 
     /* choose Z (element) on associated XS, taking into account mass-fractions */
     switch (type) {
@@ -1014,25 +1027,25 @@ do { /* while (intersect) Loop over multiple scattering events */
         arg = line_info.q[line]/(2.0*k);
       if(fabs(arg) > 1) ABSORB; /* No bragg scattering possible   */
       theta  = asin(arg);       /* Bragg scattering law           */
-      if (powder_sign == 0) {
+      if (tth_sign == 0) {
         sg = randpm1();
         if (sg > 0) sg = 1; else sg=-1;
       }
       else  {
-        sg = powder_sign/fabs(powder_sign);
+        sg = tth_sign/fabs(tth_sign);
       }
 
       /* Choose point on Debye-Scherrer cone */
-      if (powder_d_phi)
+      if (d_phi)
       { /* relate height of detector to the height on DS cone */
-        arg = sin(powder_d_phi*DEG2RAD/2)/sin(2*theta);
-        /* If full Debye-Scherrer cone is within powder_d_phi, don't focus */
-        if (arg < -1 || arg > 1) powder_d_phi = 0;
+        arg = sin(d_phi*DEG2RAD/2)/sin(2*theta);
+        /* If full Debye-Scherrer cone is within d_phi, don't focus */
+        if (arg < -1 || arg > 1) alpha = 0;
         /* Otherwise, determine alpha to rotate from scattering plane
-         *    into powder_d_phi focusing area */
+         *    into d_phi focusing area */
         else alpha = 2*asin(arg);
       }
-      if (powder_d_phi) {
+      if (alpha) {
         /* Focusing */
         alpha  = fabs(alpha);
         alpha0 = 0.5*randpm1()*alpha;
@@ -1097,13 +1110,13 @@ do { /* while (intersect) Loop over multiple scattering events */
         if (Ex!=0 || Ey!=0 || Ez!=0){
           double EE=sqrt(Ex*Ex+Ey*Ey+Ez*Ez);
           double s=scalar_prod(kf_x,kf_y,kf_z,Ex,Ey,Ez)/EE;
-          p *= (1-s)*(1-s);
-        } else {
+          p*=(1-s)*(1-s);
+        }else{
           /*unpolarized light in - means an effective reduction according to only theta*/
-          p *= (1+cos(theta)*cos(theta))*0.5;
+          p*=(1+cos(theta)*cos(theta))*0.5;
         }
         if (alpha) {
-          p *= alpha/PI;
+          p    *= alpha/PI;
         }
         n_diff++;
         p_diff += p;
