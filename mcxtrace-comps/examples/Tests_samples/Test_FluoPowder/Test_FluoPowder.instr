@@ -5,9 +5,10 @@
 *
 * %Identification
 * Written by: Emmanuel Farhi (emmanuel.farhi.synchrotron-soleil.fr)
-* Date: 2009
-* Origin: SOLEIL
-* Version: 1.0
+* Date: 2025
+* Origin: Synchrotron Soleil
+* Release: McXtrace 3.5
+* Version: $Revision$
 * %INSTRUMENT_SITE: Tests_samples
 *
 * Unit-test instrument for the FluoPowder sample component.
@@ -17,16 +18,16 @@
 * The default sample itself is an LaB6-powder.
 * The idea is to compare the fluorescence and diffraction patterns:
 * - index=1: use PowderN              (no fluorescence)
-* - index=2: use Single_crystal       (no fluorescence, very slow)
+* - index=2: use Single_crystal       (no fluorescence, slower, powder mode)
 * - index=3: use FluoPowder           (exact)
 * - index=4: use Fluorescence         (no diffraction)
-* - index=5: use Fluorescence+PowderN (slow, under estimates contributions)
+* - index=5: use Fluorescence+PowderN (under estimates contributions)
 *
-* %Example: Test_FluoPowder.instr E0=15 index=1 Detector: Sph_mon_I=2.2379e-18
+* %Example: Test_FluoPowder.instr E0=15 index=1 Detector: Sph_mon_I=2.23119e-18
 * %Example: Test_FluoPowder.instr E0=15 index=2 Detector: Sph_mon_I=1.89376e-18
-* %Example: Test_FluoPowder.instr E0=15 index=3 Detector: Sph_mon_I=2.79924e-18
+* %Example: Test_FluoPowder.instr E0=15 index=3 Detector: Sph_mon_I=2.83261e-18
 * %Example: Test_FluoPowder.instr E0=15 index=4 Detector: Sph_mon_I=7.63749e-19
-* %Example: Test_FluoPowder.instr E0=15 index=5 Detector: Sph_mon_I=2.96629e-18
+* %Example: Test_FluoPowder.instr E0=15 index=5 Detector: Sph_mon_I=2.11144e-18
 *
 * %Parameters
 * E0:          [keV]  Source mean energy of xrays.
@@ -37,7 +38,7 @@
 *
 * %End
 *******************************************************************************/
-DEFINE INSTRUMENT Test_FluoPowder(E0=15, dE=1, L1=10, string material="LaB6.cif",
+DEFINE INSTRUMENT Test_FluoPowder(E0=15, dE=0.05, L1=10, string material="LaB6.cif",
     int index=3)
 
 USERVARS %{
@@ -114,7 +115,7 @@ EXTEND %{
   scatt_type = type;
 %}
 
-COMPONENT FluoG = COPY(Fluo)
+COMPONENT FluoG = COPY(Fluo)(p_interact=0.5)
 WHEN (index == 5)
 AT (0, 0, 0) RELATIVE sample_cradle
 GROUP FluPow

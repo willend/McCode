@@ -7,7 +7,7 @@
 * Written by: E. Farhi (emmanuel.farhi@synchrotron-soleil.fr)
 * Date: March '21
 * Origin: Synchrotron SOLEIL
-* Release: McXtrace 1.7
+* Release: McXtrace 3.5
 * Version: $Revision$
 * %INSTRUMENT_SITE: Tests_samples
 *
@@ -17,7 +17,7 @@
 * This instrument simply has a lab source, a few monitors and a sample 
 * to model material fluorescence, Compton and Rayleigh scattering. 
 * 
-* %Example: Test_Fluorescence.instr material=LaB6 -n1e5 Detector: emon_I=7.3e-13
+* %Example: Test_Fluorescence.instr material=LaB6 -n1e5 Detector: emon_I=1.04399e-12
 *
 * %Parameters
 * material: [str]  Material file to use, e.g. chemical formulae "Pb2SnO4"

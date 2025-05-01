@@ -8,9 +8,10 @@
 * Component: FluoCrystal
 *
 * %Identification
-* Written by: E. Farhi
+* Written by: Emmanuel Farhi (emmanuel.farhi.synchrotron-soleil.fr)
 * Date:       April 2025
 * Origin:     Synchrotron SOLEIL
+* Release:    McXtrace 3.5
 *
 * Sample model handling absorption, fluorescence, Compton, Rayleigh scattering and single crystal diffraction.
 *
@@ -35,8 +36,11 @@
 * For instance, a value order>=2 handles e.g. fluorescence iterative cascades
 * in the material. Leaving 'order=0' handles the single scattering only.
 *
+* The single crystal diffraction model is simplified wrt the <b>Single_crystal</b>
+* component. Use that latter with a Fluorescence in a GROUP for more complex features.
+*
 * Example: FluoCrystal(material="LaB6.cif",
-*  xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99, mosaic=1)
+*  xwidth=0.001,yheight=0.001,zdepth=0.0001, p_interact=0.99, mosaic=3)
 *
 * <b>Sample shape:</b>
 * Sample shape may be a cylinder, a sphere, a box or any other shape
@@ -85,12 +89,12 @@
 * In addition, it may be desirable to define a 'target' for the fluorescence
 * processes via e.g. the 'target_index' and the 'focus_xw / focus_yh' options.
 * This target should e.g. be the SDD area.
-* The crystal scattering can be focused along an horizontal tore via the
-* 'sx_d_phi' and 'sx_sign' options. To get a vertical tore, rotate
-* the sample by 90 deg around Z.
 *
 * This sample component can advantageously benefit from the SPLIT feature, e.g.
 * SPLIT COMPONENT sample = FluoCrystal(...)
+*
+* If you get strange results, check the crystal mosaicity and delta(d)/d parameters,
+* as this component is not suited for ideal/perfect mosaic crystals.
 *
 * <b>Detector artifacts:</b>
 * This component also simulates the escape and time coincidence peaks in a close-by
@@ -144,36 +148,30 @@
 * target_z:       [m] Position of target to focus at, along Z (for fluorescence).
 * flag_compton:   [1] When 0, the Compton  scattering is ignored.
 * flag_rayleigh:  [1] When 0, the Rayleigh scattering is ignored.
-* flag_sx:    [1] When 0, the crystal diffraction is ignored.
+* flag_sx:        [1] When 0, the crystal diffraction is ignored.
 * flag_lorentzian:[1] When 1, the fluorescence line shapes are assumed to be Lorentzian, else Gaussian.
 * escape_ratio:   [1] Detector escape peak ratio,  e.g. 0.01-0.02. 0 inactivates.
 * escape_energy:[keV] Detector escape peak energy, e.g. 1.739 for Si, 9.886 for Ge.
 * pileup_ratio:   [1] Sum aka time coincidence aka pile-up detector peak ratio, e.g. 0.01-0.02. 0 inactivates.
-* sx_barns:   [1] Flag to indicate if |F|^2 from 'material' is in barns or fm^2, (barns=1 for laz, barns=0 for lau type files).
-* sx_d_phi: [deg] Angle corresponding to the vertical angular range to focus to, e.g. detector height. 0 for no focusing.
-* sx_delta_d_d: [1] Lattice spacing variance, gaussian RMS (longitudinal mosaic)
-* sx_DW:      [1] Global Debye-Waller factor when the 'DW' column is not available. Use 1 if included in F2.
-* sx_format: [{}] List of structure file column indexes. See the PowderN component.
-* sx_nb_atoms:[1] Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell.
-* sx_refl:  [str] A CIF/LAZ/LAU reflection file as for PowderN. When not given, 'material' is used. Specify it when 'material' is a chemical formula.
-* sx_sign:    [1] Sign of the scattering angle. If 0, the sign is chosen randomly (left and right).
-* sx_Vc:   [AA^3] Volume of unit cell=nb atoms per cell/density of atoms.
-* sx_mosaic:   [arc minutes] Crystal mosaic (isotropic), gaussian RMS. Puts the crystal in the isotropic mosaic model state, thus disregarding other mosaicity parameters.
-* sx_mosaic_a: [arc minutes] Horizontal (rotation around lattice vector a) mosaic (anisotropic), gaussian RMS. Put the crystal in the anisotropic crystal vector state. I.e. model mosaicity through rotation around the crystal lattice vectors. Has precedence over in-plane mosaic model.
-* sx_mosaic_b: [arc minutes] Vertical (rotation around lattice vector b) mosaic (anisotropic), gaussian RMS.
-* sx_mosaic_c: [arc minutes] Out-of-plane (Rotation around lattice vector c) mosaic (anisotropic), gaussian RMS
-* sx_mosaic_AB: [arc_minutes, arc_minutes,1, 1, 1, 1, 1, 1]  In Plane mosaic rotation and plane vectors (anisotropic), mosaic_A, mosaic_B, A_h,A_k,A_l, B_h,B_k,B_l. Puts the crystal in the in-plane mosaic state. Vectors A and B define plane in which  the crystal roation is defined, and mosaic_A, mosaic_B, denotes the resp. mosaicities (gaussian RMS) with respect to the two reflections chosen by A and B (Miller indices).
-* sx_recip_cell:        [1] Choice of direct/reciprocal (0/1) unit cell definition
-* sx_ax:      [AA or AA^-1] Coordinates of first (direct/recip) unit cell vector
-* sx_ay:      [AA or AA^-1]   a on y axis
-* sx_az:      [AA or AA^-1]   a on z axis
-* sx_bx:      [AA or AA^-1] Coordinates of second (direct/recip) unit cell vector
-* sx_by:      [AA or AA^-1]   b on y axis
-* sx_bz:      [AA or AA^-1]   b on z axis
-* sx_cx:      [AA or AA^-1] Coordinates of third (direct/recip) unit cell vector
-* sx_cy:      [AA or AA^-1]   c on y axis
-* sx_cz:      [AA or AA^-1]   c on z axis
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
+* sx_refl:      [str] A CIF/LAZ/LAU reflection file as for PowderN. When not given, 'material' is used. Specify it when 'material' is a chemical formula.
+* barns:          [1] Flag to indicate if |F|^2 from 'material' is in barns or fm^2, (barns=1 for laz/cif, barns=0 for lau type files).
+* delta_d_d:      [1] Lattice spacing variance, gaussian RMS (longitudinal mosaic) e.g. 1e-4 to 1e-3.
+* mosaic:   [arc min] Crystal mosaic (isotropic), gaussian RMS. Puts the crystal in the isotropic mosaic model state, thus disregarding other mosaicity parameters, e.g. 1-10.
+* mosaic_a: [arc min] Horizontal (rotation around lattice vector a) mosaic (anisotropic), gaussian RMS. Put the crystal in the anisotropic crystal vector state. I.e. model mosaicity through rotation around the crystal lattice vectors. Has precedence over in-plane mosaic model.
+* mosaic_b: [arc min] Vertical (rotation around lattice vector b) mosaic (anisotropic), gaussian RMS.
+* mosaic_c: [arc min] Out-of-plane (Rotation around lattice vector c) mosaic (anisotropic), gaussian RMS
+* mosaic_AB: [arc_minutes, arc_minutes,1, 1, 1, 1, 1, 1]  In Plane mosaic rotation and plane vectors (anisotropic), mosaic_A, mosaic_B, A_h,A_k,A_l, B_h,B_k,B_l. Puts the crystal in the in-plane mosaic state. Vectors A and B define plane in which  the crystal roation is defined, and mosaic_A, mosaic_B, denotes the resp. mosaicities (gaussian RMS) with respect to the two reflections chosen by A and B (Miller indices).
+* recip_cell:     [1] Choice of direct/reciprocal (0/1) unit cell definition
+* ax:   [AA or AA^-1] Coordinates of first (direct/recip) unit cell vector
+* ay:   [AA or AA^-1]   a on y axis
+* az:   [AA or AA^-1]   a on z axis
+* bx:   [AA or AA^-1] Coordinates of second (direct/recip) unit cell vector
+* by:   [AA or AA^-1]   b on y axis
+* bz:   [AA or AA^-1]   b on z axis
+* cx:   [AA or AA^-1] Coordinates of third (direct/recip) unit cell vector
+* cy:   [AA or AA^-1]   c on y axis
+* cz:   [AA or AA^-1]   c on z axis
 *
 * CALCULATED PARAMETERS:
 * type: scattering event type 0=fluorescence, 1=Rayleigh, 2=Compton, 3=transmit (absorbsion), 4=diffraction, 5=detector escape peak, 6=detector pile-up/sum/coincidence peak
@@ -207,14 +205,15 @@ SETTING PARAMETERS(
   target_x = 0, target_y = 0, target_z = 0, focus_r = 0,
   focus_xw=0, focus_yh=0, focus_aw=0, focus_ah=0, int target_index=0,
   int flag_compton=1, int flag_rayleigh=1, int flag_lorentzian=1,
-  string sx_refl="",
-  int flag_sx=1, sx_delta_d_d=1e-4, int sx_barns=1, vector sx_mosaic_AB={0,0, 0,0,0, 0,0,0},
-  sx_recip_cell=0,
-  sx_ax = 0, sx_ay = 0, sx_az = 0,
-  sx_bx = 0, sx_by = 0, sx_bz = 0,
-  sx_cx = 0, sx_cy = 0, sx_cz = 0,
-  sx_aa=0,   sx_bb=0,   sx_cc=0,
-  sx_mosaic = -1, sx_mosaic_a = -1, sx_mosaic_b = -1, sx_mosaic_c = -1,
+  string sx_refl="",  int flag_sx=1,
+  delta_d_d=1e-3,     int barns=1,
+  recip_cell=0,
+  ax = 0, ay = 0, az = 0,
+  bx = 0, by = 0, bz = 0,
+  cx = 0, cy = 0, cz = 0,
+  aa=0,   bb=0,   cc=0,
+  vector mosaic_AB={0,0, 0,0,0, 0,0,0},
+  mosaic = 3, mosaic_a = -1, mosaic_b = -1, mosaic_c = -1,
   escape_ratio=0, escape_energy=1.739,
   pileup_ratio=0,
   int order=1)
@@ -257,6 +256,7 @@ SHARE COPY Single_crystal EXTEND %{
     int    i_line;
 
     if (xs == NULL) return 0;
+    for(i_line=0; i_line<=COMPTON; i_line++) xs[i_line]=0;
 
     // loop on possible fluorescence lines
     for (i_line=0; i_line<XRAYLIB_LINES_MAX; i_line++) {
@@ -279,6 +279,7 @@ SHARE COPY Single_crystal EXTEND %{
   */
   int XRMC_SelectFromDistribution(double x_arr[], int N)
   {
+    if (x_arr == NULL || N <=0) return (0);
     double x=rand01()*x_arr[N-1];
     if (x<x_arr[0]) {    // x is smaller than lower limit
       return 0;
@@ -308,7 +309,7 @@ SHARE COPY Single_crystal EXTEND %{
     double sum_xs, *cum_xs;
     int    i;
 
-    if (nb_processes < 1) return 0;
+    if (xs == NULL || nb_processes < 1 || nb_processes > TRANSMISSION) return 0;
     cum_xs = malloc((nb_processes+1)*sizeof(double));
     if (!cum_xs)          return 0;
     cum_xs[0]=sum_xs=0;
@@ -350,6 +351,7 @@ SHARE COPY Single_crystal EXTEND %{
   {
       // non_space_count to keep the frequency of non space characters
       int non_space_count = 0;
+      if (string == NULL) return NULL;
 
       //Traverse a string and if it is non space character then, place it at index non_space_count
       for (int i = 0; string[i] != '\0'; i++)
@@ -373,7 +375,8 @@ SHARE COPY Single_crystal EXTEND %{
 
     int  ret = 0;
     char Line[65535];
-    int flag_found_cif=0;
+    int  flag_found_cif=0;
+    if (filename == NULL || formula == NULL) return (0);
     FILE *file = Open_File(filename, "r", NULL);
     if (!file)
       exit(fprintf(stderr, "%s: ERROR: can not open file %s\n",
@@ -542,23 +545,23 @@ INITIALIZE %{
       hkl_info.ctr_FT2 =NULL;
       hkl_info.ctr_dir =NULL;
       /* transfer input parameters */
-      hkl_info.m_delta_d_d = sx_delta_d_d;
+      hkl_info.m_delta_d_d = delta_d_d;
       hkl_info.m_a  = 0;
       hkl_info.m_b  = 0;
       hkl_info.m_c  = 0;
-      hkl_info.m_aa = sx_aa;
-      hkl_info.m_bb = sx_bb;
-      hkl_info.m_cc = sx_cc;
-      hkl_info.m_ax = sx_ax;
-      hkl_info.m_ay = sx_ay;
-      hkl_info.m_az = sx_az;
-      hkl_info.m_bx = sx_bx;
-      hkl_info.m_by = sx_by;
-      hkl_info.m_bz = sx_bz;
-      hkl_info.m_cx = sx_cx;
-      hkl_info.m_cy = sx_cy;
-      hkl_info.m_cz = sx_cz;
-      hkl_info.recip= sx_recip_cell;
+      hkl_info.m_aa = aa;
+      hkl_info.m_bb = bb;
+      hkl_info.m_cc = cc;
+      hkl_info.m_ax = ax;
+      hkl_info.m_ay = ay;
+      hkl_info.m_az = az;
+      hkl_info.m_bx = bx;
+      hkl_info.m_by = by;
+      hkl_info.m_bz = bz;
+      hkl_info.m_cx = cx;
+      hkl_info.m_cy = cy;
+      hkl_info.m_cz = cz;
+      hkl_info.recip= recip_cell;
 
       /* default format h,k,l,F,F2  */
       hkl_info.column_order[0]=1;
@@ -569,16 +572,16 @@ INITIALIZE %{
       hkl_info.kix = hkl_info.kiy = hkl_info.kiz = 0;
       hkl_info.nb_reuses = hkl_info.nb_refl = hkl_info.nb_refl_count = 0;
       hkl_info.tau_count = 0;
-      hkl_info.flag_barns= sx_barns;
-      double* mosaic_ABin = sx_mosaic_AB;
+      hkl_info.flag_barns= barns;
+      double* mosaic_ABin = mosaic_AB;
 
       if (!sx_refl || !strlen(sx_refl) || !strcmp(sx_refl, "NULL") || !strcmp(sx_refl, "0"))
         strcpy(sx_refl, material);
-      i = read_hkl_data(sx_refl, &hkl_info, &hkl_list, sx_mosaic, sx_mosaic_a, sx_mosaic_b, sx_mosaic_c, mosaic_ABin,
+      i = read_hkl_data(sx_refl, &hkl_info, &hkl_list, mosaic, mosaic_a, mosaic_b, mosaic_c, mosaic_ABin,
                         hkl_info.ctr_size,hkl_info.ctr_k,hkl_info.ctr_FT2,hkl_info.ctr_dir);
       if (i == 0) {
         MPI_MASTER(
-        fprintf(stderr,"WARNING: FluoCrystal: %s: sx_mosaic or material file %s is not valid (CIF/LAU). Ignoring diffraction process.\n",
+        fprintf(stderr,"WARNING: FluoCrystal: %s: mosaic or material file %s is not valid (CIF/LAU). Ignoring diffraction process.\n",
                       NAME_CURRENT_COMP, sx_refl);
         );
         flag_sx=0;
@@ -873,9 +876,9 @@ do { /* while (intersect) Loop over multiple scattering events */
         XRMC_CrossSections(Z, E, xs_Z); // [barn/atom]
         sigma_barn            += frac*CSb_Total(Z, E, NULL); // Fluo+Compton+Rayleigh
         cum_xs_fluo[i_Z+1]     = cum_xs_fluo[i_Z]    +frac*xs_Z[FLUORESCENCE];
-        cum_xs_Compton[i_Z+1]  = cum_xs_Compton[i_Z] +frac*xs_Z[COMPTON];
         cum_xs_Rayleigh[i_Z+1] = cum_xs_Rayleigh[i_Z]+frac*xs_Z[RAYLEIGH];
-        for (i=0; i<3; i++) { xs[i] += frac*xs_Z[i]; }
+        cum_xs_Compton[i_Z+1]  = cum_xs_Compton[i_Z] +frac*xs_Z[COMPTON];
+        for (i=0; i<COMPTON+1; i++) { xs[i] += frac*xs_Z[i]; }
       } // for Z in compound
 
       if (flag_sx) {
@@ -888,10 +891,8 @@ do { /* while (intersect) Loop over multiple scattering events */
         xs[DIFFRACTION] = coh_xsect;
         sigma_barn     += xs[DIFFRACTION];
       } else {
-        coh_refl  = 0;
-        coh_xsect = 0;
-        tau_count = 0;
-        xs[DIFFRACTION] = 0;
+        xs[DIFFRACTION] = coh_refl = coh_xsect = 0;
+        tau_count       = 0;
       }
 
       // store values into cache for SPLIT
@@ -902,6 +903,9 @@ do { /* while (intersect) Loop over multiple scattering events */
       }
       reuse_cum_xs_diffraction  = xs[DIFFRACTION];
       reuse_sigma_barn          = sigma_barn;
+      hkl_info.coh_refl         = coh_refl;
+      hkl_info.coh_xsect        = coh_xsect;
+      hkl_info.tau_count        = tau_count;
 
     } else {
       // reuse cached values (SPLIT)
@@ -912,9 +916,8 @@ do { /* while (intersect) Loop over multiple scattering events */
         xs[FLUORESCENCE]      += reuse_cum_xs_fluo[i_Z+1];
         xs[COMPTON]           += reuse_cum_xs_Compton[i_Z+1];
         xs[RAYLEIGH]          += reuse_cum_xs_Rayleigh[i_Z+1];
-        xs[DIFFRACTION]        = reuse_cum_xs_diffraction;
       }
-
+      xs[DIFFRACTION]          = reuse_cum_xs_diffraction;
       sigma_barn = reuse_sigma_barn;
       if (flag_sx) {
         coh_refl  = hkl_info.coh_refl;
@@ -979,7 +982,7 @@ do { /* while (intersect) Loop over multiple scattering events */
     if (dsigma < 1) p *= dsigma; // < 1
 
     /* MC choose process from cross sections 'xs': fluo, Compton, Rayleigh, diff */
-    type = XRMC_SelectInteraction(xs, 4);
+    type = XRMC_SelectInteraction(xs, DIFFRACTION+1); // up to DIFFRACTION
 
     /* choose Z (element) on associated XS, taking into account mass-fractions */
     switch (type) {

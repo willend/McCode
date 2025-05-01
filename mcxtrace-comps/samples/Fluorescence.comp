@@ -225,6 +225,7 @@ double XRMC_CrossSections(int Z, double E0, double *xs) {
   int    i_line;
   
   if (xs == NULL) return 0;
+  for(i_line=0; i_line<=COMPTON; i_line++) xs[i_line]=0;
   
   // loop on possible fluorescence lines
   for (i_line=0; i_line<XRAYLIB_LINES_MAX; i_line++) { 
@@ -247,6 +248,7 @@ double XRMC_CrossSections(int Z, double E0, double *xs) {
  */
 int XRMC_SelectFromDistribution(double x_arr[], int N)
 {
+  if (x_arr == NULL || N <=0) return (0);
   double x=rand01()*x_arr[N-1];
   if (x<x_arr[0]) {    // x is smaller than lower limit
     return 0;
@@ -276,7 +278,7 @@ int XRMC_SelectInteraction(double *xs, int nb_processes)
   double sum_xs, cum_xs[5];
   int    i;
   
-  if (nb_processes < 1 || nb_processes > 4) return 0;
+  if (xs == NULL || nb_processes < 1 || nb_processes > TRANSMISSION) return 0;
   cum_xs[0]=sum_xs=0;
   for (i=0; i< nb_processes; i++) {
     sum_xs += xs[i];
@@ -314,6 +316,7 @@ double XRMC_SelectFluorescenceEnergy(int Z, double E0, double *dE)
   {
       // non_space_count to keep the frequency of non space characters
       int non_space_count = 0;
+      if (string == NULL) return NULL;
    
       //Traverse a string and if it is non space character then, place it at index non_space_count
       for (int i = 0; string[i] != '\0'; i++)
@@ -337,7 +340,8 @@ double XRMC_SelectFluorescenceEnergy(int Z, double E0, double *dE)
   
     int  ret = 0;
     char Line[65535];
-    int flag_found_cif=0;
+    int  flag_found_cif=0;
+    if (filename == NULL || formula == NULL) return (0);
     FILE *file = Open_File(filename, "r", NULL);
     if (!file)
       exit(fprintf(stderr, "%s: ERROR: can not open file %s\n", 
@@ -843,7 +847,7 @@ do { /* while (intersect) Loop over multiple scattering events */
     if (dsigma < 1) p *= dsigma; // < 1
 
     /* MC choose process from cross sections 'xs': fluo, Compton, Rayleigh */
-    type = XRMC_SelectInteraction(xs, 3);
+    type = XRMC_SelectInteraction(xs, COMPTON+1); // up to COMPTON
     
     /* choose Z (element) on associated XS, taking into account mass-fractions */
     switch (type) {
