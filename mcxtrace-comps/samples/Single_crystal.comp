@@ -31,6 +31,8 @@
 * The mosaic may EITHER be specified isotropic by setting the mosaic input
 * parameter, OR anisotropic by setting the mosaic_a, mosaic_b, and mosaic_c
 * parameters.
+* If you get strange results, check the mosaicity and delta(d)/d parameters, as this
+* component is not suited for ideal/perfect mosaic crystals.
 * The crystal lattice can be bent locally, keeping the external geometry unchanged.
 * Curvature is spherical along vertical and horizontal axes.
 *
@@ -61,7 +63,7 @@
 *     (Also known as "phenomenological mosaicity").
 *     
 * <b>Powder-mode</b>
-* When these two modes are used (powder=1 ), a randomised transformation
+* When the powder mode is used (powder=0-1), a randomised transformation
 * of the particle direction is made before and after scattering, thereby letting 
 * the single crystal behave as a crystallite of either a powder (crystallite
 * orientation fully randomised).
@@ -148,7 +150,7 @@
 *
 * A diamond crystal plate, cut for (002) reflections
 *   Single_crystal(xwidth = 0.002, yheight = 0.1, zdepth = 0.1,
-*     mosaic = 30, reflections = "C-diamond.lau",
+*     mosaic = 5, delta_d_d=3e-4, reflections = "C-diamond.lau",
 *     ax=0,      ay=2.14,   az=-1.24,
 *     bx = 0,    by = 0,    bz =  2.47,
 *     cx = 6.71, cy = 0,    cz =  0)
@@ -169,12 +171,12 @@
 * yheight:            [m] Height of crystal
 * zdepth:             [m] Depth of crystal (no extinction simulated)
 * geometry:         [str] Name of an Object File Format (OFF) or PLY file for complex geometry. The OFF/PLY file may be generated from XYZ coordinates using qhull/powercrust
-* delta_d_d:          [1] Lattice spacing variance, gaussian RMS (longitudinal mosaic)
-* mosaic:   [arc minutes] Crystal mosaic (isotropic), gaussian RMS. Puts the crystal in the isotropic mosaic model state, thus disregarding other mosaicity parameters.
-* mosaic_a: [arc minutes] Horizontal (rotation around lattice vector a) mosaic (anisotropic), gaussian RMS. Put the crystal in the anisotropic crystal vector state. I.e. model mosaicity through rotation around the crystal lattice vectors. Has precedence over in-plane mosaic model.
+* delta_d_d:          [1] Lattice spacing variance, gaussian RMS (longitudinal mosaic) e.g. 1e-4 to 1e-3.
+* mosaic:   [arc minutes] Crystal mosaic (isotropic), gaussian RMS. Puts the crystal in the isotropic mosaic model state, thus disregarding other mosaicity parameters, e.g. 1-10.
+* mosaic_a: [arc minutes] Horizontal (rotation around lattice vector a) mosaic (anisotropic), gaussian RMS. Put the crystal in the anisotropic crystal vector state. i.e. model mosaicity through rotation around the crystal lattice vectors. Has precedence over in-plane mosaic model.
 * mosaic_b: [arc minutes] Vertical (rotation around lattice vector b) mosaic (anisotropic), gaussian RMS.
 * mosaic_c: [arc minutes] Out-of-plane (Rotation around lattice vector c) mosaic (anisotropic), gaussian RMS
-* mosaic_AB: [arc_minutes, arc_minutes,1, 1, 1, 1, 1, 1]  In Plane mosaic rotation and plane vectors (anisotropic), mosaic_A, mosaic_B, A_h,A_k,A_l, B_h,B_k,B_l. Puts the crystal in the in-plane mosaic state. Vectors A and B define plane in which  the crystal roation is defined, and mosaic_A, mosaic_B, denotes the resp. mosaicities (gaussian RMS) with respect to the two reflections chosen by A and B (Miller indices).
+* mosaic_AB: [arc_minutes, arc_minutes,1, 1, 1, 1, 1, 1]  In-plane mosaic rotation and plane vectors (anisotropic), mosaic_A, mosaic_B, A_h,A_k,A_l, B_h,B_k,B_l. Puts the crystal in the in-plane mosaic state. Vectors A and B define plane in which the crystal roation is defined, and mosaic_A, mosaic_B, denotes the resp. mosaicities (gaussian RMS) with respect to the two reflections chosen by A and B (Miller indices).
 *
 * recip_cell:        [1] Choice of direct/reciprocal (0/1) unit cell definition
 * ax:      [AA or AA^-1] Coordinates of first (direct/recip) unit cell vector 
@@ -197,7 +199,7 @@
 * aa:              [deg] Unit cell angles alpha, beta and gamma. Then uses norms of vectors a,b and c as lattice parameters
 * bb:              [deg] Beta angle
 * cc:              [deg] Gamma angle
-* barns:             [1] Flag to indicate if |F|^2 from 'reflections' is in barns or fm^2. barns=1 for laz and isotropic constant elastic scattering (reflections=NULL), barns=0 for lau type files
+* barns:             [1] Flag to indicate if |F|^2 from 'reflections' is in barns or fm^2. barns=1 for laz/cif and isotropic constant elastic scattering (reflections=NULL), barns=0 for lau type files
 * RX:                [m] Radius of horizontal along X lattice curvature. flat for 0
 * RY:                [m] Radius of vertical   along Y lattice curvature. flat for 0
 * powder:            [1] Flag to indicate powder mode, for simulation of Debye-Scherrer cones via random crystallite orientation. A powder texture can be approximated with powder within 0-1
@@ -290,7 +292,7 @@ vector ki.
 DEFINE COMPONENT Single_crystal
 
 SETTING PARAMETERS(string reflections=0, string geometry=0, vector mosaic_AB={0,0, 0,0,0, 0,0,0},
-  xwidth=0, yheight=0, zdepth=0, radius=0, delta_d_d=1e-4,
+  xwidth=0, yheight=0, zdepth=0, radius=0, delta_d_d=1e-3,
   mosaic = -1, mosaic_a = -1, mosaic_b = -1, mosaic_c = -1,
   recip_cell=0, barns=0,
   ax = 0, ay = 0, az = 0,
@@ -598,11 +600,13 @@ SHARE
 
     if (nb_atoms > 1) { info->sigma_i *= nb_atoms; }
     if (info->m_delta_d_d <=0) {
-      info->m_delta_d_d=1e-5;
+      info->m_delta_d_d=SC_mosaic > 0 ? SC_mosaic*MIN2RAD : MIN2RAD; // MIN2RAD = 3e-4
       MPI_MASTER(
         fprintf(stderr,"Single_crystal: %s: WARNING: Delta_d/d is <=0 (longitudinal mosaic). Setting delta_d_d=%g\n",
                 info->compname, info->m_delta_d_d);
       );
+    } else if (SC_mosaic < 0 && SC_mosaic_a < 0 && SC_mosaic_b < 0 && SC_mosaic_c < 0) {
+      if (info->m_delta_d_d > 0) SC_mosaic=info->m_delta_d_d/MIN2RAD;
     }
 
     /* special cases for the structure definition */
@@ -1504,7 +1508,7 @@ TRACE
 
     if (hkl_info.flag_barns) {
       /*If cross sections are given in barns, we need a scaling factor of 100 
-       to get scattering lengths in m, since V0 is assumed to be in AA*/
+        to get scattering lengths in m, since V0 is assumed to be in AA*/
       abs_xlen *= 100; inc_xlen *= 100;
     } /* else assume fm^2 */
     L = hkl_list;
