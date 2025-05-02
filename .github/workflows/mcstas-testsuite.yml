@@ -106,7 +106,7 @@ jobs:
                -DMCCODE_USE_LEGACY_DESTINATIONS=OFF \
                -DBUILD_TOOLS=ON \
                -DENABLE_COMPONENTS=ON \
-               -DENSURE_MCPL=ON \
+               -DENSURE_MCPL=OFF \
                -DENSURE_NCRYSTAL=OFF \
                -DENABLE_CIF2HKL=OFF \
                -DENABLE_NEUTRONICS=OFF \
@@ -122,8 +122,6 @@ jobs:
              cd ../install_mcstas/
              TOPDIR=`cygpath -m $PWD`
              cd -
-             sed 's+@CPACK_NSIS_INSTALL_ROOT@+'${TOPDIR}'+g' ../src/3rdparty/mcpl-package/batches/mcpl-config.bat.in > ../install_mcstas/bin/mcpl-config.bat
-             cat ../install_mcstas/bin/mcpl-config.bat
            fi
            test -f "../install_mcstas/bin/${MCSTAS_EXECUTABLE}"
            test -f "../install_mcstas/bin/${MCRUN_EXECUTABLE}"
@@ -144,7 +142,7 @@ jobs:
            set -x
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             python3 -mpip install PyYAML ply McStasscript ncrystal
+             python3 -mpip install PyYAML ply McStasscript ncrystal mcpl
            fi
            if [ "$RUNNER_OS" == "macOS" ];
            then
@@ -152,7 +150,7 @@ jobs:
            fi
            if [ "$RUNNER_OS" == "Linux" ];
            then
-             python3 -mpip install PyYAML ply McStasscript ncrystal
+             python3 -mpip install PyYAML ply McStasscript ncrystal mcpl
            fi
 
     - name: Test suite, up to 2-core MPI
