@@ -20,7 +20,7 @@ jobs:
           - { os: ubuntu-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'mpich' }
           - { os: ubuntu-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'openmpi' }
           - { os: ubuntu-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'mpich' }
-          #- { os: macos-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'openmpi' }
+          - { os: macos-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'mpich' }
           - { os: windows-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'msmpi' }
 
@@ -169,6 +169,11 @@ jobs:
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export MXTEST_EXECUTABLE="mxtest.bat"
+           fi
+           if [ "$RUNNER_OS" == "macOS" ];
+           then
+             mkdir ${HOME}/tmp
+             export TMPDIR=${HOME}/tmp
            fi
            echo $PATH
            ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }} --mpi=2
