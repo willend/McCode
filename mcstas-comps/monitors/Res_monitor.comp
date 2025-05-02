@@ -21,7 +21,7 @@
 * scattering events in the sample along with their intensities in the
 * detector. The output file may be analyzed with the mcresplot front-end.
 *
-* Example: Res_monitor(filename="Output.res", res_sample_comp=RSample, xmin=-0.1, xmax=0.1, ymin=-0.1, ymax=0.1)
+* Example: Res_monitor(filename="Output.res", res_sample_comp="RSample", xmin=-0.1, xmax=0.1, ymin=-0.1, ymax=0.1)
 *
 * Setting the monitor geometry.
 *   The optional parameter 'options' may be set as a string with the
@@ -43,7 +43,7 @@
 * zmin: [m]                     Lower z bound of detector opening
 * zmax: [m]                     Upper z bound of detector opening
 * filename: [string]            Name of output file. If unset, use automatic name
-* res_sample_comp: [no quotes]  Name of Res_sample component in the instrument definition
+* res_sample_comp: [WITH quotes]  Name of Res_sample component in the instrument definition
 * bufsize: [1]                  Number of events to store. Use 0 to store all
 *
 * OPTIONAL PARAMETERS (derived from Monitor_nD)
