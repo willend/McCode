@@ -25,9 +25,9 @@ jobs:
           - { os: macos-13,      CC: clang,    CXX: clang++,    python: "3.11", mpi: 'mpich'   }
           - { os: macos-14,      CC: clang,    CXX: clang++,    python: "3.12", mpi: 'mpich'   }
           - { os: macos-15,      CC: clang,    CXX: clang++,    python: "3.13", mpi: 'mpich'   }
-          #- { os: macos-13,      CC: clang,    CXX: clang++,    python: "3.11", mpi: 'openmpi'   }
+          - { os: macos-13,      CC: clang,    CXX: clang++,    python: "3.11", mpi: 'openmpi'   }
           #- { os: macos-14,      CC: clang,    CXX: clang++,    python: "3.12", mpi: 'openmpi'   }
-          #- { os: macos-15,      CC: clang,    CXX: clang++,    python: "3.13", mpi: 'openmpi'   }
+          - { os: macos-15,      CC: clang,    CXX: clang++,    python: "3.13", mpi: 'openmpi'   }
           #- { os: windows-latest,  CC: gcc,    CXX: g++,        python: "3.12", mpi: 'msmpi'   }
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}
@@ -81,6 +81,7 @@ jobs:
     - name: Configure build and install mcstas
       id: mcstas-install
       run: |
+           if [ "$RUNNER_OS" == "macOS" ]; then mkdir ${HOME}/tmp; fi
            if [ "$RUNNER_OS" == "macOS" ]; then export SDKROOT=$(xcrun --sdk macosx --show-sdk-path); fi
            set -e
            set -u
@@ -219,6 +220,7 @@ jobs:
            export MCSTAS_EXECUTABLE="mcstas"
            export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen"
            export MCRUN_EXECUTABLE="mcrun"
+           if [ "$RUNNER_OS" == "macOS" ]; then export TMPDIR=${HOME}/tmp; fi
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export MCSTAS_EXECUTABLE="mcstas.exe"
@@ -259,6 +261,7 @@ jobs:
            set -x
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
+           if [ "$RUNNER_OS" == "macOS" ]; then export TMPDIR=${HOME}/tmp; fi
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export MCSTAS_EXECUTABLE="mcstas.exe"
@@ -299,6 +302,7 @@ jobs:
            set -x
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
+           if [ "$RUNNER_OS" == "macOS" ]; then export TMPDIR=${HOME}/tmp; fi
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export MCSTAS_EXECUTABLE="mcstas.exe"
