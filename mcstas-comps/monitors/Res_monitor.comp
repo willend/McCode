@@ -102,6 +102,14 @@ DECLARE%{
   char res_rx_var[20];
   char res_ry_var[20];
   char res_rz_var[20];
+  /* Arrays for storing resolution matrix */
+  DArray2d Covar_p;
+  DArray2d Covar_p2;
+  DArray2d Covar_N;
+  DArray2d Res_p;
+  DArray2d Res_p2;
+  DArray2d Res_N;
+  int num_cores;
 %}
 
 
@@ -175,6 +183,20 @@ INITIALIZE %{
   sprintf(res_rx_var, "res_rx_%i", index);
   sprintf(res_ry_var, "res_ry_%i", index);
   sprintf(res_rz_var, "res_rz_%i", index);
+  if(live_calc) {
+      /* Allocate arrays to save cov and res matrix */
+      Covar_p = create_darr2d(4, 4);
+      Covar_p2 = create_darr2d(4, 4);
+      Covar_N = create_darr2d(4, 4);
+      Res_p = create_darr2d(4, 4);
+      Res_p2 = create_darr2d(4, 4);
+      Res_N = create_darr2d(4, 4);
+      #ifdef USE_MPI
+      num_cores=mpi_node_count;
+      #else
+      num_cores=1;
+      #endif
+  }
 %}
 
 
@@ -319,7 +341,7 @@ SAVE %{
       #endif
 
       tl2_save_events(reso_events, reso_probabilities, event_filename, num_events);
-    }
+	}
 
     double cov[4*4], res[4*4];
     if(tl2_reso(reso_events, reso_probabilities, cov, res, num_events)) {
@@ -331,6 +353,39 @@ SAVE %{
     else {
       printf("Error: Resolution matrix could not be calculated.");
     }
+    int i,j;
+    for(i=0;i<4;i++) {
+      for(j=0;j<4;j++) {
+        /* "Events" */
+        Covar_N[i][j]=1;
+	Res_N[i][j]=1;
+	/* Covariance/resolution matrixces (potentiall pr. MPI node) */
+	Covar_p[i][j]=cov[4*i+j]/num_cores;
+	Res_p[i][j]=res[4*i+j]/num_cores;
+	/* "errors" */
+	Covar_p2[i][j]=(cov[4*i+j]/num_cores)*(cov[4*i+j]/num_cores);
+	Res_p2[i][j]=(res[4*i+j]/num_cores)*(res[4*i+j]/num_cores);
+      }
+    }
+    /* Nasty call to DETECTOR_OUT_2D to store covariance matrix */
+    char covar_fname[1024];
+    char res_fname[1024];
+    sprintf(covar_fname,"%s_%s", _comp->_name, "covar");
+    sprintf(res_fname,"%s_%s", _comp->_name, "resol");
+    DETECTOR_OUT_2D("Covariance",
+		    "Columns",
+		    "Rows",
+		    0.0, 4.0, 0.0, 4.0,
+		    4, 4,
+		    &Covar_N[0][0],&Covar_p[0][0],&Covar_p2[0][0],
+		    covar_fname);
+    DETECTOR_OUT_2D("Resolution",
+		    "Columns",
+		    "Rows",
+		    0.0, 4.0, 0.0, 4.0,
+		    4, 4,
+		    &Res_N[0][0],&Res_p[0][0],&Res_p2[0][0],
+		    res_fname);
   }
 %}
 
@@ -343,6 +398,12 @@ FINALLY %{
     free(reso_events);
     free(reso_probabilities);
   }
+  destroy_darr2d(Covar_p);
+  destroy_darr2d(Covar_p2);
+  destroy_darr2d(Covar_N);
+  destroy_darr2d(Res_p);
+  destroy_darr2d(Res_p2);
+  destroy_darr2d(Res_N);
 %}
 
 
