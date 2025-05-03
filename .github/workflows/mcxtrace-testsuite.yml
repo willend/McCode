@@ -174,7 +174,7 @@ jobs:
              export TMPDIR=${HOME}/tmp
            fi
            echo $PATH
-           ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }} --mpi=2
+           ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }}_${{ matrix.CC }} --mpi=2
 
     - name: 'Tar output files'
       id: tar-package
