@@ -110,7 +110,7 @@ jobs:
                -DENABLE_COMPONENTS=ON \
                -DENSURE_MCPL=OFF \
                -DENSURE_NCRYSTAL=OFF \
-               -DENABLE_CIF2HKL=OFF \
+               -DENABLE_CIF2HKL=ON \
                -DENABLE_NEUTRONICS=OFF \
                ${EXTRA_ARGS_FOR_CMAKE}
            cmake --build . --config Release
