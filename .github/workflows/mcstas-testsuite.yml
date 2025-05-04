@@ -146,7 +146,7 @@ jobs:
            fi
            if [ "$RUNNER_OS" == "macOS" ];
            then
-             python3 -mpip install PyYAML ply McStasScript ncrystal --break-system-packages
+             python3 -mpip install PyYAML ply McStasScript ncrystal mcpl --break-system-packages
            fi
            if [ "$RUNNER_OS" == "Linux" ];
            then
