@@ -59,7 +59,7 @@ jobs:
       id: setup-flex-bison-macos
       if: runner.os == 'macOS'
       run: |
-           brew install bison flex gfortran
+           brew install bison flex gfortran gsl
 
     - name: Setup Bison (Windows)
       id: setup-flex-bison-Windows
@@ -75,8 +75,8 @@ jobs:
            python3 --version
            which cmake
            cmake --version
-           #NB: bison and flex in path are actually too old, on mac we
-           #inject these via a brew keg later
+           if [ "$RUNNER_OS" == "macOS" ] && [ -f "/opt/homebrew/opt/flex/bin/flex" ]; then export HOMEBRW="/opt/homebrew/opt"; find $HOMEBRW -name libgsl\*; fi
+           if [ "$RUNNER_OS" == "macOS" ] && [ -f "/usr/local/opt/flex/bin/flex" ]; then export HOMEBRW="/usr/local/opt"; find $HOMEBRW -name libgsl\*; fi
 
     - name: Configure build and install mcstas
       id: mcstas-install
