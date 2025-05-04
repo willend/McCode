@@ -77,8 +77,10 @@ jobs:
            python3 --version
            which cmake
            cmake --version
-           if [ "$RUNNER_OS" == "macOS" ] && [ -f "/opt/homebrew/opt/flex/bin/flex" ]; then export HOMEBRW="/opt/homebrew/opt"; find $HOMEBRW -name libxrl\*; find $HOMEBRW -name libgsl\*; fi
-           if [ "$RUNNER_OS" == "macOS" ] && [ -f "/usr/local/opt/flex/bin/flex" ]; then export HOMEBRW="/usr/local/opt"; find $HOMEBRW -name libxrl\*; find $HOMEBRW -name libgsl\*; fi
+           find /opt/homebrew/opt/ -name libxrl\*
+           find /opt/homebrew/opt/ -name libgsl\*
+           find /usr/local/opt/ -name libxrl\*
+           find /usr/local/opt/ -name libgsl\*
 
     - name: Configure build and install mcxtrace
       id: mcxtrace-install
