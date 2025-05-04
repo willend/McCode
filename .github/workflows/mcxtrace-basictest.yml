@@ -59,7 +59,13 @@ jobs:
       id: setup-flex-bison-macos
       if: runner.os == 'macOS'
       run: |
-           brew install bison flex gfortran
+           brew install bison flex gfortran gsl
+           brew tap tschoonj/tap
+           brew install xraylib
+           if [ "$RUNNER_OS" == "macOS" ] && [ -f "/opt/homebrew/opt/flex/bin/flex" ]; then export HOMEBRW="/opt/homebrew/opt"; fi
+           if [ "$RUNNER_OS" == "macOS" ] && [ -f "/usr/local/opt/flex/bin/flex" ]; then export HOMEBRW="/usr/local/opt"; fi
+           find $HOMEBRW -name libxrl\*
+           find $HOMEBRW -name libgsl\*
 
     - name: Setup Bison (Windows)
       id: setup-flex-bison-Windows
