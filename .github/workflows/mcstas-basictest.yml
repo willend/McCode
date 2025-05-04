@@ -59,7 +59,7 @@ jobs:
       id: setup-flex-bison-macos
       if: runner.os == 'macOS'
       run: |
-           brew install bison flex
+           brew install bison flex gfortran
 
     - name: Setup Bison (Windows)
       id: setup-flex-bison-Windows
