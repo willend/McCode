@@ -60,14 +60,17 @@ jobs:
     - name: Setup Windows
       id: setup-Windows
       if: runner.os == 'Windows'
-      shell: cmd
+      #shell: cmd
       run: |
            choco install winflexbison3
            choco install wget
            pip install mslex
-           wget https://github.com/tschoonj/xraylib/releases/download/xraylib-4.1.5/xraylib-4.1.5-win64.exe
-           xraylib-4.1.5-win64.exe /VERYSILENT /SUPPRESSMSGBOXES
-           
+
+           # In princple we could (maybe?) test with xraylib, but it
+           # seems their installer does not include headers...
+           #wget https://github.com/tschoonj/xraylib/releases/download/xraylib-4.1.5/xraylib-4.1.5-win64.exe
+           #xraylib-4.1.5-win64.exe /VERYSILENT /SUPPRESSMSGBOXES
+
     - name: Setup Linux
       id: setup-Linux
       if: runner.os == 'Linux'
@@ -180,7 +183,7 @@ jobs:
              export TMPDIR=${HOME}/tmp
            fi
            echo $PATH
-           ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }}_${{ matrix.CC }} --mpi=2 --instr=Test_FluoPowder
+           ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }}_${{ matrix.CC }} --mpi=2
 
     - name: 'Tar output files'
       id: tar-package
