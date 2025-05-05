@@ -3,6 +3,8 @@ name: mcstas-msvc-winbasictest
 on:
   push:
   pull_request:
+  schedule:
+    - cron: '55 23 * * 0'  # 23:55 every Sunday
 
 jobs:
   build:
@@ -228,3 +230,9 @@ jobs:
       with:
         name: mcstas-msvc-${{ matrix.os }}_output.tgz
         path: "mcstas-msvc-${{ matrix.os }}_output.tgz"
+
+    - name: Setup tmate session for manual debugging
+      uses: mxschmitt/action-tmate@v3
+      if: always() && (inputs.manual-debugging == true)
+      with:
+        limit-access-to-actor: true

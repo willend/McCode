@@ -3,6 +3,8 @@ name: mcxtrace-mingw-winbasictest
 on:
   push:
   pull_request:
+  schedule:
+    - cron: '55 23 * * 0'  # 23:55 every Sunday
 
 jobs:
   build:
@@ -72,7 +74,7 @@ jobs:
         -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
         -DBUILD_TOOLS=ON
         -DENABLE_COMPONENTS=ON
-        -DENABLE_CIF2HKL=OFF
+        -DENABLE_CIF2HKL=ON
         -DENABLE_NEUTRONICS=OFF
         -DMPIINCLUDEDIR=%MPIINCVAR%
         -DMPILIBDIR=%MPILIBVAR%
@@ -175,3 +177,9 @@ jobs:
       with:
         name: mcxtrace-mingw-${{ matrix.os }}_output.tgz
         path: "mcxtrace-mingw-${{ matrix.os }}_output.tgz"
+
+    - name: Setup tmate session for manual debugging
+      uses: mxschmitt/action-tmate@v3
+      if: always() && (inputs.manual-debugging == true)
+      with:
+        limit-access-to-actor: true
