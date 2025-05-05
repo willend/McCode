@@ -1,6 +1,6 @@
 name: mcstas-mingw-winbasictest
 
-on:
+#on:
   #push:
   #pull_request:
 

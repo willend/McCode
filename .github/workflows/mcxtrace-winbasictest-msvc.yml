@@ -1,6 +1,6 @@
 name: mcxtrace-msvc-winbasictest
 
-on:
+#on:
   #push:
   #pull_request:
 

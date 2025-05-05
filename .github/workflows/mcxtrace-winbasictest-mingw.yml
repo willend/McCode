@@ -1,6 +1,6 @@
 name: mcxtrace-mingw-winbasictest
 
-on:
+#on:
   #push:
   #pull_request:
 

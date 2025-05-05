@@ -1,5 +1,5 @@
 name: mcxtrace-basictest
-on:
+#on:
   #push:
   #pull_request:
   schedule:
