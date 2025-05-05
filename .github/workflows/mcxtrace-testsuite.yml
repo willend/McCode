@@ -60,12 +60,13 @@ jobs:
     - name: Setup Windows
       id: setup-Windows
       if: runner.os == 'Windows'
+      shell: cmd
       run: |
            choco install winflexbison3
            choco install wget
            pip install mslex
            wget https://github.com/tschoonj/xraylib/releases/download/xraylib-4.1.5/xraylib-4.1.5-win64.exe
-           ./xraylib-4.1.5-win64.exe /VERYSILENT /SUPPRESSMSGBOXES
+           xraylib-4.1.5-win64.exe /VERYSILENT /SUPPRESSMSGBOXES
            
     - name: Setup Linux
       id: setup-Linux
