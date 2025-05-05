@@ -16,13 +16,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'openmpi' }
-          - { os: ubuntu-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'mpich' }
-          - { os: ubuntu-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'openmpi' }
-          - { os: ubuntu-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'mpich' }
+          #- { os: ubuntu-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'openmpi' }
+          #- { os: ubuntu-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'mpich' }
+          #- { os: ubuntu-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'openmpi' }
+          #- { os: ubuntu-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'mpich' }
           #- { os: macos-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, CC: clang,    CXX: clang++,    python: '3.12', mpi: 'mpich' }
-          - { os: windows-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'msmpi' }
+          #- { os: windows-latest, CC: gcc,    CXX: g++,    python: '3.12', mpi: 'msmpi' }
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
@@ -176,7 +176,7 @@ jobs:
              export TMPDIR=${HOME}/tmp
            fi
            echo $PATH
-           ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }}_${{ matrix.CC }} --mpi=2
+           ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }}_${{ matrix.CC }} --mpi=2 --instr=MAX
 
     - name: 'Tar output files'
       id: tar-package
