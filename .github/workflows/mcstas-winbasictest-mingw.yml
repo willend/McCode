@@ -206,6 +206,6 @@ jobs:
 
     - name: Setup tmate session for manual debugging
       uses: mxschmitt/action-tmate@v3
-      if: always() && (inputs.manual-debugging == true || steps.tar-package.outcome != 'success')
+      if: always() && (inputs.manual-debugging == true)
       with:
         limit-access-to-actor: true
