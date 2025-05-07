@@ -894,6 +894,7 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
 	for (id_index=0;id_index<30;id_index++) {
 		if (strcmp(Vars->Coord_Var[id_index], "id") == 0) break;
 	}
+	if (id_index == 30) id_index = Vars->Coord_Number-1; // Revert to earlier behavior is id not found
 	long pix=Vars->Coord_Min[id_index];
 
 	MCDETECTOR detector;
