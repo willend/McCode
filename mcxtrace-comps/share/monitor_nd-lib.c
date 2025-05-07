@@ -741,9 +741,11 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
     
     /* compute the product of bin dimensions for PixelID */
     Vars->Coord_BinProd[0]=1;
-    for (i = 1; i <= Vars->Coord_Number; i++)
+
+    for (i = 1; i <= Vars->Coord_Number; i++) {
       Vars->Coord_BinProd[i]=Vars->Coord_Bin[i]*Vars->Coord_BinProd[i-1];
-    
+    }
+
     #ifdef USE_NEXUS
 
     #ifdef USE_MPI
@@ -846,14 +848,6 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
   char    While_End   =0;
   long    While_Buffer=0;
   char    Set_Vars_Coord_Type = DEFS->COORD_NONE;
-  
-  /* For the OPENACC list buffer an atomic capture/update of the
-     updated Neutron_counter - captured below under list mode */
-  long long ParticleCount;
-  #pragma acc atomic capture
-  {
-    ParticleCount=Vars->Photon_Counter++;
-  }
 
   /* the logic below depends mainly on:
        Flag_List:        1=store 1 buffer, 2=list all, 3=re-use buffer 
@@ -900,10 +894,13 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
     }
     else
     {
-      Vars->Mon2D_Buffer  = (double *)realloc(Vars->Mon2D_Buffer, (Vars->Coord_Number+1)*(ParticleCount+Vars->Buffer_Block)*sizeof(double));
+      Vars->Mon2D_Buffer  = (double *)realloc(Vars->Mon2D_Buffer, (Vars->Coord_Number+1)*(2*Vars->Buffer_Block)*sizeof(double));
       if (Vars->Mon2D_Buffer == NULL)
-            { printf("Monitor_nD: %s cannot reallocate Vars->Mon2D_Buffer[%li] (%zi). Skipping.\n", Vars->compcurname, i, (long int)(ParticleCount+Vars->Buffer_Block)*sizeof(double)); Vars->Flag_List = 1; }
-      else { Vars->Buffer_Counter = 0; Vars->Buffer_Size = ParticleCount+Vars->Buffer_Block; }
+            { printf("Monitor_nD: %s cannot reallocate Vars->Mon2D_Buffer[%li] (%zi). Skipping.\n", Vars->compcurname, i, (long int)(2*Vars->Buffer_Block)*sizeof(double)); Vars->Flag_List = 1; }
+      else { 
+		  Vars->Buffer_Block = 2*Vars->Buffer_Block;
+		  Vars->Buffer_Size = Vars->Buffer_Block;
+	  }
     }
   } /* end if Buffer realloc */
 #endif
@@ -1203,9 +1200,9 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
         {
 	  // This is is where the list is appended. How to make this "atomic"?
           #pragma acc atomic write 
-          Vars->Mon2D_Buffer[i + ParticleCount*(Vars->Coord_Number+1)] = Coord[i];
+          Vars->Mon2D_Buffer[i + Vars->Buffer_Counter*(Vars->Coord_Number+1)] = Coord[i];
         }
-	#pragma acc atomic 
+	    #pragma acc atomic update
         Vars->Buffer_Counter = Vars->Buffer_Counter + 1;
         if (Vars->Flag_Verbose && (Vars->Buffer_Counter >= Vars->Buffer_Block) && (Vars->Flag_List == 1)) 
           printf("Monitor_nD: %s %li photons stored in List.\n", Vars->compcurname, Vars->Buffer_Counter);
@@ -1227,6 +1224,12 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
       }else{
           return -1;
       }
+  } else {
+   /* For the OPENACC list buffer an atomic capture/update of the
+      updated Neutron_counter - updated below under list mode 
+	  Only need to be updated when inside bounds. */
+   #pragma acc atomic update
+   Vars->Photon_Counter++;
   }
   return 1;
 } /* end Monitor_nD_Trace */
