@@ -19,8 +19,9 @@
 * $Id$
 *
 *******************************************************************************/
-%{
 
+// C declarations
+%{
 #define _GNU_SOURCE
 #include <math.h>
 #include <string.h>
@@ -40,6 +41,25 @@
 #define pclose _pclose
 #endif
 #endif
+
+// target definitions
+// default is to generate C
+#ifndef GENERATE_C
+#ifndef GENERATE_PY
+#define GENERATE_C
+#endif
+#endif
+
+#ifdef  GENERATE_C
+#define GENERATE_LANG "C"
+#define GENERATE_EXT  ".c"
+#endif
+
+#ifdef  GENERATE_PY
+#define GENERATE_LANG "Python"
+#define GENERATE_EXT  "_generated.py"
+#endif
+
 %}
 
 %{
@@ -57,6 +77,8 @@ void metadata_assign_from_definition(List metadata);
 void metadata_assign_from_instance(List metadata);
 
 %}
+
+// Bison declarations
 
 /* Need a pure parser to allow for recursive calls when autoloading component
    definitions. */
@@ -177,6 +199,10 @@ void metadata_assign_from_instance(List metadata);
 %type <linenum> removable
 %type <linenum> cpuonly
 %type <linenum> noacc
+
+// ---------------------------------------------------------------------------
+// Grammar rules
+
 %%
 
 main:     TOK_GENERAL compdefs instrument
@@ -1268,6 +1294,7 @@ component: removable cpuonly split "COMPONENT" instname '=' instref
 	  }
         }
         if ($13->linenum) {
+#ifdef GENERATE_C
 	  if (comp->extend->linenum>0) {
 	    fprintf(stderr, "\n-----------------------------------------------------------\n");
 	    fprintf(stderr, "WARNING: Existing (COPY) EXTEND block in COMPONENT %s:\n", comp->name);
@@ -1288,6 +1315,7 @@ component: removable cpuonly split "COMPONENT" instname '=' instref
 	    list_iterate_end(liter2);
 	    fprintf(stderr, "  %%}\n-----------------------------------------------------------\n");
 	  }
+#endif
 	  comp->extend= $13;  /* EXTEND block*/
 	}
         if (list_len($14))  comp->jump  = $14;
@@ -1975,6 +2003,9 @@ static char *output_filename;
 /* Verbose parsing/code generation */
 char verbose = 0;
 
+/* Are we generating code for the "lint" mode? (only for Python mode) */
+char lint = 0;
+
 /* include instrument source code in executable ? */
 char embed_instrument_file = 0;
 
@@ -1988,23 +2019,30 @@ char *executable_name=NULL;
 static void
 print_usage(void)
 {
-  fprintf(stderr, MCCODE_NAME " version " MCCODE_VERSION " (" MCCODE_DATE ")\n");
+  fprintf(stderr, MCCODE_NAME " " GENERATE_LANG " generator version " MCCODE_VERSION " (" MCCODE_DATE ")\n");
   fprintf(stderr, "Compiler of the " MCCODE_NAME " ray-trace simulation package\n");
   fprintf(stderr, "Usage:\n"
     "  %s [-o file] [-I dir1 ...] [-t] [-p] [-v] "
     "[--no-main] [--no-runtime] [--verbose] file\n", executable_name);
-  fprintf(stderr, "      -o FILE --output-file=FILE Place C output in file FILE.\n");
+  fprintf(stderr, "      -o FILE --output-file=FILE Place " GENERATE_LANG " output in file FILE.\n");
+  fprintf(stderr, "      -v      --version          Prints " MCCODE_NAME " version.\n");
+  fprintf(stderr, "      --verbose                  Display compilation process steps.\n");
+#if defined(GENERATE_C)
   fprintf(stderr, "      -I DIR  --search-dir=DIR   Append DIR to the component search list. \n");
   fprintf(stderr, "      -t      --trace            Enable 'trace' mode for instrument display.\n");
-  fprintf(stderr, "      -v      --version          Prints " MCCODE_NAME " version.\n");
   fprintf(stderr, "      --no-main                  Do not create main(), for external embedding.\n");
   fprintf(stderr, "      --no-runtime               Do not embed run-time libraries.\n");
-  fprintf(stderr, "      --verbose                  Display compilation process steps.\n");
   fprintf(stderr, "      --source                   Embed the instrument source code in executable.\n");
-  fprintf(stderr, "  The instrument description file will be processed and translated into a C code program.\n");
+#elif defined(GENERATE_PY)
+  fprintf(stderr, "      --lint                     Generate a .py script for McStasScript\n");
+  fprintf(stderr, "                                 style \"diagnostic\" linting.\n\n");
+#endif
+  fprintf(stderr, "  The instrument description file will be processed and translated into " GENERATE_LANG ".\n");
+#if defined(GENERATE_C)
   fprintf(stderr, "  If run-time libraries are not embedded, you will have to pre-compile\n");
   fprintf(stderr, "    them (.c -> .o) before assembling the program.\n");
   /* fixme: should use get_sys_dir here? And update the text? */
+#endif
   fprintf(stderr, "  The default component search list is usually defined by the environment\n");
   fprintf(stderr, "    variable '" MCCODE_LIBENV "' %s (default is "
   #if MCCODE_PROJECT == 1
@@ -2060,11 +2098,11 @@ make_output_filename(char *name)
   {
     char *tmp = str_dup(p);
     tmp[l - 6] = '\0';
-    p = str_cat(tmp, ".c", NULL);
+    p = str_cat(tmp, GENERATE_EXT, NULL);
     str_free(tmp);
   }
   else
-    p = str_cat(p, ".c", NULL);
+    p = str_cat(p, GENERATE_EXT, NULL);
   return p;
 }
 
@@ -2083,6 +2121,7 @@ parse_command_line(int argc, char *argv[])
 
   output_filename                        = NULL;
   verbose                                = 0;
+  lint                                   = 0;
   instr_current_filename                 = NULL;
   instrument_definition->use_default_main= 1;
   instrument_definition->include_runtime = 1;
@@ -2100,6 +2139,7 @@ parse_command_line(int argc, char *argv[])
       set_output_filename(argv[++i]);
     else if(!strncmp("--output-file=", argv[i], 14))
       set_output_filename(&argv[i][14]);
+#if defined(GENERATE_C)
     else if(!strcmp("-I", argv[i]) && (i + 1) < argc)
       add_search_dir(argv[++i]);
     else if(!strncmp("-I", argv[i], 2))
@@ -2116,6 +2156,16 @@ parse_command_line(int argc, char *argv[])
       instrument_definition->portable = 1;
     else if(!strcmp("--portable", argv[i]))
       instrument_definition->portable = 1;
+    else if(!strcmp("--source", argv[i]))
+      embed_instrument_file = 1;
+    else if(!strcmp("--no-main", argv[i]))
+      instrument_definition->use_default_main = 0;
+    else if(!strcmp("--no-runtime", argv[i]))
+      instrument_definition->include_runtime = 0;
+#elif defined(GENERATE_PY)
+    else if(!strcmp("--lint", argv[i]))
+      lint = 1;
+#endif
     else if(!strcmp("-v", argv[i]))
       print_version();
     else if(!strcmp("--version", argv[i]))
@@ -2126,12 +2176,6 @@ parse_command_line(int argc, char *argv[])
       { print_usage(); exit(0); }
     else if(!strcmp("--verbose", argv[i]))
       verbose = 1;
-    else if(!strcmp("--source", argv[i]))
-      embed_instrument_file = 1;
-    else if(!strcmp("--no-main", argv[i]))
-      instrument_definition->use_default_main = 0;
-    else if(!strcmp("--no-runtime", argv[i]))
-      instrument_definition->include_runtime = 0;
     else if(argv[i][0] != '-')
     {
       if(instr_current_filename != NULL)
@@ -2206,11 +2250,13 @@ main(int argc, char *argv[])
   read_components = symtab_create(); /* Create table of components. */
   lib_instances   = symtab_create(); /* Create table of libraries. */
   err = mc_yyparse();
+  fclose(file);
   if (err != 0 && !error_encountered) error_encountered++;
   if(error_encountered != 0)
   {
     print_error(MCCODE_NAME ": %i Errors encountered during parse of %s.\n",
       error_encountered, instr_current_filename);
+#ifdef GENERATE_C
     if (verbose) {
       fprintf(stderr, "Please check the usual grammar:\n");
       fprintf(stderr, "DEFINE INSTRUMENT\n");
@@ -2226,9 +2272,9 @@ main(int argc, char *argv[])
       fprintf(stderr, "END\n");
       fprintf(stderr, "as well as '%%{ ... %%}' blocks.\n\n");
     }
+#endif
     exit(1);
   }
-  fclose(file);
 
   if (verbose) fprintf(stderr, "Starting to create C code %s\n", output_filename);
   cogen(output_filename, instrument_definition);
