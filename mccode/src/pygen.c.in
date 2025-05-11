@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include "mccode.h"
 
+#define GENERATE_PY 1
 
 /*******************************************************************************
 * General comments on code generation.

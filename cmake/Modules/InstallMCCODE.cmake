@@ -282,6 +282,13 @@ macro(installMCCODE)
     WORKING_DIRECTORY work/src
     DEPENDS "${PROJECT_SOURCE_DIR}/src/instrument.y" work/src/lex.yy.c
   )
+  ## Generate py-instrument.tab.{h,c} with bison for Python
+  add_custom_command(
+    OUTPUT work/src/py-instrument.tab.h work/src/py-instrument.tab.c
+    COMMAND "${BISON_EXECUTABLE}" -v -d "${PROJECT_SOURCE_DIR}/src/py-instrument.y" && sed -i "1s/^/#define GENERATE_PY /" py-instrument.tab.c
+    WORKING_DIRECTORY work/src
+    DEPENDS "${PROJECT_SOURCE_DIR}/src/py-instrument.y" work/src/py-lex.yy.c
+  )
 
 
   # Handling of system-provided random functions on windows - 
@@ -294,8 +301,8 @@ macro(installMCCODE)
   ## Build executable for flavor
   add_executable(
     ${FLAVOR}
-    work/src/cexp.c
     work/src/cogen.c
+    work/src/cexp.c
     work/src/coords.c
     work/src/debug.c
     work/src/file.c
@@ -315,11 +322,10 @@ macro(installMCCODE)
   )
 
   ## Switch to Python generator
-  AppendDef(GENERATE_PY=1)
   add_executable(
     ${FLAVOR}-pygen
-    work/src/cexp.c
     work/src/pygen.c
+    work/src/py-cexp.c
     work/src/coords.c
     work/src/debug.c
     work/src/file.c
@@ -333,8 +339,8 @@ macro(installMCCODE)
 
     # files generated with flex and bison
     work/src/py-lex.yy.c
-    work/src/instrument.tab.h
-    work/src/instrument.tab.c
+    work/src/py-instrument.tab.h
+    work/src/py-instrument.tab.c
   )
 
   if ( CMAKE_INSTALL_PREFIX AND NOT "x${CMAKE_INSTALL_PREFIX}" STREQUAL "x/" )
