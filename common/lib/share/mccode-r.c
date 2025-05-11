@@ -4531,12 +4531,14 @@ mcenabletrace(int mode)
   mcdotrace = mode;
   #pragma acc update device ( mcdotrace )
  } else {
-   fprintf(stderr,
-           "Error: trace not enabled (mcenabletrace)\n"
-           "Please re-run the " MCCODE_NAME " compiler "
-                   "with the --trace option, or rerun the\n"
-           "C compiler with the MC_TRACE_ENABLED macro defined.\n");
-   exit(1);
+   if (mode>0) {
+     fprintf(stderr,
+	     "Error: trace not enabled (mcenabletrace)\n"
+	     "Please re-run the " MCCODE_NAME " compiler "
+	     "with the --trace option, or rerun the\n"
+	     "C compiler with the MC_TRACE_ENABLED macro defined.\n");
+     exit(1);
+   }
  }
 }
 
