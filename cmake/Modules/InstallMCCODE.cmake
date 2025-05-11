@@ -285,7 +285,7 @@ macro(installMCCODE)
   ## Generate py-instrument.tab.{h,c} with bison for Python
   add_custom_command(
     OUTPUT work/src/py-instrument.tab.h work/src/py-instrument.tab.c
-    COMMAND "${BISON_EXECUTABLE}" -v -d "${PROJECT_SOURCE_DIR}/src/py-instrument.y" && sed -i.bk "1s/^/#define GENERATE_PY /" py-instrument.tab.c && rm py-instrument.tab.c.bk
+    COMMAND "${BISON_EXECUTABLE}" -v -d "${PROJECT_SOURCE_DIR}/src/py-instrument.y"
     WORKING_DIRECTORY work/src
     DEPENDS "${PROJECT_SOURCE_DIR}/src/py-instrument.y" work/src/py-lex.yy.c
   )
@@ -342,6 +342,7 @@ macro(installMCCODE)
     work/src/py-instrument.tab.h
     work/src/py-instrument.tab.c
   )
+  target_compile_definitions(${FLAVOR}-pygen PUBLIC GENERATE_PY=1)
 
   if ( CMAKE_INSTALL_PREFIX AND NOT "x${CMAKE_INSTALL_PREFIX}" STREQUAL "x/" )
     get_filename_component( tmp "${CMAKE_INSTALL_PREFIX}/${DEST_RESOURCEDIR}" REALPATH )
