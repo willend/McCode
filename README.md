@@ -27,8 +27,10 @@ Please consult https://www.mcstas.org and https://www.mcxtrace.org or https://gi
 
 **Current development builds for selected platforms:**
 * [McStas Intel/x86_64 Ubuntu deb's + cross-compiled Windows package](https://nightly.link/mccode-dev/McCode/workflows/mcstas-autobuild/main/mcstas-artefacts-ubuntu-latest.zip)
+* [McStas arm64 Ubuntu deb's](https://nightly.link/mccode-dev/McCode/workflows/mcstas-autobuild/main/mcstas-artefacts-ubuntu-24.04-arm.zip)
 * [McStas Intel + arm64 macOS](https://nightly.link/mccode-dev/McCode/workflows/mcstas-autobuild/main/mcstas-artefacts-macos-latest.zip)
 * [McXtrace Intel/x86_64 Ubuntu deb's + cross-compiled Windows package](https://nightly.link/mccode-dev/McCode/workflows/mcxtrace-autobuild/main/mcxtrace-artefacts-ubuntu-latest.zip)
+* [McXtrace arm64 Ubuntu deb's](https://nightly.link/mccode-dev/McCode/workflows/mcxtrace-autobuild/main/mcxtrace-artefacts-ubuntu-24.04-arm.zip)
 * [McXtrace Intel + arm64 macOS](https://nightly.link/mccode-dev/McCode/workflows/mcxtrace-autobuild/main/mcxtrace-artefacts-macos-latest.zip)
 
 *******************************************************************************
