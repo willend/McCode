@@ -177,7 +177,8 @@ void metadata_assign_from_instance(List metadata);
 
 %type <instance> component compref reference instref
 %type <groupinst> groupdef groupref
-%type <ccode>   code codeblock share declare uservars initialize trace extend save finally display
+%type <ccode>   code codeblock comp_share comp_uservars comp_declare comp_initialize comp_trace extend comp_save comp_finally comp_display
+%type <ccode>   comp_share_copy_extend comp_decl_copy_extend comp_init_copy_extend comp_trace_copy_extend comp_save_copy_extend comp_finally_copy_extend comp_display_copy_extend
 %type <coords>  coords
 %type <exp>     exp topexp topatexp genexp genatexp when split
 %type <actuals> actuallist actuals actuals1
@@ -216,7 +217,7 @@ compdefs:   /* empty */
 ;
 
 //          $1        $2         $3     $4         $5       $6    $7         $8    $9    $10      $11     $12        $13   $14  $15     $16     $17
-compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noacc share uservars declare initialize trace save finally display "END"
+compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noacc comp_share comp_uservars comp_declare comp_initialize comp_trace comp_save comp_finally comp_display "END"
       {
         struct comp_def *c;
         palloc(c);
@@ -255,7 +256,7 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
         if (verbose) fprintf(stderr, "Embedding component %s from file %s\n", c->name, c->source);
       }
 // $1       $2         $3     $4     $5     $6         $7       $8    $9        $10    $11   $12      $13     $14        $15   $16  $17     $18     $19
-| "DEFINE" "COMPONENT" TOK_ID "COPY" TOK_ID parameters metadata shell dependency noacc share uservars declare initialize trace save finally display "END"
+| "DEFINE" "COMPONENT" TOK_ID "COPY" TOK_ID parameters metadata shell dependency noacc comp_share comp_uservars comp_declare comp_initialize comp_trace comp_save comp_finally comp_display "END"
       {
         /* create a copy of a comp, and initiate it with given blocks */
         /* all redefined blocks override */
@@ -301,71 +302,98 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
 ;
 
 /* SHARE component block included once. */
-share:    /* empty */
+comp_share: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "SHARE" codeblock
+    | "SHARE" codeblock comp_share_copy_extend
       {
-        $$ = $2;
-      }
-    | "SHARE" "COPY" TOK_ID
-      {
-        struct comp_def *def;
-        def = read_component($3);
-        if (def)
-          $$ = def->share_code;
-        else
-          $$ = codeblock_new();
-      }
-    | "SHARE" "COPY" TOK_ID "EXTEND" codeblock
-      {
-        struct comp_def *def;
         struct code_block *cb;
         cb = codeblock_new();
-        def = read_component($3);
-        if (def) {
-          cb->filename        = def->share_code->filename;
-          cb->quoted_filename = def->share_code->quoted_filename;
-          cb->linenum         = def->share_code->linenum;
-          list_cat(cb->lines, def->share_code->lines);
-          list_cat(cb->lines, $5->lines);
-        }
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-
-;
-
-trace: /* empty */
-      {
-        $$ = codeblock_new();
-      }
-    | "TRACE" codeblock
+    | "SHARE" comp_share_copy_extend
       {
         $$ = $2;
       }
-    | "TRACE" "COPY" TOK_ID
+;
+
+comp_share_copy_extend: /* empty */
       {
-        struct comp_def *def;
-        def = read_component($3);
-        if (def)
-          $$ = def->trace_code;
-        else
-          $$ = codeblock_new();
+        $$ = codeblock_new();
       }
-    | "TRACE" "COPY" TOK_ID "EXTEND" codeblock
+    | "COPY" TOK_ID comp_share_copy_extend
       {
-        struct comp_def *def;
         struct code_block *cb;
-        cb = codeblock_new();
-        def = read_component($3);
+        struct comp_def *def;
+        cb  = codeblock_new();
+        def = read_component($2);
         if (def) {
-          cb->filename        = def->trace_code->filename;
-          cb->quoted_filename = def->trace_code->quoted_filename;
-          cb->linenum         = def->trace_code->linenum;
-          list_cat(cb->lines, def->trace_code->lines);
-          list_cat(cb->lines, $5->lines);
+          struct code_block    *cb1 = def->share_code;
+          cb->filename        = cb1->filename;
+          cb->quoted_filename = cb1->quoted_filename;
+          cb->linenum         = cb1->linenum;
+          list_cat(cb->lines,   cb1->lines);
         }
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "EXTEND" codeblock comp_share_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+;
+
+comp_trace: /* empty */
+      {
+        $$ = codeblock_new();
+      }
+    | "TRACE" codeblock comp_trace_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "TRACE" comp_trace_copy_extend
+      {
+        $$ = $2;
+      }
+;
+
+comp_trace_copy_extend: /* empty */
+      {
+        $$ = codeblock_new();
+      }
+    | "COPY" TOK_ID comp_trace_copy_extend
+      {
+        struct code_block *cb;
+        struct comp_def *def;
+        cb  = codeblock_new();
+        def = read_component($2);
+        if (def) {
+          struct code_block    *cb1 = def->trace_code;
+          cb->filename        = cb1->filename;
+          cb->quoted_filename = cb1->quoted_filename;
+          cb->linenum         = cb1->linenum;
+          list_cat(cb->lines,   cb1->lines);
+        }
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "EXTEND" codeblock comp_trace_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
 ;
@@ -569,42 +597,56 @@ comp_iformal:  TOK_ID TOK_ID
       }
 ;
 
-/* INSTRUMENT and COMPONENT C code keywords ********************************* */
-declare:    /* empty */
+/* COMPONENT C code sections ********************************* */
+comp_declare:    /* empty */
       {
         $$ = codeblock_new();
       }
-    | "DECLARE" codeblock
+    | "DECLARE" codeblock comp_decl_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "DECLARE" comp_decl_copy_extend
       {
         $$ = $2;
       }
-    | "DECLARE" "COPY" TOK_ID
+;
+
+comp_decl_copy_extend: /* empty */
       {
-        struct comp_def *def;
-        def = read_component($3);
-        if (def)
-          $$ = def->decl_code;
-        else
-          $$ = codeblock_new();
+        $$ = codeblock_new();
       }
-    | "DECLARE" "COPY" TOK_ID "EXTEND" codeblock
+    | "COPY" TOK_ID comp_decl_copy_extend
       {
-        struct comp_def   *def;
         struct code_block *cb;
-        cb = codeblock_new();
-        def = read_component($3);
+        struct comp_def *def;
+        cb  = codeblock_new();
+        def = read_component($2);
         if (def) {
-          cb->filename        = def->decl_code->filename;
-          cb->quoted_filename = def->decl_code->quoted_filename;
-          cb->linenum         = def->decl_code->linenum;
-          list_cat(cb->lines, def->decl_code->lines);
-          list_cat(cb->lines, $5->lines);
+          struct code_block    *cb1 = def->decl_code;
+          cb->filename        = cb1->filename;
+          cb->quoted_filename = cb1->quoted_filename;
+          cb->linenum         = cb1->linenum;
+          list_cat(cb->lines,   cb1->lines);
         }
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "EXTEND" codeblock comp_decl_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
 ;
 
-uservars:    /* empty */
+comp_uservars:    /* empty */
       {
         $$ = codeblock_new();
       }
@@ -614,141 +656,198 @@ uservars:    /* empty */
       }
 ;
 
-initialize:   /* empty */
+comp_initialize:   /* empty */
       {
         $$ = codeblock_new();
       }
-    | "INITIALISE" "COPY" TOK_ID
+    | "INITIALISE" codeblock comp_init_copy_extend
       {
-        struct comp_def *def;
-        def = read_component($3);
-        if (def)
-          $$ = def->init_code;
-        else
-          $$ = codeblock_new();
-      }
-    | "INITIALISE" "COPY" TOK_ID "EXTEND" codeblock
-      {
-        struct comp_def   *def;
         struct code_block *cb;
-        cb = codeblock_new();
-        def = read_component($3);
-        if (def) {
-          cb->filename        = def->init_code->filename;
-          cb->quoted_filename = def->init_code->quoted_filename;
-          cb->linenum         = def->init_code->linenum;
-          list_cat(cb->lines, def->init_code->lines);
-          list_cat(cb->lines, $5->lines);
-        }
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "INITIALISE" codeblock
+    | "INITIALISE" comp_init_copy_extend
       {
         $$ = $2;
       }
 ;
 
-save:   /* empty */
+comp_init_copy_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "SAVE" codeblock
+    | "COPY" TOK_ID comp_init_copy_extend
       {
-        $$ = $2;
-      }
-    | "SAVE" "COPY" TOK_ID
-      {
-        struct comp_def *def;
-        def = read_component($3);
-        if (def)
-          $$ = def->save_code;
-        else
-          $$ = codeblock_new();
-      }
-    | "SAVE" "COPY" TOK_ID "EXTEND" codeblock
-      {
-        struct comp_def *def;
         struct code_block *cb;
-        cb = codeblock_new();
-        def = read_component($3);
+        struct comp_def *def;
+        cb  = codeblock_new();
+        def = read_component($2);
         if (def) {
-          cb->filename        = def->save_code->filename;
-          cb->quoted_filename = def->save_code->quoted_filename;
-          cb->linenum         = def->save_code->linenum;
-          list_cat(cb->lines, def->save_code->lines);
-          list_cat(cb->lines, $5->lines);
+          struct code_block    *cb1 = def->init_code;
+          cb->filename        = cb1->filename;
+          cb->quoted_filename = cb1->quoted_filename;
+          cb->linenum         = cb1->linenum;
+          list_cat(cb->lines,   cb1->lines);
         }
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "EXTEND" codeblock comp_init_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
 ;
 
-finally:    /* empty */
+comp_save:   /* empty */
       {
         $$ = codeblock_new();
       }
-    | "FINALLY" codeblock
+    | "SAVE" comp_save_copy_extend
       {
         $$ = $2;
       }
-    | "FINALLY" "COPY" TOK_ID
+    | "SAVE" codeblock comp_save_copy_extend
       {
-        struct comp_def *def;
-        def = read_component($3);
-        if (def)
-          $$ = def->finally_code;
-        else
-          $$ = codeblock_new();
-      }
-    | "FINALLY" "COPY" TOK_ID "EXTEND" codeblock
-      {
-        struct comp_def *def;
         struct code_block *cb;
-        cb = codeblock_new();
-        def = read_component($3);
-        if (def) {
-          cb->filename        = def->finally_code->filename;
-          cb->quoted_filename = def->finally_code->quoted_filename;
-          cb->linenum         = def->finally_code->linenum;
-          list_cat(cb->lines, def->finally_code->lines);
-          list_cat(cb->lines, $5->lines);
-        }
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
 ;
 
-display:    /* empty */
+comp_save_copy_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "DISPLAY" codeblock
+    | "COPY" TOK_ID comp_save_copy_extend
       {
-        $$ = $2;
-      }
-    | "DISPLAY" "COPY" TOK_ID
-      {
-        struct comp_def *def;
-        def = read_component($3);
-        if (def)
-          $$ = def->display_code;
-        else
-          $$ = codeblock_new();
-      }
-    | "DISPLAY" "COPY" TOK_ID "EXTEND" codeblock
-      {
-        struct comp_def *def;
         struct code_block *cb;
-        cb = codeblock_new();
-        def = read_component($3);
+        struct comp_def *def;
+        cb  = codeblock_new();
+        def = read_component($2);
         if (def) {
-          cb->filename        = def->display_code->filename;
-          cb->quoted_filename = def->display_code->quoted_filename;
-          cb->linenum         = def->display_code->linenum;
-          list_cat(cb->lines, def->display_code->lines);
-          list_cat(cb->lines, $5->lines);
+          struct code_block    *cb1 = def->save_code;
+          cb->filename        = cb1->filename;
+          cb->quoted_filename = cb1->quoted_filename;
+          cb->linenum         = cb1->linenum;
+          list_cat(cb->lines,   cb1->lines);
         }
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "EXTEND" codeblock comp_save_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
 ;
+
+comp_finally:    /* empty */
+      {
+        $$ = codeblock_new();
+      }
+    | "FINALLY" comp_finally_copy_extend
+      {
+        $$ = $2;
+      }
+    | "FINALLY" codeblock comp_finally_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+;
+
+comp_finally_copy_extend:/* empty */
+      {
+        $$ = codeblock_new();
+      }
+    | "COPY" TOK_ID comp_finally_copy_extend
+      {
+        struct code_block *cb;
+        struct comp_def *def;
+        cb  = codeblock_new();
+        def = read_component($2);
+        if (def) {
+          struct code_block    *cb1 = def->finally_code;
+          cb->filename        = cb1->filename;
+          cb->quoted_filename = cb1->quoted_filename;
+          cb->linenum         = cb1->linenum;
+          list_cat(cb->lines,   cb1->lines);
+        }
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "EXTEND" codeblock comp_finally_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+;
+
+comp_display:    /* empty */
+      {
+        $$ = codeblock_new();
+      }
+    | "DISPLAY" comp_display_copy_extend
+      {
+        $$ = $2;
+      }
+    | "DISPLAY" codeblock comp_display_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+;
+
+comp_display_copy_extend:/* empty */
+      {
+        $$ = codeblock_new();
+      }
+    | "COPY" TOK_ID comp_display_copy_extend
+      {
+        struct code_block *cb;
+        struct comp_def *def;
+        cb  = codeblock_new();
+        def = read_component($2);
+        if (def) {
+          struct code_block    *cb1 = def->display_code;
+          cb->filename        = cb1->filename;
+          cb->quoted_filename = cb1->quoted_filename;
+          cb->linenum         = cb1->linenum;
+          list_cat(cb->lines,   cb1->lines);
+        }
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+     | "EXTEND" codeblock comp_display_copy_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+;
+
 
 
 /* INSTRUMENT grammar ************************************************************* */
@@ -782,7 +881,7 @@ instrument:   "DEFINE" "INSTRUMENT" TOK_ID instrpar_list
         else list_cat(instrument_definition->finals->lines, $14->lines);
 */
 //    $6    $7         $8      $9       $10        $11         $12  $13      $14
-      shell dependency declare uservars initialize instr_trace save finally "END"
+      shell dependency comp_declare comp_uservars comp_initialize instr_trace comp_save comp_finally "END"
       {
         if (!instrument_definition->decls) instrument_definition->decls = $8;
         else list_cat(instrument_definition->decls->lines, $8->lines);
@@ -1679,13 +1778,13 @@ shell:
     }
   | "SHELL" TOK_STRING
     {
-      printf("Executing: %s ... ",$2);
+      printf("SHELL: Executing: %s ... ",$2);
       int ret_val = system($2);
       if (ret_val != 0) {
-	printf("FAILED!\n");
+	printf("SHELL: FAILED %s\n", $2);
 	exit(-1);
       } else {
-	printf("success!\n");
+	printf("SHELL: success!\n");
       }
     }
 
@@ -1699,7 +1798,7 @@ search: "SEARCH" TOK_STRING
       char svalue[1025];
       sfp = popen($3, "r");
       if (sfp == NULL) {
-        printf("FAILED to run search path command\n");
+        printf("SEARCH: FAILED to run search path command %s\n", $3);
         exit(-1);
       }
       while (fgets(svalue, sizeof(svalue), sfp) != NULL){
@@ -1717,7 +1816,7 @@ search: "SEARCH" TOK_STRING
       }
       pclose(sfp);
     }
-
+;
 
 dependency:
     {
@@ -1729,6 +1828,7 @@ dependency:
 	strncat(instrument_definition->dependency, $2, 1023); // 1023 because we already appended a space
       }
     }
+;
 
 noacc:
     {
@@ -1744,6 +1844,7 @@ noacc:
       }
     }
 ;
+
 /* C expressions used to give component actual parameters **********************
    Top-level comma (',') operator NOT allowed. */
 exp:      { $<linenum>$ = instr_current_line; } topexp

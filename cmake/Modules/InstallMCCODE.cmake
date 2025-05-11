@@ -261,35 +261,27 @@ macro(installMCCODE)
   )
 
 
-  ## Generate lex.yy.c with flex
+  ## Generate lex.yy.c with flex (C generator)
   add_custom_command(
     OUTPUT work/src/lex.yy.c
     COMMAND "${FLEX_EXECUTABLE}" -i "${PROJECT_SOURCE_DIR}/src/instrument.l"
     WORKING_DIRECTORY work/src
     DEPENDS "${PROJECT_SOURCE_DIR}/src/instrument.l"
   )
-  ## Generate py-lex.yy.c with flex
+  ## Generate py-lex.yy.c with flex (Python generator)
   add_custom_command(
     OUTPUT work/src/py-lex.yy.c
     COMMAND "${FLEX_EXECUTABLE}" -DGENERATE_PY -o py-lex.yy.c -i "${PROJECT_SOURCE_DIR}/src/instrument.l"
     WORKING_DIRECTORY work/src
     DEPENDS "${PROJECT_SOURCE_DIR}/src/instrument.l"
   )
-  ## Generate instrument.tab.{h,c} with bison
+  ## Generate instrument.tab.{h,c} with bison (both for C and Python generators)
   add_custom_command(
     OUTPUT work/src/instrument.tab.h work/src/instrument.tab.c
     COMMAND "${BISON_EXECUTABLE}" -v -d "${PROJECT_SOURCE_DIR}/src/instrument.y"
     WORKING_DIRECTORY work/src
     DEPENDS "${PROJECT_SOURCE_DIR}/src/instrument.y" work/src/lex.yy.c
   )
-  ## Generate py-instrument.tab.{h,c} with bison for Python
-  add_custom_command(
-    OUTPUT work/src/py-instrument.tab.h work/src/py-instrument.tab.c
-    COMMAND "${BISON_EXECUTABLE}" -v -d "${PROJECT_SOURCE_DIR}/src/py-instrument.y"
-    WORKING_DIRECTORY work/src
-    DEPENDS "${PROJECT_SOURCE_DIR}/src/py-instrument.y" work/src/py-lex.yy.c
-  )
-
 
   # Handling of system-provided random functions on windows - 
   # needed only in the link step for mccode and -format
@@ -325,7 +317,7 @@ macro(installMCCODE)
   add_executable(
     ${FLAVOR}-pygen
     work/src/pygen.c
-    work/src/py-cexp.c
+    work/src/cexp.c
     work/src/coords.c
     work/src/debug.c
     work/src/file.c
@@ -339,8 +331,8 @@ macro(installMCCODE)
 
     # files generated with flex and bison
     work/src/py-lex.yy.c
-    work/src/py-instrument.tab.h
-    work/src/py-instrument.tab.c
+    work/src/instrument.tab.h
+    work/src/instrument.tab.c
   )
   target_compile_definitions(${FLAVOR}-pygen PUBLIC GENERATE_PY=1)
 

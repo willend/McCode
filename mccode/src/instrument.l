@@ -41,11 +41,7 @@
 #endif
 
 #include "mccode.h"
-#ifdef GENERATE_PY
-#include "py-instrument.tab.h"
-#else
 #include "instrument.tab.h"
-#endif
 
 /* Fix things for bison option %pure_parser. */
 #define YY_DECL int yylex(YYSTYPE *yylvalp)
