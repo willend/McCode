@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 include(MCUtil)
 setupMCCODE("mcstas")
 
-option( ENABLE_CIF2HKL "Build Third Party code cif2hkl (fortran)" ON )#TODO: Only enable enable Fortran if this is on
+option( ENABLE_CIF2HKL "Build Third Party code cif2hkl (fortran)" ON )#TODO: Only enable Fortran if this is on
 if ( ENABLE_CIF2HKL )
   set(DEBIDEPS "${FLAVOR}, libnexus-dev, libgsl-dev")
 else()
