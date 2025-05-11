@@ -271,9 +271,9 @@ macro(installMCCODE)
   ## Generate py-lex.yy.c with flex
   add_custom_command(
     OUTPUT work/src/py-lex.yy.c
-    COMMAND "${FLEX_EXECUTABLE}" -o py-lex.yy.c -i "${PROJECT_SOURCE_DIR}/src/py-instrument.l"
+    COMMAND "${FLEX_EXECUTABLE}" -DGENERATE_PY -o py-lex.yy.c -i "${PROJECT_SOURCE_DIR}/src/instrument.l"
     WORKING_DIRECTORY work/src
-    DEPENDS "${PROJECT_SOURCE_DIR}/src/py-instrument.l"
+    DEPENDS "${PROJECT_SOURCE_DIR}/src/instrument.l"
   )
   ## Generate instrument.tab.{h,c} with bison
   add_custom_command(
@@ -282,7 +282,7 @@ macro(installMCCODE)
     WORKING_DIRECTORY work/src
     DEPENDS "${PROJECT_SOURCE_DIR}/src/instrument.y" work/src/lex.yy.c
   )
-  ## Generate py-instrument.tab.{h,c} with bison
+  ## Generate py-instrument.tab.{h,c} with bison for Python
   add_custom_command(
     OUTPUT work/src/py-instrument.tab.h work/src/py-instrument.tab.c
     COMMAND "${BISON_EXECUTABLE}" -v -d "${PROJECT_SOURCE_DIR}/src/py-instrument.y"
@@ -301,8 +301,8 @@ macro(installMCCODE)
   ## Build executable for flavor
   add_executable(
     ${FLAVOR}
-    work/src/cexp.c
     work/src/cogen.c
+    work/src/cexp.c
     work/src/coords.c
     work/src/debug.c
     work/src/file.c
@@ -321,10 +321,11 @@ macro(installMCCODE)
     work/src/instrument.tab.c
   )
 
+  ## Switch to Python generator
   add_executable(
     ${FLAVOR}-pygen
-    work/src/py-cexp.c
     work/src/pygen.c
+    work/src/py-cexp.c
     work/src/coords.c
     work/src/debug.c
     work/src/file.c
@@ -341,6 +342,7 @@ macro(installMCCODE)
     work/src/py-instrument.tab.h
     work/src/py-instrument.tab.c
   )
+  target_compile_definitions(${FLAVOR}-pygen PUBLIC GENERATE_PY=1)
 
   if ( CMAKE_INSTALL_PREFIX AND NOT "x${CMAKE_INSTALL_PREFIX}" STREQUAL "x/" )
     get_filename_component( tmp "${CMAKE_INSTALL_PREFIX}/${DEST_RESOURCEDIR}" REALPATH )

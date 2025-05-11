@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include "mccode.h"
 
+#define GENERATE_C
 
 /*******************************************************************************
 * General comments on code generation.

@@ -20,7 +20,7 @@
 *
 *******************************************************************************/
 
-/* Machintosh specific compiler defines. */
+/* Macintosh specific compiler defines. */
 #ifdef __dest_os
 #if (__dest_os == __mac_os)
 #define MAC
