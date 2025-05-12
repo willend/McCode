@@ -4,16 +4,6 @@
 #include <stdarg.h>
 double Table_Value2d(t_Table, double, double);
 
-#ifdef OPENACC
-double c_abs(double complex z);
-
-double c_abs(double complex z) {
-  hypot(creal(z), cimag(z));
-}
-#else
-#define c_abs cabs
-#endif
-
 enum reflec_Type  {COATING_UNDEFINED=0,CONSTANT=1,BARE, COATING, Q_PARAMETRIC, PARRATT, ETH_PARAMETRIC, KINEMATIC, UNDETERMINED};
 #define NAME_CONSTANT "constant"
 #define NAME_BARE "bare"

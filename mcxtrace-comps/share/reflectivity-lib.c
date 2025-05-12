@@ -489,7 +489,7 @@ double reflecq( t_Reflec r_handle, double q, double g, double k, double theta){
         }
     case BARE:
         {
-          r=c_abs(reflec_bare(r_handle,q,g));
+          r=cabs(reflec_bare(r_handle,q,g));
           break;
         }
     case COATING:
@@ -501,22 +501,22 @@ double reflecq( t_Reflec r_handle, double q, double g, double k, double theta){
         }
     case Q_PARAMETRIC:
         {
-          r=c_abs(reflec_q_prmtc(r_handle,q,g));
+          r=cabs(reflec_q_prmtc(r_handle,q,g));
           break;
         }
         /*case PARRATT:
         {
-          r=c_abs(reflec_parratt(r_handle,q,g,k));
+          r=cabs(reflec_parratt(r_handle,q,g,k));
           break;
 	  }*/
     case ETH_PARAMETRIC:
         {
-            r=c_abs(reflec_eth_prmtc(r_handle,g,k*K2E,theta));
+            r=cabs(reflec_eth_prmtc(r_handle,g,k*K2E,theta));
             break;
         }
       case KINEMATIC:
         {
-          r=c_abs(reflec_kinematic(r_handle,q,g));
+          r=cabs(reflec_kinematic(r_handle,q,g));
           break;
 	  }
       default:
