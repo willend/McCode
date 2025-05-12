@@ -52,6 +52,11 @@
 #include <inttypes.h>
 #include <stdint.h>
 #ifdef OPENACC
+/* Temporary workaround for issue with cabs() in newer NVHPC, see
+https://forums.developer.nvidia.com/t/compilation-issue-with-nvc-version-24-09-and-newer-openacc/331987
+ */
+#include <complex.h>
+#define cabs(z) hypot(creal(z), cimag(z))
 #include <openacc.h>
 #ifndef GCCOFFLOAD
 #include <accelmath.h>
