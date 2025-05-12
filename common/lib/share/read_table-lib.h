@@ -133,6 +133,8 @@ void *Table_File_List_store(t_Table *tab);
   Table_ParseHeader_backend(header,__VA_ARGS__,NULL);
 
 char **Table_ParseHeader_backend(char *header, ...);
+FILE *Open_File(char *name, const char *Mode, char *path);
+
 
 /* private functions */
 void Table_Free(t_Table *Table);
