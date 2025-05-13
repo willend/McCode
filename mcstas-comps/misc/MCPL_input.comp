@@ -150,7 +150,7 @@ INITIALIZE
     repeating = 0;
 #ifdef OPENACC
     preload=1;
-    printf("OpenACC, preload implicit:\n");	    
+    printf("OpenACC, preload implicit:\n");
 #endif
     if (preload) {
       printf("Preload requested, loading MCPLfile in INITIALIZE\n");
@@ -348,7 +348,6 @@ TRACE
     d1=VY[i];
     d2=VZ[i];
   }
-  
   if (ismpislave || repeating) {
     // Direction-MC:
     double tmpx,tmpy,tmpz;
@@ -402,7 +401,19 @@ FINALLY
           NAME_CURRENT_COMP,(long unsigned)ncount,(long unsigned)nparticles,(long unsigned)used_neutrons);
     }
 
-
+    destroy_darr1d(X);
+    destroy_darr1d(Y);
+    destroy_darr1d(Z);
+    destroy_darr1d(VX);
+    destroy_darr1d(VY);
+    destroy_darr1d(VZ);
+    if(polarisationuse){
+      destroy_darr1d(SX);
+      destroy_darr1d(SY);
+      destroy_darr1d(SZ);
+    }
+    destroy_darr1d(T);
+    destroy_darr1d(P);
 %}
 
 MCDISPLAY
