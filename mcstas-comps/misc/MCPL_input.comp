@@ -160,9 +160,11 @@ INITIALIZE
       VX = create_darr1d(nparticles);
       VY = create_darr1d(nparticles);
       VZ = create_darr1d(nparticles);
-      SX = create_darr1d(nparticles);
-      SY = create_darr1d(nparticles);
-      SZ = create_darr1d(nparticles);
+      if(polarisationuse){
+        SX = create_darr1d(nparticles);
+        SY = create_darr1d(nparticles);
+        SZ = create_darr1d(nparticles);
+      }
       T = create_darr1d(nparticles);
       P = create_darr1d(nparticles);
       E = create_darr1d(nparticles);

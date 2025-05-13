@@ -78,6 +78,7 @@ DArray1d KZ;
 DArray1d EX;
 DArray1d EY;
 DArray1d EZ;
+DArray1d E;
 DArray1d T;
 DArray1d P;
 %}
@@ -168,6 +169,7 @@ INITIALIZE
       }
       T = create_darr1d(nparticles);
       P = create_darr1d(nparticles);
+      E = create_darr1d(nparticles);
       printf("Initiating file read...\n");
       int loop;
       for (loop=0; loop < nparticles ; loop++) {
@@ -214,6 +216,7 @@ INITIALIZE
 	      T[used_photons] = particle->time*1e-3;
 	      /*weight in unspecified units:*/
 	      P[used_photons] = particle->weight;
+              E[used_neutrons] = particle->ekin;
 	      used_photons++;
 	    }
 	    read_photons++;
