@@ -145,8 +145,6 @@ Module CFML_GlobalDeps
    !!
    integer, parameter :: cp = sp
 
-   integer, parameter :: IL = selected_int_kind(16)              ! Long Integer
-
    !----------------------------------!
    !---- Trigonometric Parameters ----!
    !----------------------------------!
@@ -213,7 +211,10 @@ Module CFML_GlobalDeps
    !!----
    !!----  Update: January - 2009
    !!
-   real(kind=cp),  parameter, public  ::  eps=0.00001_cp
+   real(kind=cp),    parameter   :: eps=0.00001_cp
+   integer,          parameter   :: IL = selected_int_kind(16)   ! Long Integer
+   character(len=*), parameter   :: NEWLINE = char(13)//char(10) ! Newline character
+   character(len=1), parameter   :: TAB     = char(9)            ! TAB character
 
  Contains
 
@@ -20006,7 +20007,7 @@ End Module CFML_GlobalDeps
     !!----
     !!---- Update: February - 2005
     !!
-    integer, parameter, public :: Num_Mag_Form  = 119
+    integer, parameter, public :: Num_Mag_Form  = 120
 
     !!----
     !!---- NUM_MAG_J2
@@ -20251,6 +20252,7 @@ End Module CFML_GlobalDeps
     !!----  the atomic number
     !!----
     !!---- Update: February - 2005
+    !!---- Revised: July 2024 RJA to return Chemsymb='**' and Z=0 if label is not an element symbol
     !!
     Subroutine Get_ChemSymb(Label, ChemSymb, Z)
        !---- Argument ----!
@@ -20263,26 +20265,29 @@ End Module CFML_GlobalDeps
        character(len=2)             :: car
        integer                      :: npos
 
+       !>Init
        ChemSymb="**"
+       if (present(Z))Z=0
+
+       !>create car(1:2) from label
        car=adjustl(label)
        npos=index(parcar,car(2:2))
        if (npos /=0) car(2:2)=" "
        car=u_case(car)
-       car(2:2)=l_case(car(2:2))
-       ChemSymb=car
 
-       if (present(z)) then
-          if (.not. allocated(chem_info) ) call set_chem_info()
-          car=u_case(chemsymb)
-          do npos=1,num_chem_info
-             if (car == Chem_Info(npos)%Symb) then
-                Z=Chem_Info(npos)%Z
+
+       !>Now search for a match to element symbol
+        if (.not. allocated(chem_info) ) call set_chem_info()
+
+        do npos=1,num_chem_info
+            if (car == Chem_Info(npos)%Symb) then       !found a match
+                car(2:2)=l_case(car(2:2))
+                ChemSymb=car
+                if(present(Z)) Z=Chem_Info(npos)%Z
                 exit
              end if
-          end do
-       end if
+        end do
 
-       return
     End Subroutine Get_ChemSymb
 
     !!----
@@ -21254,6 +21259,9 @@ End Module CFML_GlobalDeps
                                            (/  0.092380,  2.046342,  0.258408,  7.471918,  0.609716,  1.913869,  0.038824/) )
        Magnetic_Form(119) = Magnetic_Form_Type("JO1 ", &
                                               (/  0.115285, 85.197300,  0.556229, 25.252200,  0.332476,  6.362070,-0.00460676/) )
+
+       Magnetic_Form(120) = Magnetic_Form_Type("MRE6", &
+                                              (/  5.50100, 12.36100,  -4.500, 10.75400,  2.002,  -0.00200, -2.00600 /) ) !From Popov et al. J. Phys.: Condens. Matter 16 (2004) 135–145
 
        !---- <j2> Coefficients ----!
        Magnetic_j2(  1) = Magnetic_Form_Type("SC0 ",(/10.8172,54.327, 4.7353,14.847, 0.6071, 4.218, 0.0011/))
@@ -22482,6 +22490,7 @@ End Module CFML_GlobalDeps
        character(len=15)                              :: OG_number=" "
        Character(len=34)                              :: BNS_symbol=" "
        Character(len=34)                              :: OG_symbol=" "
+       Character(len=34)                              :: UNI_symbol=" "
        Character(len=34)                              :: PG_symbol=" "
        Integer                                        :: MagType=0
        Integer                                        :: Parent_num=0
@@ -22495,6 +22504,7 @@ End Module CFML_GlobalDeps
        Character(len=80)                              :: trn_to_standard=" "
        Character(len=80)                              :: trn_from_standard=" "
        character(len=12)                              :: CrystalSys=" "       ! Crystal system
+       character(len=5)                               :: Laue=" "             ! Laue Class
        character(len= 3)                              :: SPG_lat=" "          ! Lattice type
        character(len= 4)                              :: SPG_latsy=" "        ! Lattice type Symbol
        integer                                        :: Num_Lat          ! Number of lattice points in a cell
@@ -29594,11 +29604,13 @@ End Module CFML_GlobalDeps
        MGp%Sh_number=0
        MGp%BNS_number=" "
        MGp%OG_number=" "
+       MGp%UNI_symbol=" "
        MGp%BNS_symbol=" "
        MGp%OG_symbol=" "
        MGp%MagType=0
        MGp%Parent_num=0
        MGp%Parent_spg=" "
+       MGp%Laue=" "
        MGp%standard_setting=.false.
        MGp%mcif=.true.
        MGp%m_cell=.false.
@@ -30089,7 +30101,6 @@ End Module CFML_GlobalDeps
        err_symm=.true.
        ERR_Symm_Mess=" The above operator is wrong "//info
 
-       return
     End Subroutine Read_Msymm
 
     !!----
@@ -30146,7 +30157,6 @@ End Module CFML_GlobalDeps
           tr(3)=real(k)
        end if
 
-       return
     End Subroutine Read_SymTrans_Code
 
     !!----
@@ -31488,6 +31498,7 @@ End Module CFML_GlobalDeps
               iorig=v
               write(unit=MSpGn%trn_from_standard,fmt="(a,f8.4)") adjustl(trim(isetting)//" -> det: "),1.0/det
               write(unit=MSpGn%trn_to_standard,fmt="(a,f8.4)") adjustl(trim(setting)//" -> det: "),det
+              det=1.0/det !This was lacking in older versions! only when det=1 was working
             else
               write(unit=MSpGn%trn_to_standard,fmt="(a,f8.4)") adjustl(trim(isetting)//" -> det: "),1.0/det
               write(unit=MSpGn%trn_from_standard,fmt="(a,f8.4)") adjustl(trim(setting)//" -> det: "),det
@@ -33103,10 +33114,12 @@ End Module CFML_GlobalDeps
        write(unit=lun,fmt="(a,a )")          " =>                     OG Number: ", trim(SG%OG_number)
        write(unit=lun,fmt="(a,a )")          " =>                    BNS Symbol: ", trim(SG%BNS_symbol)
        write(unit=lun,fmt="(a,a )")          " =>                     OG Symbol: ", trim(SG%OG_symbol)
+       write(unit=lun,fmt="(a,a )")          " =>                UNIFIED Symbol: ", trim(SG%UNI_symbol)
        write(unit=lun,fmt="(a,i3)")          " =>        Type of Magnetic group: ", SG%MagType
        write(unit=lun,fmt="(a,i3)")          " =>           Parent group number: ", SG%Parent_num
        write(unit=lun,fmt="(a,a)")           " =>           Parent group Symbol: ", trim(SG%Parent_spg)
        write(unit=lun,fmt="(a,a)")           " =>   Magnetic point group Symbol: ", trim(SG%PG_symbol)
+       write(unit=lun,fmt="(a,a)")           " =>   Laue Class for Cell constr.: ", trim(SG%Laue)
        write(unit=lun,fmt="(a,a)")           " =>    Transformation   to parent: ", trim(SG%trn_to_parent)
        write(unit=lun,fmt="(a,a)")           " =>    Transformation from parent: ", trim(SG%trn_from_parent)
        write(unit=lun,fmt="(a,a)")           " =>    Transformation to standard: ", trim(SG%trn_to_standard)
@@ -33414,50 +33427,72 @@ End Module CFML_GlobalDeps
     End Subroutine Write_Sym
 
     !!----
-    !!---- Subroutine Write_SymTrans_Code(N,Tr,Code)
+    !!---- Subroutine Write_SymTrans_Code(N,Tr,Codec,ChCode,Rcode)
     !!----    integer,                    intent(in)  :: N
     !!----    real(kind=cp),dimension(3), intent(in)  :: Tr
-    !!----    character (len=*),          intent(out) :: Code
+    !!----    character (len=*),optional, intent(out) :: Codec
+    !!----    character (len=*),optional, intent(out) :: ChCode
+    !!----    character (len=*),optional, intent(out) :: ChCode
     !!----
-    !!----    Write the code string for reference the symmetry operator and the
-    !!----    Traslation applied.
-    !!--<<        _2.555     : N_Op = 2, Tr=( 0.0, 0.0, 0.0)
-    !!----        _3.456     : N_Op = 3, Tr=(-1.0, 0.0, 1.0)
+    !!----    Write the code string for reference to the symmetry operator and the
+    !!----    traslation applied to an atom in the asymmetric unit. To be associated
+    !!----    to the label of an atom used in the generation of restraints.
+    !!----
+    !!--<<    N_Op = 2, Tr=( 0.0, 0.0, 0.0)  Code="2_555", ChCode="_2.555", Rcode=2.555
+    !!----    N_Op = 3, Tr=(-1.0, 0.0, 1.0)  Code="3_456", ChCode="_3.456", Rcode=3.456
+    !!----
+    !!----    The label of an atom in the asymmetric unit, e.g. XX, may have
+    !!----    up to 6 characters without blank spaces.
+    !!----    The ChCode is compatible with the subroutine Read_SymTrans_Code,
+    !!----    used to interpret commands of the form: DFIX Fe1  O4_3   or
+    !!----    DFIX Fe1  O4_3.555  or even    DFIX Fe1 O6
     !!-->>
     !!----
-    !!---- Update: April - 2005
+    !!---- Update: November - 2024 (RJA, JRC)
     !!
-    Subroutine Write_SymTrans_Code(N,Tr,Code)
+    Subroutine Write_SymTrans_Code(N,Tr,Codec,ChCode,Rcode)
        !---- Arguments ----!
        integer,                    intent(in)  :: N
        real(kind=cp),dimension(3), intent(in)  :: Tr
-       character (len=*),          intent(out) :: Code
+       character (len=*),optional, intent(out) :: Codec     !As proposed by RJA
+       character (len=*),optional, intent(out) :: ChCode    !Like the old subroutine compatible with Read_SymTrans_Code
+       real(kind=cp),    optional, intent(out) :: Rcode     !symcode as a real number
 
        !---- Local Variables ----!
        character(len=3)      :: car
        integer, dimension(3) :: i
+       character(len=10)     :: tcode,code
 
        Code=" "
-       if (N <=0) return
+       if (N <= 0)  return
+       if (N > 196) return !Up to 196 symmetry operators
+
        car="   "
+
        !---- Number of the Symmetry Operator ----!
        write(unit=car,fmt="(i3)") n
        car=adjustl(car)
-       Code="_"//trim(car)
+       Code = trim(car)//'_'
        car="   "
        !---- Traslation Part ----!
        i=5+nint(tr)
-       if (any(i /= 5)) then
+       if (all(i == 5) .and. n ==1) then
+          !>Atom at original position and no translations:  changed to code='.' RJA
+          Code="."
+          if(present(Rcode))  Rcode=1.555
+          if(present(Codec))  Codec=code
+          if(present(ChCode)) ChCode=" "
+       else
           write(unit=car(1:1),fmt="(i1)") i(1)
           write(unit=car(2:2),fmt="(i1)") i(2)
           write(unit=car(3:3),fmt="(i1)") i(3)
-          code=trim(code)//"."//trim(car)
-       else
-          if(len_trim(code)==2 .and. code(2:2) == "1") Code=" "
+          code=trim(code)//trim(car)
+          tcode=code(1:index(code,'_')-1)//'.'//trim(car)
+          if(present(Codec)) Codec=code
+          if(present(Rcode)) read(tcode,'(f8.3)') rcode
+          if(present(ChCode)) ChCode="_"//trim(tcode)
        end if
 
-
-       return
     End Subroutine Write_SymTrans_Code
 
     !!----
@@ -33806,6 +33841,7 @@ End Module CFML_GlobalDeps
 !!----
 !!---- PROCEDURES
 !!----    Functions:
+!!----       ANGLE_TO_CELL_AXIS    
 !!----       CALC_CELL_STRAIN
 !!----       CALC_DEFORMATION_TENSOR
 !!----       CALC_DEFORMED_METRIC
@@ -33867,7 +33903,7 @@ End Module CFML_GlobalDeps
     !---- List of public variables ----!
 
     !---- List of public functions ----!
-    public :: Cart_u_vector, Cart_vector, Convert_B_Betas, Convert_B_U, &
+    public :: Angle_to_Cell_Axis, Cart_u_vector, Cart_vector, Convert_B_Betas, Convert_B_U, &
               Convert_Betas_B, Convert_Betas_U, Convert_U_B,            &
               Convert_U_Betas, Rot_matrix, U_Equiv, Cell_Volume_Sigma,  &
               Get_Betas_From_Biso,Volume_from_cell,                     &
@@ -34016,7 +34052,7 @@ End Module CFML_GlobalDeps
        real(kind=cp), dimension(3)     :: eval=    0.0   ! Eigen values in ascending order
        real(kind=cp), dimension(3)     :: evalesd= 0.0   ! Eigen values esds
        real(kind=cp), dimension(3,3)   :: evec=    0.0   ! Eigenvector components in same order: evec(1:3,i) holds the
-                                                         ! i\92th vector components wrt Cartesian axes.
+                                                         ! i’th vector components wrt Cartesian axes.
        real(kind=cp), dimension(3,3,2) :: cart_ang=0.0   ! Angles of eigenvectors to Cartesian axes cart_ang(1:3,i,1)
                                                          ! has the angles for the i'th eigenvector, cart_ang(1:3,i,2)
                                                          ! the esd
@@ -34099,11 +34135,59 @@ End Module CFML_GlobalDeps
       Module Procedure Niggli_Cell_Vect      ! Input three vectors in Cartesian components
     End Interface  Niggli_Cell
 
- Contains
+    Contains
 
     !-------------------!
     !---- Functions ----!
     !-------------------!
+    
+    
+    !!----
+    !!---- Function angle_to_cell_axis(i,vec,code,c) result(ang)
+    !!----    integer                                   :: i       ! In -> i is the crystal axis 
+    !!----    real(kind=cp), dimension(3),   intent(in) :: vec     !  In -> Cartesian Vector
+    !!----    character (len=*),             intent(in) :: code    !  In -> D: Direct, R: Reciprocal
+    !!----    Type (Crystal_Cell_Type),      intent(in) :: C       !  In -> Cell Variable
+    !!----    real(kind=cp)                             :: ang     ! Out -> angle in deg between vec and crystal axis i
+    !!----
+    !!----    Calculates angle in degreess between Cartesian vector vec and recip or real cell axis i 
+    !!----
+    !!---- RJA 2023
+    !! 
+    Function Angle_to_Cell_Axis(i,vec,code,c) result(ang)
+    
+        integer                    :: i 
+        real(kind=cp),dimension(3) :: vec 
+        character(len=1)           :: code
+        type(crystal_cell_type)    :: c
+        real(kind=cp)              :: ang
+    
+        !locals
+        real(kind=cp),dimension(3) :: axis,cvec
+        real(kind=cp)              :: dotp
+    
+        !>init
+        ang=0.0_cp
+    
+        !axis vector
+        axis=0._cp
+        axis(i)=1.0_cp
+    
+        if(code=='R' .or. code == 'r')then
+            Cvec=Cart_U_Vector('R',axis,c) 
+        else
+            Cvec=Cart_U_Vector('D',axis,c) 
+        endif    
+        Cvec=cvec/norm2(cvec)
+        vec=vec/norm2(vec)
+        dotp=dot_product(cvec,vec)
+        if(abs(dotp -1.0_cp) > 1.0E-5)then
+            ang=acosd(dotp)
+        endif
+    
+    
+  
+    end Function Angle_to_Cell_Axis
 
     !!----
     !!---- Function Cart_U_Vector(Code,V,Celda) Result(Vc)
@@ -34132,7 +34216,6 @@ End Module CFML_GlobalDeps
           vc=vc/vmod
        end if
 
-       return
     End Function Cart_U_Vector
 
     !!----
@@ -34180,8 +34263,6 @@ End Module CFML_GlobalDeps
              vc = matmul(celda%BL_M,vc)!Converts to BL Cartesian frame
 
        end select
-
-       return
 
     End Function Cart_Vector
 
@@ -34235,7 +34316,6 @@ End Module CFML_GlobalDeps
 
        sigma=Cell%Cellvol*sqrt(vc)
 
-       return
     End Function Cell_Volume_Sigma
 
     !!--..
@@ -34271,7 +34351,6 @@ End Module CFML_GlobalDeps
        beta(5)=0.25*b(5)*cell%rcell(1)*cell%rcell(3) ! beta13
        beta(6)=0.25*b(6)*cell%rcell(2)*cell%rcell(3) ! beta23
 
-       return
     End Function Convert_B_Betas
 
     !!----
@@ -34290,7 +34369,6 @@ End Module CFML_GlobalDeps
 
        u=b/(4.0*tpi2)
 
-       return
     End Function Convert_B_U
 
     !!----
@@ -34316,7 +34394,6 @@ End Module CFML_GlobalDeps
        b(5)=4.0*beta(5)/(cell%rcell(1)*cell%rcell(3)) ! B13
        b(6)=4.0*beta(6)/(cell%rcell(2)*cell%rcell(3)) ! B23
 
-       return
     End Function Convert_Betas_B
 
     !!----
@@ -34342,7 +34419,6 @@ End Module CFML_GlobalDeps
        u(5)=beta(5)/(tpi2*cell%rcell(1)*cell%rcell(3)) ! U13
        u(6)=beta(6)/(tpi2*cell%rcell(2)*cell%rcell(3)) ! U23
 
-       return
     End Function Convert_Betas_U
 
     !!----
@@ -34361,7 +34437,6 @@ End Module CFML_GlobalDeps
 
        b=4.0*tpi2*u
 
-       return
     End Function Convert_U_B
 
     !!----
@@ -34387,7 +34462,6 @@ End Module CFML_GlobalDeps
        beta(5)=tpi2*u(5)*cell%rcell(1)*cell%rcell(3) ! beta13
        beta(6)=tpi2*u(6)*cell%rcell(2)*cell%rcell(3) ! beta23
 
-       return
     End Function Convert_U_Betas
 
     !!----
@@ -34428,7 +34502,6 @@ End Module CFML_GlobalDeps
        betas(5) = bet(1,3)
        betas(6) = bet(2,3)
 
-       return
     End Function Get_Betas_from_Biso
 
     !!--++
@@ -34463,7 +34536,6 @@ End Module CFML_GlobalDeps
        G(3,1)=G(1,3)
        G(3,2)=G(2,3)
 
-       return
     End Function Metrics
 
     !!----
@@ -34526,7 +34598,6 @@ End Module CFML_GlobalDeps
        rm(3,2)= umc*uu(3)*uu(2)+ s*uu(1)
        rm(3,3)= c+ umc*uu(3)**2
 
-       return
     End Function Rot_Matrix
 
     !!----
@@ -34571,7 +34642,6 @@ End Module CFML_GlobalDeps
                            2.0*u13 * a * c * as * cs * cosb + &
                            2.0*u23 * b * c * bs * cs * cosa )
 
-       return
     End Function U_Equiv
 
     !!----
@@ -34764,6 +34834,7 @@ End Module CFML_GlobalDeps
     !!----    No calculation of esd's here
     !!----
     !!---- 19/01/2021
+    !!---- New version of summer 2023 by RJA
     !!
     Subroutine Calc_Paxes_Angles(x,c,index_range)
        !---- Arguments ----!
@@ -34773,7 +34844,8 @@ End Module CFML_GlobalDeps
 
        !---- Local Variables ----!
        integer                     :: i,j
-       real(kind=cp), dimension(3) :: vec
+       real(kind=cp), dimension(3) :: vec,cvec
+       real(kind=cp)               :: vmod
 
        x%cart_ang(1:3,1:3,1)=acosd(x%evec(1:3,1:3))        ! Angles to Cartesian axes. Trivial, but needed for calculating errors
        x%cart_ang(1:3,1:3,2)=0._cp                         ! esds
@@ -34785,9 +34857,19 @@ End Module CFML_GlobalDeps
        do i=1,3        ! set the crystal axis
           vec=0.
           vec(i)=1.0
+          vmod=norm2(vec)   !This normalisation is essential
+          vec=vec/vmod
+          
           do j=1,3        ! loop over eigenvectors
-             x%cell_ang(i,j,1)=acosd(dot_product(Cart_U_Vector('D',Vec,c),X%Evec(1:3,j)))      ! angle from evector j to cell vector i in real space
-             x%cell_ang(i,j,3)=acosd(dot_product(Cart_U_Vector('R',Vec,c),X%Evec(1:3,j)))      ! angle from evector j to cell vector i in recip space
+             vmod=norm2(X%Evec(1:3,j))
+             X%Evec(1:3,j)=X%Evec(1:3,j)/vmod 
+             
+             Cvec=Cart_U_Vector('D',Vec,c)
+             vmod=norm2(cvec)       !This normalisation is essential
+             cvec=cvec/vmod
+             x%cell_ang(i,j,1)=acosd(dot_product(Cvec,X%Evec(1:3,j)))      ! angle from evector j to cell vector i in real space
+             Cvec=Cart_U_Vector('R',Vec,c)
+             x%cell_ang(i,j,3)=acosd(dot_product(Cvec,X%Evec(1:3,j)))      ! angle from evector j to cell vector i in recip space
           end do
        end do
 
@@ -34883,7 +34965,6 @@ End Module CFML_GlobalDeps
        !---- Construct the new cell
        call Set_Crystal_Cell(cellv,angl,Celln)
 
-       return
     End Subroutine Change_Setting_Cell
 
     !!----
@@ -35121,7 +35202,6 @@ End Module CFML_GlobalDeps
        if (coun1 >= 2 .or. (coun1 == 1 .and. coun01 == 2)) ZoneB%rx=-ZoneB%rx
        if (coun2 >= 2 .or. (coun2 == 1 .and. coun02 == 2)) ZoneB%ry=-ZoneB%ry
 
-       return
     End Subroutine Get_Basis_From_Uvw
 
     !!----
@@ -35697,7 +35777,6 @@ End Module CFML_GlobalDeps
       Call Set_Crystal_Cell(mv(1:3),ang(1:3),Cell)
       ok=.true.
 
-      return
     End Subroutine Get_Conventional_Cell
 
     !!----
@@ -35856,7 +35935,6 @@ End Module CFML_GlobalDeps
 
        end select ! n
 
-       return
     End Subroutine Get_Cryst_Family
 
     !!--++
@@ -36022,7 +36100,6 @@ End Module CFML_GlobalDeps
 
        End Select
 
-       return
     End Subroutine Get_Cryst_Orthog_Matrix
 
     !!----
@@ -36238,7 +36315,6 @@ End Module CFML_GlobalDeps
 
        endif
 
-       return
     End Subroutine Get_Deriv_Orth_Cell
 
     !!----
@@ -36305,7 +36381,6 @@ End Module CFML_GlobalDeps
        celang(3)=acosd(metric(1,2)/(celp(1)*celp(2)))
        call Set_Crystal_Cell(celp,celang,primitive_cell)
 
-       return
     End Subroutine Get_Primitive_Cell
 
     !!----
@@ -36364,7 +36439,6 @@ End Module CFML_GlobalDeps
           end do           !i2
        end do  dox       !i1
 
-       return
     End Subroutine Get_Transfm_Matrix
 
     !!----
@@ -36465,7 +36539,6 @@ End Module CFML_GlobalDeps
        twofold%ntwo=ntwo
        twofold%tol=tol
 
-       return
     End Subroutine Get_TwoFold_Axes
 
     !!----
@@ -36480,15 +36553,14 @@ End Module CFML_GlobalDeps
        Err_Crys=.false.
        ERR_Crys_Mess=" "
 
-       return
     End Subroutine Init_Err_Crys
 
     !!----
     !!---- Subroutine Init_Strain_Tensor
     !!----
-    !!---- 19/01/2021 1
+    !!---- 19/01/2021 and new version put into cfml Nov 2024 to initialise more components
     !!
-    Subroutine Init_Strain_Tensor(T)
+     Subroutine Init_Strain_Tensor(T)
        !---- Argument ----!
        type(Strain_Tensor_Type),intent(in out) :: T
 
@@ -36503,6 +36575,15 @@ End Module CFML_GlobalDeps
        t%ep =0._cp
        t%esdp=0._cp
        t%property=''
+       
+       t%eval=    0._cp   
+       t%evalesd= 0._cp   
+       t%evec=    0._cp   
+       t%cart_ang=0._cp   
+       t%cell_ang=0._cp 
+       t%dir_close=0._cp     
+       t%evalp=   0._cp 
+       t%evalpesd=0._cp   
 
     End Subroutine Init_Strain_Tensor
 
@@ -36582,7 +36663,6 @@ End Module CFML_GlobalDeps
        ad(5) = acosd(n_mat(2,2)/(ad(1)*ad(3)))
        ad(6) = acosd(n_mat(2,3)/(ad(1)*ad(2)))
 
-       return
     End Subroutine Niggli_Cell_abc
 
     !!--++
@@ -36769,7 +36849,6 @@ End Module CFML_GlobalDeps
           end if
        end if
 
-       return
     End Subroutine Niggli_Cell_nigglimat
 
     !!--++
@@ -36831,7 +36910,6 @@ End Module CFML_GlobalDeps
           al=celda%ang(1); be=celda%ang(2); ga=celda%ang(3)
        end if
 
-       return
     End Subroutine Niggli_Cell_Params
 
     !!--++
@@ -36883,7 +36961,6 @@ End Module CFML_GlobalDeps
           cell=celda
        end if
 
-       return
     End Subroutine Niggli_Cell_Type
 
     !!--++
@@ -36935,7 +37012,6 @@ End Module CFML_GlobalDeps
        if (Err_Crys) return
        if (present(celln)) celln=celda
 
-       return
     End Subroutine Niggli_Cell_Vect
 
 
@@ -36947,33 +37023,36 @@ End Module CFML_GlobalDeps
     !!----
     !!----  re-orders eigenvectors and their eigenvalues so that #1 is close to +X of Cartesian, etc
     !!----  written 2/2019 RJA
+    !!----  changed sort algorithm  4/2024 RJA because previous version was not correct for all cases.
 
     Subroutine Orient_Eigenvectors(eval,evec)
-    !---- Arguments ----!
-    real(kind=cp),dimension(3),intent(inout)     :: eval
-    real(kind=cp),dimension(3,3),intent(inout)     :: evec
+      !---- Arguments ----!
+      real(kind=cp),dimension(3),intent(inout)     :: eval
+      real(kind=cp),dimension(3,3),intent(inout)     :: evec
 
-    !---- Local Variables ----!
-    integer                        :: j,s
-    integer,dimension(1)            :: i
+      !---- Local Variables ----!
+      integer                        :: j
+      integer,dimension(2)           :: ibig
 
-    real(kind=cp),dimension(3)     :: val,t
-    real(kind=cp),dimension(3,3)   :: vec
+      real(kind=cp),dimension(3)     :: val
+      real(kind=cp),dimension(3,3)   :: vec,vecs
 
-    !>working copy
-    val=eval
-    vec=evec
+      !>working copies
+      val=eval
+      vec=evec
+      vecs=evec
 
-    !> do sort by copy from vec back to evec
-    do j=1,3
-        t(1:3)=abs(vec(j,1:3))          ! find evector with largest component along Cart axis j, allow for evec parallel to -ve cart axis
-        i=maxloc(t)
-        s=sign(1.0_cp,vec(j,i(1)))
-        eval(j)=val(i(1))
-        evec(1:3,j)=s*vec(1:3,i(1))
-    enddo
+      !> do sort by copy from vec back to evec
+      do j=1,3
+          ibig=maxloc(abs(vec))       !Find largest abs(cosine) = smallest angle
+          !>copy evec and eval from store to correct location in evec
+          evec(1:3,ibig(2))=vecs(1:3,ibig(1))
+          eval(ibig(2))=val(ibig(1))
+          !>clear used values in vec to 0. which corresponds to 90deg
+          vec(ibig(1),1:3)=0.0_cp
+          vec(1:3,ibig(2))=0.0_cp
+      end do
 
-    return
     end subroutine Orient_Eigenvectors
 
     !!----
@@ -37011,7 +37090,6 @@ End Module CFML_GlobalDeps
                        Celda%RCellVol,       &
                        Celda%CartType
        if( ier /= 0) ok=.false.
-       return
     End Subroutine Read_Bin_Crystal_Cell
 
 
@@ -37063,7 +37141,6 @@ End Module CFML_GlobalDeps
           angr(i)=acosd(angr(i))
        end do
 
-       return
     End Subroutine Recip
 
     !!----
@@ -37150,7 +37227,6 @@ End Module CFML_GlobalDeps
           end if
        end if
 
-       return
     End Subroutine Set_Crystal_Cell
 
     !!----
@@ -37217,7 +37293,6 @@ End Module CFML_GlobalDeps
 
        sigv=sqrt(sigv)
 
-       return
     End Subroutine Volume_Sigma_from_Cell
 
     !!----
@@ -37249,7 +37324,6 @@ End Module CFML_GlobalDeps
                        Celda%CellVol,        &
                        Celda%RCellVol,       &
                        Celda%CartType
-       return
     End Subroutine Write_Bin_Crystal_Cell
 
     !!----
@@ -37320,7 +37394,6 @@ End Module CFML_GlobalDeps
           Write(unit=iunit,fmt="(3f12.6,a,3f12.4)") (Celda%BL_M(i,j),j=1,3),"      ", (Celda%BL_Minv(i,j),j=1,3)
        end do
 
-       return
     End Subroutine Write_Crystal_Cell
 
  End Module CFML_Crystal_Metrics
@@ -37879,28 +37952,28 @@ End Module CFML_GlobalDeps
        else
 
           !---- General ----!
-          select case(SpaceGroup%Laue)
-             case("-1   ")
+          select case(trim(SpaceGroup%Laue))
+             case("-1")
                 k=asu_hkl_triclinic(h)
-             case("2/m  ")
+             case("2/m")
                 k=asu_hkl_monoclinic(h,"b")
-             case("mmm  ")
+             case("mmm")
                 k=asu_hkl_orthorhombic(h)
-             case("4/m  ")
-                k=asu_hkl_tetragonal(h,"4/m  ")
+             case("4/m")
+                k=asu_hkl_tetragonal(h,"4/m")
              case("4/mmm")
                 k=asu_hkl_tetragonal(h,"4/mmm")
-             case("-3   ")
-                k=asu_hkl_trigonal(h,"-3  ")
-             case("-3m  ")
+             case("-3")
+                k=asu_hkl_trigonal(h,"-3")
+             case("-3m")
                 k=asu_hkl_trigonal(h,"-3m")
-             case("6/m  ")
-                k=asu_hkl_hexagonal(h,"6/m  ")
+             case("6/m")
+                k=asu_hkl_hexagonal(h,"6/m")
              case("6/mmm")
                 k=asu_hkl_hexagonal(h,"6/mmm")
-             case("m-3  ")
-                k=asu_hkl_cubic(h,"m-3 ")
-             case("m-3m ")
+             case("m-3")
+                k=asu_hkl_cubic(h,"m-3")
+             case("m-3m")
                 k=asu_hkl_cubic(h,"m-3m")
              case default
                return
@@ -37931,6 +38004,7 @@ End Module CFML_GlobalDeps
        !---- Local Variable ----!
        character(len=4)      :: mod_laue
        integer, dimension(3) :: hh
+       integer               :: it1,it3,j,i
 
        k=0
        mod_laue=l_case(adjustl(Mode))
@@ -37938,8 +38012,8 @@ End Module CFML_GlobalDeps
           return
        end if
 
-       select case(mod_laue)
-          case("m-3  ")
+       select case(trim(mod_laue))
+          case("m-3")
              !---- Laue: m-3 ----!
              !---- hkl: h>l, k>l, l>=0 ; hkk: k>=0 h>=k ----!
              select case (h(1))
@@ -37964,9 +38038,19 @@ End Module CFML_GlobalDeps
              if (hh(3) >=0 .and. hh(1) >= hh(3) .and. hh(2) == hh(3)) k=hh
              if (hh(3) >=0 .and. hh(1) >  hh(3) .and. hh(2) >  hh(3)) k=hh
 
-          case("m-3m ")
+          case("m-3m")
              !---- Laue: m-3m ----!
              !---- hkl: h >=0, k >=0, l >=0, h >=k, k >=l ----!
+             !hh=abs(h)
+             !it1=maxval(hh); it3=minval(hh)
+             !do i=1,3
+             !   if(hh(i) <= it1 .and. hh(i) >= it3) then
+             !      j=hh(i)
+             !      exit
+             !   end if
+             !end do
+             !hh=(/it1,j,it3/)
+             !k=hh
              select case (h(1))
                 case (:-1)
                    hh=-h
@@ -38022,8 +38106,8 @@ End Module CFML_GlobalDeps
           return
        end if
 
-       select case(mod_laue)
-          case("6/m  ")
+       select case(trim(mod_laue))
+          case("6/m")
              !---- Laue: 6/m ----!
              !---- hkl: h>0,k>0,l>=0;  0kl k>=0,l>=0 ----!
              select case (h(1))
@@ -38280,8 +38364,8 @@ End Module CFML_GlobalDeps
           return
        end if
 
-       select case(mod_laue)
-          case("4/m  ")
+       select case(trim(mod_laue))
+          case("4/m")
              !---- Laue: 4/m ----!
              !---- hkl: h >=0, l >=0, k >=0 if h = 0 ----!
              select case (h(1))
@@ -38406,8 +38490,8 @@ End Module CFML_GlobalDeps
           return
        end if
 
-       select case(mod_laue)
-          case("-3  ")
+       select case(trim(mod_laue))
+          case("-3")
              !---- Laue: -3 ----!
              !---- hkl: h+k>0, l>0 ; hk0:h>0, k>=0
              select case (h(1))
@@ -38434,7 +38518,7 @@ End Module CFML_GlobalDeps
              if (hh(1)+hh(2) > 0 .and. hh(3) > 0 ) k=hh
              if (hh(1) > 0  .and. hh(2) >= 0  .and. hh(3) == 0) k=hh
 
-          case("-3m ")
+          case("-3m")
              !---- Laue: -3m ----!
              !---- hkl: h>=0, h>=k ; hhl: h>=0,l>=0 ----!
              select case (h(1))
@@ -40961,7 +41045,7 @@ End Module CFML_GlobalDeps
     !!
 
     !!--++
-    !!--++ Subroutine  Hkl_Uni_Reflect(Crystalcell, Spacegroup,Friedel,Value1,Value2,Code,Num_Ref,Reflex,no_order,check_ok,hlim)
+    !!--++ Subroutine  Hkl_Uni_Reflect(Crystalcell, Spacegroup,Friedel,Value1,Value2,Code,Num_Ref,Reflex,no_order,check_ok,hlim,strict)
     !!--++    Type (Crystal_Cell_Type),          intent(in) :: CrystalCell  !Cell Objet
     !!--++    Type (Space_Group_Type) ,          intent(in) :: SpaceGroup   !Space group Object
     !!--++    Logical,                           intent(in) :: Friedel
@@ -40972,6 +41056,7 @@ End Module CFML_GlobalDeps
     !!--++    logical,                optional,  intent(in) :: no_order
     !!--++    logical,                optional,  intent(out):: check_ok
     !!--++    integer, dimension(3,2),optional,  intent(in) :: hlim
+    !!--++    logical,                optional,  intent(in) :: strict
     !!--++
     !!--++    (Overloaded)
     !!--++    Calculate unique reflections between two values (value1,value2)
@@ -40980,7 +41065,7 @@ End Module CFML_GlobalDeps
     !!--++
     !!--++ Update: December - 2011
     !!
-    Subroutine Hkl_Uni_Reflect(Crystalcell,Spacegroup,Friedel,Value1,Value2,Code,Num_Ref,Reflex,no_order,check_ok,hlim)
+    Subroutine Hkl_Uni_Reflect(Crystalcell,Spacegroup,Friedel,Value1,Value2,Code,Num_Ref,Reflex,no_order,check_ok,hlim,strict)
        !---- Arguments ----!
        type (Crystal_Cell_Type),             intent(in)     :: crystalcell
        type (Space_Group_Type) ,             intent(in)     :: spacegroup
@@ -40992,10 +41077,11 @@ End Module CFML_GlobalDeps
        logical,                   optional,  intent(in)     :: no_order
        logical,                   optional,  intent(out)    :: check_ok
        integer, dimension(3,2),   optional,  intent(in)     :: hlim
+       logical,                   optional,  intent(in)     :: strict
 
        !---- Local variables ----!
        real(kind=cp)                         :: vmin,vmax,sval
-       integer                               :: h,k,l,hmin,kmin,lmin,hmax,kmax,lmax, i, maxref
+       integer                               :: h,k,l,hmin,kmin,lmin,hmax,kmax,lmax, i, maxref, j
        integer, dimension(3)                 :: hh,kk,nulo
        integer,  dimension(  size(reflex))   :: ind
        integer,  dimension(  size(reflex))   :: mul
@@ -41091,16 +41177,25 @@ End Module CFML_GlobalDeps
 
        num_ref=0
        if(present(hlim)) then
-          if(hmin < hlim(1,1)) hmin=hlim(1,1)
-          if(hmax > hlim(1,2)) hmax=hlim(1,2)
-          if(kmin < hlim(2,1)) kmin=hlim(2,1)
-          if(kmax > hlim(2,2)) kmax=hlim(2,2)
-          if(lmin < hlim(3,1)) lmin=hlim(3,1)
-          if(lmax > hlim(3,2)) lmax=hlim(3,2)
+          if(present(strict)) then
+             hmin=hlim(1,1)
+             hmax=hlim(1,2)
+             kmin=hlim(2,1)
+             kmax=hlim(2,2)
+             lmin=hlim(3,1)
+             lmax=hlim(3,2)
+          else
+             if(hmin < hlim(1,1)) hmin=hlim(1,1)
+             if(hmax > hlim(1,2)) hmax=hlim(1,2)
+             if(kmin < hlim(2,1)) kmin=hlim(2,1)
+             if(kmax > hlim(2,2)) kmax=hlim(2,2)
+             if(lmin < hlim(3,1)) lmin=hlim(3,1)
+             if(lmax > hlim(3,2)) lmax=hlim(3,2)
+          end if
        end if
        ext_do: do h=hmin,hmax
           do k=kmin,kmax
-             do l=lmin,lmax
+             do_int: do l=lmin,lmax
 
                 hh(1)=h
                 hh(2)=k
@@ -41115,6 +41210,10 @@ End Module CFML_GlobalDeps
                 if (hkl_equal(kk,nulo)) cycle
                 if (hkl_equal(kk,-hh) .and. Friedel) cycle
 
+                do j=1,num_ref
+                  if(hkl_equal(kk,hkl(:,j))) cycle do_int
+                end do
+
                 num_ref=num_ref+1
                 if(num_ref > maxref) then
                    num_ref=maxref
@@ -41124,7 +41223,7 @@ End Module CFML_GlobalDeps
                 hkl(:,num_ref)= kk
                 mul(num_ref)  = hkl_mult(kk,SpaceGroup,friedel)
                 sv(num_ref)   = sval
-             end do
+             end do do_int
           end do
        end do ext_do
 
@@ -41147,7 +41246,7 @@ End Module CFML_GlobalDeps
     End Subroutine Hkl_Uni_reflect
 
     !!--++
-    !!--++ Subroutine  Hkl_Uni_Reflection(Crystalcell, Spacegroup,Friedel,Value1,Value2,Code,Num_Ref,Reflex, no_order,check_ok,hlim)
+    !!--++ Subroutine  Hkl_Uni_Reflection(Crystalcell, Spacegroup,Friedel,Value1,Value2,Code,Num_Ref,Reflex, no_order,check_ok,hlim,strict)
     !!--++    Type (Crystal_Cell_Type),          intent(in) :: CrystalCell  !Cell Objet
     !!--++    Type (Space_Group_Type) ,          intent(in) :: SpaceGroup   !Space group Object
     !!--++    Logical,                           intent(in) :: Friedel
@@ -41158,6 +41257,7 @@ End Module CFML_GlobalDeps
     !!--++    logical,                optional,  intent(in) :: no_order
     !!--++    logical,                optional,  intent(out):: check_ok
     !!--++    integer, dimension(3,2),optional,  intent(in) :: hlim
+    !!--++    logical,                optional,  intent(in) :: strict
     !!--++
     !!--++    (Overloaded)
     !!--++    Calculate unique reflections between two values (value1,value2)
@@ -41166,7 +41266,7 @@ End Module CFML_GlobalDeps
     !!--++
     !!--++ Update: December - 2011
     !!
-    Subroutine Hkl_Uni_Reflection(Crystalcell,Spacegroup,Friedel,Value1,Value2,Code,Num_Ref,Reflex,no_order,check_ok,hlim)
+    Subroutine Hkl_Uni_Reflection(Crystalcell,Spacegroup,Friedel,Value1,Value2,Code,Num_Ref,Reflex,no_order,check_ok,hlim,strict)
        !---- Arguments ----!
        type (Crystal_Cell_Type),             intent(in)     :: crystalcell
        type (Space_Group_Type) ,             intent(in)     :: spacegroup
@@ -41178,10 +41278,11 @@ End Module CFML_GlobalDeps
        logical,                   optional,  intent(in)     :: no_order
        logical,                   optional,  intent(out)    :: check_ok
        integer, dimension(3,2),   optional,  intent(in)     :: hlim
+       logical,                   optional,  intent(in)     :: strict
 
        !---- Local variables ----!
        real(kind=cp)                         :: vmin,vmax,sval
-       integer                               :: h,k,l,hmin,kmin,lmin,hmax,kmax,lmax, i, maxref
+       integer                               :: h,k,l,hmin,kmin,lmin,hmax,kmax,lmax, i, maxref,j
        integer, dimension(3)                 :: hh,kk,nulo
        integer,  dimension(  size(reflex))   :: ind
        integer,  dimension(  size(reflex))   :: mul
@@ -41276,17 +41377,26 @@ End Module CFML_GlobalDeps
        end select
 
        if(present(hlim)) then
-          if(hmin < hlim(1,1)) hmin=hlim(1,1)
-          if(hmax > hlim(1,2)) hmax=hlim(1,2)
-          if(kmin < hlim(2,1)) kmin=hlim(2,1)
-          if(kmax > hlim(2,2)) kmax=hlim(2,2)
-          if(lmin < hlim(3,1)) lmin=hlim(3,1)
-          if(lmax > hlim(3,2)) lmax=hlim(3,2)
+         if(present(strict)) then
+            hmin=hlim(1,1)
+            hmax=hlim(1,2)
+            kmin=hlim(2,1)
+            kmax=hlim(2,2)
+            lmin=hlim(3,1)
+            lmax=hlim(3,2)
+         else
+            if(hmin < hlim(1,1)) hmin=hlim(1,1)
+            if(hmax > hlim(1,2)) hmax=hlim(1,2)
+            if(kmin < hlim(2,1)) kmin=hlim(2,1)
+            if(kmax > hlim(2,2)) kmax=hlim(2,2)
+            if(lmin < hlim(3,1)) lmin=hlim(3,1)
+            if(lmax > hlim(3,2)) lmax=hlim(3,2)
+         end if
        end if
        num_ref=0
        ext_do: do h=hmin,hmax
           do k=kmin,kmax
-             do l=lmin,lmax
+             do_int: do l=lmin,lmax
 
                 hh(1)=h
                 hh(2)=k
@@ -41301,6 +41411,10 @@ End Module CFML_GlobalDeps
                 if (hkl_equal(kk,nulo)) cycle
                 if (hkl_equal(kk,-hh) .and. Friedel) cycle
 
+                do j=1,num_ref
+                  if(hkl_equal(kk,hkl(:,j))) cycle do_int
+                end do
+
                 num_ref=num_ref+1
                 if(num_ref > maxref) then
                    num_ref=maxref
@@ -41310,7 +41424,7 @@ End Module CFML_GlobalDeps
                 hkl(:,num_ref)=kk
                 mul(num_ref)  =hkl_mult(kk,SpaceGroup,friedel)
                 sv(num_ref)   = sval
-             end do
+             end do do_int
           end do
        end do ext_do
 
@@ -41334,7 +41448,7 @@ End Module CFML_GlobalDeps
     End Subroutine Hkl_Uni_Reflection
 
     !!--++
-    !!--++ Subroutine  Hkl_Uni_ReflList(Crystalcell, Spacegroup,Friedel,Value1,Value2,Code,MaxRef,Reflex,no_order,check_ok,hlim)
+    !!--++ Subroutine  Hkl_Uni_ReflList(Crystalcell, Spacegroup,Friedel,Value1,Value2,Code,MaxRef,Reflex,no_order,check_ok,hlim,strict)
     !!--++    Type (Crystal_Cell_Type),          intent(in) :: CrystalCell  !Cell Objet
     !!--++    Type (Space_Group_Type) ,          intent(in) :: SpaceGroup   !Space group Object
     !!--++    Logical,                           intent(in) :: Friedel
@@ -41345,6 +41459,7 @@ End Module CFML_GlobalDeps
     !!--++    logical,                optional,  intent(in) :: no_order
     !!--++    logical,                optional,  intent(out):: check_ok
     !!--++    integer, dimension(3,2),optional,  intent(in) :: hlim
+    !!--++    logical,                optional,  intent(in) :: strict
     !!--++
     !!--++    (OVERLOADED)
     !!--++    Calculate unique reflections between two values (value1,value2)
@@ -41353,7 +41468,7 @@ End Module CFML_GlobalDeps
     !!--++
     !!--++ Update: December - 2011
     !!
-    Subroutine Hkl_Uni_ReflList(Crystalcell,Spacegroup,Friedel,Value1,Value2,Code,MaxRef,Reflex,no_order,check_ok,hlim)
+    Subroutine Hkl_Uni_ReflList(Crystalcell,Spacegroup,Friedel,Value1,Value2,Code,MaxRef,Reflex,no_order,check_ok,hlim,strict)
        !---- Arguments ----!
        type (Crystal_Cell_Type),         intent(in)     :: crystalcell
        type (Space_Group_Type) ,         intent(in)     :: spacegroup
@@ -41365,10 +41480,11 @@ End Module CFML_GlobalDeps
        logical,                optional, intent(in)     :: no_order
        logical,                optional, intent(out)    :: check_ok
        integer, dimension(3,2),optional, intent(in)     :: hlim
+       logical,                optional, intent(in)     :: strict
 
        !---- Local variables ----!
        real(kind=cp)                   :: vmin,vmax,sval
-       integer                         :: h,k,l,hmin,kmin,lmin,hmax,kmax,lmax, i, num_ref
+       integer                         :: h,k,l,hmin,kmin,lmin,hmax,kmax,lmax, i, num_ref, j
        integer, dimension(3)           :: hh,kk,nulo
        integer,  dimension(  MaxRef)   :: ind
        integer,  dimension(  MaxRef)   :: mul
@@ -41461,22 +41577,30 @@ End Module CFML_GlobalDeps
        end select
 
        if(present(hlim)) then
-          if(hmin < hlim(1,1)) hmin=hlim(1,1)
-          if(hmax > hlim(1,2)) hmax=hlim(1,2)
-          if(kmin < hlim(2,1)) kmin=hlim(2,1)
-          if(kmax > hlim(2,2)) kmax=hlim(2,2)
-          if(lmin < hlim(3,1)) lmin=hlim(3,1)
-          if(lmax > hlim(3,2)) lmax=hlim(3,2)
+         if(present(strict)) then
+            hmin=hlim(1,1)
+            hmax=hlim(1,2)
+            kmin=hlim(2,1)
+            kmax=hlim(2,2)
+            lmin=hlim(3,1)
+            lmax=hlim(3,2)
+         else
+            if(hmin < hlim(1,1)) hmin=hlim(1,1)
+            if(hmax > hlim(1,2)) hmax=hlim(1,2)
+            if(kmin < hlim(2,1)) kmin=hlim(2,1)
+            if(kmax > hlim(2,2)) kmax=hlim(2,2)
+            if(lmin < hlim(3,1)) lmin=hlim(3,1)
+            if(lmax > hlim(3,2)) lmax=hlim(3,2)
+         end if
        end if
        num_ref=0
        ext_do: do h=hmin,hmax
           do k=kmin,kmax
-             do l=lmin,lmax
+             do_int: do l=lmin,lmax
 
                 hh(1)=h
                 hh(2)=k
                 hh(3)=l
-
                 if (hkl_equal(hh,nulo)) cycle
                 sval=hkl_s(hh,crystalcell)
                 if (sval > vmax .or. sval < vmin) cycle
@@ -41485,6 +41609,10 @@ End Module CFML_GlobalDeps
                 kk=asu_hkl(hh,Spacegroup)
                 if (hkl_equal(kk,nulo)) cycle
                 if (hkl_equal(kk,-hh) .and. Friedel) cycle
+
+                do j=1,num_ref
+                  if(hkl_equal(kk,hkl(:,j))) cycle do_int
+                end do
 
                 num_ref=num_ref+1
                 if(num_ref > maxref) then
@@ -41495,7 +41623,7 @@ End Module CFML_GlobalDeps
                 hkl(:,num_ref)=kk
                 mul(num_ref)  =hkl_mult(kk,SpaceGroup,friedel)
                 sv(num_ref)   = sval
-             end do
+             end do do_int
           end do
        end do ext_do
 
@@ -44565,6 +44693,9 @@ Contains
 !!----       SET_ROTATION_MATRIX
 !!----       SET_TDIST_COORDINATION
 !!----       SET_TDIST_PARTIAL_COORDINATION
+!!----       SIGMA_TRANSF
+!!--++       SIGMA_TRANSF_SIG    [Overloaded]
+!!--++       SIGMA_TRANSF_VAR    [Overloaded]
 !!----       TORSION_AND_SIGMA
 !!----
 !!
@@ -44596,13 +44727,13 @@ Contains
               Deallocate_Coordination_Type, Deallocate_Point_List, Distance_and_Sigma, Get_Euler_From_Fract, &
               Get_PhiTheChi, init_err_geom, P1_Dist, Print_Distances, Set_Orbits_InList, Set_TDist_Coordination, &
               Get_Transf_List, Set_TDist_Partial_Coordination, Get_Anglen_Axis_From_RotMat, Get_Matrix_moving_v_to_u, &
-              Get_OmegaChiPhi, Set_Rotation_Matrix, Set_New_AsymUnit,Angle_and_Sigma, Torsion_and_Sigma
+              Get_OmegaChiPhi, Set_Rotation_Matrix, Set_New_AsymUnit,Angle_and_Sigma, Torsion_and_Sigma, sigma_transf
 
     !---- List of public overloaded procedures: subroutines ----!
 
     !---- List of private functions ----!
     private :: Angle_Dihedral_Uvw,  Angle_Dihedral_Ijkn, Angle_Uvi, Angle_Uvr, Angle_Modn, Angle_Modv, &
-               Coord_Modn, Coord_Modv, Distance_fr, Distance_fr_dp, Distance_sc
+               Coord_Modn, Coord_Modv, Distance_fr, Distance_fr_dp, Distance_sc, sigma_transf_sig, sigma_transf_var
 
     !---- Definitions ----!
 
@@ -44722,6 +44853,11 @@ Contains
        Module Procedure Distance_FR_DP
        Module Procedure Distance_FR
        Module Procedure Distance_SC
+    End Interface
+
+    Interface  Sigma_Transf
+       Module Procedure Sigma_Transf_var
+       Module Procedure Sigma_Transf_sig
     End Interface
 
  Contains
@@ -45919,7 +46055,7 @@ Contains
              ss(:)=A%atom(k)%x_std(:)
              do j=1,Spg%Multip
                 xx=ApplySO(Spg%SymOp(j),a%atom(k)%x)
-
+                !call sigma_transf(Spg%SymOp(j)%Rot,Spg%SymOp(j)%tr,A%atom(k)%x,A%atom(k)%x_std,xx,ss)
                 do i1=ic1(1),ic2(1)
                    do i2=ic1(2),ic2(2)
                       do_i3:do i3=ic1(3),ic2(3)
@@ -45970,7 +46106,7 @@ Contains
                                 num_const=1
                                 write(unit=dist_text(1),fmt="(a,2f9.5,a)") "DFIX ",dd,sdd, &
                                                                            "  "//trim(A%atom(i)%lab)//"  "//trim(A%atom(k)%lab)
-                                call Write_SymTrans_Code(j,tn,codesym)
+                                call Write_SymTrans_Code(j,tn,ChCode=codesym)
                                 dist_text(1)=trim(dist_text(1))//codesym
                               else
                                 do l=num_const,1,-1
@@ -45990,7 +46126,7 @@ Contains
                                   const_text(num_const)=line(1:132)
                                   write(unit=dist_text(num_const),fmt="(a,2f9.5,a)") "DFIX ",dd,sdd,&
                                         "  "//trim(A%atom(i)%lab)//"  "//trim(A%atom(k)%lab)
-                                  call Write_SymTrans_Code(j,tn,codesym)
+                                  call Write_SymTrans_Code(j,tn,ChCode=codesym)
                                   dist_text(num_const)=trim(dist_text(num_const))//trim(codesym)
                                 end if
                               end if
@@ -46138,9 +46274,9 @@ Contains
                       line=" "
                       write(unit=line,fmt="(a,2f9.3,a)") "AFIX ",ang2,sang2,&
                                                          "  "//trim(A%atom(i)%lab)//" "//trim(nam1)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),ChCode=codesym)
                       line=trim(line)//trim(codesym)//" "//trim(nam2)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),ChCode=codesym)
                       line=trim(line)//trim(codesym)
                       angl_text(1)=line(1:132)
                     end if
@@ -46150,9 +46286,9 @@ Contains
                       line=" "
                       write(unit=line,fmt="(a,2f9.3,a)") "AFIX ",ang1,sang1,&
                                                          "  "//trim(A%atom(i)%lab)//" "//trim(nam2)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),ChCode=codesym)
                       line=trim(line)//trim(codesym)//" "//trim(nam1)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),ChCode=codesym)
                       line=trim(line)//trim(codesym)
                       angl_text(num_angc)=line(1:132)
                     end if
@@ -46162,9 +46298,9 @@ Contains
                       line=" "
                       write(unit=line,fmt="(a,2f9.3,a)") "AFIX ",ang12,sang12,&
                                                          " "//trim(nam1)//"  "//trim(A%atom(i)%lab)
-                      call Write_SymTrans_Code(1,(/0.0,0.0,0.0/),codesym)
+                      call Write_SymTrans_Code(1,(/0.0,0.0,0.0/),ChCode=codesym)
                       line=trim(line)//trim(codesym)//" "//trim(nam2)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),ChCode=codesym)
                       line=trim(line)//trim(codesym)
                       angl_text(num_angc)=line(1:132)
                     end if
@@ -46174,9 +46310,9 @@ Contains
                       line=" "
                       write(unit=line,fmt="(a,2f9.3,a)") "AFIX ",ang12,sang12,&
                                                          " "//trim(nam2)//"  "//trim(A%atom(i)%lab)
-                      call Write_SymTrans_Code(1,(/0.0,0.0,0.0/),codesym)
+                      call Write_SymTrans_Code(1,(/0.0,0.0,0.0/),ChCode=codesym)
                       line=trim(line)//trim(codesym)//" "//trim(nam1)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),ChCode=codesym)
                       line=trim(line)//trim(codesym)
                       angl_text(num_angc)=line(1:132)
                     end if
@@ -46187,9 +46323,9 @@ Contains
                       line=" "
                       write(unit=line,fmt="(a,2f9.3,a)") "AFIX ",ang2,sang2,&
                                                          "  "//trim(A%atom(i)%lab)//" "//trim(nam1)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),ChCode=codesym)
                       line=trim(line)//trim(codesym)//" "//trim(nam2)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),ChCode=codesym)
                       line=trim(line)//trim(codesym)
 
                       esta=.false.
@@ -46213,9 +46349,9 @@ Contains
                       line=" "
                       write(unit=line,fmt="(a,2f9.3,a)") "AFIX ",ang1,sang1,&
                                                          "  "//trim(A%atom(i)%lab)//" "//trim(nam2)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),ChCode=codesym)
                       line=trim(line)//trim(codesym)//" "//trim(nam1)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),ChCode=codesym)
                       line=trim(line)//trim(codesym)
 
                       esta=.false.
@@ -46239,9 +46375,9 @@ Contains
                       line=" "
                       write(unit=line,fmt="(a,2f9.3,a)") "AFIX ",ang12,sang12,&
                                                           " "//trim(nam1)//"  "//trim(A%atom(i)%lab)
-                      call Write_SymTrans_Code(1,(/0.0,0.0,0.0/),codesym)
+                      call Write_SymTrans_Code(1,(/0.0,0.0,0.0/),ChCode=codesym)
                       line=trim(line)//trim(codesym)//" "//trim(nam2)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(k,i),trcoo(:,k),ChCode=codesym)
                       line=trim(line)//trim(codesym)
 
                       esta=.false.
@@ -46265,9 +46401,9 @@ Contains
                       line=" "
                       write(unit=line,fmt="(a,2f9.3,a)") "AFIX ",ang12,sang12,&
                                                           " "//trim(nam2)//"  "//trim(A%atom(i)%lab)
-                      call Write_SymTrans_Code(1,(/0.0,0.0,0.0/),codesym)
+                      call Write_SymTrans_Code(1,(/0.0,0.0,0.0/),ChCode=codesym)
                       line=trim(line)//trim(codesym)//" "//trim(nam1)
-                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),codesym)
+                      call Write_SymTrans_Code(Coord_Info%N_sym(j,i),trcoo(:,j),ChCode=codesym)
                       line=trim(line)//trim(codesym)
 
                       esta=.false.
@@ -46423,7 +46559,7 @@ Contains
        !---- Arguments ----!
        type(point_list_type), intent(in out) :: pl
 
-       if (allocated(pl%nam) ) deallocate(pl%nam)
+       if (allocated(pl%nam))  deallocate(pl%nam)
        if (allocated(pl%p) )   deallocate(pl%p)
        if (allocated(pl%x) )   deallocate(pl%x)
 
@@ -46468,8 +46604,6 @@ Contains
           s = s + (df(i)*s1(i))**2 + (df(i+3)*s0(i))**2
        end do
        s=sqrt(s)/dis
-
-       return
     End Subroutine Distance_and_Sigma
 
     !!----
@@ -47611,9 +47745,77 @@ Contains
          end do !k
          Coord_Info%Coord_Num(i)=ico
        end do !i
-
-       return
     End Subroutine Set_TDist_Partial_Coordination
+
+    !!----
+    !!----  Subroutine Sigma_Transf_var(R,t,x,varx,xt,st)
+    !!----    integer,       dimension(3,3), intent(in)  :: R         !Rotational  part of the symmetry operator
+    !!----    real(kind=cp), dimension(3),   intent(in)  :: t         !Translation part of the symmetry operator
+    !!----    real(kind=cp), dimension(3),   intent(in)  :: x         !Fractional coordinates of the position
+    !!----    real(kind=cp), dimension(3,3), intent(in)  :: varx      !Variance-covariance matrix of the x-vector
+    !!----    real(kind=cp), dimension(3),   intent(out) :: xt        !Transformed position by operator (R|t)
+    !!----    real(kind=cp), dimension(3),   intent(out) :: st        !Standard deviation of the transformed position
+    !!----
+    !!----
+    !!----   Calculation of the standard deviation of the transformed position (in fractional coordinates)
+    !!----   by the symmetry operator (R|t), providing the variance-covariance matrix of x.
+    !!----   The propagation error formula, assuming a Gaussian distribution of errors, is used.
+    !!----   If the covariance terms are not available the user should supply the diagonal terms of the matrix,
+    !!----   which are formed by the squares of the standard deviations, or use the alternative calculation
+    !!----   using only the sigma values in the overloaded subroutine.
+    !!----   The calculation of the output variables are performed applying the following formulae
+    !!----
+    !!----        xt = R x + t     st(xt(j)) = sqrt [Sum(k,l) {R(j,k) Varx(k,l) R(j,l)}]
+    !!----
+    !!----   If only sigma values of x are available the second formula reduces to:
+    !!----              st(xt(j)) = sqrt [Sum(k) { R(j,k)^2 sx(k)^2 }]
+    !!----   The symmetry operators have no error and the calculation of the derivatives of Rx+t w.r.t. x(i)
+    !!----   does not depend on t.
+    !!----   Dxt(j)/Dx(k) = R(j,k), so the propagation error provides the formula above for sigmas of xt.
+    !!----
+    !!----  Update: July - 2024
+    !!
+    Subroutine Sigma_Transf_sig(R,t,x,sx,xt,st)
+      integer,       dimension(3,3), intent(in)  :: R         !Rotational  part of the symmetry operator
+      real(kind=cp), dimension(3),   intent(in)  :: t         !Translation part of the symmetry operator
+      real(kind=cp), dimension(3),   intent(in)  :: x         !Fractional coordinates of the position
+      real(kind=cp), dimension(3),   intent(in)  :: sx        !Standard deviations of the x-vector
+      real(kind=cp), dimension(3),   intent(out) :: xt        !Transformed position by operator (R|t)
+      real(kind=cp), dimension(3),   intent(out) :: st        !Standard deviation of the transformed position
+      !--- Local variables ---!
+      integer :: j,k
+
+      xt=matmul(R,x) + t
+      st=0.0_cp
+      do j=1,3
+         do k=1,3
+           st(j)=st(j)+ R(j,k)*R(j,k)*sx(k)*sx(k)
+         end do
+      end do
+      st=sqrt(st)
+    End Subroutine Sigma_Transf_sig
+
+    Subroutine Sigma_Transf_var(R,t,x,varx,xt,st)
+      integer,       dimension(3,3), intent(in)  :: R         !Rotational  part of the symmetry operator
+      real(kind=cp), dimension(3),   intent(in)  :: t         !Translation part of the symmetry operator
+      real(kind=cp), dimension(3),   intent(in)  :: x         !Fractional coordinates of the position
+      real(kind=cp), dimension(3,3), intent(in)  :: varx      !Variance-covariance matrix of the x-vector
+      real(kind=cp), dimension(3),   intent(out) :: xt        !Transformed position by operator (R|t)
+      real(kind=cp), dimension(3),   intent(out) :: st        !Standard deviation of the transformed position
+      !--- Local variables ---!
+      integer :: j,k,l
+
+      xt=matmul(R,x) + t
+      st=0.0_cp
+      do j=1,3
+         do k=1,3
+            do l=1,3
+               st(j)=st(j)+ R(j,k)*Varx(k,l)*R(j,l)
+            end do
+         end do
+      end do
+      st=sqrt(st)
+    End Subroutine Sigma_Transf_var
 
     !!----
     !!---- Subroutine Torsion_and_Sigma(Cellp,x1,x2,x3,x4,sx1,sx2,sx3,sx4,tor,s)
@@ -52069,7 +52271,7 @@ Contains
           if (Molecule%in_xtal ) then
              do i=1,Molecule%natoms
                   if(Molecule%AtSymb(i) /= "ZE") geom_cent=geom_cent + Molecule%I_Coor(:,i)
-                  write(unit=uni,fmt="(t29,a,tr2,a,3f12.5,3i4,2f12.5)")  &
+                  write(unit=uni,fmt="(t29,a6,tr2,a,3f12.5,3i4,2f12.5)")  &
                        Molecule%AtName(i), Molecule%AtSymb(i),Molecule%I_Coor(:,i),  &
                        Molecule%Conn(:,i), Molecule%Biso(i),  Molecule%Occ(i)
                   var="    "
@@ -54735,7 +54937,8 @@ Contains
        character(len=4)                               :: tofn
        character(len=12)                              :: modem !extension of panalytical file
        logical                                        :: esta,gr
-       integer                                        :: i, i_dat,ier
+       integer                                        :: i, i_dat,ier,n_pat
+       type (diffraction_pattern_type), dimension(:), allocatable  :: tdiffpat
 
        call init_err_diffpatt()
 
@@ -54882,6 +55085,17 @@ Contains
              dif_pat%xax_text =  "2theta(degrees)"
              dif_pat%yax_text =  "Intensity (arb. units)"
              dif_pat%instr  = " 12  - "//mode
+
+          case ("ISIS")
+             n_pat=1
+             allocate(tdiffpat(1))
+             call Read_Pattern_isis_m(i_dat,tdiffpat,n_pat)         ! ISIS file
+             dif_pat=tdiffpat(1)
+             dif_pat%diff_kind = "neutrons_tof"
+             dif_pat%scat_var =  "TOF"
+             dif_pat%xax_text =  "TOF(micro-seconds)"
+             dif_pat%yax_text =  "Intensity (arb. units)"
+             dif_pat%instr  = " 14  - "//mode
 
           case ("GSASTOF")
              call Read_Pattern_gsas(i_dat,dif_pat,tofn)         ! GSAS file for TOF
@@ -56726,6 +56940,7 @@ Contains
    Character(Len=12), dimension(  :),allocatable :: nlabel_og            ! nlabel_og(i): numerical label in OG setting
    Integer,           dimension(:,:),allocatable :: nlabelparts_og       ! nlabel_parts_og(j,i): jth part of nlabel_og
    Character(Len=14), dimension(  :),allocatable :: spacegroup_label_og  ! label_og(i): group symbol
+   Character(Len=27), dimension(  :),allocatable :: spacegroup_label_unified  ! label_unified(i): group symbol in UNI notation
    Integer,           dimension(  :),allocatable :: magtype              ! magtype(i): type of magnetic space group (1-4)
    ! BNS-OG transformation (if type-4)
    Integer,         dimension(:,:,:),allocatable :: bnsog_point_op     ! bnsog_point_op(j,k,i): 3x3 point operator part of transformation
@@ -56782,6 +56997,7 @@ Contains
     if(.not. allocated(nlabel_og))                  Allocate(nlabel_og(magcount))
     if(.not. allocated(nlabelparts_og))             Allocate(nlabelparts_og(3,magcount))
     if(.not. allocated(spacegroup_label_og))        Allocate(spacegroup_label_og(magcount))
+    if(.not. allocated(spacegroup_label_unified))   Allocate(spacegroup_label_unified(magcount))
     if(.not. allocated(magtype))                    Allocate(magtype(magcount))
     if(.not. allocated(bnsog_point_op))             Allocate(bnsog_point_op(3,3,magcount))
     if(.not. allocated(bnsog_origin))               Allocate(bnsog_origin(3,magcount))
@@ -56830,6 +57046,7 @@ Contains
     if(allocated(nlabel_og))                 deAllocate(nlabel_og)
     if(allocated(nlabelparts_og))            deAllocate(nlabelparts_og)
     if(allocated(spacegroup_label_og ))      deAllocate(spacegroup_label_og)
+    if(allocated(spacegroup_label_unified))  deAllocate(spacegroup_label_unified)
     if(allocated(magtype))                   deAllocate(magtype)
     if(allocated(bnsog_point_op))            deAllocate(bnsog_point_op)
     if(allocated(bnsog_origin))              deAllocate(bnsog_origin)
@@ -56912,8 +57129,13 @@ Contains
     ! read nonhexagonal point operators
     err_magg=.false.
     Do i=1,48
-      Read(i_mag,*)n,point_op_label(i),point_op_xyz(i),  &
+      Read(i_mag,*,iostat=ier)n,point_op_label(i),point_op_xyz(i),  &
           ((point_op_matrix(k,j,i),j=1,3),k=1,3)
+      If(ier /= 0) then
+        err_magg=.true.
+        write(err_magg_mess, "(a,i2)")  'Error reading nonhexagonal point operators for i = ',i
+        return
+      End If
       If(n /= i) then
         err_magg=.true.
         err_magg_mess= 'Error in numbering of nonhexagonal point operators'
@@ -56921,24 +57143,51 @@ Contains
       End If
     End Do
     ! read hexagonal point operators
+    !
+    !
+
+    !
     Do i=1,24
-      Read(i_mag,*) n,point_op_hex_label(i), point_op_hex_xyz(i),  &
+      Read(i_mag,*,iostat=ier) n,point_op_hex_label(i), point_op_hex_xyz(i),  &
           ((point_op_hex_matrix(k,j,i),j=1,3),k=1,3)
-      If(n /= i)then
+      If(ier /= 0) then
+        err_magg=.true.
+        write(err_magg_mess, "(a,i2)")  'Error reading hexagonal point operators for i = ',i
+        return
+      End If
+      If(n /= i) then
         err_magg=.true.
         err_magg_mess= 'Error in numbering of hexagonal point operators'
         return
       End If
+
     End Do
     ! read data for each magnetic space group
     Do i=1,1651
-      Read(i_mag,*) (nlabelparts_bns(j,i),j=1,2),nlabel_bns(i),  &
+      Read(i_mag,*,iostat=ier) (nlabelparts_bns(j,i),j=1,2),nlabel_bns(i),  &
+          spacegroup_label_unified(i), &
           spacegroup_label_bns(i),(nlabelparts_og(j,i),j=1,3),  &
           nlabel_og(i),spacegroup_label_og(i)
-      Read(i_mag,*) magtype(i)
+      If(ier /= 0) then
+        err_magg=.true.
+        write(err_magg_mess, "(a,i2)")  'Error reading labels for MSG = ',i
+        return
+      End If
+
+      Read(i_mag,*,iostat=ier) magtype(i)
+      If(ier /= 0) then
+        err_magg=.true.
+        write(err_magg_mess, "(a,i2)")  'Error reading magtype for MSG = ',i
+        return
+      End If
       If(magtype(i) == 4) Then
-        Read(i_mag,*) ((bnsog_point_op(j,k,i),j=1,3),k=1,3),  &
+        Read(i_mag,*,iostat=ier) ((bnsog_point_op(j,k,i),j=1,3),k=1,3),  &
             (bnsog_origin(j,i),j=1,3),bnsog_origin_denom(i)
+        If(ier /= 0) then
+          err_magg=.true.
+          write(err_magg_mess, "(a,i2)")  'Error reading bnsog_point_op, bnsog_origin and bnsog_origin_denom for MSG = ',i
+          return
+        End If
       End If
       Read(i_mag,*) ops_count(i)
       Read(i_mag,*) (ops_bns_point_op(j,i),(ops_bns_trans(k,j,i),k=1,3),  &
@@ -57129,7 +57378,7 @@ Contains
     real, dimension (3,3), parameter :: e = reshape ((/1.0,0.0,0.0,  &
                                                        0.0,1.0,0.0,  &
                                                        0.0,0.0,1.0/),(/3,3/))
-    Character(len=34)      :: OG_Symb, BNS_Symb
+    Character(len=34)      :: OG_Symb, BNS_Symb,Uni_Symb
     Character(len=30)      :: abc_op, Strsym, abc_symb
     Character(len=35)      :: ShOp_symb
     Character(len=3)       :: symb_OGBNS
@@ -57164,12 +57413,14 @@ Contains
     end if
     ipr=6
     if(present(lun)) ipr=lun
+    UNI_Symb="UNI:"//trim(spacegroup_label_unified(num))
     BNS_Symb="BNS:"//nlabel_bns(num)//" "//trim(spacegroup_label_bns(num))
     OG_Symb= " OG:"//nlabel_og(num)//" "//trim(spacegroup_label_og(num))
     Write(unit=ipr,fmt="(a,/)")  " "
     Write(unit=ipr,fmt="(a,i4)") " Group Ordering Number (BNS): ",num
     Write(unit=ipr,fmt="(a,i4)") "         Magnetic Group type: ",magtype(num)
     Write(unit=ipr,fmt="(a)")    "      Magnetic Group Symbols: "//BNS_Symb//OG_Symb
+    Write(unit=ipr,fmt="(a)")    "  UNI Magnetic Group Symbol : "//UNI_Symb
 
     if(.not. change_setting) then
 
@@ -57366,19 +57617,21 @@ Contains
     integer, intent(in)  :: num
     integer, intent(in)  :: ipr
 
-    Character(len=34)      :: OG_Symb, BNS_Symb
+    Character(len=34)      :: OG_Symb, BNS_Symb, UNI_Symb
     Character(len=30)      :: abc_op, Strsym
     Character(len=35)      :: ShOp_symb
     integer                :: idem,inv_time,j,k
     real,   dimension(3)   :: tr
     integer,dimension(3,3) :: op,rot
 
+    UNI_Symb="UNI:"//trim(spacegroup_label_unified(num))
     BNS_Symb="BNS:"//nlabel_bns(num)//" "//trim(spacegroup_label_bns(num))
     OG_Symb= " OG:"//nlabel_og(num)//" "//trim(spacegroup_label_og(num))
     Write(unit=ipr) num          ! Group Ordering Number (BNS)
     Write(unit=ipr) magtype(num) ! Magnetic Group type
     Write(unit=ipr) BNS_Symb     ! Magnetic Group BNS Symbol
     Write(unit=ipr) OG_Symb      ! Magnetic Group OG Symbol
+    Write(unit=ipr) UNI_Symb     ! Magnetic Group UNIFIED Symbol
 
     If(magtype(num) == 4) Then  !OG-BNS transformation:
       op=bnsog_point_op(:,:,num)
@@ -57451,16 +57704,17 @@ Contains
     integer, intent(in)  :: num
     integer, intent(in)  :: ipr
 
-    Character(len=34)      :: OG_Symb, BNS_Symb
+    Character(len=34)      :: OG_Symb, BNS_Symb, UNI_Symb
     Character(len=30)      :: abc_op,Strsym
     Character(len=35)      :: ShOp_symb
     integer                :: idem,inv_time,j,k
     real,   dimension(3)   :: tr
     integer,dimension(3,3) :: op,rot
 
+    UNI_Symb="UNI:"//trim(spacegroup_label_unified(num))
     BNS_Symb="BNS:"//trim(nlabel_bns(num))//" "//trim(spacegroup_label_bns(num))
     OG_Symb= " OG:"//trim(nlabel_og(num))//" "//trim(spacegroup_label_og(num))
-    Write(unit=ipr,fmt="(a,i5,a)") "Group Number:",num, " "//trim(BNS_Symb)//" "//trim(OG_Symb)          ! Group Ordering Number (BNS)
+    Write(unit=ipr,fmt="(a,i5,a)") "Group Number:",num, " "//trim(BNS_Symb)//" "//trim(OG_Symb)//trim(UNI_Symb)          ! Group Ordering Number (BNS)
     Write(unit=ipr,fmt="(a,i5)")   "Group Type:",magtype(num) ! Magnetic Group type
 
     If(magtype(num) == 4) Then  !OG-BNS transformation:
@@ -71966,7 +72220,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
               Get_job_info, File_To_FileList, Get_Phases_File, Read_Cif_Pressure,                &
               Read_Cif_Temp,Readn_Set_Magnetic_Space_Group, Set_Magnetic_Space_Group,            &
               Cleanup_Symmetry_Operators,Write_mCIF, Get_Refinement_Codes, Get_moment_ctr,       &
-              Readn_Set_Magnetic_Structure_MCIF
+              Readn_Set_Magnetic_Structure_MCIF, get_moment_ctr_Wigner
 
     !---- List of public overloaded procedures: subroutines ----!
     public :: Read_File_Cell, Readn_Set_Xtal_Structure, Write_Atoms_CFL, Write_CFL
@@ -72795,12 +73049,331 @@ End Module CFML_EisPack!!-------------------------------------------------------
 
     End Subroutine Get_Job_Info
 
-    Subroutine Get_moment_ctr(xnr,moment,Spg,codini,codes,ord,ss,att,Ipr)
+    !!
+    !!----  Subroutine get_moment_ctr_Wigner(xnr,moment,Spgr,codini,codes,side,ord,ss,att,Ipr,ctr_code)
+    !!----     real(kind=cp), dimension(3),            intent(in    ) :: xnr    !Atom position (fractional coordinates)
+    !!----     real(kind=cp), dimension(3),            intent(in out) :: moment !Moment at position xnr
+    !!----     class(SPG_type),                        intent(in    ) :: Spgr   !Magnetic Space Group
+    !!----     Integer,                                intent(in out) :: codini !Last attributed parameter
+    !!----     real(kind=cp), dimension(3),            intent(in out) :: codes  !codewords for positions
+    !!----     real(kind=cp), dimension(3),   optional,intent(in)     :: side
+    !!----     integer,                       optional,intent(in)     :: ord
+    !!----     integer, dimension(:),         optional,intent(in)     :: ss
+    !!----     real(kind=cp), dimension(:,:), optional,intent(in)     :: att
+    !!----     integer,                       optional,intent(in)     :: Ipr
+    !!----     character(len=*),              optional,intent(out)    :: ctr_code
+    !!----
+    !!----  Subroutine to get the appropriate constraints in the refinement codes of
+    !!----  magnetic moment parameters.
+    !!----  Algorithm based in the Wigner theorem.
+    !!----  The vector Mom = Sum { R Moment} displays the symmetry constraints to be
+    !!----  applied to the magnetic moments. The sum runs over all magnetic
+    !!----  matrices of the stabilizer of the particular atom position in the given
+    !!----  space group.
+    !!----
+    !!----   Updated: 16 April 2016
+    !!----
+    !!
+    Subroutine get_moment_ctr_Wigner(xnr,moment,Spgr,codini,codes,side,ord,ss,att,Ipr,ctr_code)
+       real(kind=cp), dimension(3),            intent(in)     :: xnr
+       real(kind=cp), dimension(3),            intent(in out) :: moment
+       type(Magnetic_Space_Group_type),        intent(in)     :: Spgr
+       Integer,                                intent(in out) :: codini
+       real(kind=cp), dimension(3),            intent(in out) :: codes
+       real(kind=cp), dimension(3),   optional,intent(in)     :: side
+       integer,                       optional,intent(in)     :: ord
+       integer, dimension(:),         optional,intent(in)     :: ss
+       real(kind=cp), dimension(:,:), optional,intent(in)     :: att
+       integer,                       optional,intent(in)     :: Ipr
+       character(len=*),              optional,intent(out)    :: ctr_code
+
+       ! Local variables
+       character (len=4), dimension(3)   :: cdw
+       character (len=4)                 :: cditem
+       real(kind=cp),     dimension(3)   :: multip
+       integer                           :: j,order, ig, npos
+       real(kind=cp)                     :: suma,dif
+       integer,           dimension(48)  :: ss_ptr
+       integer,           dimension(3)   :: codd,msym
+       real(kind=cp),     dimension(3,3) :: Rs
+       real(kind=cp),     dimension(3)   :: x,cod,multi,mom,mome,Rsym
+       real(kind=cp),     dimension(3,48):: atr
+       character(len=:),  allocatable    :: Symb,mag
+       integer,           dimension(3,3) :: s
+       real(kind=cp),     dimension(3)   :: t
+       real(kind=cp),     parameter      :: epss=0.01_cp
+
+       suma=0.0
+       do j=1,3
+          suma=suma+abs(codes(j))
+          cod(j)=int(abs(codes(j))/10.0_cp)             !Input Parameter number with sign
+          multi(j)=mod(codes(j),10.0_cp)                !Input Multipliers
+          if(cod(j) < 1.0 .and. abs(multi(j)) > epss)  then
+               codini=codini+1
+               cod(j) = real(codini)
+          end if
+       end do
+       if(suma < epss) return  !No refinement is required
+
+       x=modulo_lat(xnr)
+
+       if(present(ord) .and. present(ss) .and. present(att)) then
+         order=ord
+         ss_ptr(1:order) = ss(1:ord)
+         atr(:,1:order)  = att(:,1:ord)
+       else
+         call get_stabilizer(x,Spgr,order,ss_ptr,atr)
+       end if
+
+       mom=[17.0, 7.0,5.0]
+       if(present(side)) mom=mom/side
+       mome=mom
+       if(present(ipr)) Write(unit=ipr,fmt="(a,i3)") " => Magnetic stabilizer without identity, order:",order
+       if (order > 1 ) then
+          do j=2,order
+             Rs=real(Spgr%MSymOp(ss_ptr(j))%Rot)
+             Rsym=matmul(Rs,mom)
+             mome=mome+ Rsym
+             if(present(ipr)) then
+               write(unit=ipr,fmt='(a,i2,a,t20,a,t55,a,t75,3f8.1)') '     Operator ',j,": ",trim(Spgr%SymopSymb(ss_ptr(j))), &
+                trim(Spgr%MSymopSymb(ss_ptr(j))), Rsym
+             end if
+          end do
+          mome=mome/real(order)
+          if(present(side)) mome=mome*side
+       end if
+       msym=nint(1000.0*mome)
+       codd=msym
+       cdw=['a','b','c']
+       multip=1.0
+
+       !Search systematically all the possible constraints
+
+       if(codd(1) == codd(2) .and. codd(1) == codd(3)) then ! a a a
+         cdw=['a','a','a']     ! 1 A A A
+         multip=[1.0,1.0,1.0]
+         moment(2:3)=moment(1)
+         cod(2:3)=cod(1)
+         if(codd(1) == 0) then !No magnetic moment allowed for this site
+           cod=0
+           moment=0.0
+           multip=0.0
+           cdw=['0','0','0']
+         end if
+
+       else if(codd(1) == codd(2)) then ! a a c
+         cdw=['a','a','c']    ! 2  A A C
+         multip=[1.0,1.0,1.0]
+         moment(2)=moment(1)
+         cod(2)=cod(1)
+         if(codd(1) == 0) then ! 0 0 c
+           cod(1:2)=0
+           moment(1:2)=0.0
+           multip(1:2)=0.0
+           cdw=['0','0','c']
+         else if(codd(3) == 0) then  ! a a 0
+           cod(3)=0
+           moment(3)=0.0
+           multip(3)=0.0
+           cdw=['a','a','0']
+         else if(codd(3) == -codd(1)) then  ! a a -a
+           cod(3)=cod(1)
+           moment(3)=-moment(1)
+           multip(3)=-1.0
+           cdw=['a ','a ','-a']
+         end if
+
+       else if(codd(1) == codd(3)) then ! a b a
+         cdw=['a','b','a']     ! 3  A B A
+         multip=[1.0,1.0,1.0]
+         moment(3)=moment(1)
+         cod(3)=cod(1)
+         if(codd(1) == 0) then !0 b 0
+           cod(1)=0; cod(3)=0
+           moment(1)=0.0; moment(3)=0.0
+           multip(1)=0.0; multip(3)=0.0
+           cdw=['0','b','0']
+         else if(codd(2) == 0) then  ! a 0 a
+           cod(2)=0
+           moment(2)=0.0
+           multip(2)=0.0
+           cdw=['a','0','a']
+         else if(codd(2) == -codd(1)) then  ! a -a a
+           cod(2)=cod(1)
+           moment(2)=-moment(1)
+           multip(2)=-1.0
+           cdw=['a ','-a','a ']
+         end if
+
+       else if(codd(2) == codd(3)) then ! a b b
+         cdw=['a','b','b']     ! 4  A B B
+         multip=[1.0,1.0,1.0]
+         moment(3)=moment(2)
+         cod(3)=cod(2)
+         if(codd(2) == 0) then !a 0 0
+           cod(2:3)=0
+           moment(2:3)=0.0
+           multip(2:3)=0.0
+           cdw=['a','0','0']
+         else if(codd(1) == 0) then  ! 0 b b
+           cod(1)=0
+           moment(1)=0.0
+           multip(1)=0.0
+           cdw=['0','b','b']
+         else if(codd(1) == -codd(2)) then  ! -b b b
+           cod(1)=cod(2)
+           moment(1)=-moment(2)
+           multip(1)=-1.0
+           cdw=['-b','b ','b ']
+         end if
+
+       else !Now a /= b /= c
+
+         if(codd(1) == 0) then  !0 b c
+           cod(1)=0
+           moment(1)=0.0
+           multip(1)=0.0
+           cdw=['0','b','c']
+         end if
+         if(codd(2) == 0) then  !a 0 c
+           cod(2)=0
+           moment(2)=0.0
+           multip(2)=0.0
+           cdw=['a','0','c']
+         end if
+         if(codd(3) == 0) then  !a b 0
+           cod(3)=0
+           moment(3)=0.0
+           multip(3)=0.0
+           cdw=['a','b','0']
+         end if
+         !Comparison a,b
+         if(codd(1) /= 0 .and. codd(2)/=0) then
+           suma=real(codd(1))/real(codd(2))
+           if(abs(suma) < 1.0) then
+             suma=1.0/suma
+             order=codd(2)/codd(1)
+             dif=abs(suma-real(order))
+             if(dif < epss) then
+               cod(2)=cod(1)
+               multip(2)=suma
+               moment(2)=suma*moment(1)
+               write(unit=cditem,fmt="(i2,a)") order,"a"
+               !cdw=['a',cditem,'c']  !incompatible with Lahey compiler
+               cdw(1)='a'
+               cdw(2)=cditem
+               cdw(3)='c'
+             end if
+           else
+             order=codd(1)/codd(2)
+             dif=abs(suma-real(order))
+             if(dif < epss) then
+               cod(1)=cod(2)
+               multip(1)=suma
+               moment(1)=suma*moment(2)
+               write(unit=cditem,fmt="(i2,a)") order,"b"
+               !cdw=[cditem,'b','c']
+               cdw(1)=cditem
+               cdw(2)='b'
+               cdw(3)='c'
+             end if
+            end if
+         end if
+         !Comparison a,c
+         if(codd(1) /= 0 .and. codd(3)/=0) then
+           suma=real(codd(1))/real(codd(3))
+           if(abs(suma) < 1.0) then
+             suma=1.0/suma
+             order=codd(3)/codd(1)
+             dif=abs(suma-real(order))
+             if(dif < epss) then
+               cod(3)=cod(1)
+               multip(3)=suma
+               moment(3)=suma*moment(1)
+               write(unit=cditem,fmt="(i2,a)") order,"a"
+               !cdw=['a','b',cditem]
+               cdw(1)='a'
+               cdw(2)='b'
+               cdw(3)=cditem
+             end if
+           else
+             order=codd(1)/codd(3)
+             dif=abs(suma-real(order))
+             if(dif < epss) then
+               cod(1)=cod(3)
+               multip(1)=suma
+               moment(1)=suma*moment(3)
+               write(unit=cditem,fmt="(i2,a)") order,"c"
+               !cdw=[cditem,'b','c']
+               cdw(1)=cditem
+               cdw(2)='b'
+               cdw(3)='c'
+             end if
+            end if
+         end if
+         !Comparison b,c
+         if(codd(2) /= 0 .and. codd(3)/=0) then
+           suma=real(codd(2))/real(codd(3))
+           if(abs(suma) < 1.0) then
+             suma=1.0/suma
+             order=codd(3)/codd(2)
+             dif=abs(suma-real(order))
+             if(dif < epss) then
+               cod(3)=cod(2)
+               multip(3)=suma
+               moment(3)=suma*moment(2)
+               write(unit=cditem,fmt="(i2,a)") order,"b"
+               !cdw=['a','b',cditem]
+               cdw(1)='a'
+               cdw(2)='b'
+               cdw(3)=cditem
+             end if
+           else
+             order=codd(2)/codd(3)
+             dif=abs(suma-real(order))
+             if(dif < epss) then
+               cod(2)=cod(3)
+               multip(2)=suma
+               moment(2)=suma*moment(3)
+               write(unit=cditem,fmt="(i2,a)") order,"c"
+               !cdw=['a',cditem,'c']
+               cdw(1)='a'
+               cdw(2)=cditem
+               cdw(3)='c'
+             end if
+            end if
+         end if
+
+       end if
+       codini=maxval(cod)
+       do j=1,3
+         if(abs(multi(j)) < epss .or. cdw(j) == '0' ) then
+           codes(j) = 0.0_cp
+         else if(multi(j) < 0) then
+           codes(j) = sign(1.0_cp, multi(j))*(abs(cod(j))*10.0_cp + abs(multi(j)) )
+         else
+           codes(j) = sign(1.0_cp, multip(j))*(abs(cod(j))*10.0_cp + abs(multip(j)) )
+         end if
+       end do
+
+       if(present(Ipr)) then
+         write(Ipr,'(a,3f10.4)')        '     Codes on Moments     : ',codes
+         Write(Ipr,'(a,3(a,1x),6f7.3)') '     Codes and multipliers: ',cdw,multip
+         Write(Ipr,'(a,3f12.4)')        '     Moment_TOT vector    : ',mome
+       end if
+       if(present(ctr_code)) then
+          write(unit=ctr_code,fmt="(5a)") " ( ",(cdw(j)//", ",j=1,2),cdw(j)//" )"
+          ctr_code=pack_string(ctr_code)
+       end if
+    End Subroutine get_moment_ctr_Wigner
+
+    Subroutine Get_moment_ctr(xnr,moment,Spg,codini,codes,side,ord,ss,att,Ipr)
        real(kind=cp), dimension(3),            intent(in)     :: xnr
        real(kind=cp), dimension(:),            intent(in out) :: moment
        type(Magnetic_Space_Group_type),        intent(in)     :: Spg
        Integer,                                intent(in out) :: codini
        real(kind=cp), dimension(:),            intent(in out) :: codes
+       real(kind=cp), dimension(:),            intent(in)     :: side
        integer,                       optional,intent(in)     :: ord
        integer, dimension(:),         optional,intent(in)     :: ss
        real(kind=cp), dimension(:,:), optional,intent(in)     :: att
@@ -72809,7 +73382,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
        ! Local variables
        integer,           dimension(3,3) :: magm   !g, magm= delta * det(g) * g
        character(len=1),  dimension(3)   :: codd
-       integer                           :: i,j,order,n,ig,is
+       integer                           :: i,j,order,n,ig,iss
        real(kind=cp)                     :: suma
        integer,           dimension(48)  :: ss_ptr
        real(kind=cp),     dimension(3,48):: atr
@@ -72846,7 +73419,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
          if(present(ipr)) Write(unit=ipr,fmt="(a,i3)") " => Stabilizer without identity, order:",order
        end if
 
-       momentL=moment
+       momentL=moment/side !Dividing the moments by the cell parameters
        sCtr=0.0_cp
        if(order > 1) then
          do ig=1,order
@@ -72871,11 +73444,11 @@ End Module CFML_EisPack!!-------------------------------------------------------
             return
          end if
          TotMom=matmul(sCtr,momentL)
-         call Get_Refinement_Codes(n,TotMom,sCtr,is,multi,codd,momentL)
+         call Get_Refinement_Codes(n,TotMom,sCtr,iss,multi,codd,momentL)
          cod=0.0
          do j=1,n
            if(codd(j) /= "0") then
-             do i=1,is
+             do i=1,iss
                if(codd(j) == cdd(i)) then
                  cod(j)=codini+i
                  exit
@@ -72883,19 +73456,20 @@ End Module CFML_EisPack!!-------------------------------------------------------
              end do
            end if
          end do
-         moment=momentL
+         moment=momentL*side
          codes=0.0
          do j=1,n
            if(abs(multi(j)) > epps)  codes(j) = sign(1.0_cp, multi(j))*(abs(cod(j))*10.0_cp + abs(multi(j)) )
          end do
-         codini=codini+is
+         codini=codini+iss
          if(present(Ipr)) then
-           Write(unit=Ipr,fmt="(a,i4)")       " Number of free parameters: ",is
+           Write(unit=Ipr,fmt="(a,i4)")       " Number of free parameters: ",iss
            write(unit=Ipr,fmt="(a,3f14.6)")   " Multipliers: ",(multi(j), j=1,n)
            write(unit=Ipr,fmt="(28a)")        " String with free parameters: ( ",(codd(j)//", ",j=1,n-1),codd(n)//" )"
            write(unit=Ipr,fmt="(a,3i6)")      " Resulting integer codes: ", nint(cod(1:n))
            write(unit=Ipr,fmt="(a,3f14.6)")   " Final codes: ",codes(1:n)
            write(unit=Ipr,fmt="(a,3f14.6)")   " Constrained Moment: ",moment
+           write(unit=Ipr,fmt="(a,3f14.6)")   " Moment(uB/Angstrm): ",momentL
          end if
 
        else !No restrictions
@@ -72946,8 +73520,8 @@ End Module CFML_EisPack!!-------------------------------------------------------
       do i=1,n
         if(abs(wr(i)-1.0_dp) < epps .and. abs(wi(i)) < epps) then
           iss=iss+1   !Number of eigenvalues = 1 => number of free parameters
-          pti(iss)=i !This points to the eigenvectors with eigenvalue equal to 1.
-          zmi=1.0e6 !normalize the eigenvectors so that the minimum (non-zero value) is 1.
+          pti(iss)=i  !This points to the eigenvectors with eigenvalue equal to 1.
+          zmi=1.0e6   !normalize the eigenvectors so that the minimum (non-zero value) is 1.
           j=1
           do k=1,n
             if(abs(zv(k,i)) < epps) cycle
@@ -73244,7 +73818,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
     !!----                                                                   Out -> Current line on Filevar
     !!----    integer,                       intent(in)     :: nline_end  !  In -> Line to the End search
     !!----    integer,                       intent(out)    :: n_atom     ! Out -> Actual number of atom
-    !!----    type (atom_list_type),        intent(out)    :: Atm_List   ! Out -> Atom list
+    !!----    type (atom_list_type),        intent(out)     :: Atm_List   ! Out -> Atom list
     !!----
     !!----    Obtaining Atoms parameters from Cif file. A control error is present.
     !!----
@@ -73261,8 +73835,9 @@ End Module CFML_EisPack!!-------------------------------------------------------
        !---- Local Variables ----!
        character(len=len(filevar(1)))      :: string
        character(len=20),dimension(15)     :: label
+       character(len=4)                    :: symb
        type(Atom_Type)                     :: aux_atm
-       integer                             :: i, j, nc, nct, nline, iv, First, nline_big,num_ini,mm
+       integer                             :: i, j, k, nc, nct, nline, iv, First, nline_big,num_ini,mm
        integer, dimension( 8)              :: lugar   !   1 -> label
                                                       !   2 -> Symbol
                                                       ! 3-5 -> coordinates
@@ -73371,11 +73946,21 @@ End Module CFML_EisPack!!-------------------------------------------------------
 
           ! _atom_site_type_symbol
           if (lugar(2) /= 0) then
-             atm%atom(n_atom)%SfacSymb=label(lugar(2))(1:4)
-             if(index("1234567890+-",label(lugar(2))(2:2)) /= 0 ) then
-                atm%atom(n_atom)%chemSymb=U_case(label(lugar(2))(1:1))
+             symb=label(lugar(2))(1:4)   !Check that the chemical species is provided in
+             j=len_trim(symb)            !the appropriate format to be used in form-factors
+             k=index(symb,"+")           !Change it in case it is inadequate: Ti4+ -> Ti+4
+             if(k /= 0 .and. k == j) then  !The symbol "+" is given at the end
+                symb=symb(1:j-2)//"+"//symb(j-1:j-1)
+             end if
+             k=index(symb,"-")
+             if(k /= 0 .and. k == j) then  !The symbol "-" is given at the end
+                symb=symb(1:j-2)//"-"//symb(j-1:j-1)
+             end if
+             atm%atom(n_atom)%SfacSymb=symb !Here the form factor should be correct
+             if(index("1234567890+-",symb(2:2)) /= 0 ) then !Get the chemical symbol
+                atm%atom(n_atom)%chemSymb=U_case(symb(1:1))
              else
-                atm%atom(n_atom)%chemSymb=U_case(label(lugar(2))(1:1))//L_case(label(lugar(2))(2:2))
+                atm%atom(n_atom)%chemSymb=U_case(symb(1:1))//L_case(symb(2:2))
              end if
           else
              if(index("1234567890+-",label(lugar(1))(2:2)) /= 0 ) then
@@ -73383,7 +73968,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
              else
                 atm%atom(n_atom)%chemSymb=U_case(label(lugar(1))(1:1))//L_case(label(lugar(1))(2:2))
              end if
-             atm%atom(n_atom)%SfacSymb=atm%atom(n_atom)%chemSymb
+             atm%atom(n_atom)%SfacSymb=atm%atom(n_atom)%chemSymb !Use the chemical symbol as scattering factor
           end if
 
           call getnum_std(label(lugar(3)),vet1,vet2,iv)    ! _atom_site_fract_x
@@ -73483,6 +74068,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
           nline=i
           exit
        end do
+
        if(nline >= nline_big) nline_big=nline
        !if (all(lugar > 0)) then
        if (all(lugar(1:7) > 0)) then        ! T.R. June 2017
@@ -73990,6 +74576,8 @@ End Module CFML_EisPack!!-------------------------------------------------------
     !!----
     !!---- Update: October - 2016
     !!
+    !!---- Modified November-2024, RJA - to also read _cell_measurement_pressure
+
     Subroutine Read_Cif_Pressure(Filevar,Nline_Ini,Nline_End,P,SigP)
        !---- Arguments ----!
        character(len=*),  dimension(:), intent(in) :: filevar
@@ -74008,12 +74596,17 @@ End Module CFML_EisPack!!-------------------------------------------------------
 
        call read_key_valuestd(filevar,nline_ini,nline_end, &
                            "_diffrn_ambient_pressure",vet1,vet2,iv)
+
+       if (iv /= 1) then
+          call read_key_valuestd(filevar,nline_ini,nline_end, &
+                           "_cell_measurement_pressure",vet1,vet2,iv)
+       end if
+
        if (iv == 1) then
           p=vet1(1)*1.0e-6
           sigp=vet2(1)*1.0e-6
        end if
 
-       return
     End Subroutine Read_Cif_Pressure
 
     !!----
@@ -74028,7 +74621,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
     !!----    Temperature and Sigma
     !!----
     !!---- Update: October - 2016
-    !!
+    !!---- Modified November-2024, RJA - to also read _cell_measurement_temperature
     Subroutine Read_Cif_Temp(Filevar,Nline_Ini,Nline_End,T,SigT)
        !---- Arguments ----!
        character(len=*),  dimension(:), intent(in) :: filevar
@@ -74045,14 +74638,20 @@ End Module CFML_EisPack!!-------------------------------------------------------
        t=298.0
        sigt=1.0
 
+       iv=0
        call read_key_valuestd(filevar,nline_ini,nline_end, &
                            "_diffrn_ambient_temperature",vet1,vet2,iv)
-       if (iv == 1) then
+
+       if (iv /= 1) then
+           call read_key_valuestd(filevar,nline_ini,nline_end, &
+                           "_cell_measurement_temperature",vet1,vet2,iv)
+       end if
+
+       if (iv == 1)then
           t=vet1(1)
           sigt=vet2(1)
        end if
 
-       return
     End Subroutine Read_Cif_Temp
     !!----
     !!---- Subroutine Read_Cif_Symm(Filevar,Nline_Ini,Nline_End,N_Oper,Oper_Symm)
@@ -74844,6 +75443,60 @@ End Module CFML_EisPack!!-------------------------------------------------------
                 atm%atom(n_atom)%u(6)=vet(2)
                 atm%atom(n_atom)%utype="u_ij"
                 atm%atom(n_atom)%thtype="aniso"
+
+
+          case (10) ! Atomname Sfac X Y Z Occ U11 U22 U33 =
+		            ! U23 U13 U12
+		            ! lecture format Olex (TR nov. 2024)
+                call getnum(label(2),vet,ivet,iv)   ! Is Sfac integer?
+                if (iv /= 1) cycle
+                call getnum(label(3),vet,ivet,iv)   ! Is X real?
+                if (iv /= 1) cycle
+                call getnum(label(4),vet,ivet,iv)   ! Is Y real?
+                if (iv /= 1) cycle
+                call getnum(label(5),vet,ivet,iv)   ! Is Z real?
+                if (iv /= 1) cycle
+                call getnum(label(6),vet,ivet,iv)   ! Is Occ real?
+                if (iv /= 1) cycle
+                call getnum(label(7),vet,ivet,iv)   ! Is U11 real?
+                if (iv /= 1) cycle
+                call getnum(label(8),vet,ivet,iv)   ! Is U22 real?
+                if (iv /= 1) cycle
+				call getnum(label(9),vet,ivet,iv)   ! Is U33 real?
+                if (iv /= 1) cycle
+
+
+                call getnum(filevar(i+1),vet,ivet,iv) ! Are  U23 U13 U12?
+                if (iv /= 3) cycle
+
+                n_atom=n_atom+1
+                atm%atom(n_atom)%lab=trim(label(1))
+                call getnum(label(2),vet,ivet,iv)
+                el=elem_type(ivet(1))
+                atm%atom(n_atom)%chemSymb=U_case(el(1:1))//L_case(el(2:2))
+                call getnum(label(3),vet,ivet,iv)
+                atm%atom(n_atom)%x(1)=vet(1)
+                call getnum(label(4),vet,ivet,iv)
+                atm%atom(n_atom)%x(2)=vet(1)
+                call getnum(label(5),vet,ivet,iv)
+                atm%atom(n_atom)%x(3)=vet(1)
+                call getnum(label(6),vet,ivet,iv)
+                atm%atom(n_atom)%occ=vet(1)
+                !---- U11 U22 U33 U12 U13 U23 Order ----!
+                call getnum(label(7),vet,ivet,iv)
+                atm%atom(n_atom)%u(1)=vet(1)
+                call getnum(label(8),vet,ivet,iv)
+                atm%atom(n_atom)%u(2)=vet(1)
+                call getnum(label(9),vet,ivet,iv)
+                atm%atom(n_atom)%u(3)=vet(1)
+
+                call getnum(filevar(i+1),vet,ivet,iv)
+                atm%atom(n_atom)%u(4)=vet(3)
+                atm%atom(n_atom)%u(5)=vet(2)
+                atm%atom(n_atom)%u(6)=vet(1)
+                atm%atom(n_atom)%utype="u_ij"
+                atm%atom(n_atom)%thtype="aniso"
+
              case default
                 cycle
           end select
@@ -75211,6 +75864,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
     !!----
     !!----
     Subroutine Readn_Set_Magnetic_Space_Group(file_line,n_ini,n_end,MGp,mode,uvw)
+            !call Readn_Set_Magnetic_Space_Group(page_text(k,:),1,line_n,mSpG(k),"PCR","uvw")
        character(len=*),dimension(:),  intent (in)  :: file_line
        integer,                        intent (in)  :: n_ini,n_end
        type(Magnetic_Space_Group_Type),intent (out) :: MGp
@@ -75261,6 +75915,10 @@ End Module CFML_EisPack!!-------------------------------------------------------
              else
                j=index(line,"number:")
                MGp%BNS_symbol=trim(line(1:j-1))
+               if(index(MGp%BNS_symbol,".") /= 0 ) then
+                 MGp%UNI_symbol=MGp%BNS_symbol
+                 !MGp%BNS_symbol=" "
+               end if
                MGp%BNS_number=trim(line(j+7:ind-4))
              end if
              ini=n_ini+1
@@ -75269,7 +75927,13 @@ End Module CFML_EisPack!!-------------------------------------------------------
                line=adjustl(file_line(i))
                ind=index(line,"Transform to standard:")
                if(ind /= 0) then
-                 MGp%trn_to_standard=adjustl(line(ind+22:))
+                 j=index(line,"<-")
+                 if(j /= 0) then
+                    MGp%trn_to_standard=adjustl(line(ind+22:j-1))
+                 else
+                    MGp%trn_to_standard=adjustl(line(ind+22:))
+                 end if
+                 if(trim(MGp%trn_to_standard) == "a,b,c;0,0,0") MGp%standard_setting=.true.
                end if
                ind=index(line,"Parent Space Group:")
                if(ind /= 0) then
@@ -75284,7 +75948,12 @@ End Module CFML_EisPack!!-------------------------------------------------------
                end if
                ind=index(line,"Transform from Parent:")
                if(ind /= 0) then
-                 MGp%trn_from_parent=adjustl(line(ind+22:))
+                 j=index(line,"<-")
+                 if(j /= 0) then
+                    MGp%trn_from_parent=adjustl(line(ind+22:j-1))
+                 else
+                    MGp%trn_from_parent=adjustl(line(ind+22:))
+                 end if
                end if
                ind=index(line,"N_Clat")
                if(ind == 0) cycle
@@ -75491,6 +76160,8 @@ End Module CFML_EisPack!!-------------------------------------------------------
                else
                  call Set_Magnetic_Space_Group(symbol,setting,MGp,trn_to=.true.)
                end if
+               if(trim(MGp%trn_to_standard) == "a,b,c;0,0,0") MGp%standard_setting=.true.
+
                return
 
           Case("database")
@@ -75545,7 +76216,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
              !123456789012345678901234567890
              !Transform from Parent:   a,2b,2c;0,0,0         <--Basis transformation from parent to current setting
              !write(*,"(a)") trim(symbol)//" "//trim(setting)//" "//trim(parent)
-             ! trn_to=.true. always because magCIF considers thre transformation from the current
+             ! trn_to=.true. always because magCIF considers the transformation from the current
              ! setting to the standard setting
              if(len_trim(Parent) /= 0) then
                call Set_Magnetic_Space_Group(symbol,setting,MGp,parent,trn_to=.true.)
@@ -75628,18 +76299,20 @@ End Module CFML_EisPack!!-------------------------------------------------------
 
        !---- Local Variables ----!
        integer :: i,num_sym, num_constr, num_kvs,num_matom, num_mom, num_magscat, ier, j, m, n, k, L,   &
-                  ncar,mult,nitems,iv, num_irreps, nitems_irreps, num_rsym, num_centering,det,kfin
+                  ncar,mult,nitems,iv, num_irreps, nitems_irreps, num_rsym, num_centering,det,kfin,     &
+                  nitems_ani, num_ani
        integer,          dimension(20)     :: lugar,mlugar
-       integer,          dimension(7)      :: irrep_pos
+       integer,          dimension(7)      :: irrep_pos, aniso_lugar
        integer,          dimension(5)      :: pos
        integer,          dimension(3,3)    :: Rot
+       real(kind=cp),    dimension(6)      :: vet1,vet2
        real(kind=cp),    dimension(3)      :: cel,ang,cel_std,ang_std,tr,v
        real(kind=cp),    dimension(6)      :: values,std
        real(kind=cp),    dimension(3,3)    :: matr
        real(kind=cp),    dimension(3,384)  :: orb
        character(len=180)                  :: lowline,keyword,line, mxmymz_op,linat
        character(len=180),dimension(384)   :: sym_strings, cent_strings
-       character(len=180),dimension(384)   :: atm_strings
+       character(len=180),dimension(384)   :: atm_strings, aniso_strings
        character(len=180),dimension(384)   :: mom_strings
        character(len=180),dimension(30)    :: constr_strings, mag_scatt_string
        character(len=180),dimension(30)    :: irreps_strings
@@ -75663,7 +76336,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
          end do
        end do
        num_constr=0; num_kvs=0; num_matom=0; num_mom=0; num_sym=0; num_magscat=0; num_rsym=0; num_centering=0
-       cel=0.0; ang=0.0; num_irreps=0; nitems_irreps=0
+       cel=0.0; ang=0.0; num_irreps=0; nitems_irreps=0; nitems_ani=0
        i=0
        call Init_Magnetic_Space_Group_Type(MGp)
        ktag=.false.
@@ -75717,6 +76390,13 @@ End Module CFML_EisPack!!-------------------------------------------------------
                 if(shubk(1:1) == '"' .or. shubk(1:1) == "'") shubk=adjustl(shubk(2:k-1))
                 MGp%BNS_symbol=pack_string(shubk)
                 !write(unit=*,fmt="(a)") "  Treating item: _space_group.magn_name_bns -> "//trim(MGp%BNS_symbol)
+
+             Case("_space_group_magn.name_UNI")
+                shubk=adjustl(line(j+1:))
+                k=len_trim(shubk)
+                if(shubk(1:1) == '"' .or. shubk(1:1) == "'") shubk=adjustl(shubk(2:k-1))
+                MGp%UNI_symbol=pack_string(shubk)
+                !write(unit=*,fmt="(a)") "  Treating item: _space_group_magn.name_UNI -> "//trim(MGp%UNI_symbol)
 
              Case("_magnetic_space_group_og_number","_space_group_magn.number_og","_space_group.magn_number_og")
                 shubk=adjustl(line(j+1:))
@@ -76180,9 +76860,19 @@ End Module CFML_EisPack!!-------------------------------------------------------
                             lugar(8)=j
                             cycle
                          end if
-                         if (index(mcif%line(i),"_atom_site_Wyckoff_label") /= 0) then
+                         if (index(mcif%line(i),"_atom_site_Wyckoff_label") /= 0 .or. index(mcif%line(i),"_atom_site_Wyckoff_symbol") /= 0) then
                             j=j+1
                             lugar(9)=j
+                            cycle
+                         end if
+                         if (index(mcif%line(i),"_atom_site_fract_symmform") /= 0) then
+                            j=j+1
+                            lugar(11)=j
+                            cycle
+                         end if
+                         if (index(mcif%line(i),"_atom_site_fract_symmform") /= 0) then
+                            j=j+1
+                            lugar(11)=j
                             cycle
                          end if
                          exit
@@ -76190,7 +76880,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
 
                       if (any(lugar(3:5) == 0)) then
                           Err_Form=.true.
-                          Err_Form_Mess=" Error reading the asymmetric unit of magnetic atoms"
+                          Err_Form_Mess=" Error reading the asymmetric unit of atoms"
                           return
                       end if
 
@@ -76206,10 +76896,74 @@ End Module CFML_EisPack!!-------------------------------------------------------
                         atm_strings(k)=adjustl(mcif%line(i))
                       end do
                       num_matom=k
-                      !Treat late the list atoms
+                      !Treat later the list atoms
 
+                   Case("_atom_site_aniso_label")
 
+                      !Count the number of keywords following the _loop
+                      do k=1,20
+                        linat=adjustl(mcif%line(i+k))
+                        if(linat(1:1) /=  "_") then
+                          kfin=k+1
+                          iv=i+k
+                          exit
+                        end if
+                      end do
+                      aniso_lugar=0
+                      aniso_lugar(1)=1
+                      j=1
+                      do k=1,kfin
+                         i=i+1
+                         if (index(mcif%line(i),"_atom_site_aniso_type_symbol") /= 0 ) then
+                            j=j+1
+                            aniso_lugar(8)=j
+                            cycle
+                         end if
+                         if (index(mcif%line(i),"_atom_site_aniso_U_11") /= 0 ) then
+                            j=j+1
+                            aniso_lugar(2)=j
+                            cycle
+                         end if
+                         if (index(mcif%line(i),"_atom_site_aniso_U_22") /= 0 ) then
+                            j=j+1
+                            aniso_lugar(3)=j
+                            cycle
+                         end if
+                         if (index(mcif%line(i),"_atom_site_aniso_U_33") /= 0 ) then
+                            j=j+1
+                            aniso_lugar(4)=j
+                            cycle
+                         end if
+                         if (index(mcif%line(i),"_atom_site_aniso_U_12") /= 0 ) then
+                            j=j+1
+                            aniso_lugar(5)=j
+                            cycle
+                         end if
+                         if (index(mcif%line(i),"_atom_site_aniso_U_13") /= 0 ) then
+                            j=j+1
+                            aniso_lugar(6)=j
+                            cycle
+                         end if
+                         if (index(mcif%line(i),"_atom_site_aniso_U_23") /= 0 ) then
+                            j=j+1
+                            aniso_lugar(7)=j
+                            cycle
+                         end if
+                         exit
+                      end do
+                      i=iv-1
+                      nitems_ani=count(aniso_lugar > 0)
 
+                      k=0
+                      do
+                        i=i+1
+                        if(i > mcif%nlines) exit
+                        if(len_trim(mcif%line(i)) == 0) exit
+                        k=k+1
+                        aniso_strings(k)=adjustl(mcif%line(i))
+                      end do
+                      num_ani=k
+                      !Treat later the anisotropic displacement parameters
 
                    Case("_magnetic_atom_site_moment_label","_atom_site_moment_label","_atom_site_moment.label")
 
@@ -76364,7 +77118,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
             if(allocated(Mgp%MSymop)) deallocate(Mgp%MSymop)
             allocate(Mgp%MSymop(num_sym))
             ! Decode the symmetry operators
-            write(unit=*,fmt="(a)") "  Decoding symmetry operators 2"
+            !write(unit=*,fmt="(a)") "  Decoding symmetry operators 2"
             do i=1,num_rsym
               line=adjustl(sym_strings(i))
               j=index(line," ")
@@ -76419,7 +77173,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
             end do
             !Decode lattice translations and anti-translations
 
-            write(unit=*,fmt="(a)") "  Decoding lattice translations and anti-translations"
+            !write(unit=*,fmt="(a)") "  Decoding lattice translations and anti-translations"
             m=num_rsym
             do L=2,num_centering
               line=adjustl(cent_strings(L))
@@ -76639,6 +77393,41 @@ End Module CFML_EisPack!!-------------------------------------------------------
             end if
 
           end do
+       end if
+       !Treating ADPs
+       if(num_ani > 0) then
+         k=0
+         do i=1,num_ani
+            call getword(aniso_strings(i),lab_items,iv)
+            do j=1,Am%natoms
+              if (Am%atom(j)%thtype == "aniso") cycle !already done
+              if(trim(Am%atom(j)%lab) == trim(lab_items(aniso_lugar(1))) ) then
+                call getnum_std(lab_items(aniso_lugar(2)),vet1,vet2,iv)    ! _atom_site_aniso_U_11
+                Am%atom(j)%u(1)=vet1(1)
+                Am%atom(j)%u_std(1)=vet2(1)
+                call getnum_std(lab_items(aniso_lugar(3)),vet1,vet2,iv)    ! _atom_site_aniso_U_22
+                Am%atom(j)%u(2)=vet1(1)
+                Am%atom(j)%u_std(2)=vet2(1)
+                call getnum_std(lab_items(aniso_lugar(4)),vet1,vet2,iv)    ! _atom_site_aniso_U_33
+                Am%atom(j)%u(3)=vet1(1)
+                Am%atom(j)%u_std(3)=vet2(1)
+                call getnum_std(lab_items(aniso_lugar(5)),vet1,vet2,iv)    ! _atom_site_aniso_U_12
+                Am%atom(j)%u(4)=vet1(1)
+                Am%atom(j)%u_std(4)=vet2(1)
+                call getnum_std(lab_items(aniso_lugar(6)),vet1,vet2,iv)    ! _atom_site_aniso_U_13
+                Am%atom(j)%u(5)=vet1(1)
+                Am%atom(j)%u_std(5)=vet2(1)
+                call getnum_std(lab_items(aniso_lugar(7)),vet1,vet2,iv)    ! _atom_site_aniso_U_23
+                Am%atom(j)%u(6)=vet1(1)
+                Am%atom(j)%u_std(6)=vet2(1)
+                Am%atom(j)%thtype="aniso"
+                Am%atom(j)%Biso=0.0
+                Am%atom(j)%Biso_std=0.0
+              else
+                cycle
+              end if
+            end do
+         end do
        end if
 
        !Treating moments of magnetic atoms
@@ -76946,7 +77735,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
        nmol=0
        do i=n_ini,n_end
           line=u_case(adjustl(file_dat(i)))
-          if (line(1:1) == " ") cycle
+          if (len_trim(line) == 0) cycle
           if (line(1:1) == "!") cycle
           npos=index(line,"MOLE")
           if (npos /= 0) nmol=nmol+1
@@ -78045,6 +78834,11 @@ End Module CFML_EisPack!!-------------------------------------------------------
       call Init_Err_Form()
       call Allocate_DataBase()
       call read_magnetic_data()
+      if(err_magg) then
+        write(unit=Err_Form_Mess,fmt="(a)") " => Error reading the magnetic database: "//trim(err_magg_mess)
+        Err_Form=.true.
+        return
+      end if
       identity=0
       do i=1,3
         identity(i,i)=1
@@ -78060,7 +78854,8 @@ End Module CFML_EisPack!!-------------------------------------------------------
         do i=1,magcount
           !write(*,"(i5,tr5,a)") i, spacegroup_label_bns(i)
           if(trim(symb) == trim(spacegroup_label_bns(i)) .or. &
-             trim(symb) == trim(spacegroup_label_og(i))) then
+             trim(symb) == trim(spacegroup_label_og(i))  .or. &
+             trim(symb) == trim(spacegroup_label_unified(i))) then
             num=i
             exit
           end if
@@ -78088,6 +78883,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
       MGp%Sh_number=num
       MGp%BNS_number=nlabel_bns(num)
       MGp%OG_number= nlabel_og(num)
+      MGp%UNI_symbol=spacegroup_label_unified(num)
       MGp%BNS_symbol=spacegroup_label_bns(num)
       MGp%OG_symbol=spacegroup_label_og(num)
       MGp%MagType=magtype(num)
@@ -78119,11 +78915,11 @@ End Module CFML_EisPack!!-------------------------------------------------------
            MGp%PG_Symbol=pack_string(MGp%PG_Symbol//"1'")
       End Select
 
-      if(len_trim(setting) == 0 .or. setting =='a,b,c;0,0,0') then
-        MGp%standard_setting=.true.
-      else
-        MGp%standard_setting=.false.
-      end if
+      !if(len_trim(setting) == 0 .or. setting =='a,b,c;0,0,0') then
+      !  MGp%standard_setting=.true.
+      !else
+      !  MGp%standard_setting=.false.
+      !end if
       MGp%mcif=.false.     !true if mx,my,mz notation is used , false is u,v,w notation is used
       if(present(mcif)) MGp%mcif=mcif
       MGp%m_cell=.true.    !true if magnetic cell is used for symmetry operators
@@ -78183,20 +78979,28 @@ End Module CFML_EisPack!!-------------------------------------------------------
       Select Case (num)
         case(1:7)
           MGp%CrystalSys="Triclinic"
+          MGP%Laue="-1"
         case(8:98)
           MGp%CrystalSys="Monoclinic"
+          MGP%Laue="2/m"
         case(99:660)
           MGp%CrystalSys="Orthorhombic"
+          MGP%Laue="mmm"
         case(661:1230)
           MGp%CrystalSys="Tetragonal"
+          MGP%Laue="4/mmm"
         case(1231:1338)
           MGp%CrystalSys="Trigonal"
+          MGP%Laue="6/mmm"
         case(1339:1502)
           MGp%CrystalSys="Hexagonal"
+          MGP%Laue="6/mmm"
         case(1503:1651)
           MGp%CrystalSys="Cubic"
+          MGP%Laue="m3m"
         case default
           MGp%CrystalSys="Unknown"
+          MGP%Laue="-1"
       End Select
       if(MGp%MagType == 4) then
         MGp%SPG_lat=spacegroup_label_bns(num)(1:3)
@@ -78320,12 +79124,15 @@ End Module CFML_EisPack!!-------------------------------------------------------
       end if
       !write(*,"(a)")    "  "//trim(MGp%Centre)
       !write(*,"(a,i4)") " Number of minimal S.O. (Numops): ",MGp%NumOps
+
       if(change_setting) then
+
         if(present(trn_to)) then
           call Setting_Change(setting,MGp,MSpg,trn_to)
         else
           call Setting_Change(setting,MGp,MSpg)
         end if
+        MGp%standard_setting = .false.
         if(Err_Form) then
           if(.not. present(keepd)) call deAllocate_DataBase()
           return
@@ -80305,9 +81112,11 @@ End Module CFML_EisPack!!-------------------------------------------------------
        type(Crystal_Cell_Type),optional,intent(in)           :: Cell
        !
        Character(len=180)             :: line
+       Character(len=50)              :: comm
        character(len=80),dimension(6) :: text
        character(len=2)               :: invc
        real(kind=cp)                  :: occ,occ_std,uiso,uiso_std
+       real(kind=cp), dimension(6)    :: aux,sua,ua
        integer :: i,j
 
        write(unit=Ipr,fmt="(a)") "#  --------------------------------------"
@@ -80359,6 +81168,9 @@ End Module CFML_EisPack!!-------------------------------------------------------
        write(unit=Ipr,fmt="(a)") '_space_group.magn_number_OG '//trim(MSGp%OG_number)
        if(len_trim(MSGp%OG_symbol) /= 0) &
        write(unit=Ipr,fmt="(a)") '_space_group.magn_name_OG  "'//trim(MSGp%OG_symbol)//'"'
+       write(unit=Ipr,fmt="(a)")
+       if(len_trim(MSGp%UNI_symbol) /= 0) &
+       write(unit=Ipr,fmt="(a)") '_space_group.magn_name_UNI  "'//trim(MSGp%UNI_symbol)//'"'
        write(unit=Ipr,fmt="(a)")
 
        if(MSGp%n_irreps /= 0) then
@@ -80479,7 +81291,41 @@ End Module CFML_EisPack!!-------------------------------------------------------
           write(unit=Ipr,fmt="(a6,a6,3a13,2a11,i4,a)") Am%Atom(i)%lab, Am%atom(i)%SfacSymb,(text(j),j=1,5),&
                                                        Am%atom(i)%Mult," "//Am%atom(i)%wyck
        end do
-       write(unit=Ipr,fmt="(a)")
+
+       if(any(Am%atom(:)%thtype == "aniso")) then
+          write(unit=Ipr,fmt="(a)") " "
+          write(unit=Ipr,fmt="(a)") "loop_"
+          write(unit=Ipr,fmt="(a)") "    _atom_site_aniso_label "
+          write(unit=Ipr,fmt="(a)") "    _atom_site_aniso_U_11  "
+          write(unit=Ipr,fmt="(a)") "    _atom_site_aniso_U_22  "
+          write(unit=Ipr,fmt="(a)") "    _atom_site_aniso_U_33  "
+          write(unit=Ipr,fmt="(a)") "    _atom_site_aniso_U_12  "
+          write(unit=Ipr,fmt="(a)") "    _atom_site_aniso_U_13  "
+          write(unit=Ipr,fmt="(a)") "    _atom_site_aniso_U_23  "
+          write(unit=Ipr,fmt="(a)") "    _atom_site_aniso_type_symbol"
+          do i=1,Am%natoms
+             if(Am%Atom(i)%thtype /= "aniso") cycle
+             line=" "
+             line(2:)= Am%Atom(i)%Lab
+             if(Am%atom(i)%Utype == "beta") then
+                aux=Am%atom(i)%u
+                ua=convert_betas_u(aux,cell)
+                aux=Am%atom(i)%u_std
+                sua=convert_betas_u(aux,cell)
+             else if(Am%atom(i)%Utype == "u_ij") then
+                ua=Am%atom(i)%u
+                sua=Am%atom(i)%u_std
+             end if
+             do j=1,6
+               comm=" "
+               call setnum_std(ua(j),sua(j),comm)
+               line=trim(line)//" "//trim(comm)
+             end do
+             write(unit=Ipr,fmt="(a)") trim(line)//"  "//Am%atom(i)%SfacSymb
+          end do
+       end if
+
+       write(unit=Ipr,fmt="(a)") " "
        write(unit=Ipr,fmt="(a)") "loop_"
        write(unit=Ipr,fmt="(a)") "_atom_site_moment_label"
        write(unit=Ipr,fmt="(a)") "_atom_site_moment_crystalaxis_x"
@@ -82109,7 +82955,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
           end do
        end do
 
-       if (any(ix==0)) then
+       if (any(ix == 0)) then
           err_sfac=.true.
           ERR_SFac_Mess="The Species "//symbcar//" was not found"
           return
@@ -82241,20 +83087,23 @@ End Module CFML_EisPack!!-------------------------------------------------------
 
        !---- Local Variables ----!
        character(len=4)               :: symbcar
-       integer                        :: i,j, k,n,L
+       integer                        :: i,j, k,n,L,m
        integer, dimension(atm%natoms) :: ix,jx,ia
        real(kind=cp)                  :: fx
+       logical                        :: scf_changed
+       character(len=4), dimension(atm%natoms) :: notfound
 
        !---- Init ----!
        err_sfac=.false.
-
+       scf_changed=.false.
+       notfound=" "
        !---- Load form factor values for XRay ----!
        call Set_Xray_Form()
 
        !---- Found Species on Xray_Form ----!
        ix=0
        jx=0
-       n=0
+       n=0; m=0
        do i=1,atm%natoms
           symbcar=l_case(atm%atom(i)%SfacSymb)
           do j=1,Num_Xray_Form
@@ -82266,14 +83115,33 @@ End Module CFML_EisPack!!-------------------------------------------------------
              ia(n)=i
              exit
           end do
+          if(j > Num_Xray_Form) then
+            m=m+1
+            notfound(m)=atm%atom(i)%SfacSymb
+          end if
        end do
+       if (any(ix == 0)) then  !Check if the chemical symbol may be used
+          scf_changed=.true.
+          do i=1,atm%natoms
+             symbcar=l_case(atm%atom(i)%chemsymb)  ! 2nd try on the atom type instead of chemical form
+             do j=1,Num_Xray_Form
+                if (ix(i) /= 0 .or. symbcar /= Xray_form(j)%Symb) cycle  ! skip if already found or atom not found
+                ix(i)=j
+                if(any(jx == j) ) exit
+                n=n+1
+                jx(n)=j
+                ia(n)=i
+                exit
+             end do
 
+          end do
+       end if
        if (present(lun)) then
          write(unit=lun,fmt="(/,a)") "  INFORMATION FROM TABULATED X-RAY SCATTERING FACTORS (For Electron Diffraction)"
-          write(unit=lun,fmt="(a,/)") "  =============================================================================="
+         write(unit=lun,fmt="(a,/)") "  =============================================================================="
        End if
 
-       if (any(ix==0)) then
+       if (any(ix == 0)) then
           err_sfac=.true.
           ERR_SFac_Mess="The Species "//symbcar//" was not found"
        else
@@ -82291,22 +83159,26 @@ End Module CFML_EisPack!!-------------------------------------------------------
        if (present(lun)) then
           write(unit=lun,fmt="(/,a,/)")    "   ATOMIC SCATTERING FACTOR COEFFICIENTS: {A(i),B(i),I=1,4},C  and Atomic Number "
           write(unit=lun,fmt="(a,i3)")     "   Number of chemically different species: ",n
+          if(scf_changed) then
+             write(unit=lun,fmt="(2(/,a))") " => Warning! Some atomic scattering factor was not found!", &
+                                            "    The coefficients corresponding to the chemical symbol are used as a replacement!"
+            write(unit=lun,fmt="(21a)")     "    The following species are missing: ",(trim(notfound(i))//"  ",i=1,m)
+          end if
           write(unit=lun,fmt="(/,a)") &
-               "   Atom     a1       b1       a2       b2       a3       b3       a4       b4        c       Z"
+               "   Atom    ChemSymb     a1       b1       a2       b2       a3       b3       a4       b4        c       Z"
           do k=1,n
              j = jx(k)
              i = ia(k)
              write(unit=lun,fmt="(a,9F9.5,i7)")    &
-                           "     "//atm%atom(i)%chemsymb, &
-                           (xray_form(j)%a(L),xray_form(j)%b(L), L=1,4), xray_form(j)%c, &
-                            xray_form(j)%Z
+                           "   "//atm%atom(i)%SfacSymb//"       "//atm%atom(i)%ChemSymb//" ", &
+                     (xray_form(j)%a(L),xray_form(j)%b(L), L=1,4), xray_form(j)%c, &
+                      xray_form(j)%Z
           end do
           write(unit=lun,fmt="(/,/)")
        end if
 
        call Remove_Xray_Form()
 
-       return
     End Subroutine Create_Table_AF0_Electrons
 
     !!--++
@@ -82331,12 +83203,16 @@ End Module CFML_EisPack!!-------------------------------------------------------
 
        !---- Local Variables ----!
        character(len=4)               :: symbcar
-       integer                        :: i,j, k,n,L
+       integer                        :: i,j, k,n,L, m
        integer, dimension(atm%natoms) :: ix,jx,ia
        real(kind=cp)                  :: dmin,d
+       logical                        :: scf_changed
+       character(len=4), dimension(atm%natoms) :: notfound
 
        !---- Init ----!
        err_sfac=.false.
+       scf_changed=.false.
+       notfound=" "
 
        !---- Load form factor values for XRay ----!
        call Set_Xray_Form()
@@ -82344,9 +83220,9 @@ End Module CFML_EisPack!!-------------------------------------------------------
        !---- Found Species on Xray_Form ----!
        ix=0
        jx=0
-       n=0
+       n=0; m=0
        do i=1,atm%natoms
-          symbcar=l_case(atm%atom(i)%chemsymb)
+          symbcar=l_case(atm%atom(i)%SfacSymb)
           do j=1,Num_Xray_Form
              if (symbcar /= Xray_form(j)%Symb) cycle
              ix(i)=j
@@ -82356,7 +83232,33 @@ End Module CFML_EisPack!!-------------------------------------------------------
              ia(n)=i
              exit
           end do
+          if( j > Num_Xray_Form) then
+            m=m+1
+            notfound(m)=atm%atom(i)%SfacSymb
+          end if
        end do
+
+       if (any(ix == 0)) then
+          scf_changed=.true.
+          do i=1,atm%natoms
+             symbcar=l_case(atm%atom(i)%chemsymb)  ! 2nd try on the atom type instead of chemical form
+             do j=1,Num_Xray_Form
+                if (ix(i) /= 0 .or. symbcar /= Xray_form(j)%Symb) cycle  ! skip if already found or atom not found
+                ix(i)=j
+                if(any(jx == j) ) exit
+                n=n+1
+                jx(n)=j
+                ia(n)=i
+                exit
+             end do
+          end do
+       end if
+
+       if (any(ix == 0)) then
+          err_sfac=.true.
+          ERR_SFac_Mess="The Species "//symbcar//" was not found"
+          return
+       end if
 
        if (present(lun)) then
           write(unit=lun,fmt="(/,a)") "  INFORMATION FROM TABULATED X-RAY SCATTERING FACTORS"
@@ -82394,7 +83296,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
            end if
        end if
 
-       if (any(ix==0)) then
+       if (any(ix == 0)) then
           err_sfac=.true.
           ERR_SFac_Mess="The Species "//symbcar//" was not found"
        else
@@ -82410,13 +83312,18 @@ End Module CFML_EisPack!!-------------------------------------------------------
        if (present(lun)) then
           write(unit=lun,fmt="(/,a,/)")    "   ATOMIC SCATTERING FACTOR COEFFICIENTS: {A(i),B(i),I=1,4},C  Dfp  Dfpp "
           write(unit=lun,fmt="(a,i3)")     "   Number of chemically different species: ",n
+          if(scf_changed) then
+             write(unit=lun,fmt="(2(/,a))") " => Warning! Some atomic scattering factor was not found!", &
+                                            "    The coefficients corresponding to the chemical symbol are used as a replacement!"
+            write(unit=lun,fmt="(21a)")     "    The following species are missing: ",(trim(notfound(i))//"  ",i=1,m)
+          end if
           write(unit=lun,fmt="(/,a)") &
-               "   Atom     a1       b1       a2       b2       a3       b3       a4       b4        c      Dfp     Dfpp"
+               "   Atom    ChemSymb     a1       b1       a2       b2       a3       b3       a4       b4        c      Dfp     Dfpp"
           do k=1,n
              j = jx(k)
              i = ia(k)
              write(unit=lun,fmt="(a,11F9.5)")    &
-                           "     "//atm%atom(i)%chemsymb, &
+                           "   "//atm%atom(i)%SfacSymb//"       "//atm%atom(i)%ChemSymb//" ", &
                            (xray_form(j)%a(L),xray_form(j)%b(L), L=1,4), xray_form(j)%c, &
                            afp(i), afpp(i)
           end do
@@ -83684,7 +84591,7 @@ End Module CFML_EisPack!!-------------------------------------------------------
 !
 !   cif2hkl: convert a CIF or CFL crystal structure file into a PowderN reflection list.
 !
-!   cif2hkl 1.4.3 (Oct 2nd 2023) by [emmanuel.farhi@synchrotron-soleil.fr]
+!   cif2hkl 1.4.6 (Dec 4th 2024) by [emmanuel.farhi@synchrotron-soleil.fr]
 !     Farhi E. using crysFML <https://code.ill.fr/scientific-software/crysfml/>
 !   Copyright (C) 2009-2019 Institut Laue Langevin, EUPL
 !   Copyright (C) 2020-     Synchrotron Soleil,     GPL3.
@@ -83717,14 +84624,14 @@ End Module CFML_EisPack!!-------------------------------------------------------
 ! --no-output-files   Just read the CIF/CFL/ShelX file (for checking).
 ! Example: ./cif2hkl -o CaF2.laz CaF2.cfl
 
-! Compile with:  
+! Compile with: make
+! or
 !   gfortran -O2 CFML_GlobalDeps_Linux.f90 CFML_Math_General.f90 CFML_String_Utilities_gf.f90 CFML_Math_3D.f90 CFML_Symmetry_Tables.f90 CFML_Scattering_Chemical_Tables.f90 CFML_Crystallographic_Symmetry.f90 CFML_Crystal_Metrics.f90 CFML_Reflections_Utilities.f90 CFML_Atom_TypeDef.f90 CFML_Geometry_Calc.f90 CFML_Molecular_Crystals.f90 CFML_IO_Formats.f90 CFML_Structure_Factors.f90 -o cif2hkl cif2hkl.F90 -lm
 !   rm *.mod
-!   ./cif2hkl ../CIF/CaF2.cfl
+!   ./cif2hkl ../examples/CaF2.cfl
 ! 
 ! Create Matlab Mex with:
 !     mex -c -O cif2hkl.F90
-!     mex -O cif2hkl_mex.c cif2hkl.o -o cif2hkl -lgfortran
 
 ! ==============================================================================
 
@@ -83798,7 +84705,7 @@ subroutine CFML_cif2hkl(file_in, file_out, lambda, powxtal, verbose, message, mo
   use CFML_Atom_TypeDef,               only: Atom_List_Type
   use CFML_IO_Formats,                 only: Readn_Set_Xtal_Structure, File_List_Type
   use CFML_Reflections_Utilities,      only: Reflection_List_Type, Hkl_Uni, Hkl_Gen_SXtal,Get_MaxNumRef,WRITE_REFLIST_INFO
-  use CFML_Structure_Factors,          only: Structure_Factors,Init_Structure_Factors,Calc_StrFactor
+  use CFML_Structure_Factors,          only: Structure_Factors,Init_Structure_Factors,Calc_StrFactor,err_sfac,err_sfac_mess
   use CFML_String_Utilities,           only: L_case
   use CFML_GlobalDeps,                 only: pi, dp
    
@@ -83821,6 +84728,8 @@ subroutine CFML_cif2hkl(file_in, file_out, lambda, powxtal, verbose, message, mo
   real                        :: stlmax
   integer                     :: lun=1, MaxNumRef, I, Y
   character(len=1024)         :: ext                   ! file name extension
+  logical                     :: try_again             ! handle err_sfac / wrong species
+  character(len=4)            :: try_msg               ! species to replace
 
   integer, parameter                             :: n_elements=423
   character (Len = 8), dimension(n_elements)     :: element
@@ -84202,7 +85111,40 @@ subroutine CFML_cif2hkl(file_in, file_out, lambda, powxtal, verbose, message, mo
       return
     end if
     ! mode="nuc" (neutron), "ele" (electrons), "xra" x-rays
-    call Structure_Factors(A,SpG,hkl,mode=mode, lambda=lambda)
+    try_again = .true.
+    ! CrysFML/Structure_Factors returns an error when a chemical symbol
+    ! is not found when evaluating the absorption edges (f' f").
+    ! We here choose to correct the faulty chemical symbol by the neutral
+    ! atom, e.g. "Si4-" -> "Si". The edge may slightly be off, but the
+    ! diffraction profile should be roughly OK.
+    do while (try_again)
+      call Structure_Factors(A,SpG,hkl,mode=mode, lambda=lambda)
+      if(err_sfac) then      ! error in Create_Table_AF0_Xray
+        try_again = .false.  ! would normally return with error (checked below)
+        ! check if message is "The Species "//symbcar//" was not found"
+        if (err_sfac_mess(1:12) == "The Species ") then
+          ! we search the faulty symbol and change A%atom(i)%SfacSymb = A%atom(i)%chemsymb
+          do i=1,A%natoms
+            try_msg=l_case(A%atom(i)%SfacSymb) ! chemical form
+            if (trim(err_sfac_mess) == "The Species "//try_msg//" was not found" .and. &
+              A%atom(i)%SfacSymb /= A%atom(i)%chemsymb) then ! not tried yet
+              
+              A%atom(i)%SfacSymb = A%atom(i)%chemsymb   ! this is the error ? yes, change atom name
+              write(*,*)  "WARNING: cif2hkl: Invalid element "//try_msg//" -> "//trim(A%atom(i)%chemsymb)//" in "//trim(file_in)
+              try_again = .true. ! try again with new atom name
+            end if
+          end do
+          ! was there a change ? if not, return
+          if (.not. try_again) then
+            message = "ERROR: cif2hkl: "//trim(err_sfac_mess)//" in "//trim(file_in)
+            return
+          end if
+        end if ! The species...
+      else
+        try_again = .false.  ! all is fine. No error
+      end if
+    end do
+    message = ""
 
     ! get current date/time
     call idate(today)   ! today(1)=day, (2)=month, (3)=year
@@ -84294,8 +85236,8 @@ subroutine print_version(pgmname,message)
   eol=char(13)//char(10)
   
   AUTHOR ="Farhi E. [emmanuel.farhi@synchrotron-soleil.fr]"//eol//"  using crysFML <https://code.ill.fr/scientific-software/crysfml/>"
-  DATE   ="Nov 2024"
-  VERSION="1.4.5"
+  DATE   ="Dec 4th 2024"
+  VERSION="1.4.6"
   
   
   message = trim(pgmname)//" "//trim(VERSION)//" ("//trim(DATE)//") by "//trim(AUTHOR)//eol//&
@@ -84328,18 +85270,18 @@ subroutine print_usage(pgmname,message)
     "  a file with readable header, and reflection list with columns"//eol//&
     "    [ H K L Multiplicity Sin(Theta/Lambda) d_spacing |F|^2 ]"//eol//&
     "Options:"//eol//&
-    "--help     or -h    Show this help"//eol//&
-    "--version  or -v    Display program version"//eol//&
-    "--out FILE          Specify the name of the next output file."//eol//&
-    "   -o FILE            Default is to add .hkl to the initial file name."//eol//&
-    "--lambda LAMBDA     Set the incoming probe wavelength [Angs]."//eol//&
-    "   -l    LAMBDA       Default is 0.5"//eol//&
-    "--powder   or -p    Generate a list of unique HKL reflections (for powders). Default."//eol//&
-    "--xtal     or -x    Generate a list of all HKL reflections (for single crystals)."//eol//&
-    "--mode MODE         Generate structure factors for given probe, where MODE is"//eol//&
-    "   -m  MODE           NUC=neutron(default) XRA=xrays ELE=electrons"//eol//&
-    "--verbose           Display processing details."//eol//&
-    "--no-output-files   Just read the CIF/CFL/ShelX file (for checking)."//eol//&
+    "  --help, -h                  Show this help"//eol//&
+    "  --version, -v               Display program version"//eol//&
+    "  --out FILE, -o FILE         Specify the name of the next output file."//eol//&
+    "                              Default is to add .hkl to the initial file name."//eol//&
+    "  --lambda LAMBDA, -l LAMBDA  Set the incoming probe wavelength [Angs]."//eol//&
+    "                              Default is 0.5"//eol//&
+    "  --powder, -p                Generate a list of unique HKL reflections (for powders). Default."//eol//&
+    "  --xtal, -x                  Generate a list of all HKL reflections (for single crystals)."//eol//&
+    "  --mode MODE, -m MODE        Generate structure factors for given probe, where MODE is"//eol//&
+    "                              NUC=neutron(default) XRA=xrays ELE=electrons"//eol//&
+    "  --verbose                   Display processing details."//eol//&
+    "  --no-output-files           Just read the CIF/CFL/ShelX file (for checking)."//eol//&
     "Example: "//trim(pgmname)//" --powder --mode NUC -o CaF2.laz CaF2.cfl"//eol
 
 end subroutine print_usage
@@ -84369,18 +85311,18 @@ program cif2hkl
 
   if (argc == 0) then
     call print_usage(pgmname, message)
-    write(*,*) trim(message)
+    write(*,"(1000a)") trim(message)
   else 
     do while (i < argc)
       i = i + 1
       call getarg(i, argv)
       if (argv(1:2) == "-h" .or. argv(1:6) == "--help") then
         call print_usage(pgmname, message)
-        write(*,*) trim(message)
+        write(*,"(1000a)") trim(message)
       end if
       if (argv(1:2) == "-v" .or. argv(1:9) == "--version") then
         call print_version(pgmname, message)
-        write(*,*) trim(message)
+        write(*,"(1000a)") trim(message)
       end if
       if ( (argv(1:8) == "--lambda" .or. argv(1:2) == "-l") .and. i<argc) then
         i=i+1
