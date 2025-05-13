@@ -34,8 +34,13 @@ static List search_list = NULL;
 /* MOD: E. Farhi, Oct 2nd, 2001: add obsolete dir. Aug 27th, 2002: added share+contrib */
 /* MOD: P. Willendrup, Oct 11 2016: Add contrib subdir "union" */
 /* MOD: P. Willendrup, May 22 2023: Add contrib subdir "sasmodels" */
+#if MCCODE_PROJECT == 1   /* neutron */
 static char *sys_subdir_table[] =
   { "samples", "monitors", "sources", "optics", "misc" , "obsolete", "contrib", "union", "sasmodels", "share", "examples" };
+#elif MCCODE_PROJECT == 2 /* xray */
+static char *sys_subdir_table[] =
+  { "samples", "monitors", "sources", "optics", "misc" , "obsolete", "contrib", "union", "sasmodels", "astrox", "share", "examples" };
+#endif
 
 /* Attempt to open FILE in directory DIR (or current directory if DIR is
    NULL). */
