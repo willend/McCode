@@ -18,7 +18,7 @@
 * Source-like component that reads photon state parameters from a binary mcpl-file.
 *
 * MCPL is short for Monte Carlo Particle List, and is a new format for sharing events
-* between e.g. MCNP(X), Geant-4 and McXtrace .
+* between e.g. MCNP(X), Geant4 and McXtrace .
 *
 * When used with MPI, the --ncount given on the commandline is overwritten by 
 * #MPI nodes x #events in the file.
@@ -30,6 +30,7 @@
 *
 * filename: [str]       Name of photon mcpl file to read.
 * verbose: [ ]          Print debugging information for first 10 particles read.
+* preload: [ ]          Load particles during INITIALIZE. On GPU preload is forced.
 * polarisationuse: [ ]  If !=0 read polarisation vectors from file.
 * Emin: [keV]           Lower energy bound. Particles found in the MCPL-file below the limit are skipped.
 * Emax: [keV]           Upper energy bound. Particles found in the MCPL-file above the limit are skipped.
@@ -43,7 +44,7 @@
 
 DEFINE COMPONENT MCPL_input
 
-SETTING PARAMETERS (string filename=0, polarisationuse=1,verbose=1, Emin=0, Emax=FLT_MAX, int repeat_count=1, E_smear=0, pos_smear=0, dir_smear=0)
+SETTING PARAMETERS (string filename=0, polarisationuse=1,verbose=1, Emin=0, Emax=FLT_MAX, int repeat_count=1, E_smear=0, pos_smear=0, dir_smear=0, int preload=0)
 
 DEPENDENCY "@MCPLFLAGS@"
 
@@ -408,7 +409,7 @@ FINALLY
                 "Please examine the recorded intensities carefully.\n",
           NAME_CURRENT_COMP,(long unsigned)ncount,(long unsigned)nparticles,(long unsigned)used_photons);
     }
-    
+
     destroy_darr1d(X);
     destroy_darr1d(Y);
     destroy_darr1d(Z);
