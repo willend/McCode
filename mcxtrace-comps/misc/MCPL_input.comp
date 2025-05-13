@@ -216,7 +216,7 @@ INITIALIZE
 	      T[used_photons] = particle->time*1e-3;
 	      /*weight in unspecified units:*/
 	      P[used_photons] = particle->weight;
-              E[used_neutrons] = particle->ekin;
+              E[used_photons] = particle->ekin;
 	      used_photons++;
 	    }
 	    read_photons++;
@@ -232,7 +232,7 @@ INITIALIZE
     }
     repeat_tot=repeat_cnt*mpi_cnt;
     if (preload) {
-      mcset_ncount(repeat_tot*used_neutrons);
+      mcset_ncount(repeat_tot*used_photons);
     } else {
       mcset_ncount(repeat_tot*nparticles);
     }
