@@ -28,13 +28,13 @@
 * %Parameters
 * INPUT PARAMETERS
 *
-* filename: [str]       Name of photon mcpl file to read.
-* verbose: [ ]          Print debugging information for first 10 particles read.
-* preload: [ ]          Load particles during INITIALIZE. On GPU preload is forced.
-* polarisationuse: [ ]  If !=0 read polarisation vectors from file.
-* Emin: [keV]           Lower energy bound. Particles found in the MCPL-file below the limit are skipped.
-* Emax: [keV]           Upper energy bound. Particles found in the MCPL-file above the limit are skipped.
-* repeat_count: [1]     Repeat contents of the MCPL file this number of times. NB: When running MPI, repeating is implicit and is taken into account by integer division. Should be combined sith the _smear options!
+* filename: [str]       Name of photon mcpl file to read
+* verbose: [ ]          Print debugging information for first 10 particles read
+* preload: [ ]          Load particles during INITIALIZE. On GPU preload is forced
+* polarisationuse: [ ]  If !=0 read polarisation vectors from file
+* Emin: [keV]           Lower energy bound. Particles found in the MCPL-file below the limit are skipped
+* Emax: [keV]           Upper energy bound. Particles found in the MCPL-file above the limit are skipped
+* repeat_count: [1]     Repeat contents of the MCPL file this number of times. NB: When running MPI, repeating is implicit and is taken into account by integer division. MUST be combined sith the _smear options!
 * E_smear: [1]          When repeating events, make a Gaussian MC choice within E_smear*E around particle energy E
 * pos_smear: [m]        When repeating events, make a flat MC choice of position within pos_smear around particle starting position
 * dir_smear: [deg]      When repeating events, make a Gaussian MC choice of direction within dir_smear around particle direction
@@ -332,6 +332,7 @@ TRACE
     Ex=Ey=Ez=0;
   }
 
+  /*ekin is in MeV, in McXtrace keV*/ 
   if (!preload) {
     #ifndef OPENACC
     nrm = particle->ekin *1e3*E2K;

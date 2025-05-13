@@ -37,8 +37,8 @@
 * %P
 * INPUT PARAMETERS
 *
-* filename: [str]         Name of neutron file to write. If not given, the component name will be used.
-* verbose: [1]            If 1) Print summary information for created MCPL file. 2) Also print summary of first 10 particles information stored in the MCPL file. >2) Also print information for first 10 particles as they are being stored by McStas.
+* filename: [str]         Name of neutron file to write. If not given, the component name will be used
+* verbose: [1]            If 1) Print summary information for created MCPL file. 2) Also print summary of first 10 particles information stored in the MCPL file. >2) Also print information for first 10 particles as they are being stored by McStas
 * polarisationuse: [1]    Enable storing the polarisation state of the neutron.
 * doubleprec: [1]         Use double precision storage
 * userflag: [1]           Extra variable to attach to each neutron. The value of this variable will be packed into a 32 bit integer.
@@ -51,7 +51,7 @@
 
 DEFINE COMPONENT MCPL_output
 
-  SETTING PARAMETERS (int polarisationuse=0, int doubleprec=0, verbose=0, string userflag="",
+  SETTING PARAMETERS (int polarisationuse=0, int doubleprec=0, int verbose=0, string userflag="",
   string filename=0, string userflagcomment="", merge_mpi=1, keep_mpi_unmerged=0, buffermax=0)
 
 DEPENDENCY "@MCPLFLAGS@"
@@ -235,7 +235,7 @@ TRACE
   int fail;
 #ifdef OPENACC
   int cap;
-  #pragma acc atomic capture
+#pragma acc atomic capture
   {
     cap=captured++;
   }
@@ -274,7 +274,7 @@ TRACE
     }
 
     nrm =sqrt(vx*vx + vy*vy + vz*vz);
-    /*ekin is in MeV*/
+    /*ekin is in MeV, in McStas meV*/
     particle->ekin = VS2E*nrm*nrm/1e9;
     particle->direction[0] = vx/nrm;
     particle->direction[1] = vy/nrm;
@@ -319,15 +319,15 @@ SAVE
       Particle.position[0]=X[i]*100;
       Particle.position[1]=Y[i]*100;
       Particle.position[2]=Z[i]*100;
-      
+
       if(polarisationuse){
 	Particle.polarisation[0]=SX[i];
 	Particle.polarisation[1]=SY[i];
 	Particle.polarisation[2]=SZ[i];
       }
-      
+
       nrm =sqrt(VX[i]*VX[i] + VY[i]*VY[i] + VZ[i]*VZ[i]);
-      /*ekin is in MeV*/
+      /*ekin is in MeV, in McStas meV*/
       Particle.ekin = VS2E*nrm*nrm/1e9;
       Particle.direction[0] = VX[i]/nrm;
       Particle.direction[1] = VY[i]/nrm;
@@ -340,14 +340,14 @@ SAVE
       if(userflagenabled){
 	Particle.userflags = (uint32_t) U[i];
       }
-      
+
       if (verbose==3 && mcrun_num<10) {
 	printf("id=%ld\tpdg=2112\tekin=%g MeV\tx=%g cm\ty=%g cm\tz=%g cm\tux=%g\tuy=%g\tuz=%g\tt=%g ms\tweight=%g\tpolx=%g\tpoly=%g\tpolz=%g\n",
 	       mcrun_num, Particle.ekin, Particle.position[0], Particle.position[1], Particle.position[2],
 	       Particle.direction[0], Particle.direction[1], Particle.direction[2], Particle.time, Particle.weight,
 	       Particle.polarisation[0], Particle.polarisation[1], Particle.polarisation[2]);
       }
-      
+
       mcpl_add_particle(outputfile,&Particle);
     }
   }
@@ -405,7 +405,7 @@ FINALLY
 	fprintf(stderr,"Warning (%s): Could not remove one or more unmerged files.\n",NAME_CURRENT_COMP);
       }
     }
-    
+
     /*free the string storage*/
     sprintf(finalfile,merge_outfilename);
     free(merge_outfilename);
