@@ -37,8 +37,8 @@
 * %P
 * INPUT PARAMETERS
 *
-* filename: [str]         Name of neutron file to write. If not given, the component name will be used.
-* verbose: [1]            If 1) Print summary information for created MCPL file. 2) Also print summary of first 10 particles information stored in the MCPL file. >2) Also print information for first 10 particles as they are being stored by McStas.
+* filename: [str]         Name of neutron file to write. If not given, the component name will be used
+* verbose: [1]            If 1) Print summary information for created MCPL file. 2) Also print summary of first 10 particles information stored in the MCPL file. >2) Also print information for first 10 particles as they are being stored by McStas
 * polarisationuse: [1]    Enable storing the polarisation state of the neutron.
 * doubleprec: [1]         Use double precision storage
 * userflag: [1]           Extra variable to attach to each neutron. The value of this variable will be packed into a 32 bit integer.
@@ -51,7 +51,7 @@
 
 DEFINE COMPONENT MCPL_output_noacc
 
-  SETTING PARAMETERS (int polarisationuse=0, int doubleprec=0, verbose=0, string userflag="",
+  SETTING PARAMETERS (int polarisationuse=0, int doubleprec=0, int verbose=0, string userflag="",
   string filename=0, string userflagcomment="", merge_mpi=1, keep_mpi_unmerged=0, buffermax=0)
 
 DEPENDENCY "@MCPLFLAGS@"
@@ -89,7 +89,7 @@ INITIALIZE
 
 #if defined (USE_MPI)
   /* In case of MPI, simply redefine the filename used by each node */
-    sprintf(tmpstr, "Message(%s): You are using MCPL_output with MPI, hence your will get %i filenames %s.node_#i.mcpl{.gz} as output.\n",NAME_CURRENT_COMP,mpi_node_count,filename);
+    sprintf(tmpstr, "Message(%s): You are using MCPL_output with MPI, hence you will get %i filenames %s.node_#i.mcpl{.gz} as output.\n",NAME_CURRENT_COMP,mpi_node_count,filename);
     sprintf(extension,"node_%i.mcpl",mpi_node_rank);
 #else
     sprintf(extension,"mcpl");
@@ -215,7 +215,7 @@ TRACE
   }
 
   nrm =sqrt(vx*vx + vy*vy + vz*vz);
-  /*ekin is in MeV*/
+    /*ekin is in MeV, in McStas meV*/
   particle->ekin = VS2E*nrm*nrm/1e9;
   particle->direction[0] = vx/nrm;
   particle->direction[1] = vy/nrm;
@@ -232,7 +232,7 @@ TRACE
 
   MPI_MASTER(
   if (verbose==3 && mcrun_num<10) {
-    printf("id=%ld\tpdg=2112\tekin=%g MeV\tx=%g cm\ty=%g cm\tz=%g cm\tux=%g\tuy=%g\tuz=%g\tt=%g ms\tweight=%g\tpolx=%g\tpoly=%g\tpolz=%g\n",
+        printf("id=%lld\tpdg=2112\tekin=%g MeV\tx=%g cm\ty=%g cm\tz=%g cm\tux=%g\tuy=%g\tuz=%g\tt=%g ms\tweight=%g\tpolx=%g\tpoly=%g\tpolz=%g\n",
 	   mcrun_num, particle->ekin, particle->position[0], particle->position[1], particle->position[2],
 	   particle->direction[0], particle->direction[1], particle->direction[2], particle->time, particle->weight,
 	   particle->polarisation[0], particle->polarisation[1], particle->polarisation[2]);
@@ -301,7 +301,7 @@ FINALLY
                 fprintf(stderr,"Warning (%s): Could not remove one or more unmerged files.\n",NAME_CURRENT_COMP);
             }
         }
-    
+
         /*free the string storage*/
         sprintf(finalfile,merge_outfilename);
         free(merge_outfilename);
