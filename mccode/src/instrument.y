@@ -2130,7 +2130,8 @@ print_usage(void)
   fprintf(stderr, "      --verbose                  Display compilation process steps.\n");
 #if defined(GENERATE_C)
   fprintf(stderr, "      -I DIR  --search-dir=DIR   Append DIR to the component search list. \n");
-  fprintf(stderr, "      -t      --trace            Enable 'trace' mode for instrument display.\n");
+  fprintf(stderr, "      -t      --trace            Enable 'trace' mode for instrument display. (Enabled by default)\n");
+  fprintf(stderr, "              --no-trace         Disable 'trace' mode for instrument display.\n");
   fprintf(stderr, "      --no-main                  Do not create main(), for external embedding.\n");
   fprintf(stderr, "      --no-runtime               Do not embed run-time libraries.\n");
   fprintf(stderr, "      --source                   Embed the instrument source code in executable.\n");
@@ -2225,7 +2226,7 @@ parse_command_line(int argc, char *argv[])
   instr_current_filename                 = NULL;
   instrument_definition->use_default_main= 1;
   instrument_definition->include_runtime = 1;
-  instrument_definition->enable_trace    = 0;
+  instrument_definition->enable_trace    = 1;
   instrument_definition->portable        = 0;
   strcmp(instrument_definition->dependency, "-lm");
   executable_name                        = argv[0];
@@ -2252,6 +2253,8 @@ parse_command_line(int argc, char *argv[])
       instrument_definition->enable_trace = 1;
     else if(!strcmp("--trace", argv[i]))
       instrument_definition->enable_trace = 1;
+    else if(!strcmp("--no-trace", argv[i]))
+      instrument_definition->enable_trace = 0;
     else if(!strcmp("-p", argv[i]))
       instrument_definition->portable = 1;
     else if(!strcmp("--portable", argv[i]))
