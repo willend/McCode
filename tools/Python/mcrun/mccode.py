@@ -126,9 +126,6 @@ class McStas:
             options.force_compile = True
             # options.mccode_bin already contains cogen value
 
-        if self.options.no_trace is not None:
-            options.force_compile = True
-
         if self.options.D1 is not None:
             options.force_compile = True
 
