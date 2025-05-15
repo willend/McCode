@@ -126,6 +126,9 @@ class McStas:
             options.force_compile = True
             # options.mccode_bin already contains cogen value
 
+        if self.options.no_trace is not None:
+            options.force_compile = True
+
         if self.options.D1 is not None:
             options.force_compile = True
 
@@ -142,7 +145,7 @@ class McStas:
             LOG.info('Using existing c-file: %s', existingC)
             self.cpath = existingC
         else:
-            # Generate C-code (implicit: prepare for --trace mode if not no_main / Vitess)
+            # Generate C-code (implicit: prepare for --trace or --no-trace mode if not no_main / Vitess)
             LOG.info('Regenerating c-file: %s', basename(self.cpath))
             mccode_bin_abspath = str( pathlib.Path(mccode_config.directories['bindir']) / options.mccode_bin )
             if not os.path.exists(mccode_bin_abspath):
@@ -151,10 +154,13 @@ class McStas:
                 LOG.warning('Attempting replacement by "%s"', mccode_bin_abspath)
 
             if not options.no_main:
+                trace='-t'
+                if options.no_trace:
+                   trace='--no-trace'
                 if self.options.I is not None:
-                    Process(mccode_bin_abspath).run(['-t', '-o', self.cpath, self.path, '-I', self.options.I])
+                    Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path, '-I', self.options.I])
                 else:
-                    Process(mccode_bin_abspath).run(['-t', '-o', self.cpath, self.path])
+                    Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path])
             else:
                 if self.options.I is not None:
                     Process(mccode_bin_abspath).run(['--no-main', '-o', self.cpath, self.path, '-I', self.options.I])
