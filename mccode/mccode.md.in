@@ -8,7 +8,7 @@
 
 # SYNOPSIS
 
-**@FLAVOR@** [-o file] [-I dir1 ...] [-t] [-p] [-v] [--no-main] [--no-runtime] [--verbose] file
+**@FLAVOR@** [-o file] [-I dir1 ...] [-t] [--no-trace] [-p] [-v] [--no-main] [--no-runtime] [--verbose] file
 
 # DESCRIPTION
 
@@ -63,7 +63,10 @@ END
 :   Append DIR to the component search list.
 
 **-t --trace**
-:   Enable 'trace' mode for instrument display.
+:   Enable 'trace' mode for instrument display (enabled by default).
+
+**-no--trace**
+:   Disable 'trace' mode for instrument display.
 
 **-v --version**
 :   Prints @MCCODE_NAME@ version.
