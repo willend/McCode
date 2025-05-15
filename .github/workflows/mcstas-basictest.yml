@@ -342,7 +342,7 @@ jobs:
            #if [ "x$(uname)" == "xDarwin" ]; then export MCSTAS_CC_OVERRIDE=/usr/bin/clang; fi
            if [ "x$(uname)" == "xLinux" ]; then
              ../install_mcstas/bin/${MCRUN_EXECUTABLE} --format=NeXus --IDF templateSANS_Mantid.instr lambda=6
-             ../install_mcstas/bin/${MCRUN_EXECUTABLE} -c --verbose --mpi=2 --format=NeXus --IDF templateSANS_Mantid.instr lambda=6 -d MPIoutput
+             ../install_mcstas/bin/${MCRUN_EXECUTABLE} -c --verbose --mpi=2 --format=NeXus --IDF templateSANS_Mantid.instr lambda=6
            fi
 
     - name: 'Tar output files'
