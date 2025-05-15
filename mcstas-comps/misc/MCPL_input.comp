@@ -160,11 +160,9 @@ INITIALIZE
       VX = create_darr1d(nparticles);
       VY = create_darr1d(nparticles);
       VZ = create_darr1d(nparticles);
-      if(polarisationuse){
-        SX = create_darr1d(nparticles);
-        SY = create_darr1d(nparticles);
-        SZ = create_darr1d(nparticles);
-      }
+      SX = create_darr1d(nparticles);
+      SY = create_darr1d(nparticles);
+      SZ = create_darr1d(nparticles);
       T = create_darr1d(nparticles);
       P = create_darr1d(nparticles);
       E = create_darr1d(nparticles);
@@ -410,11 +408,9 @@ FINALLY
     destroy_darr1d(VX);
     destroy_darr1d(VY);
     destroy_darr1d(VZ);
-    if(polarisationuse){
-      destroy_darr1d(SX);
-      destroy_darr1d(SY);
-      destroy_darr1d(SZ);
-    }
+    destroy_darr1d(SX);
+    destroy_darr1d(SY);
+    destroy_darr1d(SZ);
     destroy_darr1d(T);
     destroy_darr1d(P);
 %}

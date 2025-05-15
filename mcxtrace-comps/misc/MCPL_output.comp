@@ -437,6 +437,17 @@ FINALLY
       }
     );
   }
+  destroy_darr1d(X);
+  destroy_darr1d(Y);
+  destroy_darr1d(Z);
+  destroy_darr1d(KX);
+  destroy_darr1d(KY);
+  destroy_darr1d(KZ);
+  destroy_darr1d(EX);
+  destroy_darr1d(EY);
+  destroy_darr1d(EZ);
+  destroy_darr1d(T);
+  destroy_darr1d(P);
 %}
 
 MCDISPLAY
