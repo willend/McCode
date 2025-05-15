@@ -266,7 +266,7 @@ def add_mcstas_options(parser):
         help='Enable trace of %ss through instrument' % (mccode_config.configuration["PARTICLE"]))
 
     add('--no-trace',
-        action='store_true', metavar='notrace', default=False,
+        action='store_true', metavar='notrace', default=None,
         help='Disable trace of %ss in instrument (implies -c!)' % (mccode_config.configuration["PARTICLE"]))
 
     add('-y', '--yes',
