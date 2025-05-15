@@ -145,9 +145,9 @@
 * flag_rayleigh:  [1] When 0, the Rayleigh scattering is ignored.
 * flag_lorentzian:[1] When 1, the line shapes are assumed to be Lorentzian, else Gaussian.
 * flag_kissel:    [1] When 1, to handle M-lines XRF from Kissel (else only K and L-lines, but faster).
-* escape_ratio:   [1] Detector escape peak ratio,  e.g. 0.01-0.02. 0 inactivates.
+* escape_ratio:   [1] Detector escape peak ratio,  e.g. 0.01-0.02. Zero inactivates.
 * escape_energy:[keV] Detector escape peak energy, e.g. 1.739 for Si, 9.886 for Ge.
-* pileup_ratio:   [1] Sum aka time coincidence aka pile-up detector peak ratio, e.g. 0.01-0.02. 0 inactivates.
+* pileup_ratio:   [1] Sum aka time coincidence aka pile-up detector peak ratio, e.g. 0.01-0.02. This is e.g. the dead-time ratio. Zero inactivates.
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
@@ -912,9 +912,19 @@ do { /* while (intersect) Loop over multiple scattering events */
           Ef = Ef + dE;
         }
         kf      = Ef*E2K;
+        theta   = acos(scalar_prod(kf_x,kf_y, kf_z, kx,ky,kz)/k);
+        /* add polarisation factor */
+        if (Ex!=0 || Ey!=0 || Ez!=0){
+          double EE=sqrt(Ex*Ex+Ey*Ey+Ez*Ez);
+          double s=scalar_prod(kf_x,kf_y,kf_z,Ex,Ey,Ez)/EE;
+          p *= (1-s)*(1-s);
+        } else {
+          /*unpolarized light in - means an effective reduction according to only theta*/
+          p *= (1+cos(theta)*cos(theta))*0.5;
+        }
         break;
         
-      case RAYLEIGH:     /* 1 Rayleigh: Coherent, elastic    */
+      case RAYLEIGH:     /* 1 Rayleigh: Coherent, elastic */
         n_Rayleigh++;
         p_Rayleigh += p;
         theta      = acos(scalar_prod(kf_x,kf_y, kf_z, kx,ky,kz)/k);
@@ -925,12 +935,14 @@ do { /* while (intersect) Loop over multiple scattering events */
       case COMPTON:      /* 2 Compton: Incoherent: choose final energy */
         n_Compton++;
         p_Compton += p;
-        theta      = acos(scalar_prod(kf_x,kf_y,kf_z, kx,ky,kz)/k);
+        theta      = acos(scalar_prod(kf_x,kf_y, kf_z, kx,ky,kz)/k);
         dsigma     = DCS_Compt(Z,  E, theta, NULL); // [barn/at/st]
         kf         = ComptonEnergy(E, theta, NULL)*E2K; /* XRayLib, fraction of emc2=511 keV */
         p         *= 4*PI*dsigma/xs[COMPTON];
         break;
     }
+    
+    
 
     // handle detector escape peak: just shift energy down by detector K-alpha
     if (escape_ratio > 0 && escape_energy > 0 && kf > escape_energy*E2K && rand01() < escape_ratio) {
