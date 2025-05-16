@@ -259,11 +259,15 @@ def add_mcstas_options(parser):
 
     add('-n', '--ncount',
         metavar='COUNT', type=float, default=1000000,
-        help='Set number of %s to simulate' % (mccode_config.configuration["PARTICLE"]))
+        help='Set number of %ss to simulate' % (mccode_config.configuration["PARTICLE"]))
 
     add('-t', '--trace',
         metavar='trace', type=int, default=0,
-        help='Enable trace of %s through instrument' % (mccode_config.configuration["PARTICLE"]))
+        help='Enable trace of %ss through instrument' % (mccode_config.configuration["PARTICLE"]))
+
+    add('--no-trace',
+        action='store_true', metavar='notrace', default=None,
+        help='Disable trace of %ss in instrument (combine with -c)' % (mccode_config.configuration["PARTICLE"]))
 
     add('-y', '--yes',
         action='store_true', default=False,

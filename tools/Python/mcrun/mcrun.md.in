@@ -147,10 +147,13 @@ series of `param=value` pairs. The `-h` option will list valid options.
 :   Set random seed (must be: SEED != 0)
 
 **-n COUNT, --ncount=COUNT**
-:   Set number of @MCCODE_PARTICLE@ to simulate
+:   Set number of @MCCODE_PARTICLE@s to simulate
 
 **-t trace, --trace=trace**
-:   Enable trace of @MCCODE_PARTICLE@ through instrument
+:   Enable trace of @MCCODE_PARTICLE@s through instrument
+
+**--no-trace**
+:   Disable trace of @MCCODE_PARTICLE@s in instrument (implies -c!)
 
 **-d DIR, --dir=DIR**
 :   Put all data files in directory DIR. Additionally, the directory will have
