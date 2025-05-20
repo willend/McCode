@@ -98,7 +98,7 @@ EXTEND %{
 
 COMPONENT FL_pow = FluoPowder(
     radius=0.5e-6, material=material,
-    escape_ratio=0.01, pileup_ratio=0.01, delta_d_d=delta_d_d)
+    delta_d_d=delta_d_d)
 WHEN (index == 3)
 AT (0, 0, 0) RELATIVE sample_cradle
 EXTEND %{
