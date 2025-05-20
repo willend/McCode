@@ -13,13 +13,13 @@
 * %Description
 * The HU52 undulator, a DCM, a fluorescence sample, and monitors.
 *
-* %Example: E0=3 Detector: mon_spl_fluo_I=1.9e+15
+* %Example: -n 1e7 E0=3 Detector: mon_spl_fluo_I=8.42337e+13
 *
 * %Parameters
 * E0: [keV] Nominal energy at the Wiggler.
 * dE: [keV] Energy half-bandwidth at the Wiggler
 * sample_material: [str] Absorption data file for the sample
-* sample_geometry: [str] OFF/PLY file name for sample 3D geometry, or emty for a box
+* sample_geometry: [str] OFF/PLY file name for sample 3D geometry, or NULL for a box.
 * dcm_theta: [deg] Rotation angle of the DCM. 0=set from energy E0
 *
 * %Link
@@ -28,7 +28,7 @@
 * %End
 *******************************************************************************/
 DEFINE INSTRUMENT SOLEIL_LUCIA(E0=3, dE=0.1, dcm_theta=0, 
-  string sample_material="CaCO3Ti", string sample_geometry="wire.ply")
+  string sample_material="CaCO3AlP", string sample_geometry="plant_cell.ply")
 
 DECLARE
 %{
@@ -50,7 +50,9 @@ INITIALIZE
     E0 = 2*PI/E2K / (2*d*sin(dcm_theta*DEG2RAD));
   if (!dcm_theta || !E0 || dE <=0)
     exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
-  printf("%s: E0=%g [keV] Monochromator dcm_theta=%g [deg] \n", NAME_INSTRUMENT, E0, dcm_theta);
+  MPI_MASTER(
+    printf("%s: E0=%g [keV] Monochromator dcm_theta=%g [deg] \n", NAME_INSTRUMENT, E0, dcm_theta);
+  );
   if (fabs(dE/E0)>0.1) dE = 3e-2*E0;
 %}
 
@@ -124,27 +126,40 @@ COMPONENT mon_dcm_xy = COPY(mon_src_xy)
 AT (0,0,0) RELATIVE PREVIOUS
 
 // The sample area -------------------------------------------------------------
-COMPONENT sample_stage = COPY(mon_src_xy)
-AT (0,0,8.13) RELATIVE PREVIOUS
+
+// a diaphragm before the sample
+COMPONENT diaphragm = Slit(
+  xwidth=100e-6, yheight=100e-6)
+AT (0,0,8) RELATIVE mon_dcm_e
+
+COMPONENT sample_stage = COPY(mon_src_xy)(
+  restore_xray=1, xwidth=100e-6, yheight=100e-6)
+AT (0,0,8.13) RELATIVE mon_dcm_e
 
 COMPONENT fluo_rotated = Arm()
 AT (0,0,0) RELATIVE PREVIOUS
 ROTATED (0,30,0) RELATIVE PREVIOUS
 
 COMPONENT sample = Fluorescence(
-  xwidth=0.001, yheight=0.001, zdepth=0.5e-3,
-  material=sample_material, geometry=sample_geometry, p_interact=0.8,
-  target_index=1, focus_xw=0.1, focus_yh=0.1)
+  xwidth=100e-6, yheight=100e-6, zdepth=50e-6,
+  material=sample_material, geometry=sample_geometry,
+  p_interact=0.9)
 AT (0,0,0) RELATIVE sample_stage
+
+COMPONENT transmission = COPY(mon_src_xy)(
+  restore_xray=1, xwidth=100e-6, yheight=100e-6)
+AT (0,0,0.1) RELATIVE sample_stage
+
+COMPONENT mon_spl_SDD = Fluo_detector(
+  xwidth=0.1, yheight=0.1, nE=512,
+  Emin=0, Emax=E0+dE*1.5, restore_xray=1)
+AT (0,0,0.1) RELATIVE fluo_rotated
 
 COMPONENT mon_spl_fluo = Monitor_nD(options="energy", 
   xwidth=0.1, yheight=0.1, bins=1000,
-  min=0, max=E0+dE*1.1)
+  min=0, max=E0+dE*1.1, restore_xray=1)
 AT (0,0,0.1) RELATIVE fluo_rotated
-  
 
-FINALLY
-%{
-%}
+
 
 END
