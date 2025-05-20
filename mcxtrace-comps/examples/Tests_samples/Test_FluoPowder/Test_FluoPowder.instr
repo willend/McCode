@@ -26,7 +26,7 @@
 * %Example: Test_FluoPowder.instr E0=15 index=1 Detector: Sph_mon_I=2.23119e-18
 * %Example: Test_FluoPowder.instr E0=15 index=2 Detector: Sph_mon_I=1.89376e-18
 * %Example: Test_FluoPowder.instr E0=15 index=3 Detector: Sph_mon_I=2.83261e-18
-* %Example: Test_FluoPowder.instr E0=15 index=4 Detector: Sph_mon_I=7.63749e-19
+* %Example: Test_FluoPowder.instr E0=15 index=4 Detector: Sph_mon_I=6.0176e-19
 * %Example: Test_FluoPowder.instr E0=15 index=5 Detector: Sph_mon_I=2.11144e-18
 *
 * %Parameters
@@ -98,7 +98,7 @@ EXTEND %{
 
 COMPONENT FL_pow = FluoPowder(
     radius=0.5e-6, material=material,
-    escape_ratio=0.01, pileup_ratio=0.01, delta_d_d=delta_d_d)
+    delta_d_d=delta_d_d)
 WHEN (index == 3)
 AT (0, 0, 0) RELATIVE sample_cradle
 EXTEND %{
