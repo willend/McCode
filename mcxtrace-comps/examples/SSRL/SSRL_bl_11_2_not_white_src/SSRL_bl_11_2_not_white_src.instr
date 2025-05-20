@@ -21,7 +21,7 @@
 * You may scan like so for example:
 *   mxrun -n 1e7 SSRL_bl_11_2_not_white_src.instr -N601 Etohit=6900,7500
 *
-* %Example: Etohit=6900 Detector: EnergyMonitor_first_I=5.22652e+12
+* %Example: Etohit=6900 Detector: EnergyMonitor_first_I=1.3e+10
 *
 * %Parameters
 * Etohit: [eV.] Energy used to calculate the bragg angle the monochromator is put at. This is the energy we select.
@@ -58,7 +58,7 @@ AT (0, 0, 0) ABSOLUTE
 
 COMPONENT src = Wiggler(
     E0=Etohit/1000, 
-    dE=100/1000, 
+    dE=100.0/1000,
     B=2,
     Nper=13,
     Ie=0.1,
@@ -155,13 +155,6 @@ AT (0,0,10) RELATIVE PREVIOUS
 COMPONENT EnergyMonitor_fourth = COPY(EnergyMonitor_first)(
     xwidth=4.3e-3,yheight=4.3e-3,filename="EnergyMonitor_fourth")  
 AT (0,0,0) RELATIVE PREVIOUS
-
-SAVE %{
-%}
-
-FINALLY
-%{                                              
-%}
 
 END
 
