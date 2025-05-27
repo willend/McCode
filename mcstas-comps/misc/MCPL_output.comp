@@ -37,22 +37,23 @@
 * %P
 * INPUT PARAMETERS
 *
-* filename: [str]         Name of neutron file to write. If not given, the component name will be used
+* filename: [str]         Name of neutron file to write. If not given, the component name will be used.
 * verbose: [1]            If 1) Print summary information for created MCPL file. 2) Also print summary of first 10 particles information stored in the MCPL file. >2) Also print information for first 10 particles as they are being stored by McStas
+* weight_mode: [1]        weight_mode=1: record initial ray count in MCPL stat:sum entry and rescale particle weights. weight_mode=2: classical (deprecated) mode of outputting particle weights directly.
 * polarisationuse: [1]    Enable storing the polarisation state of the neutron.
 * doubleprec: [1]         Use double precision storage
 * userflag: [1]           Extra variable to attach to each neutron. The value of this variable will be packed into a 32 bit integer.
 * userflagcomment: [str]  String variable to describe the userflag. If this string is empty (the default) no userflags will be stored.
-* merge_mpi: [1]          Flag to indicate if output should be merged in case of MPI
-* keep_mpi_unmerged: [1]  Flag to indicate if original unmerged mcpl-files should be kept (or deleted).
 * buffermax: [1]          Maximal number of events to save ( <= MAXINT), GPU/OpenACC only
 * %E
 *******************************************************************************/
 
 DEFINE COMPONENT MCPL_output
 
-  SETTING PARAMETERS (int polarisationuse=0, int doubleprec=0, int verbose=0, string userflag="",
-  string filename=0, string userflagcomment="", merge_mpi=1, keep_mpi_unmerged=0, buffermax=0)
+SETTING PARAMETERS ( string filename=0, int weight_mode=-1, int verbose=0,
+                     int polarisationuse=0, int doubleprec=0,
+                     string userflag="",  string userflagcomment="",
+                     buffermax=0 )
 
 DEPENDENCY "@MCPLFLAGS@"
 
@@ -71,8 +72,12 @@ DECLARE
 %{
   mcpl_outfile_t outputfile;
   mcpl_particle_t *particle;
-  mcpl_particle_t Particle;
   int userflagenabled;
+  char * outfilename; // "/some/where/myfile.mcpl.gz"
+  double weight_scale;
+
+  //OPENACC variables:
+  //(Note that cogen does not respect ifdefs here, so keep them also in non-acc mode)
   DArray1d X;
   DArray1d Y;
   DArray1d Z;
@@ -86,125 +91,117 @@ DECLARE
   DArray1d P;
   DArray1d U;
   int captured;
-  char finalfile[CHAR_BUF_LENGTH];
 %}
 
 INITIALIZE
 %{
-  char extension[128]="";
-  char *myfilename;
-  char tmpstr[CHAR_BUF_LENGTH];
-
-  // Use instance name for base output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename, "%s", NAME_CURRENT_COMP);
+  {
+    char * tmp = mcfull_file(filename[0] ? filename : NAME_CURRENT_COMP,NULL);
+    outfilename = mcpl_name_helper( tmp, 'G' );
+    free(tmp);
+  }
 
 #if defined (USE_MPI)
-  /* In case of MPI, simply redefine the filename used by each node */
-  sprintf(tmpstr, "Message(%s): You are using MCPL_output with MPI, hence you will get %i filenames %s.node_#i.mcpl{.gz} as output.\n",NAME_CURRENT_COMP,mpi_node_count,filename);
-  sprintf(extension,"node_%i.mcpl",mpi_node_rank);
+  unsigned long iproc = mpi_node_rank;
+  unsigned long nproc = mpi_node_count;
 #else
-  sprintf(extension,"mcpl");
+  unsigned long iproc = 0;
+  unsigned long nproc = 1;
 #endif
-  sprintf(tmpstr, "");
-  MPI_MASTER(
-    fprintf(stdout, "%s",tmpstr );
-  );
 
-  /*add output dir (if applicable) to the output filename and add extension if */
-  // Append the extension to the filename
-  //  -- do not use mcfull_file for this since it can not handle absolute filenames with a '.' in them
-  char * actual_filename = (char *) calloc(strlen(filename)+strlen(extension)+2, sizeof(char));
-  strcpy(actual_filename, filename);
-  strcat(actual_filename, ".");
-  strcat(actual_filename, extension);
+  outputfile = mcpl_create_outfile_mpi( outfilename, iproc, nproc );
 
-  // still use mcfull_file in case the filename does not include path information
-  myfilename = mcfull_file(actual_filename, NULL);
-
-  // release the memory now that we have the full filename
-  if (actual_filename) free(actual_filename);
+  mcpl_enable_universal_pdgcode(outputfile,2112);/*all particles are neutrons*/
 
   char line[256];
-  outputfile = mcpl_create_outfile(myfilename);
-  /*reset filename to be whatever mcpl actually calls it. It may have added .mcpl*/
-  snprintf(myfilename,strlen(myfilename)+5,"%s",mcpl_outfile_filename(outputfile));
-
-  snprintf(line,255,"%s %s %s",MCCODE_NAME,MCCODE_VERSION,instrument_name);
+  snprintf(line,sizeof(line),
+           "%s %s %s", MCCODE_NAME, MCCODE_VERSION, instrument_name );
   mcpl_hdr_set_srcname(outputfile,line);
-  mcpl_enable_universal_pdgcode(outputfile,2112);/*all particles are neutrons*/
-  snprintf(line,255,"Output by COMPONENT: %s",NAME_CURRENT_COMP);
+  snprintf( line,sizeof(line),
+            "Output by COMPONENT: %s",NAME_CURRENT_COMP );
   mcpl_hdr_add_comment(outputfile,line);
 
   /*also add the instrument file and the command line as blobs*/
-  FILE *fp;
-  if( (fp=fopen(instrument_source,"rb"))!=NULL){
-    unsigned char *buffer;
-    int size,status;
-    /*find the file size by seeking to end, "tell" the position, and then go back again*/
-    fseek(fp, 0L, SEEK_END);
-    size = ftell(fp); // get current file pointer
-    fseek(fp, 0L, SEEK_SET); // seek back to beginning of file
-    if ( size && (buffer=malloc(size))!=NULL){
-      if (size!=(fread(buffer,1,size,fp))){
-        fprintf(stderr,"\nWarning (%s): Source instrument file not read cleanly\n", NAME_CURRENT_COMP);
-      }
-      mcpl_hdr_add_data(outputfile, "mccode_instr_file", size, buffer);
-      free(buffer);
-    }
-    fclose(fp);
+  if ( mcpl_file_exist(instrument_source) ) {
+    uint64_t instrsrc_buflen;
+    char* instrsrc_buf = NULL;
+    mcpl_read_file_to_buffer( instrument_source,
+                              100*1024*1024,//100mb, must be less than uint32 max
+                              1,//text,
+                              &instrsrc_buflen, &instrsrc_buf );
+    mcpl_hdr_add_data( outputfile, "mccode_instr_file",
+                       (uint32_t)instrsrc_buflen,
+                       instrsrc_buf);
+    free(instrsrc_buf);
   } else {
-    fprintf(stderr,"\nWarning (%s): Source instrument file (%s) not found, hence not embedded.\n", NAME_CURRENT_COMP, instrument_source);
+    fprintf(stderr,"\nWarning (%s): Source instrument file (%s)"
+            " not found, hence not embedded.\n",
+            NAME_CURRENT_COMP, instrument_source);
   }
 
-  int ii;
-  char clr[2048],*clrp;
-  clrp=clr;
-  clrp+=snprintf(clrp,2048,"%s",instrument_exe);
-  char Parameters[CHAR_BUF_LENGTH];
-  for (ii=0;ii<numipar;ii++) {
-    (*mcinputtypes[mcinputtable[ii].type].printer)(Parameters, mcinputtable[ii].par);
-    clrp+=snprintf(clrp,2048-(clrp-clr)," %s=%s",mcinputtable[ii].name, Parameters);
-  }
-  *(clrp)='\0';
-  mcpl_hdr_add_data(outputfile, "mccode_cmd_line" , strlen(clr), clr);
-
-  if (polarisationuse) {
-    mcpl_enable_polarisation(outputfile);
-  }
-  if (doubleprec){
-    mcpl_enable_doubleprec(outputfile);
-  }
-
-  MPI_MASTER(
-    if (verbose==1) {
-      printf("MCPL_output verbose mode: after generating the mcpl-file a summary will be printed.\n");
+  {
+    char clr[2048];
+    char *clrp = clr;
+    clrp = clr;
+    clrp += snprintf(clrp,sizeof(clr),"%s",instrument_exe);
+    char Parameters[CHAR_BUF_LENGTH];
+    for ( int ii=0; ii<numipar; ii++ ) {
+      (*mcinputtypes[mcinputtable[ii].type].printer)(Parameters, mcinputtable[ii].par);
+      clrp += snprintf(clrp,sizeof(clr)-(clrp-clr),
+                       " %s=%s",mcinputtable[ii].name, Parameters );
     }
-  );
+    *clrp = '\0';
+    mcpl_hdr_add_data(outputfile, "mccode_cmd_line" , strlen(clr), clr);
+  }
 
-  /*Add comments on what the orientation and position of this component is.*/
-  /*Include the instrument file itself as a binary blob in the mcpl file*/
+  if ( weight_mode == -1 ) {
+    MPI_MASTER(
+      fprintf(stderr,"\nWarning (%s): weight_mode unspecified so defaulting to 2"
+              " (classic mode) which will soon become unavailable and tooling"
+              " might need updating. Please consult"
+              " https://github.com/mccode-dev/McCode/discussions/9999 for more"
+              " information.\n",NAME_CURRENT_COMP);
+    );
+    weight_mode = 2;
+  } else if ( weight_mode == 2 ) {
+    MPI_MASTER(
+      fprintf(stderr,"\nWarning (%s): weight_mode=2 selected. This mode will"
+              " soon become unavailable. Please consult"
+              " https://github.com/mccode-dev/McCode/discussions/9999 for more"
+              " information.\n",NAME_CURRENT_COMP);
+    );
+  }
+  if ( weight_mode != 1 && weight_mode != 2 ) {
+    fprintf(stderr,"\nERROR (%s): Unvalid value of weight_mode provided.\n",
+            NAME_CURRENT_COMP);
+    exit(1);
+  }
+
+  weight_scale = 1.0;
+  if ( weight_mode != 2 ) {
+    mcpl_hdr_add_stat_sum( outputfile, "initial_ray_count", -1.0 );//reserve
+    weight_scale = 1.0 / mcget_ncount();
+  }
+
+  if (polarisationuse)
+    mcpl_enable_polarisation(outputfile);
+
+  if (doubleprec)
+    mcpl_enable_doubleprec(outputfile);
 
   userflagenabled=0;
-  /*Have the option of including a user-flag like they do at Loki.*/
-  if (strlen(userflagcomment)!=0){
-    mcpl_enable_userflags(outputfile);
+  if ( userflagcomment && strlen(userflagcomment) != 0 ) {
     userflagenabled=1;
-    /*Don't add the comment if it's empty*/
-    if(userflagcomment && strlen(userflagcomment)){
-      snprintf(line,255,"userflags: %s",userflagcomment);
-      mcpl_hdr_add_comment(outputfile,line);
-    }
+    mcpl_enable_userflags(outputfile);
+    snprintf(line,255,"userflags: %s",userflagcomment);
+    mcpl_hdr_add_comment(outputfile,line);
   }
-  if (myfilename){
-    MPI_MASTER(
-      sprintf(finalfile,myfilename);
-    );
-    free(myfilename);
-  }
+
 #ifndef OPENACC
   /*pointer to the single particle storage area*/
-  particle=&Particle;
+  particle = mcpl_get_empty_particle(outputfile);
 #else
+  particle = NULL;
   if(!buffermax){
     buffermax= mcget_ncount();
   }
@@ -229,8 +226,6 @@ INITIALIZE
 
 TRACE
 %{
-  double uvar;
-  int fail;
 #ifdef OPENACC
   int cap;
 #pragma acc atomic capture
@@ -252,7 +247,10 @@ TRACE
     T[cap]=t;
     P[cap]=p;
     if(userflagenabled) {
-      uvar = particle_getvar(_particle,userflag,&fail); if(fail) uvar=0;
+      int fail;
+      double uvar = particle_getvar(_particle,userflag,&fail);
+      if(fail)
+        uvar=0;
       U[cap] = uvar;
     }
     SCATTER;
@@ -280,10 +278,13 @@ TRACE
   /*time in ms:*/
   particle->time = t*1e3;
   /*weight in unspecified units:*/
-  particle->weight = p;
-  /*if specified also add the userflags*/
-  if(userflagenabled){
-    uvar = particle_getvar(_particle,userflag,&fail); if(fail) uvar=0;
+  particle->weight = p * weight_scale;
+  if( userflagenabled ){
+    //TODO: Reconsider this passing of uint32_t flags through a double
+    int fail;
+    double uvar = particle_getvar(_particle,userflag,&fail);
+    if(fail)
+      uvar=0;
     particle->userflags = (uint32_t) uvar;
   }
 
@@ -310,6 +311,7 @@ SAVE
   if (captured > ceil(buffermax)) {
     fprintf(stderr,"MCPL_output captured %g particles which is more than the buffersize (%g)!\n",(double)captured,buffermax);
   }
+  mcpl_particle_t Particle;
   for (i=0;i<captured;i++) {
     if (P[i]>0) {
       /*positions are in cm*/
@@ -332,11 +334,9 @@ SAVE
       /*time in ms:*/
       Particle.time = T[i]*1e3;
       /*weight in unspecified units:*/
-      Particle.weight = P[i];
-      /*if specified also add the userflags*/
-      if(userflagenabled){
+      Particle.weight = P[i] * weight_scale;
+      if( userflagenabled )
         Particle.userflags = (uint32_t) U[i];
-      }
 
       if (verbose==3 && mcrun_num<10) {
         printf("id=%ld\tpdg=2112\tekin=%g MeV\tx=%g cm\ty=%g cm\tz=%g cm\tux=%g\tuy=%g\tuz=%g\tt=%g ms\tweight=%g\tpolx=%g\tpoly=%g\tpolz=%g\n",
@@ -353,84 +353,31 @@ SAVE
 
 FINALLY
 %{
-#ifdef USE_MPI
-  if (merge_mpi && mpi_node_count > 1) {
-    mcpl_close_outfile(outputfile);
-  } else {
-    mcpl_closeandgzip_outfile(outputfile);
-  }
-#else
+  if ( weight_mode != 2 )
+    mcpl_hdr_add_stat_sum( outputfile, "initial_ray_count",
+                           (double)mcget_ncount() );
   mcpl_closeandgzip_outfile(outputfile);
-#endif
+
 #ifdef USE_MPI
   MPI_Barrier(MPI_COMM_WORLD);
-  /* Only attempt merge if requested and meaningful */
-  if (mpi_node_rank==0 && merge_mpi && mpi_node_count > 1) {
-    char **mpi_node_files;
-    char *merge_outfilename;
-    char extension[128]="mcpl";
-    int j;
-    mcpl_outfile_t merge_outfile;
-
-    char * real_filename = (char *) calloc(strlen(filename) + strlen(extension) + 2, sizeof(char));
-    strcpy(real_filename, filename);
-    strcat(real_filename, ".");
-    strcat(real_filename, extension);
-
-    merge_outfilename = mcfull_file(real_filename, NULL);
-
-    mpi_node_files=(char **) calloc(mpi_node_count,sizeof(char *));
-    sprintf(extension,"node_%i.mcpl", mpi_node_count);
-    char * temp_name = (char *) calloc(strlen(filename) + strlen(extension) + 2, sizeof(char));
-    for (j=0;j<mpi_node_count;j++){
-      sprintf(temp_name, "%s.node_%i.mcpl", filename, j);
-      mpi_node_files[j] = mcfull_file(temp_name, NULL);
-    }
-    if (temp_name)
-      free(temp_name);
-
-    /*now do the merge through the call to mcpl_merge_files*/
-    merge_outfile = mcpl_merge_files(merge_outfilename,mpi_node_count,(const char **) mpi_node_files);
-    mcpl_closeandgzip_outfile(merge_outfile);
-
-    /*remove the original unmerged files if wanted*/
-    if(!keep_mpi_unmerged){
-      int status=0;
-      for (j=0;j<mpi_node_count;j++){
-        status+=remove(mpi_node_files[j]);
-      }
-      if (status){
-        fprintf(stderr,"Warning (%s): Could not remove one or more unmerged files.\n",NAME_CURRENT_COMP);
-      }
-    }
-
-    /*free the string storage*/
-    sprintf(finalfile,merge_outfilename);
-    free(merge_outfilename);
-    for (j=0;j<mpi_node_count;j++){
-      free(mpi_node_files[j]);
-    }
-    free(mpi_node_files);
-  }
 #endif
+#if defined (USE_MPI)
+  unsigned long iproc = mpi_node_rank;
+  unsigned long nproc = mpi_node_count;
+#else
+  unsigned long iproc = 0;
+  unsigned long nproc = 1;
+#endif
+
+  if ( iproc == 0 )
+    mcpl_merge_outfiles_mpi( outfilename, nproc );
   if(verbose) {
     MPI_MASTER(
-      /* check if we need to add .gz suffix */
-      if (!mcpl_file_exist(finalfile)) {
-        char *finalfilegz=malloc(CHAR_BUF_LENGTH*sizeof(char));
-        sprintf(finalfilegz,"%s.gz",finalfile);
-        sprintf(finalfile,"%s",finalfilegz);
-        free(finalfilegz);
-      }
-      /* Recheck for file existance */
-      if (mcpl_file_exist(finalfile)) {
-        printf("\n\nMCPL output summary from %s\n",finalfile);
-        mcpl_dump(finalfile, 0, 0, 10);
-      } else {
-        printf("\n\nWarning, did not localize expected output file for stat summary!\n");
-      }
+      printf("\n\nMCPL output summary from %s\n",outfilename);
+      mcpl_dump(outfilename, 0, 0, 10);
     );
   }
+#ifdef OPENACC
   destroy_darr1d(X);
   destroy_darr1d(Y);
   destroy_darr1d(Z);
@@ -442,6 +389,8 @@ FINALLY
   destroy_darr1d(SZ);
   destroy_darr1d(T);
   destroy_darr1d(P);
+#endif
+  free(outfilename);
 %}
 
 MCDISPLAY
