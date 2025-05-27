@@ -180,7 +180,9 @@ INITIALIZE
   weight_scale = 1.0;
   if ( weight_mode != 2 ) {
     mcpl_hdr_add_stat_sum( outputfile, "initial_ray_count", -1.0 );//reserve
-    weight_scale = 1.0 / mcget_ncount();
+    //Multiply with mcget_ncount() to undo division supposedly performed in
+    //source:
+    weight_scale = (double)mcget_ncount();
   }
 
   if (polarisationuse)
