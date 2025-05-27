@@ -62,6 +62,7 @@ mcpl_file_t inputfile;
 long long nparticles;
 long long read_neutrons;
 long long used_neutrons;
+double weight_scale;
 int repeat_cnt;
 int repeat_tot;
 int repeating;
@@ -90,9 +91,21 @@ INITIALIZE
         fprintf(stderr,"Warning(%s): Nonsensical energy interval: E=[%g,%g]. Aborting.\n",NAME_CURRENT_COMP,Emin,Emax);
         exit(-1);
     }
+
     /* No need to check if the file opens correctly since mcpl will
      * abort internally if it cannot open the file.*/
     inputfile = mcpl_open_file(filename);
+    double mcpl_ray_count = mcpl_hdr_stat_sum( inputfile, "initial_ray_count" );
+    if ( mcpl_ray_count == -2.0 ) {
+      //legacy format without ray count:
+      weight_scale = 1.0;
+    } else if ( !(mcpl_ray_count>0.0) ) {
+      fprintf(stderr, "ERROR: Input MCPL file has invalid initial_ray_count"
+              " (%g). Unable to determine weight scale.\n", mcpl_ray_count );
+      exit(1);
+    } else {
+      weight_scale = 1.0 / mcpl_ray_count;
+    }
 
 
     if ( !(nparticles=mcpl_hdr_nparticles(inputfile)) ) {
@@ -173,12 +186,6 @@ INITIALIZE
       particle=mcpl_read(inputfile);
       if (particle) {
         if (particle->pdgcode==2112) {
-          if (verbose && read_neutrons<11) {
-            printf("id=%ld pdg=2112\tekin=%g MeV\tx=%g cm\ty=%g cm\tz=%g cm\tux=%g\tuy=%g\tuz=%g\tt=%g ms\tweight=%g\tpolx=%g\tpoly=%g\tpolz=%g\n",
-                 (long unsigned)read_neutrons, particle->ekin, particle->position[0], particle->position[1], particle->position[2],
-                 particle->direction[0], particle->direction[1], particle->direction[2], particle->time, particle->weight,
-                 particle->polarisation[0], particle->polarisation[1], particle->polarisation[2]);
-          }
           /* check energy range*/
           if ( particle->ekin>Emin*1e-9 && particle->ekin<Emax*1e-9 ) {
             /* Particle energy in range */
@@ -208,7 +215,7 @@ INITIALIZE
             /*time in ms:*/
             T[used_neutrons] = particle->time;
             /*weight in unspecified units:*/
-            P[used_neutrons] = particle->weight;
+            P[used_neutrons] = particle->weight * weight_scale;
             E[used_neutrons] = particle->ekin;
             used_neutrons++;
           }
@@ -267,15 +274,6 @@ TRACE
         ABSORB;
     }
     used_neutrons++;
-
-    MPI_MASTER(
-      if (verbose && used_neutrons<11) {
-        printf("id=%ld pdg=2112\tekin=%g MeV\tx=%g cm\ty=%g cm\tz=%g cm\tux=%g\tuy=%g\tuz=%g\tt=%g ms\tweight=%g\tpolx=%g\tpoly=%g\tpolz=%g\n",
-           (long unsigned)read_neutrons, particle->ekin, particle->position[0], particle->position[1], particle->position[2],
-           particle->direction[0], particle->direction[1], particle->direction[2], particle->time, particle->weight,
-           particle->polarisation[0], particle->polarisation[1], particle->polarisation[2]);
-      }
-    );
   }
 #endif
   ncount = mcget_ncount();
@@ -366,7 +364,7 @@ TRACE
     /*time in ms:*/
     t=particle->time*1e-3;
     /*weight in unspecified units:*/
-    p=particle->weight;
+    p=particle->weight * weight_scale;
     #endif
   } else {
     t=T[i]*1e-3;

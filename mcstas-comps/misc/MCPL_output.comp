@@ -32,7 +32,7 @@
 *
 * These features are set this way to keep file sizes as manageable as possible.
 *
-* Example: MCPL_output( filename="voutput", verbose=1, userflag="flag", userflagcomment="Photon Id" )
+* Example: MCPL_output( filename="voutput", verbose=1, userflag="flag", userflagcomment="Neutron Id" )
 *
 * %P
 * INPUT PARAMETERS
