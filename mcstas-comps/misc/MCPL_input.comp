@@ -49,11 +49,17 @@ DEPENDENCY "@MCPLFLAGS@"
 SHARE
 %{
 #include <mcpl.h>
+#include <sys/stat.h>
 #ifdef _MSC_EXTENSIONS
 #include <windows.h>
 #define sleep Sleep
 #endif
 
+int mcplinput_file_exist(char *fn)
+{
+  struct stat buffer;
+  return (stat (fn, &buffer) == 0);
+}
 %}
 
 DECLARE
@@ -63,6 +69,7 @@ long long nparticles;
 long long read_neutrons;
 long long used_neutrons;
 double weight_scale;
+char * resolved_filename;
 int repeat_cnt;
 int repeat_tot;
 int repeating;
@@ -84,6 +91,30 @@ DArray1d P;
 
 INITIALIZE
 %{
+
+    {
+      if ( !filename || !filename[0] ) {
+        fprintf(stderr,"ERROR(%s): Requires filename parameter.\n",
+                NAME_CURRENT_COMP);
+        exit(-1);
+      }
+      char * fn_mcpl = mcpl_name_helper( filename, 'M' );
+      char * fn_mcplgz = mcpl_name_helper( filename, 'G' );
+      if ( mcplinput_file_exist(fn_mcpl) ) {
+        if ( mcplinput_file_exist(fn_mcplgz) ) {
+          fprintf(stderr,"ERROR(%s): Can not resolve input file unambiguously"
+                  " since both %s and %s exist.\n",NAME_CURRENT_COMP,
+                  fn_mcpl, fn_mcplgz);
+          exit(-1);
+        }
+        resolved_filename = fn_mcpl;
+        free(fn_mcplgz);
+      } else {
+        resolved_filename = fn_mcplgz;
+        free(fn_mcpl);
+      }
+    }
+
     char line[256];
     long long ncount;
 
@@ -94,7 +125,7 @@ INITIALIZE
 
     /* No need to check if the file opens correctly since mcpl will
      * abort internally if it cannot open the file.*/
-    inputfile = mcpl_open_file(filename);
+    inputfile = mcpl_open_file(resolved_filename);
     double mcpl_ray_count = mcpl_hdr_stat_sum( inputfile, "initial_ray_count" );
     if ( mcpl_ray_count == -2.0 ) {
       //legacy format without ray count:
@@ -114,8 +145,8 @@ INITIALIZE
         nparticles=ncount;
         #endif
     }else{
-        printf("Message(%s): MCPL file (%s) produced with %s.\n",NAME_CURRENT_COMP,filename,mcpl_hdr_srcname(inputfile));
-        printf("Message(%s): MCPL file (%s) contains %lu particles.\n",NAME_CURRENT_COMP,filename,(long unsigned)nparticles);
+        printf("Message(%s): MCPL file (%s) produced with %s.\n",NAME_CURRENT_COMP,resolved_filename,mcpl_hdr_srcname(inputfile));
+        printf("Message(%s): MCPL file (%s) contains %lu particles.\n",NAME_CURRENT_COMP,resolved_filename,(long unsigned)nparticles);
     }
     mcset_ncount(nparticles);
 
@@ -257,7 +288,7 @@ TRACE
       particle = mcpl_read(inputfile);
 
       MPI_MASTER(
-        printf("MCPL inputfile %s rewound %i time(s)\n",filename,repeating);
+        printf("MCPL inputfile %s rewound %i time(s)\n",resolved_filename,repeating);
         );
       } else
       ABSORB;
@@ -411,6 +442,8 @@ FINALLY
     destroy_darr1d(SZ);
     destroy_darr1d(T);
     destroy_darr1d(P);
+
+    free(resolved_filename);
 %}
 
 MCDISPLAY
