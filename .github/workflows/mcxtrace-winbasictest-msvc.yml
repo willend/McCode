@@ -134,7 +134,7 @@ jobs:
       working-directory: run_mcpl_input
       run: |
         copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
-        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl.gz test.instr
+        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl.gz .
 
     - name: Prepare MCPL_output instrument
       working-directory: run_mcpl_output
