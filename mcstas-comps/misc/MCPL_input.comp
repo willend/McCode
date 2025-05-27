@@ -21,7 +21,7 @@
 * When used with MPI, the --ncount given on the commandline is overwritten by
 * #MPI nodes x #events in the file.
 *
-* %BUGS
+* Example: MCPL_input(filename=voutput,verbose=1,repeat_count=1,v_smear=0.1,pos_smear=0.001,dir_smear=0.01)
 *
 * %P
 * INPUT PARAMETERS
@@ -226,13 +226,9 @@ INITIALIZE
             Z[used_neutrons]=particle->position[2];
 
             if(polarisationuse){
-            SX[used_neutrons]=(double)particle->polarisation[0];
-            SY[used_neutrons]=(double)particle->polarisation[1];
-            SZ[used_neutrons]=(double)particle->polarisation[2];
-            }else{
-            SX[used_neutrons]=0;
-            SY[used_neutrons]=0;
-            SZ[used_neutrons]=0;
+              SX[used_neutrons]=(double)particle->polarisation[0];
+              SY[used_neutrons]=(double)particle->polarisation[1];
+              SZ[used_neutrons]=(double)particle->polarisation[2];
             }
 
             double d0=particle->direction[0];
@@ -339,11 +335,11 @@ TRACE
 
   if(polarisationuse){
     if(!preload) {
-      #ifndef OPENACC
+#ifndef OPENACC
       sx=particle->polarisation[0];
       sy=particle->polarisation[1];
       sz=particle->polarisation[2];
-      #endif
+#endif
     } else {
       sx=SX[i];
       sy=SY[i];
@@ -355,9 +351,9 @@ TRACE
 
   /*ekin is in MeV, in McStas meV*/
   if (!preload) {
-    #ifndef OPENACC
+#ifndef OPENACC
     nrm = particle->ekin *1e9/VS2E;
-    #endif
+#endif
   } else {
     nrm = E[i] *1e9/VS2E;
   }
@@ -368,11 +364,11 @@ TRACE
   }
   double d0,d1,d2;
   if (!preload) {
-    #ifndef OPENACC
+#ifndef OPENACC
     d0=particle->direction[0];
     d1=particle->direction[1];
     d2=particle->direction[2];
-    #endif
+#endif
   } else {
     d0=VX[i];
     d1=VY[i];
@@ -408,53 +404,53 @@ TRACE
 
 SAVE
 %{
-  #ifndef OPENACC
+#ifndef OPENACC
   if (!preload) {
-      mcpl_close_file(inputfile);
+    mcpl_close_file(inputfile);
   }
-  #endif
+#endif
 %}
 
 FINALLY
 %{
-    long long ncount;
+  long long ncount;
 
-    ncount=mcget_ncount();
+  ncount=mcget_ncount();
 
-    if (used_neutrons!=read_neutrons){
-        fprintf(stdout,"Message(%s): You have used %lu of %lu neutrons available in the MCPL file.\n",NAME_CURRENT_COMP,
+  if (used_neutrons!=read_neutrons){
+    fprintf(stdout,"Message(%s): You have used %lu of %lu neutrons available in the MCPL file.\n",NAME_CURRENT_COMP,
           (long unsigned)used_neutrons,(long unsigned)read_neutrons);
-    }
-    if (ncount != used_neutrons){
-        fprintf(stderr,"Warning (%s): You requested %lu neutrons from a file which contains %lu particles in general, of which only %lu are neutrons (within the wanted energy interval).\n"
-                "Please examine the recorded intensities carefully.\n",
+  }
+  if (ncount != used_neutrons){
+    fprintf(stderr,"Warning (%s): You requested %lu neutrons from a file which contains %lu particles in general, of which only %lu are neutrons (within the wanted energy interval).\n"
+            "Please examine the recorded intensities carefully.\n",
           NAME_CURRENT_COMP,(long unsigned)ncount,(long unsigned)nparticles,(long unsigned)used_neutrons);
-    }
+  }
 
-    destroy_darr1d(X);
-    destroy_darr1d(Y);
-    destroy_darr1d(Z);
-    destroy_darr1d(VX);
-    destroy_darr1d(VY);
-    destroy_darr1d(VZ);
-    destroy_darr1d(SX);
-    destroy_darr1d(SY);
-    destroy_darr1d(SZ);
-    destroy_darr1d(T);
-    destroy_darr1d(P);
+  destroy_darr1d(X);
+  destroy_darr1d(Y);
+  destroy_darr1d(Z);
+  destroy_darr1d(VX);
+  destroy_darr1d(VY);
+  destroy_darr1d(VZ);
+  destroy_darr1d(SX);
+  destroy_darr1d(SY);
+  destroy_darr1d(SZ);
+  destroy_darr1d(T);
+  destroy_darr1d(P);
 
-    free(resolved_filename);
+  free(resolved_filename);
 %}
 
 MCDISPLAY
 %{
-    multiline(5, 0.2,0.2,0.0, -0.2,0.2,0.0, -0.2,-0.2,0.0, 0.2,-0.2,0.0, 0.2,0.2,0.0);
-    /*M*/
-    multiline(5,-0.085,-0.085,0.0, -0.085,0.085,0.0, -0.045,-0.085,0.0, -0.005,0.085,0.0, -0.005,-0.085,0.0);
-    /*I*/
-    line(0.045,-0.085,0, 0.045, 0.085,0);
-    line(0.005, 0.085,0, 0.085, 0.085,0);
-    line(0.005,-0.085,0, 0.085,-0.085,0);
+  multiline(5, 0.2,0.2,0.0, -0.2,0.2,0.0, -0.2,-0.2,0.0, 0.2,-0.2,0.0, 0.2,0.2,0.0);
+  /*M*/
+  multiline(5,-0.085,-0.085,0.0, -0.085,0.085,0.0, -0.045,-0.085,0.0, -0.005,0.085,0.0, -0.005,-0.085,0.0);
+  /*I*/
+  line(0.045,-0.085,0, 0.045, 0.085,0);
+  line(0.005, 0.085,0, 0.085, 0.085,0);
+  line(0.005,-0.085,0, 0.085,-0.085,0);
 %}
 
 END

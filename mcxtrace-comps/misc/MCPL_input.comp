@@ -7,7 +7,7 @@
 *
 * Component: MCPL_input
 *
-* %Identification
+* %I
 * Written by: Erik B Knudsen
 * Date: Aug 2016
 * Origin: DTU Physics
@@ -23,9 +23,9 @@
 * When used with MPI, the --ncount given on the commandline is overwritten by
 * #MPI nodes x #events in the file.
 *
-* Example: MCPL_input(filename=voutput.mcpl,verbose=1,repeat_count=1,E_smear=0.1,pos_smear=0.001,dir_smear=0.01)
+* Example: MCPL_input(filename=voutput,verbose=1,repeat_count=1,E_smear=0.1,pos_smear=0.001,dir_smear=0.01)
 *
-* %Parameters
+* %P
 * INPUT PARAMETERS
 *
 * filename: [str]       Name of photon mcpl file to read
@@ -39,7 +39,7 @@
 * pos_smear: [m]        When repeating events, make a flat MC choice of position within pos_smear around particle starting position
 * dir_smear: [deg]      When repeating events, make a Gaussian MC choice of direction within dir_smear around particle direction
 *
-* %End
+* %E
 *******************************************************************************/
 
 DEFINE COMPONENT MCPL_input
@@ -51,123 +51,170 @@ DEPENDENCY "@MCPLFLAGS@"
 SHARE
 %{
 #include <mcpl.h>
+#include <sys/stat.h>
 #ifdef _MSC_EXTENSIONS
 #include <windows.h>
 #define sleep Sleep
 #endif
 
+int mcplinput_file_exist(char *fn)
+{
+  struct stat buffer;
+  return (stat (fn, &buffer) == 0);
+}
 %}
 
 DECLARE
 %{
-  mcpl_file_t inputfile;
-  long long nparticles;
-  long long read_photons;
-  long long used_photons;
-  int repeat_cnt;
-  int repeat_tot;
-  int repeating;
-  int ismpislave;
-  int mpi_cnt;
-  DArray1d X;
-  DArray1d Y;
-  DArray1d Z;
-  DArray1d KX;
-  DArray1d KY;
-  DArray1d KZ;
-  DArray1d EX;
-  DArray1d EY;
-  DArray1d EZ;
-  DArray1d E;
-  DArray1d T;
-  DArray1d P;
+mcpl_file_t inputfile;
+long long nparticles;
+long long read_photons;
+long long used_photons;
+double weight_scale;
+char * resolved_filename;
+int repeat_cnt;
+int repeat_tot;
+int repeating;
+int ismpislave;
+int mpi_cnt;
+DArray1d X;
+DArray1d Y;
+DArray1d Z;
+DArray1d KX;
+DArray1d KY;
+DArray1d KZ;
+DArray1d EX;
+DArray1d EY;
+DArray1d EZ;
+DArray1d E;
+DArray1d T;
+DArray1d P;
 %}
 
 INITIALIZE
 %{
-  char line[256];
-  long long ncount;
 
-  if(Emax<Emin){
-    fprintf(stderr,"Warning(%s): Nonsensical energy interval: E=[%g,%g]. Aborting.\n",NAME_CURRENT_COMP,Emin,Emax);
-    exit(-1);
-  }
-  /* No need to check if the file opens correctly since mcpl will
-   * abort internally if it cannot open the file.                 */
-  inputfile = mcpl_open_file(filename);
+    {
+      if ( !filename || !filename[0] ) {
+        fprintf(stderr,"ERROR(%s): Requires filename parameter.\n",
+                NAME_CURRENT_COMP);
+        exit(-1);
+      }
+      char * fn_mcpl = mcpl_name_helper( filename, 'M' );
+      char * fn_mcplgz = mcpl_name_helper( filename, 'G' );
+      if ( mcplinput_file_exist(fn_mcpl) ) {
+        if ( mcplinput_file_exist(fn_mcplgz) ) {
+          fprintf(stderr,"ERROR(%s): Can not resolve input file unambiguously"
+                  " since both %s and %s exist.\n",NAME_CURRENT_COMP,
+                  fn_mcpl, fn_mcplgz);
+          exit(-1);
+        }
+        resolved_filename = fn_mcpl;
+        free(fn_mcplgz);
+      } else {
+        resolved_filename = fn_mcplgz;
+        free(fn_mcpl);
+      }
+    }
 
-  if ( !(nparticles=mcpl_hdr_nparticles(inputfile)) ) {
-    fprintf(stderr,"Warning(%s): MCPL-file reports no present particles. Foolishly trying to go on.\n",NAME_CURRENT_COMP);
-#ifndef OPENACC
-    nparticles=ncount;
-#endif
-  } else {
-    printf("Message(%s): MCPL file (%s) produced with %s.\n",NAME_CURRENT_COMP,filename,mcpl_hdr_srcname(inputfile));
-    printf("Message(%s): MCPL file (%s) contains %lu particles.\n",NAME_CURRENT_COMP,filename,(long unsigned)nparticles);
-  }
-  mcset_ncount(nparticles);
+    char line[256];
+    long long ncount;
 
-  if(repeat_count>1 && E_smear==0 && pos_smear==0 && dir_smear==0) {
-    fprintf(stdout, "\n\n WARNING: You have requested a repeat_count=%i but have left all *_smear parameters at 0!\n --> This is not allowed! Resetting to repeat_count=1!\n",repeat_count);
-    fprintf(stderr, "\n\n WARNING: You have requested a repeat_count=%i but have left all *_smear parameters at 0!\n --> This is not allowed! Resetting to repeat_count=1!\n",repeat_count);
-    repeat_count=1;
-    sleep(10);
-  }
+    if(Emax<Emin){
+        fprintf(stderr,"Warning(%s): Nonsensical energy interval: E=[%g,%g]. Aborting.\n",NAME_CURRENT_COMP,Emin,Emax);
+        exit(-1);
+    }
 
-  if(repeat_count==0) repeat_count=1;
-  repeat_cnt = repeat_count;
-  mpi_cnt=1;
-  ismpislave=0;
+    /* No need to check if the file opens correctly since mcpl will
+     * abort internally if it cannot open the file.*/
+    inputfile = mcpl_open_file(resolved_filename);
+    double mcpl_ray_count = mcpl_hdr_stat_sum( inputfile, "initial_ray_count" );
+    if ( mcpl_ray_count == -2.0 ) {
+      //legacy format without ray count:
+      weight_scale = 1.0;
+    } else if ( !(mcpl_ray_count>0.0) ) {
+      fprintf(stderr, "ERROR: Input MCPL file has invalid initial_ray_count"
+              " (%g). Unable to determine weight scale.\n", mcpl_ray_count );
+      exit(1);
+    } else {
+      weight_scale = 1.0 / mcpl_ray_count;
+    }
+
+
+    if ( !(nparticles=mcpl_hdr_nparticles(inputfile)) ) {
+        fprintf(stderr,"Warning(%s): MCPL-file reports no present particles. Foolishly trying to go on.\n",NAME_CURRENT_COMP);
+        #ifndef OPENACC
+        nparticles=ncount;
+        #endif
+    }else{
+        printf("Message(%s): MCPL file (%s) produced with %s.\n",NAME_CURRENT_COMP,resolved_filename,mcpl_hdr_srcname(inputfile));
+        printf("Message(%s): MCPL file (%s) contains %lu particles.\n",NAME_CURRENT_COMP,resolved_filename,(long unsigned)nparticles);
+    }
+    mcset_ncount(nparticles);
+
+    if(repeat_count>1 && E_smear==0 && pos_smear==0 && dir_smear==0) {
+      fprintf(stdout, "\n\n WARNING: You have requested a repeat_count=%i but have left all *_smear parameters at 0!\n --> This is not allowed! Resetting to repeat_count=1!\n",repeat_count);
+      fprintf(stderr, "\n\n WARNING: You have requested a repeat_count=%i but have left all *_smear parameters at 0!\n --> This is not allowed! Resetting to repeat_count=1!\n",repeat_count);
+      repeat_count=1;
+      sleep(10);
+    }
+
+    if(repeat_count==0) repeat_count=1;
+    repeat_cnt = repeat_count;
+    mpi_cnt=1;
+    ismpislave=0;
 #if defined (USE_MPI)
-  repeat_cnt = ceil(1.0*repeat_cnt/mpi_node_count);
-  mpi_cnt=mpi_node_count;
-  ismpislave = mpi_node_rank;
+    repeat_cnt = ceil(1.0*repeat_cnt/mpi_node_count);
+    mpi_cnt=mpi_node_count;
+    ismpislave = mpi_node_rank;
 #endif
-  MPI_MASTER(
-    fprintf(stdout, "\n\n Warning: You are using MCPL_input with a repeat_count of %lu:\n - Minimum photon count requested is %lu x %lu <= %lu",
+    MPI_MASTER(
+      fprintf(stdout, "\n\n Warning: You are using MCPL_input with a repeat_count of %lu:\n - Minimum photon count requested is %lu x %lu <= %lu",
             (long unsigned)repeat_count,(long unsigned)nparticles,
             (long unsigned)repeat_count,(long unsigned)repeat_cnt*(long unsigned)nparticles);
-  );
-  char tmpstr[CHAR_BUF_LENGTH];
+    );
+
+    char tmpstr[CHAR_BUF_LENGTH];
 #if defined (USE_MPI)
-  sprintf(tmpstr, " x %i MPI nodes = %lu photons total\n",
+    sprintf(tmpstr, " x %i MPI nodes = %lu photons total\n",
           mpi_node_count,(long unsigned)mpi_node_count*(long unsigned)repeat_cnt*(long unsigned)nparticles);
 #else
-  sprintf(tmpstr, " photons total\n\n");
+    sprintf(tmpstr, " photons total\n\n");
 #endif
-  MPI_MASTER(
-    printf(stdout, "%s",tmpstr);
-  );
-  read_photons=0;
-  used_photons=0;
 
-  MPI_MASTER(
-    if (verbose==1) {
+    MPI_MASTER(
+      fprintf(stdout, "%s",tmpstr);
+    );
+    read_photons=0;
+    used_photons=0;
+
+    MPI_MASTER(
+      if (verbose==1) {
       printf("MCPL_input verbose mode - outputting data on the 10 first read photons in MCPL units:\n");
-    }
-  );
-  repeating = 0;
+      }
+    );
+    repeating = 0;
 #ifdef OPENACC
-  preload=1;
-  printf("OpenACC, preload implicit:\n");
+    preload=1;
+    printf("OpenACC, preload implicit:\n");
 #endif
-  if (preload) {
-    printf("Preload requested, loading MCPLfile in INITIALIZE\n");
-    X = create_darr1d(nparticles);
-    Y = create_darr1d(nparticles);
-    Z = create_darr1d(nparticles);
-    KX = create_darr1d(nparticles);
-    KY = create_darr1d(nparticles);
-    KZ = create_darr1d(nparticles);
-    EX = create_darr1d(nparticles);
-    EY = create_darr1d(nparticles);
-    EZ = create_darr1d(nparticles);
-    T = create_darr1d(nparticles);
-    P = create_darr1d(nparticles);
-    E = create_darr1d(nparticles);
-    printf("Initiating file read...\n");
-    int loop;
-    for (loop=0; loop < nparticles ; loop++) {
+    if (preload) {
+      printf("Preload requested, loading MCPLfile in INITIALIZE\n");
+      X = create_darr1d(nparticles);
+      Y = create_darr1d(nparticles);
+      Z = create_darr1d(nparticles);
+      KX = create_darr1d(nparticles);
+      KY = create_darr1d(nparticles);
+      KZ = create_darr1d(nparticles);
+      EX = create_darr1d(nparticles);
+      EY = create_darr1d(nparticles);
+      EZ = create_darr1d(nparticles);
+      T = create_darr1d(nparticles);
+      P = create_darr1d(nparticles);
+      E = create_darr1d(nparticles);
+      printf("Initiating file read...\n");
+      int loop;
+      for (loop=0; loop < nparticles ; loop++) {
       const mcpl_particle_t *particle;
       particle=mcpl_read(inputfile);
       if (particle) {
@@ -190,10 +237,6 @@ INITIALIZE
               EX[used_photons]=(double)particle->polarisation[0];
               EY[used_photons]=(double)particle->polarisation[1];
               EZ[used_photons]=(double)particle->polarisation[2];
-            }else{
-              EX[used_photons]=0;
-              EY[used_photons]=0;
-              EZ[used_photons]=0;
             }
             double nrm;
             nrm = particle->ekin *1e3*E2K;
@@ -210,27 +253,27 @@ INITIALIZE
             /*time in ms:*/
             T[used_photons] = particle->time*1e-3;
             /*weight in unspecified units:*/
-            P[used_photons] = particle->weight;
+            P[used_photons] = particle->weight * weight_scale;
             E[used_photons] = particle->ekin;
             used_photons++;
           }
           read_photons++;
         }
       }
-    }
-    printf("Done reading MCPL file, found %ld photons\n",(long unsigned)read_photons);
-    mcpl_close_file(inputfile);
-    fprintf(stdout, "\n\n Warning: You are using MCPL_input with a repeat_count of %lu:\n - Minimum photon count requested is %lu x %lu <= %lu",
+      }
+      printf("Done reading MCPL file, found %ld photons\n",(long unsigned)read_photons);
+      mcpl_close_file(inputfile);
+      fprintf(stdout, "\n\n Warning: You are using MCPL_input with a repeat_count of %lu:\n - Photon count requested is %lu x %lu <= %lu",
             (long unsigned)repeat_count,(long unsigned)read_photons,
-            (long unsigned)repeat_count,(long unsigned)repeat_cnt*read_photons);
-    fprintf(stdout, " photons total\n\n");
-  }
-  repeat_tot=repeat_cnt*mpi_cnt;
-  if (preload) {
-    mcset_ncount(repeat_tot*used_photons);
-  } else {
-    mcset_ncount(repeat_tot*nparticles);
-  }
+            (long unsigned)repeat_count,(long unsigned)repeat_cnt*(long unsigned)read_photons);
+      fprintf(stdout, " photons total\n\n");
+    }
+    repeat_tot=repeat_cnt*mpi_cnt;
+    if (preload) {
+      mcset_ncount(repeat_tot*used_photons);
+    } else {
+      mcset_ncount(repeat_tot*nparticles);
+    }
 %}
 
 TRACE
@@ -246,20 +289,20 @@ TRACE
     ncount=mcget_ncount();
     if (!particle) {
       if(repeat_cnt>1) {
-        /* Trigger rewind of the file and ABSORB to get the first photon "again" */
-        repeating++;
-        mcpl_rewind(inputfile);
-        particle = mcpl_read(inputfile);
+      /* Trigger rewind of the file and ABSORB to get the first photon "again" */
+      repeating++;
+      mcpl_rewind(inputfile);
+      particle = mcpl_read(inputfile);
 
-        MPI_MASTER(
-          printf("MCPL inputfile %s rewound %i time(s)\n",filename,repeating);
+      MPI_MASTER(
+        printf("MCPL inputfile %s rewound %i time(s)\n",resolved_filename,repeating);
         );
       } else
-        ABSORB;
+      ABSORB;
     }
     if (particle->pdgcode!=22) {
-      /*Either no particle read, particle is not a photon, or it has invalid energy - terminate to trigger next ray*/
-      ABSORB;
+        /*Either no particle read, particle is not a photon, or it has invalid energy - terminate to trigger next ray*/
+       ABSORB;
     }
     read_photons++;
 
@@ -269,15 +312,6 @@ TRACE
       ABSORB;
     }
     used_photons++;
-
-    MPI_MASTER(
-      if (verbose && used_photons<11) {
-        printf("id=%ld\tpdg=22\tekin=%g MeV\tx=%g cm\ty=%g cm\tz=%g cm\tux=%g\tuy=%g\tuz=%g\tt=%g ms\tweight=%g\tpolx=%g\tpoly=%g\tpolz=%g\n",
-               read_photons, particle->ekin, particle->position[0], particle->position[1], particle->position[2],
-               particle->direction[0], particle->direction[1], particle->direction[2], particle->time, particle->weight,
-               particle->polarisation[0], particle->polarisation[1], particle->polarisation[2]);
-      }
-    );
   }
 #endif
   ncount = mcget_ncount();
@@ -337,11 +371,7 @@ TRACE
 
   nrm = sqrt(nrm);
   if (ismpislave || repeating) {
-    // Energy-MC:
-    double tmp=(1.0+E_smear*randpm1());
-    //printf("Adjusting energy from %g to",nrm);
     nrm *= (1+E_smear*randpm1());
-    //printf(" to %g\n",nrm);
   }
   double d0,d1,d2;
   if (!preload) {
@@ -372,7 +402,7 @@ TRACE
     /*time in ms:*/
     t=particle->time*1e-3;
     /*weight in unspecified units:*/
-    p=particle->weight;
+    p=particle->weight * weight_scale;
 #endif
   } else {
     t=T[i]*1e-3;
@@ -381,7 +411,7 @@ TRACE
   /* Correct for repetition, by repeat_count and/or MPI */
   p /= (repeat_tot);
   SCATTER;
-  %}
+%}
 
 SAVE
 %{
@@ -390,7 +420,7 @@ SAVE
     mcpl_close_file(inputfile);
   }
 #endif
-  %}
+%}
 
 FINALLY
 %{
@@ -405,7 +435,7 @@ FINALLY
   if (ncount != used_photons){
     fprintf(stderr,"Warning (%s): You requested %ld photons from a file which contains %lu particles in general, of which only %lu are photons (within the wanted energy interval).\n"
             "Please examine the recorded intensities carefully.\n",
-            NAME_CURRENT_COMP,(long unsigned)ncount,(long unsigned)nparticles,(long unsigned)used_photons);
+          NAME_CURRENT_COMP,(long unsigned)ncount,(long unsigned)nparticles,(long unsigned)used_photons);
   }
 
   destroy_darr1d(X);
@@ -419,6 +449,8 @@ FINALLY
   destroy_darr1d(EZ);
   destroy_darr1d(T);
   destroy_darr1d(P);
+
+  free(resolved_filename);
 %}
 
 MCDISPLAY
