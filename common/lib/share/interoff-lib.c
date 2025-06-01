@@ -38,6 +38,10 @@
 #ifndef INTEROFF_LIB_C
 #define INTEROFF_LIB_C "$Revision$"
 
+#ifdef OPENACC // If on GPU map fprintf to printf
+#define fprintf(stderr,...) printf(__VA_ARGS__)
+#endif
+
 #pragma acc routine
 double off_F(double x, double y,double z,double A,double B,double C,double D) {
   return ( A*x + B*y + C*z + D );
@@ -370,9 +374,7 @@ int off_clip_3D_mod(intersection* t, Coords a, Coords b,
 #ifdef OFF_LEGACY
         if (t_size>OFF_INTERSECT_MAX)
         {
-#ifndef OPENACC
           fprintf(stderr, "Warning: number of intersection exceeded (%d) (interoff-lib/off_clip_3D_mod)\n", OFF_INTERSECT_MAX);
-#endif
             return (t_size);
         }
 #endif
@@ -454,9 +456,7 @@ int off_clip_3D_mod_grav(intersection* t, Coords pos, Coords vel, Coords acc,
     
     if (t_size>CHAR_BUF_LENGTH)
       {
-#ifndef OPENACC
 	fprintf(stderr, "Warning: number of intersection exceeded (%d) (interoff-lib/off_clip_3D_mod)\n", CHAR_BUF_LENGTH);
-#endif
 	return (t_size);
       }
     //both planes intersect the polygon, let's find the intersection point
