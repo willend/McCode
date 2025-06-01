@@ -1,14 +1,14 @@
 /*******************************************************************************
-* McStas, neutron ray-tracing package
-*         Copyright 1997-2002, All rights reserved
-*         Risoe National Laboratory, Roskilde, Denmark
-*         Institut Laue Langevin, Grenoble, France
+* McXtrace, x-ray tracing package
+*         Copyright, All rights reserved
+*         DTU Physics, Kgs. Lyngby, Denmark
+*         Synchrotron SOLEIL, Saint-Aubin, France
 *
 * Component: Event_monitor_simple
 *
 * %I
 * Written by: Peter Willendrup
-* Date: Oct 3rd, 2020
+* Date: May 21st, 2025
 * Origin: DTU
 *
 * Low-key event-monitor for debugging purposes.
@@ -64,19 +64,19 @@ TRACE
     #pragma acc atomic write
     Events[i][2] = z;
     #pragma acc atomic write
-    Events[i][3] = vx;
+    Events[i][3] = kx;
     #pragma acc atomic write
-    Events[i][4] = vy;
+    Events[i][4] = ky;
     #pragma acc atomic write
-    Events[i][5] = vz;
+    Events[i][5] = kz;
     #pragma acc atomic write
     Events[i][6] = t;
     #pragma acc atomic write
-    Events[i][7] = sx;
+    Events[i][7] = Ex;
     #pragma acc atomic write
-    Events[i][8] = sy;
+    Events[i][8] = Ey;
     #pragma acc atomic write
-    Events[i][9] = sz;
+    Events[i][9] = Ez;
     #pragma acc atomic write
     Events[i][10] = p;
   }
@@ -93,7 +93,7 @@ SAVE
   }
   fprintf(fp,"# Event-file %s, contains %lu events\n",fullfile,Nevents);
   fprintf(fp,"########################################### START EVENT LIST ##############################################\n");
-  fprintf(fp,"#   id        x        y        z       vx       vy       vz        t       sx       sy       sz        p # \n");
+  fprintf(fp,"#   id        x        y        z       kx       ky       kz        t       Ex       Ey       Ez        p # \n");
   fprintf(fp,"###########################################################################################################\n");
   unsigned long i;
   int j;

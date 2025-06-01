@@ -43,6 +43,10 @@
 #include "r-interoff-lib.h"
 #endif
 
+#ifdef OPENACC // If on GPU map fprintf to printf
+#define fprintf(stderr,...) printf(__VA_ARGS__)
+#endif
+
 #pragma acc routine
 double r_off_F(double x, double y,double z,double A,double B,double C,double D) {
   return ( A*x + B*y + C*z + D );
@@ -366,9 +370,7 @@ int r_off_clip_3D_mod(r_intersection* t, Coords a, Coords b,
 #ifdef OFF_LEGACY
         if (t_size>OFF_INTERSECT_MAX)
         {
-#ifndef OPENACC
           fprintf(stderr, "Warning: number of intersection exceeded (%d) (interoff-lib/off_clip_3D_mod)\n", OFF_INTERSECT_MAX);
-#endif
             return (t_size);
         }
 #endif
@@ -450,9 +452,7 @@ int r_off_clip_3D_mod_grav(r_intersection* t, Coords pos, Coords vel, Coords acc
     
     if (t_size>CHAR_BUF_LENGTH)
       {
-#ifndef OPENACC
 	fprintf(stderr, "Warning: number of intersection exceeded (%d) (interoff-lib/off_clip_3D_mod)\n", CHAR_BUF_LENGTH);
-#endif
 	return (t_size);
       }
     //both planes intersect the polygon, let's find the intersection point
@@ -891,6 +891,10 @@ int n2 =  r - m;
 r_intersection *L, *R;
  L = (r_intersection *)malloc(sizeof(r_intersection) * n1);
  R = (r_intersection *)malloc(sizeof(r_intersection) * n2);
+  if (!L||!R) {
+   fprintf(stderr,"Error allocating intersection arrays\n");
+   exit(-1);
+ }
 /* Copy data to temp arrays L[] and R[] */
  #pragma acc loop independent
 for (i = 0; i < n1; i++)
