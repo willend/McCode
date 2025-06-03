@@ -491,8 +491,8 @@ class InstrDocWriter:
 
 <BODY>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="http://dreasgrech.com/upload/jslatex/jquery.jslatex.packed.js"></script>
+<script src="https://tex.mccode.org/jquery/latest/jquery.min.js"></script>
+<script src="https://tex.mccode.org/jquery/latex/jquery.jslatex.packed.js"></script>
 <script>
 $(function () {
     $(".latex").latex();
@@ -770,6 +770,13 @@ function comp() {
 }
 </script>
 
+<script src="https://tex.mccode.org/jquery/latest/jquery.min.js"></script>
+<script src="https://tex.mccode.org/jquery/latex/jquery.jslatex.packed.js"></script>
+<script>
+$(function () {
+    $(".latex").latex();
+});
+</script>
 
 <BODY>
 
