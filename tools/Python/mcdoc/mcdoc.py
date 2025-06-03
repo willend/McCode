@@ -491,6 +491,14 @@ class InstrDocWriter:
 
 <BODY>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="http://dreasgrech.com/upload/jslatex/jquery.jslatex.packed.js"></script>
+<script>
+$(function () {
+    $(".latex").latex();
+});
+</script>
+
 <P ALIGN=CENTER>
  [ <A href="#id">Identification</A>
  | <A href="#desc">Description</A>
