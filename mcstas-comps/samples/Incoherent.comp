@@ -334,6 +334,7 @@ TRACE
         ABSORB; /* should never occur */
       }
       d_path = v * (dt0 + dt2);   /* Length of full path through sample */
+      
       /* Proba of scattering vs absorption (integrating along the whole trajectory) */
       ws = VarsInc.my_s/my_t;  /* (inc+coh)/(inc+coh+abs) */
       /* Proba of transmission along length d_path */
@@ -384,8 +385,8 @@ TRACE
 
       /* If t0 is in hole, propagate to next part of the hollow cylinder */
       if (dt1 > 0 && dt0 > 0 && dt > dt0) dt += dt1;
-
       PROP_DT(dt);                /* Point of scattering */
+      
 
       if ((VarsInc.tx || VarsInc.ty || VarsInc.tz)) {
         aim_x = VarsInc.tx-x;       /* Vector pointing at target (anal./det.) */
@@ -445,6 +446,30 @@ TRACE
       }
     } /* end if intersect */
   } while (intersect); /* end do (intersect) (multiple scattering loop) */
+
+
+  // Add attenuation of exit flight path for non-multiple scattering
+  if (order && SCATTERED){
+    if (VarsInc.shape == 0)
+      intersect = cylinder_intersect(&t0, &t3, x, y, z, vx, vy, vz, radius, yheight);
+    else if (VarsInc.shape == 1)
+      intersect = box_intersect(&t0, &t3, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
+    else if (VarsInc.shape == 2)
+      intersect = sphere_intersect(&t0, &t3, x, y, z, vx, vy, vz, radius);
+    #ifdef USE_OFF
+    else if (VarsInc.shape == 3)
+      intersect = off_intersect(&t0, &t3, NULL, NULL, x, y, z, vx, vy, vz, 0, 0, 0, thread_offdata );
+    #endif
+
+    d_path = v * t3;   /* Length of full path through sample */
+
+
+    p_trans = exp(-my_t*d_path);
+    p *= p_trans;
+    PROP_DT(t3);
+
+  }
+
 %}
 
 MCDISPLAY
