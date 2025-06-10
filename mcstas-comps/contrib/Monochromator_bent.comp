@@ -1293,47 +1293,23 @@ INITIALIZE
 						"invalid monochromator radius=%g. Maybe you wanted to turn the component around instead?\n", NAME_CURRENT_COMP, radius_x));
 
 	if (!x_pos){
-		double pos[n_crystals];
-		for (int i=0;i<n_crystals;i++){
-			pos[i] = 0;
-		}
-		x_pos = pos;
+          x_pos=calloc(n_crystals, sizeof(double));
 	}
 	if (!y_pos){
-		double pos[n_crystals];
-		for (int i=0;i<n_crystals;i++){
-			pos[i] = 0;
-		}
-		y_pos = pos;
+          y_pos=calloc(n_crystals, sizeof(double));
 	}
 	if (!z_pos){
-		double pos[n_crystals];
-		for (int i=0;i<n_crystals;i++){
-			pos[i] = 0;
-		}
-		z_pos = pos;
+          z_pos=calloc(n_crystals, sizeof(double));
 	}
 	if (!x_rot){
-		double pos[n_crystals];
-		for (int i=0;i<n_crystals;i++){
-			pos[i] = 0;
-		}
-		x_rot = pos;
-	}
+          x_rot=calloc(n_crystals, sizeof(double));
+        }
 	if (!y_rot){
-		double pos[n_crystals];
-		for (int i=0;i<n_crystals;i++){
-			pos[i] = 0;
-		}
-		y_rot = pos;
+          y_rot=calloc(n_crystals, sizeof(double));
 	}
-	if (!z_rot){
-		double pos[n_crystals];
-		for (int i=0;i<n_crystals;i++){
-			pos[i] = 0;
-		}
-		z_rot = pos;
-	}
+        if (!z_rot){
+          z_rot=calloc(n_crystals, sizeof(double));
+        }
 	if (verbose){
 		printf("Monochromator_Bent output: "
 						"Component name is %s:\n", NAME_CURRENT_COMP);
