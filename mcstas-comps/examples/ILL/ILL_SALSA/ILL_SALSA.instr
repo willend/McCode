@@ -39,7 +39,7 @@
 * Furthermore the sample environment is of course variable depending on the sample
 * in question.
 * 
-* %Example: ILL_SALSA.instr lambda_mean=1.66795 Detector: Beam_entrance_monitor_psd_I=4e+07
+* %Example: ILL_SALSA.instr lambda_mean=1.66795 Detector: Beam_entrance_monitor_psd_I=1.80888e+08
 * 
 * %Parameters
 * lambda_mean:                     [Å]   Desired wavelength of neutrons coming off of the monochromator.
@@ -49,6 +49,8 @@
 * monochromator_horizontal_radius: [m]   Radius of the horizontal cylinder the monochromator is bent on.
 * takeoff_angle:                   [deg] Takeoff angle of the instrument
 * mono_rotation:                   [deg] Rotation of monochromator in the horizontal plane. Omega angle in SALSA
+* lamellas:                        [1]   Number of lamellas in the monochromator array
+* monochromator_slabs:             [1]   Number of slabs of lamellas placed on top of each other in the monochromator array
 * vertical_mono_radius:            [m]   Radius of the cylinder the monochromator is bent on vertically
 * vertical_focus:                  [mm]  Choice of collimator focus in mm. Choose either 2, 4, or 10.
 * horizontal_focus:                [mm]  Choice of collimator focus in mm. Choose either 0.6, 2, or 4.
@@ -59,18 +61,20 @@
 ********************************************************************************/
 
 DEFINE INSTRUMENT ILL_SALSA (
-double lambda_mean = 1.66795, // Desired wavelength of neutrons coming off of the monochromator.
-double lambda_spread = 0.0224372, // Range over which the neutrons are produced. lambda_mean +- lambda_spread.
-double m = 2, // m-value of whole guide coating. 0 absorbing, 1 for Ni, 1.2 for Ni58, 2-4 for SM
-double mip = 2, // m-value of in-pile guide coating
-double monochromator_horizontal_radius = 2.6, // Radius of the horizontal cylinder the monochromator is bent on.
-double takeoff_angle = 75.8, // Takeoff angle of the instrument
-double mono_rotation = 37.9, // Rotation of monochromator in the horizontal plane. Omega angle in SALSA
-double vertical_mono_radius = 2.2, // "Radius of the cylinder the monochromator is bent on vertically
-double vertical_focus = 2, // Choice of collimator focus in mm. Choose either 2, 4, or 10.
-double horizontal_focus = 0.6, // Choice of collimator focus in mm. Choose either 0.6, 2, or 4.
-double outgoing_focus = 0.6, // Choice of collimator focus in mm. Choose either 0.6, 2, or 4.
-double measuring_angle = 50, // Angle between the outgoing collimator and sample. Rotates in the negative direction of revolution. I.E with the clock.
+double lambda_mean = 1.66795, 
+double lambda_spread = 0.0224372, 
+double m = 2, 
+double mip = 2, 
+double monochromator_horizontal_radius = 2.6, 
+double takeoff_angle = 75.8, 
+double mono_rotation = 37.9, 
+int lamellas=16,
+int monochromator_slabs=39,
+double vertical_mono_radius = 2.2, 
+double vertical_focus = 2, 
+double horizontal_focus = 0.6, 
+double outgoing_focus = 0.6,
+double measuring_angle = 50,
 int Debug=0)
 
 DECLARE 
@@ -95,7 +99,12 @@ double gW;
 
     /* capture flux positions from moderator: 21.4    28.4    61.2 */
 
-  
+double* mono_sandwich_x;
+double* mono_sandwich_y;
+double* mono_sandwich_z;
+double* mono_sandwich_rot_x;
+double* mono_sandwich_rot_y;
+double* mono_sandwich_rot_z;
 int vertical_collimator;
 int horizontal_collimator;
 int outgoing_collimator;
@@ -106,10 +115,10 @@ double secondary_collimator_data[28] = {0.132,0.0695,0.459,0.055,0.15,39,12,0.26
 
 INITIALIZE 
 %{
-// Start of initialize for generated ILL_SALSA
-gQc = 0.021;
-gAlpha = 4.07;
-gW = 1.0/300.0;
+    // Start of initialize for generated ILL_SALSA
+    gQc = 0.021;
+    gAlpha = 4.07;
+    gW = 1.0/300.0;
 
     /* Element rotations = Element length / Curvature Radius * RAD2DEG */
     if (gRh) {
@@ -119,7 +128,31 @@ gW = 1.0/300.0;
       Rh_H22_6  = L_H22_6 /gRh*RAD2DEG;
     }
     printf("Instrument: ILL_H22 (H22@ILL thermal guide).\n");
-    
+        mono_sandwich_x = (double*)malloc(lamellas*monochromator_slabs*sizeof(double));
+    mono_sandwich_y = (double*)malloc(lamellas*monochromator_slabs*sizeof(double));
+    mono_sandwich_z = (double*)malloc(lamellas*monochromator_slabs*sizeof(double));
+    mono_sandwich_rot_x = (double*)malloc(lamellas*monochromator_slabs*sizeof(double));
+    mono_sandwich_rot_y = (double*)malloc(lamellas*monochromator_slabs*sizeof(double));
+    mono_sandwich_rot_z = (double*)malloc(lamellas*monochromator_slabs*sizeof(double));
+    //FOCUSING MONOCHROMATOR ARRRAY
+    double gap = 0.0001;
+    double total_mono_height = 0.209;
+    double mono_thickness = 0.0005;
+    double total_mono_thickness = (mono_thickness + gap)*lamellas;
+    double angle_min = asin(total_mono_height/vertical_mono_radius)*RAD2DEG;
+    for (int i=0; i< monochromator_slabs;i++){
+        for (int j=0;j<lamellas;j++){
+            mono_sandwich_rot_x[i*lamellas + j] = 0;
+            mono_sandwich_rot_y[i*lamellas + j] = 0;
+            mono_sandwich_rot_z[i*lamellas + j] = angle_min/2 - angle_min*i/monochromator_slabs;
+            
+            mono_sandwich_x[i*lamellas + j] = total_mono_thickness * j / lamellas
+                                                - total_mono_thickness/2;
+            mono_sandwich_y[i*lamellas + j] = total_mono_height*i/monochromator_slabs 
+                                            - total_mono_height/2;
+            mono_sandwich_z[i*lamellas + j] = 0;     
+        }
+    }
 
     if (vertical_focus == 2) 
         vertical_collimator = 0;
@@ -2134,474 +2167,19 @@ COMPONENT arm_mono = Arm()
 AT (0,0,0.5) RELATIVE arm_guide_end
 ROTATED (0,mono_rotation,0) RELATIVE arm_guide_end
 
-COMPONENT arm_mono_0 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,2.67042917191868) RELATIVE arm_mono
-
-COMPONENT arm_mono_1 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,2.5334840861792607) RELATIVE arm_mono
-
-COMPONENT arm_mono_2 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,2.3965390004398412) RELATIVE arm_mono
-
-COMPONENT arm_mono_3 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,2.259593914700422) RELATIVE arm_mono
-
-COMPONENT arm_mono_4 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,2.122648828961002) RELATIVE arm_mono
-
-COMPONENT arm_mono_5 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,1.9857037432215825) RELATIVE arm_mono
-
-COMPONENT arm_mono_6 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,1.848758657482163) RELATIVE arm_mono
-
-COMPONENT arm_mono_7 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,1.7118135717427436) RELATIVE arm_mono
-
-COMPONENT arm_mono_8 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,1.5748684860033242) RELATIVE arm_mono
-
-COMPONENT arm_mono_9 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,1.4379234002639047) RELATIVE arm_mono
-
-COMPONENT arm_mono_10 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,1.300978314524485) RELATIVE arm_mono
-
-COMPONENT arm_mono_11 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,1.1640332287850657) RELATIVE arm_mono
-
-COMPONENT arm_mono_12 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,1.0270881430456462) RELATIVE arm_mono
-
-COMPONENT arm_mono_13 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,0.8901430573062266) RELATIVE arm_mono
-
-COMPONENT arm_mono_14 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,0.7531979715668073) RELATIVE arm_mono
-
-COMPONENT arm_mono_15 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,0.6162528858273877) RELATIVE arm_mono
-
-COMPONENT arm_mono_16 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,0.47930780008796825) RELATIVE arm_mono
-
-COMPONENT arm_mono_17 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,0.3423627143485488) RELATIVE arm_mono
-
-COMPONENT arm_mono_18 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,0.20541762860912938) RELATIVE arm_mono
-
-COMPONENT arm_mono_19 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,0.06847254286970994) RELATIVE arm_mono
-
-COMPONENT arm_mono_20 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-0.06847254286970994) RELATIVE arm_mono
-
-COMPONENT arm_mono_21 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-0.20541762860912938) RELATIVE arm_mono
-
-COMPONENT arm_mono_22 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-0.3423627143485488) RELATIVE arm_mono
-
-COMPONENT arm_mono_23 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-0.47930780008796825) RELATIVE arm_mono
-
-COMPONENT arm_mono_24 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-0.6162528858273877) RELATIVE arm_mono
-
-COMPONENT arm_mono_25 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-0.7531979715668071) RELATIVE arm_mono
-
-COMPONENT arm_mono_26 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-0.890143057306227) RELATIVE arm_mono
-
-COMPONENT arm_mono_27 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-1.027088143045646) RELATIVE arm_mono
-
-COMPONENT arm_mono_28 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-1.1640332287850654) RELATIVE arm_mono
-
-COMPONENT arm_mono_29 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-1.3009783145244853) RELATIVE arm_mono
-
-COMPONENT arm_mono_30 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-1.4379234002639047) RELATIVE arm_mono
-
-COMPONENT arm_mono_31 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-1.5748684860033237) RELATIVE arm_mono
-
-COMPONENT arm_mono_32 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-1.7118135717427436) RELATIVE arm_mono
-
-COMPONENT arm_mono_33 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-1.8487586574821635) RELATIVE arm_mono
-
-COMPONENT arm_mono_34 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-1.9857037432215825) RELATIVE arm_mono
-
-COMPONENT arm_mono_35 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-2.1226488289610024) RELATIVE arm_mono
-
-COMPONENT arm_mono_36 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-2.2595939147004214) RELATIVE arm_mono
-
-COMPONENT arm_mono_37 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-2.3965390004398412) RELATIVE arm_mono
-
-COMPONENT arm_mono_38 = Arm()
-AT (vertical_mono_radius,0,0) RELATIVE arm_mono
-ROTATED (0,0,-2.5334840861792602) RELATIVE arm_mono
-
-COMPONENT Monochromator_0 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
+COMPONENT salsa_mono_array = Monochromator_bent(
+ zwidth = 0.178, yheight = 0.005,
  xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_0
-GROUP monochromator_array
-
-COMPONENT Monochromator_1 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_1
-GROUP monochromator_array
-
-COMPONENT Monochromator_2 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_2
-GROUP monochromator_array
-
-COMPONENT Monochromator_3 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_3
-GROUP monochromator_array
-
-COMPONENT Monochromator_4 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_4
-GROUP monochromator_array
-
-COMPONENT Monochromator_5 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_5
-GROUP monochromator_array
-
-COMPONENT Monochromator_6 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_6
-GROUP monochromator_array
-
-COMPONENT Monochromator_7 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_7
-GROUP monochromator_array
-
-COMPONENT Monochromator_8 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_8
-GROUP monochromator_array
-
-COMPONENT Monochromator_9 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_9
-GROUP monochromator_array
-
-COMPONENT Monochromator_10 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_10
-GROUP monochromator_array
-
-COMPONENT Monochromator_11 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_11
-GROUP monochromator_array
-
-COMPONENT Monochromator_12 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_12
-GROUP monochromator_array
-
-COMPONENT Monochromator_13 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_13
-GROUP monochromator_array
-
-COMPONENT Monochromator_14 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_14
-GROUP monochromator_array
-
-COMPONENT Monochromator_15 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_15
-GROUP monochromator_array
-
-COMPONENT Monochromator_16 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_16
-GROUP monochromator_array
-
-COMPONENT Monochromator_17 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_17
-GROUP monochromator_array
-
-COMPONENT Monochromator_18 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_18
-GROUP monochromator_array
-
-COMPONENT Monochromator_19 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_19
-GROUP monochromator_array
-
-COMPONENT Monochromator_20 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_20
-GROUP monochromator_array
-
-COMPONENT Monochromator_21 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_21
-GROUP monochromator_array
-
-COMPONENT Monochromator_22 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_22
-GROUP monochromator_array
-
-COMPONENT Monochromator_23 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_23
-GROUP monochromator_array
-
-COMPONENT Monochromator_24 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_24
-GROUP monochromator_array
-
-COMPONENT Monochromator_25 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_25
-GROUP monochromator_array
-
-COMPONENT Monochromator_26 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_26
-GROUP monochromator_array
-
-COMPONENT Monochromator_27 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_27
-GROUP monochromator_array
-
-COMPONENT Monochromator_28 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_28
-GROUP monochromator_array
-
-COMPONENT Monochromator_29 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_29
-GROUP monochromator_array
-
-COMPONENT Monochromator_30 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_30
-GROUP monochromator_array
-
-COMPONENT Monochromator_31 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_31
-GROUP monochromator_array
-
-COMPONENT Monochromator_32 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_32
-GROUP monochromator_array
-
-COMPONENT Monochromator_33 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_33
-GROUP monochromator_array
-
-COMPONENT Monochromator_34 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_34
-GROUP monochromator_array
-
-COMPONENT Monochromator_35 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_35
-GROUP monochromator_array
-
-COMPONENT Monochromator_36 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_36
-GROUP monochromator_array
-
-COMPONENT Monochromator_37 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_37
-GROUP monochromator_array
-
-COMPONENT Monochromator_38 = Monochromator_bent(
- mosaicity=0, zwidth = 0.178, yheight = 0.005,
- xthickness = 0.0005, radius_x = monochromator_horizontal_radius,
- lamella_slabs = 16, lamella_gap_size = 0.00025,
- plane_of_reflection = "Si400")
-AT (-2.2,0,0) RELATIVE arm_mono_38
-GROUP monochromator_array
-
+ n_crystals = lamellas*monochromator_slabs,
+ plane_of_reflection = "Si400", mosaicity = 0,
+ draw_as_rectangles=1,
+ x_pos = mono_sandwich_x,
+ y_pos = mono_sandwich_y,
+ z_pos = mono_sandwich_z,
+ x_rot = mono_sandwich_rot_x,
+ y_rot = mono_sandwich_rot_y,
+ z_rot = mono_sandwich_rot_z)
+AT (0,0,0) RELATIVE arm_mono
 
 COMPONENT arm_takeoff = Arm()
 AT (0,0,0) RELATIVE arm_mono
