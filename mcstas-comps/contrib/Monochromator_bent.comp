@@ -5,7 +5,7 @@
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Component: Monochromator
+* Component: Monochromator_bent
 *
 * %I
 * Written by: Daniel Lomholt Christensen <dlc@math.ku.dk> 
@@ -37,51 +37,52 @@
 * %P
 * INPUT PARAMETERS:
 *
-* zwidth: [m]               			Width of each crystal without bending.
-* yheight: [m]              			Height of each crystal without bending.
-* xthickness: [m]           			Thickness of each crystal without bending.
-* radius_x: [m]             			Radius of the circle the monochromator bends on in the plane.
-* plane_of_reflection: ["Si400"] 		The plane of reflection from the material. The list of possible reflections can 
-* 										can be seen in the source code.
-* angle_to_cut_horizontal [degrees]  	Angle between cut and normal of crystal slab, horizontally
-* angle_to_cut_vertical [degrees] 		Angle between cut and normal of crystal slab, vertically ! NOTE: This may not work as intended.
-* mosaicity[arc minutes]                Gaussian mosaicity of the crystal. Always the horizontal mosaicity
-* mosaic_anisotropy                     Anisotropy of the mosaicity, changes vertical mosaicity to be mosaic_anisotropy*mosaicity
-* domainthickness [micro meter]			Thickness of the crystal domains.
-* temperature: [K]          			Temperature of the monochromator in Kelvin.
-* optimize: []							Flag to tell if the component should optimize for reflections or not. NOTE: May not work perfectly
-* vector x_pos = NULL					x-Position of each crystal
-* vector y_pos = NULL					y-Position of each crystal
-* vector z_pos = NULL					z-Position of each crystal
-* vector x_rot = NULL 					Rotation around x-axis for each crystal
-* vector y_rot = NULL 					Rotation around y-axis for each crystal
-* vector z_rot = NULL					Rotation around z-axis for each crystal
-*										NOTE: Rotations happen around x, then y, then z.
-* verbose: [0]							Verbosity of the monochromator. Used for debugging. 
+* zwidth:                  [m]      Width of each crystal without bending.
+* yheight:                 [m]      Height of each crystal without bending.
+* xthickness:              [m]      Thickness of each crystal without bending.
+* radius_x:                [m]      Radius of the circle the monochromator bends on in the plane.
+* plane_of_reflection:     [str]    The plane of reflection from the material, e.g. "Si400". The list of possible reflections can can be seen in the source code.
+* angle_to_cut_horizontal: [deg]    Angle between cut and normal of crystal slab, horizontally
+* angle_to_cut_vertical:   [deg]    Angle between cut and normal of crystal slab, vertically ! NOTE: This may not work as intended.
+* mosaicity:               [arcmin] Gaussian mosaicity of the crystal. Always the horizontal mosaicity
+* mosaic_anisotropy:       [1]      Anisotropy of the mosaicity, changes vertical mosaicity to be mosaic_anisotropy*mosaicity
+* domainthickness:         [1e-6m]  Thickness of the crystal domains.
+* temperature:             [K]      Temperature of the monochromator in Kelvin.
+* optimize:                [1]	    Flag to tell if the component should optimize for reflections or not. NOTE: May not work perfectly
+* x_pos:                   [vector] x-Position of each crystal
+* y_pos:                   [vector] y-Position of each crystal
+* z_pos:                   [vector] z-Position of each crystal
+* x_rot:                   [vector] Rotation around x-axis for each crystal (NOTE: Rotations happen around x, then y, then z.)
+* y_rot:                   [vector] Rotation around y-axis for each crystal
+* z_rot:                   [vector] Rotation around z-axis for each crystal										
+* verbose:                 [1]      Verbosity of the monochromator. Used for debugging. 
+* n_crystals:              [1]      Number of mono crystals
+* draw_as_rectangles:      [1]      Flag to visualise component as individual rectangles pr. mono crystal
+* 
 *
 * %E
 *******************************************************************************/
 DEFINE COMPONENT Monochromator_bent
-SETTING PARAMETERS (zwidth = 0.2,
-					yheight = 0.1,
-					xthickness = 0.0005,
-					radius_x = 2,
-					string plane_of_reflection = "Si400",
-					angle_to_cut_horizontal = 0,
-					angle_to_cut_vertical = 0,
-					mosaicity = 30,
-					int n_crystals = 1,
-					mosaic_anisotropy = 1,
-					domainthickness = 10,
-					temperature = 300,
-					int optimize = 1,
-					vector x_pos = NULL,// x-Position of each lamella
-					vector y_pos = NULL,// y-Position of each lamella
-					vector z_pos = NULL,// z-Position of each lamella
-					vector x_rot = NULL, // Rotation around x-axis
-					vector y_rot = NULL, // Rotation around y-axis
-					vector z_rot = NULL, // Rotation around z-axis
-					int verbose = 0,
+SETTING PARAMETERS (zwidth=0.2,
+					yheight=0.1,
+					xthickness=0.0005,
+					radius_x=2,
+					string plane_of_reflection="Si400",
+					angle_to_cut_horizontal=0,
+					angle_to_cut_vertical=0,
+					mosaicity=30,
+					int n_crystals=1,
+					mosaic_anisotropy=1,
+					domainthickness=10,
+					temperature=300,
+					int optimize=1,
+					vector x_pos=NULL,
+					vector y_pos=NULL,
+					vector z_pos=NULL,
+					vector x_rot=NULL,
+					vector y_rot=NULL,
+					vector z_rot=NULL,
+					int verbose=0,
 					int draw_as_rectangles=0)
 // Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) 
 NOACC
