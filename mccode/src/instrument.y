@@ -257,7 +257,7 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
         if (verbose) fprintf(stderr, "Embedding component %s from file %s\n", c->name, c->source);
       }
 // $1       $2         $3     $4     $5     $6         $7       $8    $9        $10    $11   $12      $13     $14        $15   $16  $17     $18     $19
-| "DEFINE" "COMPONENT" TOK_ID "COPY" TOK_ID parameters metadata shell dependency noacc comp_share comp_uservars comp_declare comp_initialize comp_trace comp_save comp_finally comp_display "END"
+| "DEFINE" "COMPONENT" TOK_ID "INHERIT" TOK_ID parameters metadata shell dependency noacc comp_share comp_uservars comp_declare comp_initialize comp_trace comp_save comp_finally comp_display "END"
       {
         /* create a copy of a comp, and initiate it with given blocks */
         /* all redefined blocks override */
@@ -325,7 +325,7 @@ comp_share_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_share_inherit_extend
+    | "INHERIT" TOK_ID comp_share_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -373,7 +373,7 @@ comp_trace_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_trace_inherit_extend
+    | "INHERIT" TOK_ID comp_trace_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -621,7 +621,7 @@ comp_decl_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_decl_inherit_extend
+    | "INHERIT" TOK_ID comp_decl_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -661,7 +661,7 @@ comp_uservars_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_uservars_inherit_extend
+    | "INHERIT" TOK_ID comp_uservars_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -709,7 +709,7 @@ comp_init_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_init_inherit_extend
+    | "INHERIT" TOK_ID comp_init_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -757,7 +757,7 @@ comp_save_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_save_inherit_extend
+    | "INHERIT" TOK_ID comp_save_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -805,7 +805,7 @@ comp_finally_inherit_extend:/* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_finally_inherit_extend
+    | "INHERIT" TOK_ID comp_finally_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -853,7 +853,7 @@ comp_display_inherit_extend:/* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_display_inherit_extend
+    | "INHERIT" TOK_ID comp_display_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
