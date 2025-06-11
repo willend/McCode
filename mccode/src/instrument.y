@@ -668,7 +668,7 @@ comp_uservars_inherit_extend: /* empty */
         cb  = codeblock_new();
         def = read_component($2);
         if (def) {
-          struct code_block    *cb1 = def->user_vars;
+          struct code_block    *cb1 = def->uservar_code;
           cb->filename        = cb1->filename;
           cb->quoted_filename = cb1->quoted_filename;
           cb->linenum         = cb1->linenum;
