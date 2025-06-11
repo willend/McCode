@@ -661,29 +661,17 @@ comp_uservars_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "INHERIT" TOK_ID comp_uservars_inherit_extend
-      {
-        struct code_block *cb;
-        struct comp_def *def;
-        cb  = codeblock_new();
-        def = read_component($2);
-        if (def) {
-          struct code_block    *cb1 = def->uservar_code;
-          cb->filename        = cb1->filename;
-          cb->quoted_filename = cb1->quoted_filename;
-          cb->linenum         = cb1->linenum;
-          list_cat(cb->lines,   cb1->lines);
-        }
-        list_cat(cb->lines, $3->lines);
-        $$ = cb;
-      }
-    | "EXTEND" codeblock comp_uservars_inherit_extend
+    | "USERVARS" codeblock comp_uservars_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
         $$ = cb;
+      }
+    | "USERVARS" comp_uservars_inherit_extend
+      {
+        $$ = $2;
       }
 ;
 
