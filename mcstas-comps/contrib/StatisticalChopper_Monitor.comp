@@ -39,15 +39,15 @@
 *
 * %End
 *******************************************************************************/
-DEFINE COMPONENT StatisticalChopper_Monitor COPY Monitor_nD
+DEFINE COMPONENT StatisticalChopper_Monitor INHERIT Monitor_nD
 
 SETTING PARAMETERS (string comp, tmin=0.0, tmax=0.0)
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
 
-DECLARE COPY Monitor_nD
+DECLARE INHERIT Monitor_nD
 
-INITIALIZE COPY Monitor_nD EXTEND
+INITIALIZE INHERIT Monitor_nD EXTEND
 %{
 char op[CHAR_BUF_LENGTH];
 /* check if time is already in the variables to monitor */
@@ -75,7 +75,7 @@ if (!strstr(Vars.option, "time")) {
 
 %}
 
-TRACE COPY Monitor_nD
+TRACE INHERIT Monitor_nD
 
 SAVE
 %{
@@ -186,8 +186,8 @@ SAVE
 
 %}
 
-FINALLY COPY Monitor_nD
+FINALLY INHERIT Monitor_nD
 
-MCDISPLAY COPY Monitor_nD
+MCDISPLAY INHERIT Monitor_nD
 
 END

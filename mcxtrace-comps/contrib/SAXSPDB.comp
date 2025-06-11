@@ -53,7 +53,7 @@ NOACC
 
 /*X-ray PARAMETERS (x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p)*/
 
-SHARE COPY SAXSPDBFast
+SHARE INHERIT SAXSPDBFast
 EXTEND %{
   void Protein_Beads_get_coords(BeadStruct Residue, double *x, double *y, double *z)
   {

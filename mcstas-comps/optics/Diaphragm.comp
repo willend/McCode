@@ -5,7 +5,7 @@
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Component: Diaphragm (
+* Component: Diaphragm
 *
 * %I
 * Written by: Peter Willendrup
@@ -40,16 +40,16 @@
 *******************************************************************************/
 
 
-DEFINE COMPONENT Diaphragm COPY Slit
+DEFINE COMPONENT Diaphragm INHERIT Slit
 
-SHARE COPY Slit
+SHARE INHERIT Slit
 
-DECLARE COPY Slit
+DECLARE INHERIT Slit
 
-INITIALIZE COPY Slit
+INITIALIZE INHERIT Slit
 
-TRACE COPY Slit
+TRACE INHERIT Slit
 
-MCDISPLAY COPY Slit
+MCDISPLAY INHERIT Slit
 
 END
