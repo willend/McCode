@@ -259,7 +259,7 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
 // $1       $2         $3     $4     $5     $6         $7       $8    $9        $10    $11   $12      $13     $14        $15   $16  $17     $18     $19
 | "DEFINE" "COMPONENT" TOK_ID "INHERIT" TOK_ID parameters metadata shell dependency noacc comp_share comp_uservars comp_declare comp_initialize comp_trace comp_save comp_finally comp_display "END"
       {
-        /* create a copy of a comp, and initiate it with given blocks */
+        /* inherit from another comp, and initiate it with given blocks */
         /* all redefined blocks override */
         struct comp_def *def;
         def = read_component($5);
@@ -669,9 +669,13 @@ comp_uservars_inherit_extend: /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "USERVARS" comp_uservars_inherit_extend
+    | "EXTEND" codeblock comp_uservars_inherit_extend
       {
-        $$ = $2;
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
       }
 ;
 
