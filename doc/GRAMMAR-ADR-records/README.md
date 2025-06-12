@@ -5,3 +5,5 @@ Please document any (proposed, accepted, rejected, deprecated, superseded) chang
 
 1. `cp template.md ADR_20250612_INHERIT_COMP.md`
 2. Edit the resulting file documenting the (proposed, accepted, rejected, deprecated, superseded) change
+3. Please link to associated PR's, issues etc.
+4. Update status along with edited files
