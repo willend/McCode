@@ -1,0 +1,34 @@
+name: McCode Pooch Registries Dispatch
+on:
+  create:
+  delete:
+
+jobs:
+  dispatch:
+    if: github.event.ref_type == 'tag'
+    name: Dispatch tag
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: ['mccode-dev/mccode-pooch-registries']
+    timeout-minutes: 5
+    steps:
+      - name: Construct creation payload
+        shell: bash
+        run: |
+          echo "${GITHUB_EVENT_NAME}"
+          REMOVE=$([ "${GITHUB_EVENT_NAME}" == "delete" ] && echo "1" || echo "0" )
+          echo "REMOVE=${REMOVE}" >> "${GITHUB_ENV}"
+          echo "TAG=${{ github.event.ref }}" >> "${GITHUB_ENV}"
+        
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.RECEIVER_TOKEN }}
+          repository: ${{ matrix.repo }}
+          event-type: update_tag
+          client-payload: |-
+            {
+              "remove": "${{ env.REMOVE }}",
+              "tag": "${{ env.TAG }}"
+            }
