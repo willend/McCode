@@ -22,3 +22,7 @@ What is the change that we're proposing and/or doing?
 ## Consequences
 
 What becomes easier or more difficult to do because of this change?
+
+## Behaviour
+
+Describe important aspects of the new/changed behaviour

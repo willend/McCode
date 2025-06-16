@@ -33,3 +33,58 @@ In a zoom meeting on June 11th 2025 it was agreed between  @farhi,
   migration to `INHERIT`. It is believed that very few - if any - such
   components exist in the wild. 
 * CHANGELOG should be crystal clear on this change / potential incompatibility
+
+## Behaviour
+
+For trivial components `n_part.comp`:
+
+```
+DEFINE COMPONENT n_part
+SETTING PARAMETERS (int n)
+TRACE
+%{
+  for (int i= 0; i < n; i++) {
+    printf("n=%d\\n", i);
+  }
+%}
+END
+```
+and `m_part.comp`:
+
+```
+DEFINE COMPONENT m_part
+SETTING PARAMETERS (int m)
+TRACE
+%{
+  for (int i = 0; i < m; i++) {
+    printf("m=%d\\n", i);
+  }
+%}
+END
+```
+a third component can now be defined pulling together sections from each, `both_parts.comp`:
+
+```
+DEFINE COMPONENT both_parts
+SETTING PARAMETERS (int n, int m)
+TRACE INHERIT n_part INHERIT m_part
+END
+```
+Using the third component in a trivial instrument, e.g., `test_both_parts.instr`:
+
+```
+define instrument test_both_parts(dummy=0.)
+trace
+component origin = both_parts(n=3, m=2) at (0, 0, 0) absolute
+end
+```
+will produce runtime output
+
+```
+$ mcrun test_both_parts -n 1 dummy=0
+n=0
+n=1
+n=2
+m=0
+m=1
+```
