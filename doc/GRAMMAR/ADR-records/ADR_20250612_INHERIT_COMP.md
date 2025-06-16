@@ -32,6 +32,9 @@ In a zoom meeting on June 11th 2025 it was agreed between  @farhi,
 * User home-grown McStas or McXtrace components will break and need
   migration to `INHERIT`. It is believed that very few - if any - such
   components exist in the wild. 
+* Important: `INHERIT` does not ensure that component setting
+  parameters used in copied section(s) are copied too. (This to allow
+  complete modification of the parameter interface for a "derived" component.) 
 * CHANGELOG should be crystal clear on this change / potential incompatibility
 
 ## Behaviour
