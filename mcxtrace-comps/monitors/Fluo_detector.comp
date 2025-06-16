@@ -80,7 +80,7 @@ SETTING PARAMETERS(
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 
-SHARE COPY Fluorescence
+SHARE INHERIT Fluorescence
 EXTEND %{
 #ifndef FLUO_DETECTOR
 #define FLUO_DETECTOR

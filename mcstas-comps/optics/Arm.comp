@@ -7,7 +7,7 @@
 *
 * Component: Arm
 *
-* %I
+* %Identification
 *
 * Written by: Kim Lefmann and Kristian Nielsen
 * Date: September 1997
@@ -17,14 +17,18 @@
 *
 * Arm/optical bench
 *
-* %D
+* %Description
 * An arm does not actually do anything, it is just there to set
 * up a new coordinate system.
 *
-* %P
+* Example: Arm()
+*
+* %Parameters
 * Input parameters:
 *
-* %E
+* (none)
+*
+* %End
 *******************************************************************************/
 
 DEFINE COMPONENT Arm

@@ -491,6 +491,14 @@ class InstrDocWriter:
 
 <BODY>
 
+<script src="https://tex.mccode.org/jquery/latest/jquery.min.js"></script>
+<script src="https://tex.mccode.org/jquery/latex/jquery.jslatex.packed.js"></script>
+<script>
+$(function () {
+    $(".latex").latex();
+});
+</script>
+
 <P ALIGN=CENTER>
  [ <A href="#id">Identification</A>
  | <A href="#desc">Description</A>
@@ -762,6 +770,13 @@ function comp() {
 }
 </script>
 
+<script src="https://tex.mccode.org/jquery/latest/jquery.min.js"></script>
+<script src="https://tex.mccode.org/jquery/latex/jquery.jslatex.packed.js"></script>
+<script>
+$(function () {
+    $(".latex").latex();
+});
+</script>
 
 <BODY>
 

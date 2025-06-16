@@ -152,7 +152,8 @@ void metadata_assign_from_instance(List metadata);
 %token TOK_NEXT       "NEXT"    /* extended McCode grammar */
 %token TOK_ITERATE    "ITERATE" /* extended McCode grammar */
 %token TOK_MYSELF     "MYSELF"  /* extended McCode grammar */
-%token TOK_COPY       "COPY"    /* extended McCode grammar */
+%token TOK_INHERIT    "INHERIT" /* extended McCode COMP grammar */
+%token TOK_COPY       "COPY"    /* extended McCode INSTRUMENT grammar */
 %token TOK_SPLIT      "SPLIT"   /* extended McCode grammar */
 %token TOK_REMOVABLE  "REMOVABLE" /* extended McCode grammar with include */
 %token TOK_CPUONLY    "CPU"   /* extended McStas grammar with GPU-CPU support */
@@ -178,7 +179,7 @@ void metadata_assign_from_instance(List metadata);
 %type <instance> component compref reference instref
 %type <groupinst> groupdef groupref
 %type <ccode>   code codeblock comp_share comp_uservars comp_declare comp_initialize comp_trace extend comp_save comp_finally comp_display
-%type <ccode>   comp_share_copy_extend comp_decl_copy_extend comp_init_copy_extend comp_trace_copy_extend comp_save_copy_extend comp_finally_copy_extend comp_display_copy_extend
+%type <ccode>   comp_share_inherit_extend comp_decl_inherit_extend comp_uservars_inherit_extend comp_init_inherit_extend comp_trace_inherit_extend comp_save_inherit_extend comp_finally_inherit_extend comp_display_inherit_extend
 %type <coords>  coords
 %type <exp>     exp topexp topatexp genexp genatexp when split
 %type <actuals> actuallist actuals actuals1
@@ -256,9 +257,9 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
         if (verbose) fprintf(stderr, "Embedding component %s from file %s\n", c->name, c->source);
       }
 // $1       $2         $3     $4     $5     $6         $7       $8    $9        $10    $11   $12      $13     $14        $15   $16  $17     $18     $19
-| "DEFINE" "COMPONENT" TOK_ID "COPY" TOK_ID parameters metadata shell dependency noacc comp_share comp_uservars comp_declare comp_initialize comp_trace comp_save comp_finally comp_display "END"
+| "DEFINE" "COMPONENT" TOK_ID "INHERIT" TOK_ID parameters metadata shell dependency noacc comp_share comp_uservars comp_declare comp_initialize comp_trace comp_save comp_finally comp_display "END"
       {
-        /* create a copy of a comp, and initiate it with given blocks */
+        /* inherit from another comp, and initiate it with given blocks */
         /* all redefined blocks override */
         struct comp_def *def;
         def = read_component($5);
@@ -306,7 +307,7 @@ comp_share: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "SHARE" codeblock comp_share_copy_extend
+    | "SHARE" codeblock comp_share_inherit_extend
       {
         struct code_block *cb;
         cb = codeblock_new();
@@ -314,17 +315,17 @@ comp_share: /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "SHARE" comp_share_copy_extend
+    | "SHARE" comp_share_inherit_extend
       {
         $$ = $2;
       }
 ;
 
-comp_share_copy_extend: /* empty */
+comp_share_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_share_copy_extend
+    | "INHERIT" TOK_ID comp_share_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -340,7 +341,7 @@ comp_share_copy_extend: /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "EXTEND" codeblock comp_share_copy_extend
+    | "EXTEND" codeblock comp_share_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -354,7 +355,7 @@ comp_trace: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "TRACE" codeblock comp_trace_copy_extend
+    | "TRACE" codeblock comp_trace_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -362,17 +363,17 @@ comp_trace: /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "TRACE" comp_trace_copy_extend
+    | "TRACE" comp_trace_inherit_extend
       {
         $$ = $2;
       }
 ;
 
-comp_trace_copy_extend: /* empty */
+comp_trace_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_trace_copy_extend
+    | "INHERIT" TOK_ID comp_trace_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -388,7 +389,7 @@ comp_trace_copy_extend: /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "EXTEND" codeblock comp_trace_copy_extend
+    | "EXTEND" codeblock comp_trace_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -602,7 +603,7 @@ comp_declare:    /* empty */
       {
         $$ = codeblock_new();
       }
-    | "DECLARE" codeblock comp_decl_copy_extend
+    | "DECLARE" codeblock comp_decl_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -610,17 +611,17 @@ comp_declare:    /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "DECLARE" comp_decl_copy_extend
+    | "DECLARE" comp_decl_inherit_extend
       {
         $$ = $2;
       }
 ;
 
-comp_decl_copy_extend: /* empty */
+comp_decl_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_decl_copy_extend
+    | "INHERIT" TOK_ID comp_decl_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -636,7 +637,7 @@ comp_decl_copy_extend: /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "EXTEND" codeblock comp_decl_copy_extend
+    | "EXTEND" codeblock comp_decl_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -650,17 +651,17 @@ comp_uservars:    /* empty */
       {
         $$ = codeblock_new();
       }
-    | "USERVARS" codeblock
+    | "USERVARS" codeblock comp_uservars_inherit_extend
       {
         $$ = $2;
       }
 ;
 
-comp_initialize:   /* empty */
+comp_uservars_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "INITIALISE" codeblock comp_init_copy_extend
+    | "USERVARS" codeblock comp_uservars_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -668,17 +669,39 @@ comp_initialize:   /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "INITIALISE" comp_init_copy_extend
+    | "EXTEND" codeblock comp_uservars_inherit_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+;
+
+comp_initialize:   /* empty */
+      {
+        $$ = codeblock_new();
+      }
+    | "INITIALISE" codeblock comp_init_inherit_extend
+      {
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
+      }
+    | "INITIALISE" comp_init_inherit_extend
       {
         $$ = $2;
       }
 ;
 
-comp_init_copy_extend: /* empty */
+comp_init_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_init_copy_extend
+    | "INHERIT" TOK_ID comp_init_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -694,7 +717,7 @@ comp_init_copy_extend: /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "EXTEND" codeblock comp_init_copy_extend
+    | "EXTEND" codeblock comp_init_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -708,11 +731,11 @@ comp_save:   /* empty */
       {
         $$ = codeblock_new();
       }
-    | "SAVE" comp_save_copy_extend
+    | "SAVE" comp_save_inherit_extend
       {
         $$ = $2;
       }
-    | "SAVE" codeblock comp_save_copy_extend
+    | "SAVE" codeblock comp_save_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -722,11 +745,11 @@ comp_save:   /* empty */
       }
 ;
 
-comp_save_copy_extend: /* empty */
+comp_save_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_save_copy_extend
+    | "INHERIT" TOK_ID comp_save_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -742,7 +765,7 @@ comp_save_copy_extend: /* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "EXTEND" codeblock comp_save_copy_extend
+    | "EXTEND" codeblock comp_save_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -756,11 +779,11 @@ comp_finally:    /* empty */
       {
         $$ = codeblock_new();
       }
-    | "FINALLY" comp_finally_copy_extend
+    | "FINALLY" comp_finally_inherit_extend
       {
         $$ = $2;
       }
-    | "FINALLY" codeblock comp_finally_copy_extend
+    | "FINALLY" codeblock comp_finally_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -770,11 +793,11 @@ comp_finally:    /* empty */
       }
 ;
 
-comp_finally_copy_extend:/* empty */
+comp_finally_inherit_extend:/* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_finally_copy_extend
+    | "INHERIT" TOK_ID comp_finally_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -790,7 +813,7 @@ comp_finally_copy_extend:/* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "EXTEND" codeblock comp_finally_copy_extend
+    | "EXTEND" codeblock comp_finally_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -804,11 +827,11 @@ comp_display:    /* empty */
       {
         $$ = codeblock_new();
       }
-    | "DISPLAY" comp_display_copy_extend
+    | "DISPLAY" comp_display_inherit_extend
       {
         $$ = $2;
       }
-    | "DISPLAY" codeblock comp_display_copy_extend
+    | "DISPLAY" codeblock comp_display_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();
@@ -818,11 +841,11 @@ comp_display:    /* empty */
       }
 ;
 
-comp_display_copy_extend:/* empty */
+comp_display_inherit_extend:/* empty */
       {
         $$ = codeblock_new();
       }
-    | "COPY" TOK_ID comp_display_copy_extend
+    | "INHERIT" TOK_ID comp_display_inherit_extend
       {
         struct code_block *cb;
         struct comp_def *def;
@@ -838,7 +861,7 @@ comp_display_copy_extend:/* empty */
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
-    | "EXTEND" codeblock comp_display_copy_extend
+    | "EXTEND" codeblock comp_display_inherit_extend
       {
         struct code_block *cb;
         cb  = codeblock_new();

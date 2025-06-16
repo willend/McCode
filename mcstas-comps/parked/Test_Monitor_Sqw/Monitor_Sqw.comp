@@ -281,10 +281,10 @@ TRACE
   RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
 %}
 
-SAVE COPY Monitor_nD
+SAVE INHERIT Monitor_nD
 
-FINALLY COPY Monitor_nD
+FINALLY INHERIT Monitor_nD
 
-MCDISPLAY COPY Monitor_nD
+MCDISPLAY INHERIT Monitor_nD
 
 END

@@ -46,16 +46,6 @@
 *******************************************************************************/
 
 
-DEFINE COMPONENT Diaphragm COPY Slit
-
-SHARE COPY Slit
-
-DECLARE COPY Slit
-
-INITIALIZE COPY Slit
-
-TRACE COPY Slit
-
-MCDISPLAY COPY Slit
+DEFINE COMPONENT Diaphragm INHERIT Slit
 
 END
