@@ -57,13 +57,13 @@
 * Modified by: PW February 2025: version 3.5.24
 * Modified by: PW February 2025: version 3.5.24
 * Modified by: PW April 2025: version 3.5.27
-* Modified by: PW June 2025: version 3.5.30
+* Modified by: PW June 2025: version 3.5.31
 *
-* This file is part of McStas 3.5.30, released April 29th 2025.
+* This file is part of McStas 3.5.31, released April 29th 2025.
 * It gives a 'changes' list from the beginning of the project
 *
 *******************************************************************************/
-Changes in McStas/McXtrace 3.5.30, June 16th, 2025
+Changes in McStas/McXtrace 3.5.31, June 16th, 2025
 ## What's Changed
 ### Common changes to McStas and McXtrace
 * Deployment, platforms and CI
@@ -136,7 +136,7 @@ Changes in McStas/McXtrace 3.5.30, June 16th, 2025
 * cif2hkl: update to solve F^2 for Xrays using latest CrysFML by @farhi in https://github.com/mccode-dev/McCode/pull/2021
 * McXtrace: add SWING BL at SOLEIL by @farhi in https://github.com/mccode-dev/McCode/pull/2036
 
-**Full Changelog**: https://github.com/mccode-dev/McCode/compare/v3.5.27...v3.5.30
+**Full Changelog**: https://github.com/mccode-dev/McCode/compare/v3.5.27...v3.5.31
 
 
 Changes in McStas/McXtrace 3.5.27, April 29th, 2025
