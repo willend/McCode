@@ -89,6 +89,6 @@ TRACE %{
   /* component Shape does nothing */
 %}
 
-MCDISPLAY COPY Incoherent
+MCDISPLAY INHERIT Incoherent
 
 END

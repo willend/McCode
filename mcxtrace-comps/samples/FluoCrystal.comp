@@ -193,12 +193,12 @@ NOACC
 /* ========================================================================== */
 
 SHARE
-  COPY Single_crystal
-  COPY Fluorescence
+  INHERIT Single_crystal
+  INHERIT Fluorescence
 
 /* ========================================================================== */
 
-DECLARE COPY Single_crystal EXTEND %{
+DECLARE INHERIT Single_crystal EXTEND %{
   struct   compoundData *compound;
   DArray1d cum_massFractions;
   DArray1d cum_xs_fluo;
@@ -906,7 +906,7 @@ FINALLY %{
     );
 %}
 
-DISPLAY COPY Fluorescence
+DISPLAY INHERIT Fluorescence
 
 END
 

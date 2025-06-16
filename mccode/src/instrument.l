@@ -145,7 +145,8 @@ WHEN          return TOK_WHEN;          /* extended McStas grammar */
 NEXT          return TOK_NEXT;          /* extended McStas grammar */
 ITERATE       return TOK_ITERATE;       /* extended McStas grammar */
 MYSELF        return TOK_MYSELF;        /* extended McStas grammar */
-COPY          return TOK_COPY;          /* extended McStas grammar */
+INHERIT       return TOK_INHERIT;       /* extended McStas COMP grammar */
+COPY          return TOK_COPY;          /* extended McStas INSTR grammar */
 SPLIT         return TOK_SPLIT;         /* extended McStas grammar */
 REMOVABLE     return TOK_REMOVABLE;     /* extended McStas grammar with include */
 CPU           return TOK_CPUONLY;       /* extended McStas grammar with GPU-CPU support */

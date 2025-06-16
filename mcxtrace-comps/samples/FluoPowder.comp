@@ -177,14 +177,14 @@ NOACC
 /* ========================================================================== */
 
 SHARE 
-  COPY PowderN
-  COPY Fluorescence
+  INHERIT PowderN
+  INHERIT Fluorescence
 
 /* ========================================================================== */
 
-// we can't COPY Fluorescence because there is a duplicate conflicting offdata in PowderN
+// we can't INHERIT Fluorescence because there is a duplicate conflicting offdata in PowderN
 DECLARE 
-  COPY PowderN EXTEND %{
+  INHERIT PowderN EXTEND %{
   struct   compoundData *compound;
   DArray1d cum_massFractions;
   DArray1d cum_xs_fluo;
@@ -928,7 +928,7 @@ FINALLY %{
     );
 %}
 
-DISPLAY COPY Fluorescence
+DISPLAY INHERIT Fluorescence
 
 END
 

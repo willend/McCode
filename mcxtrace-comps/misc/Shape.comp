@@ -104,6 +104,6 @@ TRACE %{
   /* component Shape does nothing */
 %}
 
-MCDISPLAY COPY Filter
+MCDISPLAY INHERIT Filter
 
 END
