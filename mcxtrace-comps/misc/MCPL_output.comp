@@ -162,7 +162,7 @@ INITIALIZE
       fprintf(stderr,"\nWarning (%s): weight_mode unspecified so defaulting to 2"
               " (classic mode) which will soon become unavailable and tooling"
               " might need updating. Please consult"
-              " https://github.com/mccode-dev/McCode/discussions/9999 for more"
+              " https://github.com/mccode-dev/McCode/discussions/2076 for more"
               " information.\n",NAME_CURRENT_COMP);
     );
     weight_mode = 2;
@@ -170,7 +170,7 @@ INITIALIZE
     MPI_MASTER(
       fprintf(stderr,"\nWarning (%s): weight_mode=2 selected. This mode will"
               " soon become unavailable. Please consult"
-              " https://github.com/mccode-dev/McCode/discussions/9999 for more"
+              " https://github.com/mccode-dev/McCode/discussions/2076 for more"
               " information.\n",NAME_CURRENT_COMP);
     );
   }

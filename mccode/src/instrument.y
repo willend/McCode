@@ -2149,7 +2149,8 @@ print_usage(void)
     "  %s [-o file] [-I dir1 ...] [-t] [-p] [-v] "
     "[--no-main] [--no-runtime] [--verbose] file\n", executable_name);
   fprintf(stderr, "      -o FILE --output-file=FILE Place " GENERATE_LANG " output in file FILE.\n");
-  fprintf(stderr, "      -v      --version          Prints " MCCODE_NAME " version.\n");
+  fprintf(stderr, "      -v      --version          Prints " MCCODE_NAME " full version header.\n");
+  fprintf(stderr, "              --version-num      Prints " MCCODE_NAME " version number only.\n");
   fprintf(stderr, "      --verbose                  Display compilation process steps.\n");
 #if defined(GENERATE_C)
   fprintf(stderr, "      -I DIR  --search-dir=DIR   Append DIR to the component search list. \n");
@@ -2191,9 +2192,12 @@ print_usage_error(void)
 
 /* Print McCode version and copyright. */
 static void
-print_version(void)
+print_version(char shrt)
 {
-  printf(MCCODE_NAME " code generator version " MCCODE_VERSION " (" MCCODE_DATE ")\n"
+  if (shrt)
+    printf(MCCODE_VERSION "\n");
+  else
+    printf(MCCODE_NAME " code generator version " MCCODE_VERSION " (" MCCODE_DATE ")\n"
     "Copyright (C) DTU Physics and Risoe National Laboratory, 1997-" MCCODE_YEAR "\n"
     "Additions (C) Institut Laue Langevin, 2003-2019\n"
     "All rights reserved\n\nComponents are (C) their authors, see component headers.\n");
@@ -2293,9 +2297,11 @@ parse_command_line(int argc, char *argv[])
       lint = 1;
 #endif
     else if(!strcmp("-v", argv[i]))
-      print_version();
+      print_version(0);
     else if(!strcmp("--version", argv[i]))
-      print_version();
+      print_version(0);
+    else if(!strcmp("--version-num", argv[i]))
+      print_version(1);
     else if(!strcmp("-h", argv[i]))
       { print_usage(); exit(0); }
     else if(!strcmp("--help", argv[i]))

@@ -15,7 +15,7 @@
 *
 * Documentation: CHANGES_McXtrace
 *************************************************************************/
-Changes in McStas/McXtrace 3.5.31, June 16th, 2025
+Changes in McStas/McXtrace 3.5.31, June 17th, 2025
 ## What's Changed
 ### Common changes to McStas and McXtrace
 * Deployment, platforms and CI
@@ -43,6 +43,7 @@ Changes in McStas/McXtrace 3.5.31, June 16th, 2025
     * Edits by @farhi and @willend in https://github.com/mccode-dev/McCode/pull/2062
     * Add ADR (Architectural Design Record) doc folder for proposed, accepted, rejected, deprecated, superseded changes of McCode GRAMMAR by @willend in https://github.com/mccode-dev/McCode/pull/2064
     * Put in place folder for grammar documentation by @willend in https://github.com/mccode-dev/McCode/pull/2070
+  * The McStas/McXtrace code generators have a new commandline switch --version-num to print the version number only.
 
 * New CLI default for mcstas / mcxtrace: --trace is on
   * This allows any compiled instrument to run with --trace=0 by @willend in https://github.com/mccode-dev/McCode/pull/2010 and https://github.com/mccode-dev/McCode/pull/2023
@@ -88,7 +89,7 @@ Changes in McStas/McXtrace 3.5.31, June 16th, 2025
 * cif2hkl: update to solve F^2 for Xrays using latest CrysFML by @farhi in https://github.com/mccode-dev/McCode/pull/2021
 * McXtrace: add SWING BL at SOLEIL by @farhi in https://github.com/mccode-dev/McCode/pull/2036
 
-**Full Changelog**: https://github.com/mccode-dev/McCode/compare/v3.5.27...v3.5.31
+**Full Changelog**: https://github.com/mccode-dev/McCode/compare/v3.5.27...v3.5.32
 
 
 Changes in McStas/McXtrace 3.5.27, April 29th, 2025

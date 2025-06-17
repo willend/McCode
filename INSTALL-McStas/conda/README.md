@@ -1,6 +1,6 @@
-# Install McStas 3.5.31 through conda-forge (macOS, Linux or Windows host)
+# Install McStas 3.5.32 through conda-forge (macOS, Linux or Windows host)
 
-* We a set of conda-packages for installing McStas 3.5.31.x through conda
+* We a set of conda-packages for installing McStas 3.5.32.x through conda
 
 ## Get yourself a conda / mamba
 Due to the complex [licensing situation](https://discuss.scientific-python.org/t/response-to-anaconda-switch-to-paid-plans/1395) with the commercial Anaconda ecosystem, we clearly recommend McStas users to start from an open-source entry-point such as
