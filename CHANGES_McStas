@@ -91,6 +91,7 @@ Changes in McStas/McXtrace 3.5.32, June 17th, 2025
     * Edits by @farhi and @willend in https://github.com/mccode-dev/McCode/pull/2062
     * Add ADR (Architectural Design Record) doc folder for proposed, accepted, rejected, deprecated, superseded changes of McCode GRAMMAR by @willend in https://github.com/mccode-dev/McCode/pull/2064
     * Put in place folder for grammar documentation by @willend in https://github.com/mccode-dev/McCode/pull/2070
+  * The McStas/McXtrace code generators have a new commandline switch --version-num to print the version number only.
 
 * New CLI default for mcstas / mcxtrace: --trace is on
   * This allows any compiled instrument to run with --trace=0 by @willend in https://github.com/mccode-dev/McCode/pull/2010 and https://github.com/mccode-dev/McCode/pull/2023
