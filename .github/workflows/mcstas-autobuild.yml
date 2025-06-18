@@ -68,9 +68,6 @@ jobs:
            python3 --version
            which cmake
            cmake --version
-           echo Current tag:
-           git tag --points-at HEAD
-           echo ----------------
            #NB: bison and flex in path are actually too old, on mac we
            #inject these via a brew keg later
 
@@ -87,6 +84,7 @@ jobs:
            export REV=`git tag --points-at HEAD`
            # Otherwise, pick latest and add _nightly
            if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
+           echo Building on $RUNNER_OS, $UNAME  with version set to $REV
            if [ "$RUNNER_OS" == "macOS" ]; then ./buildscripts/build_macos_mcstas ${REV} && tar cfz mcstas-macOS-conda.tgz  mcstas-macOS-arm64/ mcstas-macOS-x86_64/; fi;
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcstas ${REV} meta && mv dist mcstas-debian-x86_64 && tar cfz mcstas-debian-x86_64.tgz mcstas-debian-x86_64/; fi
 
@@ -102,6 +100,7 @@ jobs:
            export REV=`git tag --points-at HEAD`
            # Otherwise, pick latest and add _nightly
            if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
+           echo Building on $RUNNER_OS, $UNAME with version set to $REV
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcstas_arm64 ${REV} meta && mv dist mcstas-debian-arm64 && tar cfz mcstas-debian-arm64.tgz mcstas-debian-arm64/; fi
 
     - name: Cross-Build McStas for windows
@@ -116,6 +115,7 @@ jobs:
            export REV=`git tag --points-at HEAD`
            # Otherwise, pick latest and add _nightly
            if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
+           echo Cross-compiling for MinGW Windows on $RUNNER_OS, $UNAME with version set to $REV
            if [ "$RUNNER_OS" == "Linux" ]; then rm -rf dist; fi
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_windows_mcstas ${REV} meta && mv dist mcstas-mingw64-Windows-x86_64; fi
            if [ "$RUNNER_OS" == "Linux" ]; then tar cfz mcstas-Windows-x86_64.tgz mcstas-mingw64-Windows-x86_64/; fi
