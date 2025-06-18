@@ -68,6 +68,9 @@ jobs:
            python3 --version
            which cmake
            cmake --version
+           echo Current tag:
+           git tag --points-at HEAD
+           echo ----------------
            #NB: bison and flex in path are actually too old, on mac we
            #inject these via a brew keg later
 
