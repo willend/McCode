@@ -3,6 +3,10 @@ on:
   schedule:
     - cron: '50 23 * * *'  # 23:50 every day
 
+  push:
+    tags:
+    - 'v*'
+
   workflow_dispatch:
     inputs:
       manual-debugging:
