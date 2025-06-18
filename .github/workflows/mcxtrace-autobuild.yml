@@ -3,6 +3,10 @@ on:
   schedule:
     - cron: '50 23 * * *'  # 23:50 every day
 
+  push:
+    tags:
+    - 'v*'
+
   workflow_dispatch:
     inputs:
       manual-debugging:
@@ -76,7 +80,11 @@ jobs:
            set -u
            set -x
            cd McCode
-           export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`
+           # Check if this is a clear-cut release-tag build:
+           export REV=`git tag --points-at HEAD`
+           # Otherwise, pick latest and add _nightly
+           if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
+           echo Building on $RUNNER_OS with version set to $REV
            if [ "$RUNNER_OS" == "macOS" ]; then ./buildscripts/build_macos_mcxtrace ${REV} && tar cfz mcxtrace-macOS-conda.tgz  mcxtrace-macOS-arm64/ mcxtrace-macOS-x86_64/; fi;
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcxtrace ${REV} meta && mv dist mcxtrace-debian-x86_64 && tar cfz mcxtrace-debian-x86_64.tgz  mcxtrace-debian-x86_64/; fi
 
@@ -88,7 +96,11 @@ jobs:
            set -u
            set -x
            cd McCode
-           export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`
+           # Check if this is a clear-cut release-tag build:
+           export REV=`git tag --points-at HEAD`
+           # Otherwise, pick latest and add _nightly
+           if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
+           echo Building on $RUNNER_OS with version set to $REV
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_debs_mcxtrace_arm64 ${REV} meta && mv dist mcxtrace-debian-arm64 && tar cfz mcxtrace-debian-arm64.tgz mcxtrace-debian-arm64/; fi
 
     - name: Cross-Build McXtrace for windows
@@ -99,7 +111,11 @@ jobs:
            set -u
            set -x
            cd McCode
-           export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`
+           # Check if this is a clear-cut release-tag build:
+           export REV=`git tag --points-at HEAD`
+           # Otherwise, pick latest and add _nightly
+           if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
+           echo Cross-compiling for MinGW Windows on $RUNNER_OS with version set to $REV
            if [ "$RUNNER_OS" == "Linux" ]; then rm -rf dist; fi
            if [ "$RUNNER_OS" == "Linux" ]; then ./buildscripts/build_windows_mcxtrace ${REV} meta && mv dist mcxtrace-mingw64-Windows-x86_64; fi
            if [ "$RUNNER_OS" == "Linux" ]; then tar cfz mcxtrace-Windows-x86_64.tgz mcxtrace-mingw64-Windows-x86_64/; fi
