@@ -452,7 +452,7 @@ MCDETECTOR detector;
 off_struct offdata;
 %}
 
-INITIALIZE COPY Monitor_nD EXTEND
+INITIALIZE INHERIT Monitor_nD EXTEND
 %{
 	
   printf("Completed Monitor_nD initialization, continuing Union_abs_logger_nD initialization.");
@@ -547,9 +547,9 @@ TRACE
 %{
 %}
 
-SAVE COPY Monitor_nD
+SAVE INHERIT Monitor_nD
 
-FINALLY COPY Monitor_nD EXTEND
+FINALLY INHERIT Monitor_nD EXTEND
 %{
 // Remember to clean up allocated lists
 if (this_abs_storage.temp_abs_nD_data.allocated_elements>0) free(this_abs_storage.temp_abs_nD_data.elements);
@@ -558,7 +558,7 @@ if (accepted_processes.num_elements > 0) free(accepted_processes.elements);
 if (accepted_volumes.num_elements > 0) free(accepted_volumes.elements);
 %}
 
-MCDISPLAY COPY Monitor_nD
+MCDISPLAY INHERIT Monitor_nD
 
 END
 
