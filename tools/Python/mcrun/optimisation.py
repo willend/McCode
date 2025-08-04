@@ -3,6 +3,8 @@ from log import McRunException, getLogger
 from datetime import datetime
 from decimal import Decimal
 from os.path import join 
+from multiprocessing import Pool
+import copy
 
 try:
   from scipy.optimize import minimize
@@ -218,9 +220,39 @@ class MultiInterval:
 class InvalidInterval(McRunException):
     pass
 
+def _simulate_point(args):
+    i, point, intervals, mcstas_config, mcstas_dir = args
+
+    from shutil import copyfile
+    from os.path import join
+
+    # Make a new instance of McStas and configure it
+    mcstas = copy.deepcopy(mcstas_config)  # You need to define a way to deepcopy or clone your mcstas object
+    par_values = []
+
+    # Ensure we get a mccode.sim pr. thread subdir (e.g. for monitoring seed value
+    mcstas.simfile      = join(mcstas_dir, 'mccode.sim')
+
+    # Shift thread seed to avoid duplicate simulations / biasing
+    mcstas.options.seed = (i*1024)+mcstas.options.seed
+
+    for key in intervals:
+        mcstas.set_parameter(key, point[key])
+        par_values.append(point[key])
+
+    current_dir = f'{mcstas_dir}/{i}'
+    mcstas.run(pipe=False, extra_opts={'dir': current_dir})
+    detectors = mcsimdetectors(current_dir)
+
+    result = {
+        'index': i,
+        'params': par_values,
+        'detectors': detectors
+    }
+    return result
 
 class Scanner:
-    """ Perform a series of simulation steps along a given set of points """
+    """ Perform a series of simulation steps along a given set of points"""
     def __init__(self, mcstas, intervals):
         self.mcstas = mcstas
         self.intervals = intervals
@@ -244,6 +276,7 @@ class Scanner:
         mcstas_dir = self.mcstas.options.dir
         if mcstas_dir == '':
             mcstas_dir = '.'
+            
 
         with open(self.outfile, 'w') as outfile:
             for i, point in enumerate(self.points):
@@ -276,6 +309,72 @@ class Scanner:
                     line = '%s %s\n' % (' '.join(map(str, par_values)), ' '.join(values))
                     outfile.write(line)
                     outfile.flush()
+
+
+class Scanner_split:
+    """ Perform a series of simulation steps along a given set of points,
+        Where each simulation is controlled by its own thread. """
+    def __init__(self, mcstas, intervals, nb_cpu):
+        self.mcstas = mcstas
+        self.intervals = intervals
+        self.points = None
+        self.nb_cpu = nb_cpu
+        self.outfile = mcstas.options.optimise_file
+        self.simfile = join(mcstas.options.dir, 'mccode.sim')
+
+    def set_points(self, points):
+        self.points = points
+
+    def set_outfile(self, path):
+        self.outfile = path
+
+    def run(self):
+        LOG.info('Running Scanner split, result file is "%s"' % self.outfile)
+
+        if len(self.intervals) == 0:
+            raise InvalidInterval('No interval range specified')
+
+        mcstas_dir = self.mcstas.options.dir or '.'
+
+        if self.mcstas.options.seed is None:
+          dt=datetime.now()
+          LOG.info('No incoming seed from cmdline, setting to current Unix epoch (%d)!' % dt.timestamp())
+          self.mcstas.options.seed=dt.timestamp()
+
+        # Prepare data to pass into processes
+        args_list = [
+            (i, point, self.intervals, self.mcstas, mcstas_dir)
+            for i, point in enumerate(self.points)
+        ]
+
+        with Pool(processes=self.nb_cpu) as pool:
+            results = pool.map(_simulate_point, args_list)
+
+        # Sort results to preserve order
+        results.sort(key=lambda r: r['index'])
+
+        with open(self.outfile, 'w') as outfile:
+            wrote_headers = False
+            for result in results:
+                if result['detectors'] is None:
+                    continue
+
+                if not wrote_headers:
+                    names = [d.name for d in result['detectors']]
+                    outfile.write(build_header(self.mcstas.options, self.intervals.keys(), self.intervals, names))
+                    with open(self.simfile, 'w') as simfile:
+                        simfile.write(build_mccodesim_header(
+                            self.mcstas.options,
+                            self.intervals,
+                            names,
+                            version=self.mcstas.version
+                        ))
+                    wrote_headers = True
+
+                values = ['%s %s' % (d.intensity, d.error) for d in result['detectors']]
+                line = '%s %s\n' % (' '.join(map(str, result['params'])), ' '.join(values))
+                outfile.write(line)
+                outfile.flush()
 
 
 class Optimizer:

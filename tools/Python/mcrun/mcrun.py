@@ -11,9 +11,9 @@ from shutil import copyfile
 from optparse import OptionParser, OptionGroup, OptionValueError
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
-
+import multiprocessing
 from mccode import McStas, Process
-from optimisation import Scanner, LinearInterval, MultiInterval, Optimizer
+from optimisation import Scanner, Scanner_split, LinearInterval, MultiInterval, Optimizer
 
 # import config
 import sys
@@ -98,6 +98,11 @@ def add_mcrun_options(parser):
     add('-M', '--multi',
         action='store_true',
         help='Run a multi-dimensional scan')
+
+    add("--scan_split",
+        type=int,
+        metavar="scan_split",
+        help='Scan by parallelising steps as individual cpu threads. Initialise by number of wanted threads (e.g. your number of cores).')
 
     add('--autoplot',
         action='store_true',
@@ -264,11 +269,11 @@ def add_mcstas_options(parser):
     add('-t', '--trace',
         metavar='trace', type=int, default=0,
         help='Enable trace of %ss through instrument' % (mccode_config.configuration["PARTICLE"]))
-
+  
     add('--no-trace',
         action='store_true', metavar='notrace', default=None,
         help='Disable trace of %ss in instrument (combine with -c)' % (mccode_config.configuration["PARTICLE"]))
-
+  
     add('-y', '--yes',
         action='store_true', default=False,
         help='Assume any default parameter value in instrument')
@@ -574,13 +579,28 @@ def main():
     elif options.numpoints is not None:
         interval_points = LinearInterval.from_range(options.numpoints, intervals)
 
+
+    # Check that mpi and scan split are not both used. Default to mpi if they are
+    if options.scan_split is not None and options.mpi is not None:
+        options.scan_split = None
+        
     # Parameters for linear scanning present
-    if interval_points:
+    if interval_points and (options.scan_split is None):
         scanner = Scanner(mcstas, intervals)
         scanner.set_points(interval_points)
         if (not options.dir == ''):
             mkdir(options.dir)
         scanner.run()  # in optimisation.py
+
+    elif options.scan_split is not None:
+        if options.scan_split == 0:
+            options.scan_split = multiprocessing.cpu_count()-1
+        split_scanner = Scanner_split(mcstas, intervals, options.scan_split)
+        split_scanner.set_points(interval_points)
+        if (not options.dir == ''):
+            mkdir(options.dir)
+        split_scanner.run()  # in optimisation.py
+
     elif options.optimize:
         optimizer = Optimizer(mcstas, intervals)
         if (not options.dir == ''):
