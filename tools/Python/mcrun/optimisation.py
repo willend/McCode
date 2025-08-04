@@ -230,6 +230,12 @@ def _simulate_point(args):
     mcstas = copy.deepcopy(mcstas_config)  # You need to define a way to deepcopy or clone your mcstas object
     par_values = []
 
+    # Ensure we get a mccode.sim pr. thread subdir (e.g. for monitoring seed value
+    mcstas.simfile      = join(mcstas_dir, 'mccode.sim')
+
+    # Shift thread seed to avoid duplicate simulations / biasing
+    mcstas.options.seed = (i*1024)+mcstas.options.seed
+
     for key in intervals:
         mcstas.set_parameter(key, point[key])
         par_values.append(point[key])
@@ -329,6 +335,11 @@ class Scanner_split:
             raise InvalidInterval('No interval range specified')
 
         mcstas_dir = self.mcstas.options.dir or '.'
+
+        if self.mcstas.options.seed is None:
+          dt=datetime.now()
+          LOG.info('No incoming seed from cmdline, setting to current Unix epoch (%d)!' % dt.timestamp())
+          self.mcstas.options.seed=dt.timestamp()
 
         # Prepare data to pass into processes
         args_list = [
