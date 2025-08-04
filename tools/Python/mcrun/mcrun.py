@@ -99,6 +99,11 @@ def add_mcrun_options(parser):
         action='store_true',
         help='Run a multi-dimensional scan')
 
+    add("--scan_split",
+        type=int,
+        metavar="scan_split",
+        help='Scan by parallelising steps as individual cpu threads. Initialise by number of wanted threads (e.g. your number of cores).')
+
     add('--autoplot',
         action='store_true',
         help='Open plotter on generated dataset')
@@ -223,11 +228,6 @@ def add_mcrun_options(parser):
         nargs=1,
         default="",
     )
-
-    add("--scan_split",
-        type=int,
-        metavar="scan_split",
-        help='Scanning over a variable is split onto individual cpu threads')
 
     #    --optimize-maxiter maxiter  max iter of optimization
     #    --tol tol          tolerance criteria to end the optimization
