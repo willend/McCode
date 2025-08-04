@@ -100,16 +100,15 @@ if (xwidth && yheight && zdepth)  shape=1; /* box */
     target_z=1;
   }
 
-  my_a_v = sigma_abs*2200*100;           /* Is not yet divided by v. 100: Convert barns -> fm^2 */
+  my_a_v = sigma_abs*2200;           /* Is not yet divided by v.*/
 
   my_s_pre = Phi * 4*PI*R*R*R/3 * Delta_rho*Delta_rho;
 
 %}
 TRACE
 %{
-  double t0, t1, v, l_full, l, l_1, dt, d_phi, theta, my_s;
-  double aim_x=0, aim_y=0, aim_z=1, axis_x, axis_y, axis_z;
-  double arg, tmp_vx, tmp_vy, tmp_vz, vout_x, vout_y, vout_z;
+  double t0, t1, v, l_full, l, l_1, dt, my_s;
+  double aim_x=0, aim_y=0, aim_z=1;
   double f, solid_angle, vx_i, vy_i, vz_i, qx, qy, qz,q;
   char   intersect=0;
 
@@ -159,8 +158,7 @@ TRACE
 
     f = 3 * (sin(q*R) - q*R*cos(q*R))/(q*R*q*R*q*R);
 
-    l_1 = v*t1;
-    double pmul=l_full*solid_angle/(4*PI)*my_s_pre*f*f*exp(-my_a_v*(l+l_1)/v);
+    double pmul=l_full*solid_angle/(4*PI)*my_s_pre*f*f*exp(-(my_a_v/v)*l_full);
     p = p * pmul;
     SCATTER;
   }
