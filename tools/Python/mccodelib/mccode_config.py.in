@@ -21,8 +21,9 @@ def check_env_vars():
     MCCODE_CFLAGS_OVERRIDE = configuration["MCCODE"].upper() + '_CFLAGS_OVERRIDE'
     MCCODE_CC_OVERRIDE     = configuration["MCCODE"].upper() + '_CC_OVERRIDE'
     MCCODE_MPICC_OVERRIDE  = configuration["MCCODE"].upper() + '_MPICC_OVERRIDE'
+    MCCODE_MPIRUN_OVERRIDE  = configuration["MCCODE"].upper() + '_MPIRUN_OVERRIDE'
 
-    # MCCODE_LIB_DIR
+        # MCCODE_LIB_DIR
     if os.getenv(MCCODE_OVERRIDE) is not None:
         configuration['MCCODE_LIB_DIR'] = os.getenv(MCCODE_OVERRIDE)
     # CFLAGS
@@ -34,6 +35,9 @@ def check_env_vars():
     # MPICC
     if os.getenv(MCCODE_MPICC_OVERRIDE) is not None:
         compilation['MPICC'] = os.getenv(MCCODE_MPICC_OVERRIDE)
+    # MPIRUN
+    if os.getenv(MCCODE_MPIRUN_OVERRIDE) is not None:
+        compilation['MPIRUN'] = os.getenv(MCCODE_MPIRUN_OVERRIDE)
 
 def load_config(path=None):
     ''' loads a json user config to the dictionaries in this module '''
