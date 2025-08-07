@@ -304,13 +304,25 @@ struct line_info_struct
       && strcasecmp(ext, "res")) return infile;
       
     OUTFILE = malloc(1024);
-    if (!OUTFILE) return infile;
+    if (!OUTFILE) {
+      free(OUTFILE);
+      return infile;
+    }
     inpath = malloc(1024);
-    if (!inpath) return infile;
+    if (!inpath) {
+      free(OUTFILE);
+      free(inpath);
+      return infile;
+    }
 
     // get input file path from read-table:Open_File
     FILE *f_infile = Open_File(infile, "r", inpath);
-    if (!f_infile) return infile;
+    if (!f_infile) {
+      free(OUTFILE);
+      free(inpath);
+      free(f_infile);
+      return infile;
+    }
     fclose(f_infile);
     
     strncpy(OUTFILE, tmpnam(NULL), 1024); // create an output temporary file name

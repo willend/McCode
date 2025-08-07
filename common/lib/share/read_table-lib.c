@@ -428,7 +428,7 @@ void *Table_File_List_store(t_Table *tab){
       s     = (float*)data;
       dataf = (double*)malloc(sizeof(double)*nelements);
       if (!dataf) {
-	fprintf(stderr, "Could not allocate data block of size %i\n", nelements);
+	fprintf(stderr, "Could not allocate data block of size %ld\n", nelements);
 	exit(-1);
       }
       for (i=0; i<nelements; i++)
@@ -723,7 +723,7 @@ void *Table_File_List_store(t_Table *tab){
       }
       New_Table    = (double*)malloc(Length_Table*Table->columns*sizeof(double));
       if (!New_Table) {
-	fprintf(stderr,"Could not allocate New_Table of size %i x %i\n", Length_Table, Table->columns);
+	fprintf(stderr,"Could not allocate New_Table of size %ld x %ld\n", Length_Table, Table->columns);
 	exit(-1);
       }
       for (i=0; i < Length_Table; i++)
