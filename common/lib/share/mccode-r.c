@@ -2378,9 +2378,8 @@ FILE *siminfo_init(FILE *f)
     siminfo_out("end simulation\n");
 
   }
-  return (siminfo_file);
-
   ); /* MPI_MASTER */
+  return (siminfo_file);
 
 } /* siminfo_init */
 
