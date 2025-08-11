@@ -80,6 +80,9 @@ _class_particle mcsetstate(double x, double y, double z, double vx, double vy, d
   mcneutron._mctmp_a = mcneutron._mctmp_b =  mcneutron._mctmp_c = 0;
   // what about mcneutron._logic ?
   mcneutron._logic.dummy=1;
+  // init uservars via cogen'd-function
+  particle_uservar_init(&mcneutron);
+
   return(mcneutron);
 } /* mcsetstate */
 

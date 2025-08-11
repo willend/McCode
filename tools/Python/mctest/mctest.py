@@ -64,11 +64,13 @@ class InstrExampleTest:
         self.targetval = targetval
         self.testval = None
 
+        self.linted = None
         self.compiled = None
         self.compiletime = None
         self.didrun = None
         self.runtime = None
         self.errmsg = None
+
     def get_json_repr(self):
         return {
             "displayname"  : self.get_display_name(),
@@ -82,6 +84,7 @@ class InstrExampleTest:
             "targetval"    : self.targetval,
             "testval"      : self.testval,
 
+            "linted"       : self.linted,
             "compiled"     : self.compiled,
             "compiletime"  : self.compiletime,
             "didrun"       : self.didrun,
@@ -219,34 +222,45 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
 
 
     # compile, record time
-    global ncount, mpi, openacc, suffix, nexus
+    global ncount, mpi, openacc, suffix, nexus, lint
     logging.info("")
-    logging.info("Compiling instruments [seconds]...")
+    if not lint:
+        logging.info("Compiling instruments [seconds]...")
+    else:
+        logging.info("c-lint'ing instruments [seconds]...")
+
     for test in tests:
         # if binary exists, set compile time = 0 and continue
         binfile = os.path.splitext(test.localfile)[0] + "." + mccode_config.platform["EXESUFFIX"].lower()
         failed=os.path.splitext(test.localfile)[0] + ".failed"
+        # if we linted, continue
+        linted=os.path.splitext(test.localfile)[0] + ".linted"
         if os.path.exists(failed):
             test.compiled = False
             test.compiletime = -1
         elif os.path.exists(binfile):
             test.compiled = True
             test.compiletime = 0
+        elif os.path.exists(linted):
+            test.linted = True
         else:
             if test.testnb > 0 or (not args.skipnontest):
                 log = LineLogger()
                 t1 = time.time()
                 cmd = mccode_config.configuration["MCRUN"]
-                if nexus:
-                    cmd = cmd + " --format=NeXus "
-                if version:
-                    cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-                if openacc:
-                    cmd = cmd + " --openacc "
-                if mpi:
-                    cmd = cmd + " --mpi=1 "
+                if lint:
+                    cmd = cmd + " --verbose -C %s > compile_stdout.txt 2>&1" % test.instrname
+                else:
+                    if nexus:
+                        cmd = cmd + " --format=NeXus "
+                    if version:
+                        cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
+                    if openacc:
+                        cmd = cmd + " --openacc "
+                    if mpi:
+                        cmd = cmd + " --mpi=1 "
+                    cmd = cmd + " --verbose -c -n0 %s > compile_stdout.txt 2>&1" % test.instrname
 
-                cmd = cmd + " --verbose -c -n0 %s > compile_stdout.txt 2>&1" % test.instrname
                 utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname))
                 t2 = time.time()
                 test.compiled = os.path.exists(binfile)
@@ -258,11 +272,19 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
                       "{:3d}.".format(math.floor(test.compiletime)) + str(test.compiletime-int(test.compiletime)).split('.')[1][:2]
                     logging.info(formatstr % test.get_display_name())
                 else:
-                    formatstr = "%-" + "%ds: COMPILE ERROR using:\n" % maxnamelen
-                    logging.info(formatstr % test.instrname + cmd)
-                    f = open(failed, "a")
-                    f.write(formatstr % test.instrname + cmd)
-                    f.close()
+                    if lint:
+                        formatstr = "%-" + "%ds: Linted using using:\n" % maxnamelen
+                        logging.info(formatstr % test.instrname + cmd)
+                        f = open(linted, "a")
+                        f.write(formatstr % test.instrname + cmd)
+                        f.close()
+                        test.linted = True
+                    else:
+                        formatstr = "%-" + "%ds: COMPILE ERROR using:\n" % maxnamelen
+                        logging.info(formatstr % test.instrname + cmd)
+                        f = open(failed, "a")
+                        f.write(formatstr % test.instrname + cmd)
+                        f.close()
             else:
                 logging.info("Skipping compile of " + test.instrname)
         # save (incomplete) test results to disk
@@ -270,9 +292,13 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
 
     # run, record time
     logging.info("")
-    logging.info("Running tests...")
+    logging.info("Running tests / getting status...")
     for test in tests:
-        if not test.compiled:
+        if test.linted:
+            formatstr = "%-" + "%ds:  Linter only" % (maxnamelen+1)
+            logging.info(formatstr % test.instrname)
+            continue
+        elif not test.compiled:
             formatstr = "%-" + "%ds:   NO COMPILE" % (maxnamelen+1)
             logging.info(formatstr % test.instrname)
             continue
@@ -597,6 +623,7 @@ mpi = None
 openacc = None
 suffix = None
 nexus = None
+lint = None
 
 def main(args):
     # mutually excusive main branches
@@ -659,7 +686,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, mpi, skipnontest, openacc, nexus
+    global ncount, mpi, skipnontest, openacc, nexus, lint
     if args.ncount:
         ncount = args.ncount[0]
     elif args.n:
@@ -687,6 +714,10 @@ def main(args):
         nexus = True
         suffix = '_NeXus' + suffix
         logging.info("NeXus compilation / output format is enabled")
+    if args.lint:
+        lint = True
+        suffix = '_lint' + suffix
+        logging.info("c-linting enabled")
     # decide and run main branch
     if version and configs or version and vinfo or configs and vinfo:
         print("WARNING: version, --configs and --versions are mutually exclusive, exiting")
@@ -720,6 +751,7 @@ if __name__ == '__main__':
     parser.add_argument('--skipnontest', action='store_true', help='Skip compilation of instruments without a test')
     parser.add_argument('--suffix', nargs=1, help='Add suffix to test directory name, e.g. 3.x-dev_suffix')
     parser.add_argument('--nexus', action='store_true', help='Compile for / use NeXus output format everywhere')
+    parser.add_argument('--lint', action='store_true', help='Just run the c-linter')
     args = parser.parse_args()
 
     try:

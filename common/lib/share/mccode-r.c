@@ -2009,8 +2009,17 @@ int mcdetector_out_axis_nexus(NXhandle f, char *label, char *var, int rank, long
   else {
     double *axis;
     axis=malloc(sizeof(double)*length);
+    if (!axis ) {
+      printf("Fatal memory error allocating NeXus axis of length %li, exiting!\n", length);
+      return(NX_ERROR);
+    }
     char *valid;
     valid=malloc(sizeof(char)*CHAR_BUF_LENGTH);
+    if (!valid ) {
+      printf("Fatal memory error allocating label axis of length %li, exiting!\n", CHAR_BUF_LENGTH);
+      free(axis);
+      return(NX_ERROR);
+    }
     int dim=(int)length;
     int i;
     int nprimary=1;

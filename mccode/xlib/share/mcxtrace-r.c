@@ -59,6 +59,9 @@ _class_particle mcsetstate(double x, double y, double z, double kx, double ky, d
   mcphoton._restore   = 0;
   mcphoton._scattered = 0;
 
+  // init uservars via cogen'd-function
+  particle_uservar_init(&mcphoton);
+
   return(mcphoton);
 } /* mcsetstate */
 

@@ -66,7 +66,11 @@ def add_mcrun_options(parser):
     add('--cogen',
         metavar='cogen',
         help='Choice of code-generator (implies -c)')
-    
+
+    add('-C','--c-lint',
+        action='store_true',
+        help='Use c-linter (e.g. cppcheck) to lint the generated code. Configure linter via mccode_config.json. Implies -c and -v, but also NO simulation will be run. ')
+
     add('-I',
         metavar='I',
         help='Append to McCode search path (implies -c)')
@@ -516,6 +520,10 @@ def main():
 
     # Fill out extra information
     expand_options(options)
+
+    if options.c_lint is not None:
+        options.force_compile = True
+        options.verbose = True
 
     if options.verbose:
         setLogLevel(DEBUG)

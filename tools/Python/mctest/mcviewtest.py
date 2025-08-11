@@ -72,8 +72,12 @@ def run_normal_mode(testdir, reflabel):
         curl = label + "/" + cellobj["instrname"] +  "/compile_stdout.txt"
 
         if not cellobj["compiled"]:
-            state = 4
-            return (state, "<strong><font color=\"red\">! Compile error !</font></strong>", "", "", "", curl)
+            if cellobj["linted"]:
+                state = 4
+                return (state, "<strong><font color=\"#8B4000\">C-linter output</font></strong>", "", "", "", curl)
+            else:
+                state = 4
+                return (state, "<strong><font color=\"red\">! Compile error !</font></strong>", "", "", "", curl)
         elif not cellobj["didrun"]:
             state = 3
             compiletime = "%.2f s" % cellobj["compiletime"]

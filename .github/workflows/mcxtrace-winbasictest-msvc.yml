@@ -142,7 +142,7 @@ jobs:
 
     - name: Run rng instrument
       working-directory: run_rng
-      run: ..\install\bin\mxrun --verbose test.instr -s1000 seed=1000 -d RNGtest
+      run: ..\install\bin\mxrun --verbose test.instr -s1000 Ncount=1000 -d RNGtest
 
     - name: Test RNG instrument output
       working-directory: run_rng
