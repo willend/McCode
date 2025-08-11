@@ -74,7 +74,7 @@ def run_normal_mode(testdir, reflabel):
         if not cellobj["compiled"]:
             if cellobj["linted"]:
                 state = 4
-                return (state, "<strong><font color=\"red\">Linted only</font></strong>", "", "", "", curl)
+                return (state, "<strong><font color=\"#8B4000\">C-linter output</font></strong>", "", "", "", curl)
             else:
                 state = 4
                 return (state, "<strong><font color=\"red\">! Compile error !</font></strong>", "", "", "", curl)
