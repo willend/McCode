@@ -174,11 +174,15 @@ class McStas:
             self.binpath = existingBin
             return  # skip recompilation
 
-        LOG.info('Recompiling: %s', self.binpath)
+        if options.c_lint:
+            LOG.info('Linting generated code: %s', self.cpath)
+        else:
+            LOG.info('Recompiling: %s', self.binpath)
 
-        # Setup cflags, use -lm anywhere else than Windows-conda with cl.exe
-        cflags = ''
-        if not "cl.exe" in mccode_config.compilation['CC'].lower():
+        # Setup cflags, use -lm anywhere unless if we are linting or using Windows-conda with cl.exe:
+        if options.c_lint or "cl.exe" in mccode_config.compilation['CC'].lower():
+            cflags = ''
+        else:
             cflags += '-lm ' # math library
 
         # Special support for conda environment with compilers included. To be
@@ -306,12 +310,19 @@ class McStas:
             if "${CONDA_PREFIX}" in cflags:
                 cflags=cflags.replace("${CONDA_PREFIX}",os.environ.get('CONDA_PREFIX'))
 
-        # Final assembly of compiler commandline
-        if not "cl.exe" in mccode_config.compilation['CC'].lower():
-            args = ['-o', self.binpath, self.cpath] + lexer.split(cflags)
+        # Lint or compile?
+        if options.c_lint is not None:
+            args = [self.cpath] + lexer.split(mccode_config.compilation['CLINTERFLAGS'])
+            Process(lexer.quote(mccode_config.compilation['CLINT'])).run(args)
+            LOG.info('End of linting %s', self.cpath)
+            exit()
         else:
-            args = [self.cpath] + lexer.split(cflags)
-        Process(lexer.quote(options.cc)).run(args)
+            # Final assembly of compiler commandline
+            if not "cl.exe" in mccode_config.compilation['CC'].lower():
+                args = ['-o', self.binpath, self.cpath] + lexer.split(cflags)
+            else:
+                args = [self.cpath] + lexer.split(cflags)
+                Process(lexer.quote(options.cc)).run(args)
 
     def run(self, pipe=False, extra_opts=None, override_mpi=None):
         ''' Run simulation '''
