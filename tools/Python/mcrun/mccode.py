@@ -179,9 +179,10 @@ class McStas:
         else:
             LOG.info('Recompiling: %s', self.binpath)
 
+        cflags = ''
         # Setup cflags, use -lm anywhere unless if we are linting or using Windows-conda with cl.exe:
         if options.c_lint or "cl.exe" in mccode_config.compilation['CC'].lower():
-            cflags = ''
+            pass
         else:
             cflags += '-lm ' # math library
 
