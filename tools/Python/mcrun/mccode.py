@@ -185,8 +185,6 @@ class McStas:
             pass
         else:
             cflags += '-lm ' # math library
-
-        print("Past CFLAGS")
             
         # Special support for conda environment with compilers included. To be
         # conservative we (for now?) only apply this when both CONDA_PREFIX and
@@ -312,10 +310,9 @@ class McStas:
         if os.environ.get('CONDA_PREFIX'):
             if "${CONDA_PREFIX}" in cflags:
                 cflags=cflags.replace("${CONDA_PREFIX}",os.environ.get('CONDA_PREFIX'))
-        print("PRE LINTER")
+
         # Lint or compile?
         if options.c_lint is not None:
-            print("LINTER")
             args = [self.cpath] + lexer.split(mccode_config.compilation['CLINTERFLAGS'])
             Process(lexer.quote(mccode_config.compilation['CLINT'])).run(args)
             LOG.info('End of linting %s', self.cpath)
