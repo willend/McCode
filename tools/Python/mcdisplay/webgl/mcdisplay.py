@@ -280,7 +280,7 @@ if __name__ == '__main__':
     from mccodelib.mcdisplayutils import make_common_parser
     # Only pre-sets instr, --default, options
     parser, prefix = make_common_parser(__file__, __doc__)
-    parser.add_argument('--dirname', help='output directory name override')
+    parser.add_argument('--dirname', '-d', help='output directory name override')
     parser.add_argument('--inspect', help='display only particle rays reaching this component')
     parser.add_argument('--nobrowse', action='store_true', help='do not open a webbrowser viewer')
     parser.add_argument('--invcanvas', action='store_true', help='invert canvas background from black to white')
