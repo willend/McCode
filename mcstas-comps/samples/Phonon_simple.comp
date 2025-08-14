@@ -463,7 +463,7 @@ TRACE
     findroots_gpu(0, v_i, v_i+2*c*V2K/VS2E, vf_list, &nf, &parms);
     #endif
     index=(int)floor(rand01()*nf);
-    if (index<2) {
+
       v_f=vf_list[index];
       parms.vf=v_f-DV;
       f1=omega_q(&parms);
@@ -497,9 +497,7 @@ TRACE
       p4 = 2*VS2E*v_f/J_factor;  /* Jacobian of delta functions in cross section */
       p5 = b*b/M;  /* Cross section factor 2 */
       p *= p1*p2*p3*p4*p5;
-    } else {
-      ABSORB; // findroots returned junk
-    }
+      
   } /* else transmit: Neutron did not hit the sample */
 
   // Finally, set vf_list to zero again
