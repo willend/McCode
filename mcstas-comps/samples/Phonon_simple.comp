@@ -51,6 +51,9 @@
 * target_z: [m]       position of target to focus at. Straight ahead.
 * target_index: [1]   relative index of component to focus at, e.g. next is +1 
 * gap: [meV]          Bandgap energy (unphysical)
+* e_steps_low [50]    Amount of possible intersections beneath the elastic line  
+* e_steps_high [50]   Amount of possible intersections above the elastic line  
+*
 *
 * CALCULATED PARAMETERS:
 * V_rho: [AA^-3]      Atomic density
@@ -359,13 +362,13 @@ DECLARE
   double V_my_s;
   double V_my_a_v;
   double DV;
-  double vf_list[100];// List of allowed final velocities. Has length of scan_steps
+  double* vf_list;// List of allowed final velocities. Has length of scan_steps
   struct neutron_and_phonon_params parms;
   
 %}
 INITIALIZE
 %{
-  memset(vf_list, 0, sizeof(vf_list));
+  vf_list = (double *)calloc( e_steps_low*e_steps_high, sizeof(double));
   V_rho = 4/(a*a*a);
   V_my_s = (V_rho * 100 * sigma_inc);
   V_my_a_v = (V_rho * 100 * sigma_abs * 2200);
