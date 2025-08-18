@@ -56,13 +56,19 @@ jobs:
       with:
         mpi: ${{ matrix.mpi }}
 
-    - name: Setup Bison (macOS)
+    - name: Setup (Linux)
+      id: setup-flex-bison-macos
+      if: runner.os == 'Linux'
+      run: |
+           apt -y install python3-jinja2
+
+    - name: Setup (macOS)
       id: setup-flex-bison-macos
       if: runner.os == 'macOS'
       run: |
-           brew install bison flex gfortran gsl
+           brew install bison flex gfortran gsl jinja2
 
-    - name: Setup Bison (Windows)
+    - name: Setup (Windows)
       id: setup-flex-bison-Windows
       if: runner.os == 'Windows'
       run: |
