@@ -60,13 +60,13 @@ jobs:
       id: setup-linux
       if: runner.os == 'Linux'
       run: |
-           sudo apt-get -y install python3-jinja2
+           echo No dependencies needed here
 
     - name: Setup (macOS)
       id: setup-macos
       if: runner.os == 'macOS'
       run: |
-           brew install bison flex gfortran gsl jinja2-cli
+           brew install bison flex gfortran gsl
 
     - name: Setup (Windows)
       id: setup-Windows
@@ -146,15 +146,15 @@ jobs:
            set -x
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             python3 -mpip install PyYAML ply McStasscript ncrystal mcpl mcpl-extra
+             python3 -mpip install PyYAML ply McStasscript ncrystal mcpl mcpl-extra jinja2
            fi
            if [ "$RUNNER_OS" == "macOS" ];
            then
-             python3 -mpip install PyYAML ply McStasScript ncrystal mcpl mcpl-extra --break-system-packages
+             python3 -mpip install PyYAML ply McStasScript ncrystal mcpl mcpl-extra jinja2 --break-system-packages
            fi
            if [ "$RUNNER_OS" == "Linux" ];
            then
-             python3 -mpip install PyYAML ply McStasscript ncrystal mcpl mcpl-extra
+             python3 -mpip install PyYAML ply McStasscript ncrystal mcpl mcpl-extra jinja2
            fi
 
     - name: Launch RNG test instrument
