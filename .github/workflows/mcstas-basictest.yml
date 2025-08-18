@@ -348,7 +348,7 @@ jobs:
 
     - name: Check for modified instruments
       id: instr-test
-      if: runner.os == 'Linux' # Linux only
+      if: runner.os != 'Windows' # Unix only
       run: |
            set -e
            set -u
@@ -369,7 +369,7 @@ jobs:
              mkdir run_mctest && cd run_mctest
              for instr in $CHANGEDINSTR;
              do
-               instrbase=`basename ${instr} .instr
+               instrbase=`basename ${instr} .instr`
                ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$instrbase
              done
              mcviewtest $PWD
