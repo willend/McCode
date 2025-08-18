@@ -369,7 +369,8 @@ jobs:
              mkdir run_mctest && cd run_mctest
              for instr in $CHANGEDINSTR;
              do
-               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$instr
+               instrbase=`basename ${instr} .instr
+               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$instrbase
              done
              mcviewtest $PWD
            fi
