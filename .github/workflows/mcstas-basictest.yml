@@ -362,8 +362,10 @@ jobs:
            cd src
            export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps`
            export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps | wc -l`
+           echo $NUMCHANGEDINSTR instruments were changed: $CHANGEDINSTR
            cd -
            if [ "$NUMCHANGEDINSTR" != "0" ];
+           then
              mkdir run_mctest && cd run_mctest
              for instr in $CHANGEDINSTR;
              do
