@@ -845,6 +845,15 @@ INITIALIZE
       line_info.my_s_v2[i] = 4*PI*PI*PI*pack*(L[i].DWfactor ? L[i].DWfactor : 1)
                  /(line_info.V_0*line_info.V_0*V2K*V2K)
                  *(L[i].j * L[i].F2 / L[i].q)*line_info.XsectionFactor;
+      if (L[i].q < 3.7){
+          double temp = asin(L[i].q*2.56/2/PI)*RAD2DEG;
+            printf("|F|=%g\tMulti=%d\tQ=%g\ttheta=%g\n", 
+                      L[i].F2,
+                      L[i].j,
+                      L[i].q,
+                      temp );
+            
+      }
       /* Is not yet divided by v^2 */
       /* Squires [3.103] */
       line_info.q_v[i] = L[i].q*K2V;
@@ -853,8 +862,8 @@ INITIALIZE
   }
   if (line_info.V_0 > 0) {
     /* Is not yet divided by v */
-    line_info.my_a_v = pack*line_info.sigma_a/line_info.V_0*2200*100;   // Factor 100 to convert from barns to fm^2
-    line_info.my_inc = pack*line_info.sigma_i/line_info.V_0*100;   // Factor 100 to convert from barns to fm^2
+    line_info.my_a_v = 0;//pack*line_info.sigma_a/line_info.V_0*2200*100;   // Factor 100 to convert from barns to fm^2
+    line_info.my_inc =0;// pack*line_info.sigma_i/line_info.V_0*100;   // Factor 100 to convert from barns to fm^2
     MPI_MASTER(
     printf("PowderN: %s: Vc=%g [Angs] sigma_abs=%g [barn] sigma_inc=%g [barn] reflections=%s\n",
       NAME_CURRENT_COMP, line_info.V_0, line_info.sigma_a, line_info.sigma_i, reflections && strlen(reflections) ? reflections : "NULL");
@@ -1136,9 +1145,10 @@ TRACE
 
 
 			l_1 = v*(t3 - t2 + t1 - t0); /* Length to exit */
-
-			pmul  *= Nq*l_full*my_s_n*exp(-(line_info.my_a_v/v+my_s)*(l+l_1))
+      my_s = 0;
+			pmul  *= Nq*l_full*my_s_n *exp(-(line_info.my_a_v/v+my_s)*(l+l_1))
 									  /(1-(p_inc+p_transmit));
+
 			/* Correction in case of d_phi focusing - BUT only when d_phi != 0 */
 			if (d_phi_thread) {
 			  pmul *= alpha/PI;
