@@ -366,14 +366,12 @@ DECLARE
   double V_my_s;
   double V_my_a_v;
   double DV;
-  double* vf_list;// List of allowed final velocities. Has length of scan_steps
-  struct neutron_params neutron;
   struct phonon_params phonon;
   
 %}
 INITIALIZE
 %{
-  vf_list = (double *)calloc( e_steps_low*e_steps_high, sizeof(double));
+  
   V_rho = 4/(a*a*a);
   V_my_s = (V_rho * 100 * sigma_inc);
   V_my_a_v = (V_rho * 100 * sigma_abs * 2200);
@@ -403,6 +401,8 @@ INITIALIZE
 %}
 TRACE
 %{
+  double* vf_list = (double *)calloc( e_steps_low*e_steps_high, sizeof(double)); // List of allowed final velocities. Has length of scan_steps
+  struct neutron_params neutron;
   double t0, t1;                /* Entry/exit time for cylinder */
   double v_i, v_f;               /* Neutron velocities: initial, final */
   double vx_i, vy_i, vz_i;  /* Neutron initial velocity vector */
@@ -502,16 +502,14 @@ TRACE
       p4 = 2*VS2E*v_f/J_factor;  /* Jacobian of delta functions in cross section */
       p5 = b*b/M;  /* Cross section factor 2 */
       p *= p1*p2*p3*p4*p5;
-      // Finally, set vf_list to zero again
-      memset(vf_list, 0, nf * sizeof(double));
   } /* else transmit: Neutron did not hit the sample */
-
+free(vf_list);
 
 %}
 
 FINALLY 
 %{
-  free(vf_list);
+
 
 %}
 
