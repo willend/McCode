@@ -367,7 +367,7 @@ jobs:
            # Check if any instr files were modified during last commit
            cd src
            export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps`
-           export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps | wc -l`
+           export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps | wc -l | xargs echo`
            echo $NUMCHANGEDINSTR instruments were changed: $CHANGEDINSTR
            cd -
            if [ "$NUMCHANGEDINSTR" != "0" ];
