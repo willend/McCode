@@ -366,18 +366,18 @@ jobs:
            test -f ./install_mcstas/bin/${MCSTAS_EXECUTABLE}
            # Check if any instr files were modified during last commit
            cd src
-           export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps`
+           export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps | xargs echo | sed s/\ /,/g`
            export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps | wc -l | xargs echo`
            echo $NUMCHANGEDINSTR instruments were changed: $CHANGEDINSTR
            cd -
            if [ "$NUMCHANGEDINSTR" != "0" ];
            then
              mkdir run_mctest && cd run_mctest
-             for instr in $CHANGEDINSTR;
-             do
-               instrbase=`basename ${instr} .instr`
-               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$instrbase
-             done
+             #for instr in $CHANGEDINSTR;
+             #do
+             #  instrbase=`basename ${instr} .instr`
+             ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR
+             #done
              mcviewtest $PWD
            fi
 
