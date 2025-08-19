@@ -672,8 +672,6 @@ def get_instr_comp_files(mydir, recursive=True, instrfilter=None, compfilter=Non
     191114: added instrfilter and compfilter, which filters results based on filename (before the dot)
     '''
     instrreg = None
-    if instrfilter:
-        instrreg = re.compile(instrfilter)
     compreg = None
     if compfilter:
         compreg = re.compile(compfilter)
@@ -686,8 +684,12 @@ def get_instr_comp_files(mydir, recursive=True, instrfilter=None, compfilter=Non
             # get instr files
             if splitext(f)[1] == '.instr':
                 if instrfilter is not None:
-                    if instrreg.search(join(dirpath,f), re.IGNORECASE):
-                        files_instr.append(join(dirpath, f))
+                    filters=instrfilter.split(",")
+                    numfilters=len(filters)
+                    for filter in filters:
+                        instrreg = re.compile(filter)
+                        if instrreg.search(join(dirpath,f), re.IGNORECASE):
+                            files_instr.append(join(dirpath, f))
                 else:
                     files_instr.append(join(dirpath, f))
 

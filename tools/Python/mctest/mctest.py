@@ -696,9 +696,11 @@ def main(args):
     suffix = '_' + ncount
 
     if instrfilter:
-        suffix = '_' + instrfilter
+        isuffix=instrfilter.replace(',', '_')
+        suffix = '_' + isuffix
+
     if args.suffix:
-        suffix = '_' + args.suffix[0]
+        suffix = suffix + '_' + args.suffix[0]
 
     suffix=suffix + "_" + platform.system()
     logging.info("ncount is: %s" % ncount)
