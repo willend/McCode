@@ -51,6 +51,9 @@
 * target_z: [m]       position of target to focus at. Straight ahead.
 * target_index: [1]   relative index of component to focus at, e.g. next is +1 
 * gap: [meV]          Bandgap energy (unphysical)
+* e_steps_low [1]    Amount of possible intersections beneath the elastic line
+* e_steps_high [1]   Amount of possible intersections above the elastic line
+*
 *
 * CALCULATED PARAMETERS:
 * V_rho: [AA^-3]      Atomic density
@@ -66,7 +69,9 @@
 DEFINE COMPONENT Phonon_simple
 
 SETTING PARAMETERS (radius,yheight,sigma_abs,sigma_inc,a,b,M,c,DW,T,
-target_x=0, target_y=0, target_z=0, int target_index=0,focus_r=0,focus_xw=0,focus_yh=0,focus_aw=0,focus_ah=0, gap=0)
+              target_x=0, target_y=0, target_z=0, int target_index=0,
+              focus_r=0,focus_xw=0,focus_yh=0,focus_aw=0,focus_ah=0, 
+              gap=0, int e_steps_low=50, int e_steps_high=50)
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
 SHARE
@@ -74,6 +79,26 @@ SHARE
 #ifndef PHONON_SIMPLE
 #define PHONON_SIMPLE $Revision$
 #define T2E (1/11.605)   /* Kelvin to meV */
+
+	struct phonon_params {
+    double a_; // d spacing of the cubic lattice
+    double c_; // Speed of sound in the material
+    double gap_; // optional spin gap
+    double ah; // Half of a 
+    int e_steps_high_;
+    int e_steps_low_;
+	};
+  struct neutron_params {
+		// Statically allocate vectors that are always 3 
+    double vf; // Final velocity size
+    double vi; // Initial velocity size
+    double vv_x; // vv is the unit vector of the final velocity vector
+    double vv_y;
+    double vv_z;
+    double vi_x; // vi is the initial velocity vector
+    double vi_y;
+    double vi_z;
+	};
 
 #pragma acc routine 
 double nbose(double omega, double T)  /* Other name ?? */
@@ -103,7 +128,7 @@ void fatalerror(char *s)
   }
 
   #pragma acc routine
-  double omega_q(double* parms)
+  double omega_q(struct neutron_params *neutron, struct phonon_params *phonon)
     {
       /* dispersion in units of meV  */
       double vi, vf, vv_x, vv_y, vv_z, vi_x, vi_y, vi_z;
@@ -111,18 +136,18 @@ void fatalerror(char *s)
       double ah, a, c;
       double gap;
 
-      vf=parms[0];
-      vi=parms[1];
-      vv_x=parms[2];
-      vv_y=parms[3];
-      vv_z=parms[4];
-      vi_x=parms[5];
-      vi_y=parms[6];
-      vi_z=parms[7];
-      a   =parms[8];
-      c   =parms[9];
-      gap =parms[10];
-      ah=a/2.0;
+      vf=neutron->vf;
+      vi=neutron->vi;
+      vv_x=neutron->vv_x;
+      vv_y=neutron->vv_y;
+      vv_z=neutron->vv_z;
+      vi_x=neutron->vi_x;
+      vi_y=neutron->vi_y;
+      vi_z=neutron->vi_z;
+      a   =phonon->a_;
+      c   =phonon->c_;
+      gap =phonon->gap_;
+      ah  =phonon->ah;
 
       qx=V2K*(vi_x-vf*vv_x);
       qy=V2K*(vi_y-vf*vv_y);
@@ -141,15 +166,17 @@ void fatalerror(char *s)
     }
 
 
-double zridd(double (*func)(double*), double x1, double x2, double *parms, double xacc)
+double zridd(double (*func)(struct neutron_params*, struct phonon_params*), 
+              double x1, double x2, struct neutron_params *neutron, 
+              struct phonon_params *phonon, double xacc)
     {
       int j;
       double ans, fh, fl, fm, fnew, s, xh, xl, xm, xnew;
 
-      parms[0]=x1;
-      fl=(*func)(parms);
-      parms[0]=x2;
-      fh=(*func)(parms);
+      neutron->vf=x1;
+      fl=func(neutron, phonon);
+      neutron->vf=x2;
+      fh=func(neutron, phonon);
       if (fl*fh >= 0)
       {
         if (fl==0) return x1;
@@ -164,8 +191,8 @@ double zridd(double (*func)(double*), double x1, double x2, double *parms, doubl
         for (j=1; j<MAXRIDD; j++)
         {
           xm=0.5*(xl+xh);
-          parms[0]=xm;
-          fm=(*func)(parms);
+          neutron->vf=xm;
+          fm=func(neutron,phonon);
           s=sqrt(fm*fm-fl*fh);
           if (s == 0.0)
             return ans;
@@ -173,8 +200,8 @@ double zridd(double (*func)(double*), double x1, double x2, double *parms, doubl
           if (fabs(xnew-ans) <= xacc)
             return ans;
           ans=xnew;
-          parms[0]=ans;
-          fnew=(*func)(parms);
+          neutron->vf=ans;
+          fnew=func(neutron,phonon);
           if (fnew == 0.0) return ans;
           if (fabs(fm)*SIGN(fnew) != fm)
           {
@@ -206,15 +233,15 @@ double zridd(double (*func)(double*), double x1, double x2, double *parms, doubl
     }
 
 #pragma acc routine 
-double zridd_gpu(double x1, double x2, double *parms, double xacc)
+double zridd_gpu(double x1, double x2, struct neutron_params *neutron, struct phonon_params* phonon, double xacc)
     {
       int j;
       double ans, fh, fl, fm, fnew, s, xh, xl, xm, xnew;
 
-      parms[0]=x1;
-      fl=omega_q(parms);
-      parms[0]=x2;
-      fh=omega_q(parms);
+      neutron->vf=x1;
+      fl=omega_q(neutron, phonon);
+      neutron->vf=x2;
+      fh=omega_q(neutron, phonon);
       if (fl*fh >= 0)
       {
         if (fl==0) return x1;
@@ -229,8 +256,8 @@ double zridd_gpu(double x1, double x2, double *parms, double xacc)
         for (j=1; j<MAXRIDD; j++)
         {
           xm=0.5*(xl+xh);
-          parms[0]=xm;
-          fm=omega_q(parms);
+          neutron->vf=xm;
+          fm=omega_q(neutron, phonon);
           s=sqrt(fm*fm-fl*fh);
           if (s == 0.0)
             return ans;
@@ -238,8 +265,8 @@ double zridd_gpu(double x1, double x2, double *parms, double xacc)
           if (fabs(xnew-ans) <= xacc)
             return ans;
           ans=xnew;
-          parms[0]=ans;
-          fnew=omega_q(parms);
+          neutron->vf=ans;
+          fnew=omega_q(neutron, phonon);
           if (fnew == 0.0) return ans;
           if (fabs(fm)*SIGN(fnew) != fm)
           {
@@ -273,51 +300,64 @@ double zridd_gpu(double x1, double x2, double *parms, double xacc)
  
 #define ROOTACC 1e-8
 
-  int findroots(double brack_low, double brack_mid, double brack_high, double *list, int* index, double (*f)(double*), double *parms)
-    {
-      double root,range=brack_mid-brack_low;
-      int i, steps=100;
-
-     for (i=0; i<steps; i++)
-     {
-      root = zridd(f, brack_low+range*i/(int)steps,
-                   brack_low+range*(i+1)/(int)steps,
-                   (double *)parms, ROOTACC);
-      if (root != UNUSED)
-      {
-        list[(*index)++]=root;
-      }
-     }
-      root = zridd(f, brack_mid, brack_high, (double *)parms, ROOTACC);
-      if (root != UNUSED)
-      {
-        list[(*index)++]=root;
+  void findroots(double brack_low, double brack_mid, double brack_high, 
+                double *list, int* index, double (*f)(struct neutron_params*, struct phonon_params*), 
+                struct neutron_params *neutron, struct phonon_params *phonon) {
+    double root;
+    // Energy gain and energy loss spaces are not equally big. We check uniformly
+    // So we use two different ranges
+    double range_low = brack_mid - brack_low;
+    double range_high = brack_high - brack_mid;
+    // First in energy loss for the neutron
+    for (int i=0; i<phonon->e_steps_low_; i++){
+      root = zridd(f, brack_low+range_low*i/ phonon->e_steps_low_,
+                   brack_low+range_low*(i+1)/ phonon->e_steps_low_,
+                   neutron, phonon, ROOTACC);
+      if (root != UNUSED) {
+	list[(*index)++]=root;
       }
     }
+
+    // Then in energy gain for the neutron
+    for (int i=0; i<phonon->e_steps_high_; i++){
+      root = zridd(f, brack_low+range_high*i/ phonon->e_steps_high_,
+		   brack_low+range_high*(i+1)/ phonon->e_steps_high_,
+		   neutron, phonon, ROOTACC);
+      if (root != UNUSED){
+	list[(*index)++]=root;
+      }
+    }
+  }
   
 #pragma acc routine 
-  int findroots_gpu(double brack_low, double brack_mid, double brack_high, double *list, int* index, double *parms)
-    {
-      double root,range=brack_mid-brack_low;
-      int i, steps=100;
-
-     for (i=0; i<steps; i++)
-     {
-       root = zridd_gpu(brack_low+range*i/(int)steps,
-                   brack_low+range*(i+1)/(int)steps,
-                   (double *)parms, ROOTACC);
-      if (root != UNUSED)
-      {
-        list[(*index)++]=root;
-      }
-     }
-      root = zridd_gpu(brack_mid, brack_high, (double *)parms, ROOTACC);
-      if (root != UNUSED)
-      {
-        list[(*index)++]=root;
+  void findroots_gpu(double brack_low, double brack_mid, double brack_high, 
+                    double *list, int* index, struct neutron_params *neutron, struct phonon_params *phonon) {
+    double root;
+    // Energy gain and energy loss spaces are not equally big. We check uniformly
+    // So we use two different ranges
+    double range_low = brack_mid - brack_low;
+    double range_high = brack_high - brack_mid;
+    // First in energy loss for the neutron
+    for (int i=0; i<phonon->e_steps_low_; i++){
+      root = zridd_gpu(brack_low+range_low*i/ phonon->e_steps_low_,
+		       brack_low+range_low*(i+1)/ phonon->e_steps_low_,
+		       neutron, phonon, ROOTACC);
+      if (root != UNUSED) {
+	list[(*index)++]=root;
       }
     }
-  
+
+    // Then in energy gain for the neutron
+    for (int i=0; i<phonon->e_steps_high_; i++){
+      root = zridd_gpu(brack_low+range_high*i/ phonon->e_steps_high_,
+		       brack_low+range_high*(i+1)/ phonon->e_steps_high_,
+		       neutron, phonon, ROOTACC);
+      if (root != UNUSED){
+	list[(*index)++]=root;
+      }
+    }
+  }
+
 #undef UNUSED
 #undef MAXRIDD
 #endif
@@ -329,13 +369,24 @@ DECLARE
   double V_my_s;
   double V_my_a_v;
   double DV;
+  struct phonon_params phonon;
+  
 %}
 INITIALIZE
 %{
+  
   V_rho = 4/(a*a*a);
   V_my_s = (V_rho * 100 * sigma_inc);
   V_my_a_v = (V_rho * 100 * sigma_abs * 2200);
   DV = 0.001;   /* Velocity change used for numerical derivative */
+  
+  // Set constant parameters for parms object
+  phonon.a_ = a;
+  phonon.c_ = c;
+  phonon.gap_ = gap;
+  phonon.ah = a/2.0;
+  phonon.e_steps_high_ = e_steps_high;
+  phonon.e_steps_low_ = e_steps_low;
 
   /* now compute target coords if a component index is supplied */
   if (!target_index && !target_x && !target_y && !target_z) target_index=1;
@@ -353,6 +404,23 @@ INITIALIZE
 %}
 TRACE
 %{
+  double* vf_list;
+  #ifdef OPENACC
+  vf_list = (double *)malloc( (e_steps_low + e_steps_high)* sizeof(double)); // List of allowed final velocities. Has length of scan_steps
+  #else
+  vf_list = (double *)calloc( e_steps_low + e_steps_high, sizeof(double)); // List of allowed final velocities. Has length of scan_steps
+  #endif
+  if (!vf_list) {
+    printf("Memory allocation failed, fatal error!\n");
+    exit(-1);
+  }
+  #ifdef OPENACC
+  for (int ii=0; ii<e_steps_low+e_steps_high; ii++) {
+    vf_list[ii]=0;
+  }
+  #endif
+
+  struct neutron_params neutron;
   double t0, t1;                /* Entry/exit time for cylinder */
   double v_i, v_f;               /* Neutron velocities: initial, final */
   double vx_i, vy_i, vz_i;  /* Neutron initial velocity vector */
@@ -368,11 +436,9 @@ TRACE
   double bose_factor;        /* Calculated value of the Bose factor */
   double omega;              /* energy transfer */
   int nf, index;                   /* Number of allowed final velocities */
-  double vf_list[2];             /* List of allowed final velocities */
   double J_factor;            /* Jacobian from delta fnc.s in cross section */
   double f1, f2;            /* probed values of omega_q minus omega */
   double p1,p2,p3,p4,p5;    /* temporary multipliers */
-  double parms[11];
   
   if(cylinder_intersect(&t0, &t1, x, y, z, vx, vy, vz, radius, yheight))
   {
@@ -405,29 +471,27 @@ TRACE
     }
     NORM(vx, vy, vz);
     nf=0;
-      parms[0]=-1;
-      parms[1]=v_i;
-      parms[2]=vx;
-      parms[3]=vy;
-      parms[4]=vz;
-      parms[5]=vx_i;
-      parms[6]=vy_i;
-      parms[7]=vz_i;
-      parms[8]=a;
-      parms[9]=c;
-      parms[10]=gap;
+    neutron.vf = -1;
+    neutron.vi = v_i;
+    neutron.vv_x = vx;
+    neutron.vv_y = vy;
+    neutron.vv_z = vz;
+    neutron.vi_x = vx_i;
+    neutron.vi_y = vy_i;
+    neutron.vi_z = vz_i;
+
     #ifndef OPENACC
-    findroots(0, v_i, v_i+2*c*V2K/VS2E, vf_list, &nf, omega_q, parms);
+    findroots(0, v_i, v_i+2*c*V2K/VS2E, vf_list, &nf, omega_q, &neutron, &phonon);
     #else
-    findroots_gpu(0, v_i, v_i+2*c*V2K/VS2E, vf_list, &nf, parms);
+    findroots_gpu(0, v_i, v_i+2*c*V2K/VS2E, vf_list, &nf, &neutron, &phonon);
     #endif
     index=(int)floor(rand01()*nf);
-    if (index<2) {
+
       v_f=vf_list[index];
-      parms[0]=v_f-DV;
-      f1=omega_q(parms);
-      parms[0]=v_f+DV;
-      f2=omega_q(parms);
+      neutron.vf=v_f-DV;
+      f1=omega_q(&neutron, &phonon);
+      neutron.vf=v_f+DV;
+      f2=omega_q(&neutron, &phonon);
       J_factor = fabs(f2-f1)/(2*DV);
       omega=VS2E*(v_i*v_i-v_f*v_f);
       vx *= v_f;
@@ -456,10 +520,15 @@ TRACE
       p4 = 2*VS2E*v_f/J_factor;  /* Jacobian of delta functions in cross section */
       p5 = b*b/M;  /* Cross section factor 2 */
       p *= p1*p2*p3*p4*p5;
-    } else {
-      ABSORB; // findroots returned junk
-    }
   } /* else transmit: Neutron did not hit the sample */
+free(vf_list);
+
+%}
+
+FINALLY 
+%{
+
+
 %}
 
 MCDISPLAY
