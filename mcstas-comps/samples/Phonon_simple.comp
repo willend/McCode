@@ -51,8 +51,8 @@
 * target_z: [m]       position of target to focus at. Straight ahead.
 * target_index: [1]   relative index of component to focus at, e.g. next is +1 
 * gap: [meV]          Bandgap energy (unphysical)
-* e_steps_low [50]    Amount of possible intersections beneath the elastic line  
-* e_steps_high [50]   Amount of possible intersections above the elastic line  
+* e_steps_low [1]    Amount of possible intersections beneath the elastic line
+* e_steps_high [1]   Amount of possible intersections above the elastic line
 *
 *
 * CALCULATED PARAMETERS:
@@ -307,7 +307,7 @@ double zridd_gpu(double x1, double x2, struct neutron_params *neutron, struct ph
       double root;
       // Energy gain and energy loss spaces are not equally big. We check uniformly
       // So we use two different ranges
-      double range_low = brack_mid - brack_low; 
+      double range_low = brack_mid - brack_low;
       double range_high = brack_high - brack_mid;
       // First in energy loss for the neutron
      for (int i=0; i<phonon->e_steps_low_; i++){
@@ -335,25 +335,33 @@ double zridd_gpu(double x1, double x2, struct neutron_params *neutron, struct ph
   void findroots_gpu(double brack_low, double brack_mid, double brack_high, 
                     double *list, int* index, struct neutron_params *neutron, struct phonon_params *phonon)
     {
-      double root,range=brack_mid-brack_low;
-      int i, steps=100;
-
-     for (i=0; i<steps; i++)
-     {
-       root = zridd_gpu(brack_low+range*i/(int)steps,
-                   brack_low+range*(i+1)/(int)steps,
-                   neutron,phonon, ROOTACC);
+      double root;
+      // Energy gain and energy loss spaces are not equally big. We check uniformly
+      // So we use two different ranges
+      double range_low = brack_mid - brack_low;
+      double range_high = brack_high - brack_mid;
+      // First in energy loss for the neutron
+     for (int i=0; i<phonon->e_steps_low_; i++){
+      root = zridd_gpu(brack_low+range_low*i/ phonon->e_steps_low_,
+                   brack_low+range_low*(i+1)/ phonon->e_steps_low_,
+                   neutron, phonon, ROOTACC);
       if (root != UNUSED)
       {
         list[(*index)++]=root;
       }
      }
-      root = zridd_gpu(brack_mid, brack_high, neutron,phonon, ROOTACC);
-      if (root != UNUSED)
-      {
+
+    // Then in energy gain for the neutron
+    for (int i=0; i<phonon->e_steps_high_; i++){
+      root = zridd_gpu(brack_low+range_high*i/ phonon->e_steps_high_,
+                   brack_low+range_high*(i+1)/ phonon->e_steps_high_,
+                   neutron, phonon, ROOTACC);
+      if (root != UNUSED){
         list[(*index)++]=root;
       }
+     }
     }
+
   
 #undef UNUSED
 #undef MAXRIDD
@@ -401,7 +409,22 @@ INITIALIZE
 %}
 TRACE
 %{
-  double* vf_list = (double *)calloc( e_steps_low*e_steps_high, sizeof(double)); // List of allowed final velocities. Has length of scan_steps
+  double* vf_list;
+  #ifdef OPENACC
+  vf_list = (double *)malloc( (e_steps_low + e_steps_high)* sizeof(double)); // List of allowed final velocities. Has length of scan_steps
+  #else
+  vf_list = (double *)calloc( e_steps_low + e_steps_high, sizeof(double)); // List of allowed final velocities. Has length of scan_steps
+  #endif
+  if (!vf_list) {
+    printf("Memory allocation failed, fatal error!\n");
+    exit(-1);
+  }
+  #ifdef OPENACC
+  for (int ii=0; ii<e_steps_low+e_steps_high; ii++) {
+    vf_list[ii]=0;
+  }
+  #endif
+
   struct neutron_params neutron;
   double t0, t1;                /* Entry/exit time for cylinder */
   double v_i, v_f;               /* Neutron velocities: initial, final */
