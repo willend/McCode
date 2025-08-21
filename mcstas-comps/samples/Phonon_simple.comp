@@ -54,7 +54,6 @@
 * e_steps_low [1]    Amount of possible intersections beneath the elastic line
 * e_steps_high [1]   Amount of possible intersections above the elastic line
 *
-*
 * CALCULATED PARAMETERS:
 * V_rho: [AA^-3]      Atomic density
 * V_my_s: [m^-1]      Attenuation factor due to incoherent scattering
