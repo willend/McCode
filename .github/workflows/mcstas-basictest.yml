@@ -78,6 +78,35 @@ jobs:
       run: |
            brew install bison flex gfortran gsl
 
+    - name: Setup (Windows)
+      id: setup-Windows
+      if: runner.os == 'Windows'
+      shell: bash
+      run:   |
+        cygpath -sm "$MSMPI_INC" > includepath.txt
+        cygpath -sm "$MSMPI_LIB64" > libpath.txt
+        choco install winflexbison3
+        choco install wget
+        if [ "$CC" == "gcc.exe" ]; then choco install mingw; fi
+        pip install mslex
+
+    - name: Setup MPI cygpath...
+      id: setup-Windows-paths
+      if: runner.os == 'Windows'
+      run: |
+        set /p MPIINCVAR=<includepath.txt
+        set /p MPILIBVAR=<libpath.txt
+        echo MPIINCVAR=%MPIINCVAR% >> %GITHUB_ENV%
+        echo MPILIBVAR=%MPILIBVAR% >> %GITHUB_ENV%
+
+    - name: Check versions
+      id: version-checks
+      run: |
+           which python3
+           python3 --version
+           which cmake
+           cmake --version
+
     # - name: 'Tar output files'
     #   id: tar-package
     #   if: always()
