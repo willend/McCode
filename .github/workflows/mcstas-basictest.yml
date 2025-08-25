@@ -163,6 +163,48 @@ jobs:
            cat ../install_mcstas/share/mcstas/tools/Python/mccodelib/mccode_config.json
            echo *******************************************************************************
 
+    - name: Configure build and install mcstas on Windows-Mingw
+      id: mcstas-install-windows-mingw
+      if: ${{ $matrix.CC == 'gcc.exe' && runner.os == 'Windows' }}
+      run: >
+        cmake -B build -S src
+        -G "Unix Makefiles"
+        -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc.exe
+        "-DCMAKE_INSTALL_PREFIX=./install"
+        -DMCVERSION="3.99.99"
+        -DMCCODE_BUILD_CONDA_PKG=OFF
+        -DMCCODE_BUILD_WINDOWS_MINGW=ON
+        -DMCCODE_CONFIG_MCPL2=ON
+        -DCMAKE_INSTALL_LIBDIR=lib
+        -DBUILD_MCSTAS=ON
+        -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
+        -DBUILD_TOOLS=ON
+        -DENABLE_COMPONENTS=ON
+        -DENABLE_CIF2HKL=ON
+        -DENABLE_NEUTRONICS=OFF
+        -DMPIINCLUDEDIR=%MPIINCVAR%
+        -DMPILIBDIR=%MPILIBVAR%
+
+    - name: Configure build and install mcstas on Windows-MSVC
+      id: mcstas-install-windows-msvc
+      if: ${{ $matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
+      run: >
+        cmake -B build -S src
+        "-DCMAKE_INSTALL_PREFIX=./install"
+        -DMCVERSION="3.99.99"
+        -DMCCODE_BUILD_CONDA_PKG=OFF
+        -DMCCODE_CONFIG_MCPL2=ON
+        -DCMAKE_INSTALL_LIBDIR=lib
+        -DBUILD_MCSTAS=ON
+        -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
+        -DBUILD_TOOLS=ON
+        -DENABLE_COMPONENTS=ON
+        -DENABLE_CIF2HKL=OFF
+        -DENABLE_NEUTRONICS=OFF
+        -DMPIINCLUDEDIR=%MPIINCVAR%
+        -DMPILIBDIR=%MPILIBVAR%
+
+
     # - name: 'Tar output files'
     #   id: tar-package
     #   if: always()
