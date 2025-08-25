@@ -165,6 +165,7 @@
 * density: [g/cm^3]    Density of material. rho=density/weight/1e24*N_A.
 * nb_atoms: [1]        Number of sub-unit per unit cell, that is ratio of sigma for chemical formula to sigma per unit cell
 * target_index: [1]    Relative index of component to focus incoherent scattering at, e.g. next is +1
+* order: [1]           Flag that determines whether the intensity should (1) not (0) be dampened by weighting multiple scattering
 *
 * CALCULATED PARAMETERS:
 * line_info: [struct]  internal structure containing many members/info
@@ -205,7 +206,7 @@ SETTING PARAMETERS (string reflections="NULL", string geometry="NULL",
   radius=0, yheight=0, xwidth=0, zdepth=0, thickness=0,
   pack=1, Vc=0, sigma_abs=0, sigma_inc=0, delta_d_d=0, p_inc=0.1, p_transmit=0.1,
   DW=0, nb_atoms=1, d_omega=0, d_phi=0, tth_sign=0, p_interact=0.8,
-  concentric=0, density=0, weight=0, barns=1, Strain=0, focus_flip=0, int target_index=0)
+  concentric=0, density=0, weight=0, barns=1, Strain=0, focus_flip=0, int target_index=0, int order=1)
 
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
@@ -862,8 +863,8 @@ INITIALIZE
   }
   if (line_info.V_0 > 0) {
     /* Is not yet divided by v */
-    line_info.my_a_v = 0;//pack*line_info.sigma_a/line_info.V_0*2200*100;   // Factor 100 to convert from barns to fm^2
-    line_info.my_inc =0;// pack*line_info.sigma_i/line_info.V_0*100;   // Factor 100 to convert from barns to fm^2
+    line_info.my_a_v = pack*line_info.sigma_a/line_info.V_0*2200*100;   // Factor 100 to convert from barns to fm^2
+    line_info.my_inc = pack*line_info.sigma_i/line_info.V_0*100;   // Factor 100 to convert from barns to fm^2
     MPI_MASTER(
     printf("PowderN: %s: Vc=%g [Angs] sigma_abs=%g [barn] sigma_inc=%g [barn] reflections=%s\n",
       NAME_CURRENT_COMP, line_info.V_0, line_info.sigma_a, line_info.sigma_i, reflections && strlen(reflections) ? reflections : "NULL");
@@ -1001,8 +1002,11 @@ TRACE
       } else {
         dt = dt * (t3 - t2) + (t2-t0) ; /* Possibly also 'backside' part */
       }
-
-      my_s = line_info.my_s_v2_sum/(v*v)+line_info.my_inc;
+      if (order==1){
+        my_s = line_info.my_s_v2_sum/(v*v)+line_info.my_inc;
+      } else {
+        my_s = line_info.my_inc;
+      }
       /* Total attenuation from scattering */
 	  lfree=0;
       ntype = rand01();
@@ -1145,7 +1149,7 @@ TRACE
 
 
 			l_1 = v*(t3 - t2 + t1 - t0); /* Length to exit */
-      my_s = 0;
+      
 			pmul  *= Nq*l_full*my_s_n *exp(-(line_info.my_a_v/v+my_s)*(l+l_1))
 									  /(1-(p_inc+p_transmit));
 
