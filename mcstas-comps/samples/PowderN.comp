@@ -846,15 +846,6 @@ INITIALIZE
       line_info.my_s_v2[i] = 4*PI*PI*PI*pack*(L[i].DWfactor ? L[i].DWfactor : 1)
                  /(line_info.V_0*line_info.V_0*V2K*V2K)
                  *(L[i].j * L[i].F2 / L[i].q)*line_info.XsectionFactor;
-      if (L[i].q < 3.7){
-          double temp = asin(L[i].q*2.56/2/PI)*RAD2DEG;
-            printf("|F|=%g\tMulti=%d\tQ=%g\ttheta=%g\n", 
-                      L[i].F2,
-                      L[i].j,
-                      L[i].q,
-                      temp );
-            
-      }
       /* Is not yet divided by v^2 */
       /* Squires [3.103] */
       line_info.q_v[i] = L[i].q*K2V;
