@@ -48,6 +48,33 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
 
+    - name: Setup VS in shell Intel
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Setup VS in shell arm64
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: arm64
+
+    - name: Setup MPI
+      uses: mpi4py/setup-mpi@v1
+      with:
+        mpi: ${{ matrix.mpi }}
+
+    - name: Setup (Linux)
+      id: setup-linux
+      if: runner.os == 'Linux'
+      run: |
+           echo No dependencies needed here
+
+    - name: Setup (macOS)
+      id: setup-macos
+      if: runner.os == 'macOS'
+      run: |
+           brew install bison flex gfortran gsl
+
     # - name: 'Tar output files'
     #   id: tar-package
     #   if: always()
