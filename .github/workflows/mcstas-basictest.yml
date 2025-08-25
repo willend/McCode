@@ -256,6 +256,7 @@ jobs:
 
     - name: Launch RNG test instrument
       id: RNG-test
+      shell: bash
       # Status: Works on Windows + Unixes
       run: |
            set -e
@@ -293,6 +294,7 @@ jobs:
 
     - name: Launch BNL_H8 instrument
       id: h8-test
+      shell: bash
       # Status: Works on Windows + Unixes
       run: |
            set -e
@@ -339,6 +341,7 @@ jobs:
 
     - name: Launch MCPL test instrument
       id: mcpl-test
+      shell: bash
       run: |
            set -e
            set -u
@@ -359,6 +362,7 @@ jobs:
 
     - name: Launch MCPL test instrument (mpi)
       id: mcpl-test-mpi
+      shell: bash
       run: |
            set -e
            set -u
@@ -380,6 +384,7 @@ jobs:
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
+      shell: bash
       run: |
            set -e
            set -u
@@ -400,6 +405,7 @@ jobs:
 
     - name: Launch NCrystal test instrument (mpi)
       id: ncrystal-test-mpi
+      shell: bash
       if: matrix.os != 'windows-11-arm'
       run: |
            set -e
@@ -424,6 +430,7 @@ jobs:
 
     - name: Launch NeXus test instrument
       id: nexus-test
+      shell: bash
       if: runner.os == 'Linux' # Linux only
       # Status: Works on Linux (NeXus packages w/napi.h missing on mac+Windows)
       run: |
@@ -453,6 +460,7 @@ jobs:
 
     - name: Check for modified instruments
       id: instr-test
+      shell: bash
       if: runner.os != 'Windows' # Unix only
       run: |
            set -e
