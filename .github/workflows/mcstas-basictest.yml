@@ -88,7 +88,14 @@ jobs:
         choco install winflexbison3
         choco install wget
         if [ "$CC" == "gcc.exe" ]; then choco install mingw; fi
-        pip install mslex
+        pip install mslex PyYAML ply ncrystal mcpl mcpl-extra
+
+    - name: Setup (Windows Intel)
+      id: setup-Windows-intel
+      if: runner.os == 'Windows' && matrix.os !='windows-11-arm'
+      shell: bash
+      run:   |
+        pip install McStasscript ncrystal
 
     - name: Setup MPI cygpath...
       id: setup-Windows-paths
@@ -220,16 +227,8 @@ jobs:
     - name: check MCSTAS env var
       if: runner.os == 'Windows'
       run: echo %MCSTAS%
-      
-   - name: pip install deps Windows Intel
-      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
-      run: pip install PyYAML ply McStasscript ncrystal mslex mcpl mcpl-extra
 
-    - name: pip install deps Windows arm64
-      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
-      run: pip install PyYAML ply ncrystal mslex mcpl mcpl-extra
-
-    - name: Various Windowd debugging
+    - name: Various Windows debugging
       if: runner.os == 'Windows'
       shell: cmd
       run: |
