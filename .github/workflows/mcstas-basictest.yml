@@ -221,6 +221,14 @@ jobs:
       if: runner.os == 'Windows'
       run: echo %MCSTAS%
       
+   - name: pip install deps Windows Intel
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
+      run: pip install PyYAML ply McStasscript ncrystal mslex mcpl mcpl-extra
+
+    - name: pip install deps Windows arm64
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      run: pip install PyYAML ply ncrystal mslex mcpl mcpl-extra
+      
     - name: Various Windowd debugging
       if: runner.os == 'Windows'
       shell: cmd
