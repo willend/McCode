@@ -25,6 +25,10 @@ jobs:
           - { os: macos-13,      CC: clang,    CXX: clang++,    python: "3.11", mpi: 'mpich'   }
           - { os: macos-14,      CC: clang,    CXX: clang++,    python: "3.12", mpi: 'mpich'   }
           - { os: macos-15,      CC: clang,    CXX: clang++,    python: "3.13", mpi: 'mpich'   }
+          - { os: windows-2022, CC: cl.exe,    CXX: cl.exe,    python: "3.13", mpi: 'msmpi'   }
+          - { os: windows-2022, CC: gcc.exe,    CXX: g++.exe,    python: "3.13", mpi: 'msmpi'   }
+          - { os: windows-2025, CC: cl.exe,    CXX: cl.exe,    python: "3.13", mpi: 'msmpi'   }
+          - { os: windows-11-arm, CC: cl.exe,    CXX: cl.exe,    python: "3.13", mpi: 'msmpi'   }
           #- { os: macos-13,      CC: clang,    CXX: clang++,    python: "3.11", mpi: 'openmpi'   }
           #- { os: macos-14,      CC: clang,    CXX: clang++,    python: "3.12", mpi: 'openmpi'   }
           #- { os: macos-15,      CC: clang,    CXX: clang++,    python: "3.13", mpi: 'openmpi'   }
@@ -51,6 +55,27 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
 
+      #Two ways of enabling cl.exe and other tools. One is via an external action...:
+    - name: Setup VS in shell Intel
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+      #...but a simpler one might be to simply invoke the correct vcvars64.bat
+      #file first, like...:
+      #
+      #    - name: whatever
+      #      shell: cmd
+      #      run: |
+      #        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+      #        cl /help
+      #
+      #...but since we also want to support VS 2019, we use the above action for now
+
+    - name: Setup VS in shell arm64
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: arm64
+
     - name: Setup MPI
       uses: mpi4py/setup-mpi@v1
       with:
@@ -71,9 +96,23 @@ jobs:
     - name: Setup (Windows)
       id: setup-Windows
       if: runner.os == 'Windows'
+      shell: bash
+      run:   |
+        cygpath -sm "$MSMPI_INC" > includepath.txt
+        cygpath -sm "$MSMPI_LIB64" > libpath.txt
+        choco install winflexbison3
+        choco install wget
+        if [ "$CC" == "gcc.exe" ]; then choco install mingw; fi
+        pip install mslex
+
+    - name: Setup MPI cygpath...
+      id: setup-Windows-paths
+      if: runner.os == 'Windows'
       run: |
-           choco install winflexbison3
-           pip install mslex
+        set /p MPIINCVAR=<includepath.txt
+        set /p MPILIBVAR=<libpath.txt
+        echo MPIINCVAR=%MPIINCVAR% >> %GITHUB_ENV%
+        echo MPILIBVAR=%MPILIBVAR% >> %GITHUB_ENV%
 
     - name: Check versions
       id: version-checks
@@ -83,8 +122,9 @@ jobs:
            which cmake
            cmake --version
 
-    - name: Configure build and install mcstas
-      id: mcstas-install
+    - name: Configure build and install mcstas on Unix
+      id: mcstas-install-unix
+      if: runner.os != 'Windows'
       run: |
            if [ "$RUNNER_OS" == "macOS" ]; then mkdir ${HOME}/tmp; fi
            if [ "$RUNNER_OS" == "macOS" ]; then export SDKROOT=$(xcrun --sdk macosx --show-sdk-path); fi
@@ -138,16 +178,89 @@ jobs:
            cat ../install_mcstas/share/mcstas/tools/Python/mccodelib/mccode_config.json
            echo *******************************************************************************
 
-    - name: Pip install various
+    - name: Configure build and install mcstas on Windows-Mingw
+      id: mcstas-install-windows-mingw
+      if: ${{ $matrix.CC == 'gcc.exe' && runner.os == 'Windows' }}
+      run: >
+        cmake -B build -S src
+        -G "Unix Makefiles"
+        -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc.exe 
+        "-DCMAKE_INSTALL_PREFIX=./install"
+        -DMCVERSION="3.99.99"
+        -DMCCODE_BUILD_CONDA_PKG=OFF
+        -DMCCODE_BUILD_WINDOWS_MINGW=ON
+        -DMCCODE_CONFIG_MCPL2=ON
+        -DCMAKE_INSTALL_LIBDIR=lib
+        -DBUILD_MCSTAS=ON
+        -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
+        -DBUILD_TOOLS=ON
+        -DENABLE_COMPONENTS=ON
+        -DENABLE_CIF2HKL=ON
+        -DENABLE_NEUTRONICS=OFF
+        -DMPIINCLUDEDIR=%MPIINCVAR%
+        -DMPILIBDIR=%MPILIBVAR%
+
+    - name: Configure build and install mcstas on Windows-MSVC
+      id: mcstas-install-windows-msvc
+      if: ${{ $matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
+      run: >
+        cmake -B build -S src
+        "-DCMAKE_INSTALL_PREFIX=./install"
+        -DMCVERSION="3.99.99"
+        -DMCCODE_BUILD_CONDA_PKG=OFF
+        -DMCCODE_CONFIG_MCPL2=ON
+        -DCMAKE_INSTALL_LIBDIR=lib
+        -DBUILD_MCSTAS=ON
+        -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
+        -DBUILD_TOOLS=ON
+        -DENABLE_COMPONENTS=ON
+        -DENABLE_CIF2HKL=OFF
+        -DENABLE_NEUTRONICS=OFF
+        -DMPIINCLUDEDIR=%MPIINCVAR%
+        -DMPILIBDIR=%MPILIBVAR%
+
+    - name: CMake build
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: cmake --build build --config Release -j 2
+
+    - name: CMake install
+      if: runner.os == 'Windows'
+      run: cmake --install build --config Release
+
+    - name: set MCSTAS env var
+      if: runner.os == 'Windows'
+      run: echo MCSTAS=%CD%\install\share\mcstas\resources >> %GITHUB_ENV%
+
+    - name: check MCSTAS env var
+      if: runner.os == 'Windows'
+      run: echo %MCSTAS%
+      
+    - name: Various Windowd debugging
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        type .\install\share\mcstas\tools\Python\mccodelib\mccode_config.json
+        .\install\bin\mcrun -h
+        .\install\bin\mcstas -v
+        mcpl-config -s
+        ncrystal-config -s
+
+   - name: pip install deps Windows Intel
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
+      run: pip install PyYAML ply McStasscript ncrystal mslex mcpl mcpl-extra
+
+    - name: pip install deps Windows arm64
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      run: pip install PyYAML ply ncrystal mslex mcpl mcpl-extra
+
+    - name: Pip install Unix
       id: pip-install
+      if: runner.os != 'Windows'
       run: |
            set -e
            set -u
            set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             python3 -mpip install PyYAML ply McStasscript ncrystal mcpl mcpl-extra jinja2
-           fi
            if [ "$RUNNER_OS" == "macOS" ];
            then
              python3 -mpip install PyYAML ply McStasScript ncrystal mcpl mcpl-extra jinja2 --break-system-packages
@@ -218,6 +331,7 @@ jobs:
            ../install_mcstas/bin/${MCSTAS_PYGEN_EXECUTABLE} BNL_H8.instr
 
     - name: Launch BNL_H8 instrument (MPI)
+      if: matrix.os != 'windows-11-arm'
       id: h8-test-mpi
       run: |
            set -e
@@ -302,6 +416,7 @@ jobs:
 
     - name: Launch NCrystal test instrument (mpi)
       id: ncrystal-test-mpi
+      if: matrix.os != 'windows-11-arm'
       run: |
            set -e
            set -u
