@@ -247,7 +247,7 @@ jobs:
            set -x
            if [ "$RUNNER_OS" == "macOS" ];
            then
-             python3 -mpip install PyYAML ply McStasScript ncrystal mcpl mcpl-extra jinja2 --break-system-packages
+             python3 -mpip install PyYAML pyaml ply McStasScript ncrystal mcpl mcpl-extra jinja2 --break-system-packages
            fi
            if [ "$RUNNER_OS" == "Linux" ];
            then
