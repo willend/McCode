@@ -186,7 +186,7 @@
 * cif2hkl https://gitlab.com/soleil-data-treatment/soleil-software-projects/cif2hkl
 * %Link
 * material datafile obtained from http://physics.nist.gov/cgi-bin/ffast/ffast.pl
-*
+* 
 * %End
 *****************************************************************************/
 DEFINE COMPONENT PowderN

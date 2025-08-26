@@ -196,7 +196,7 @@
 * <a href="http://qhull.org">qhull</a>
 * %L
 * <a href="http://www.cs.ucdavis.edu/~amenta/powercrust.html">powercrust</a>
-*
+* 
 * %E
 *****************************************************************************/
 DEFINE COMPONENT PowderN
