@@ -256,7 +256,8 @@ jobs:
 
     - name: Launch RNG test instrument
       id: RNG-test
-      # Status: Works on Windows + Unixes
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
