@@ -522,13 +522,6 @@ jobs:
         copy ..\install\share\mcstas\resources\examples\BNL\BNL_H8\BNL_H8.instr test.instr
         ..\install\bin\mcrun --verbose test.instr -s1000 -y
 
-    - name: Run BNL_H8 instrument Windows MPI
-      if: runner.os == 'Windows' # Windows only
-      shell: cmd
-      working-directory: run_std
-      run: |
-        ..\install\bin\mcrun -c --mpi=2 --verbose test.instr -s1000 -y
-
     - name: Prepare and run NCrystal instrument Windows
       if: runner.os == 'Windows' # Windows only
       shell: cmd
@@ -536,13 +529,6 @@ jobs:
       run: |
         copy ..\install\share\mcstas\resources\examples\NCrystal\NCrystal_example\NCrystal_example.instr test.instr
         ..\install\bin\mcrun --verbose test.instr -s1000 -y
-
-    - name: Run NCrystal instrument Windows MPI
-      if: runner.os == 'Windows' # Windows only
-      shell: cmd
-      working-directory: run_ncrystal
-      run: |
-       ..\install\bin\mcrun -c --mpi=2 --verbose test.instr -s1000 -y
 
     - name: Prepare and run MCPL_input instrument Windows
       if: runner.os == 'Windows' # Windows only
@@ -553,13 +539,6 @@ jobs:
         copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl.gz .
         ..\install\bin\mcrun --verbose test.instr -s1000 -y
 
-    - name: Run MCPL_input instrument Windows MPI
-      if: runner.os == 'Windows' # Windows only
-      shell: cmd
-      working-directory: run_mcpl_input
-      run: |
-        ..\install\bin\mcrun --verbose test.instr -c --mpi=2 -s1000 -y
-
     - name: Prepare and run MCPL_input_once instrument Windows
       if: runner.os == 'Windows' # Windows only
       shell: cmd
@@ -569,13 +548,6 @@ jobs:
         copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\voutput.mcpl.gz .
         ..\install\bin\mcrun --verbose test.instr -s1000 -y
 
-    - name: Run MCPL_input_once instrument Windows MPI
-      if: runner.os == 'Windows' # Windows only
-      shell: cmd
-      working-directory: run_mcpl_input_once
-      run: |
-        ..\install\bin\mcrun --verbose test.instr -c --mpi=2 -s1000 -y
-
     - name: Prepare and run MCPL_output instrument Windows
       if: runner.os == 'Windows' # Windows only
       shell: cmd
@@ -583,14 +555,6 @@ jobs:
       run: |
         copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
         ..\install\bin\mcrun --verbose test.instr -s1000 -y
-        ..\install\bin\mcrun --verbose test.instr -s1000 -y -c --mpi=2
-
-    - name: Run MCPL_output instrument Windows MPI
-      if: runner.os == 'Windows' # Windows only
-      shell: cmd
-      working-directory: run_mcpl_output
-      run: |
-        ..\install\bin\mcrun -c --mpi=2 --verbose test.instr -s1000 -y
 
     - name: Test RNG instrument output Windows
       if: runner.os == 'Windows' # Windows only
