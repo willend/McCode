@@ -167,10 +167,10 @@ class MantidPixelWriter:
 
     pixels_s2 = '''
 <component type="MonNDtype-IDX_MONITOR-pix-IDX_PIXEL">
-    <location x="x_cp" y="y_cp" z="0" />
+    <location x="x_cp" y="y_cp" z="z_cp" />
 </component>'''
 
-    # ['IDX_PIXEL', '0', 'NUM_PIXELS', '4', 'x_cp'    , 'y_cp'    , '0', '-COORD_X'   , 'y_1'       , '0', '-COORD_X'   , 'y_2'      , '0', 'COORD_X'   , 'y_3'      , '0', 'COORD_X'   , 'y_4'       , '0']
+    # ['IDX_PIXEL', '0', 'NUM_PIXELS', '4', 'x_cp'    , 'y_cp'    , 'z_cp', '-COORD_X'   , 'y_1'       , '0', '-COORD_X'   , 'y_2'      , '0', 'COORD_X'   , 'y_3'      , '0', 'COORD_X'   , 'y_4'       , '0']
     # ['1009'     , '0', '1009'      , '4', '0.301485', '0.111419', '0', '-0.00148515', '-0.0139429', '0', '-0.00148515', '0.0128452', '0', '0.00148515', '0.0140756', '0', '0.00148515', '-0.0129778', '0']
 
     def _get_mantid_pixels_monitors(self):
@@ -250,6 +250,7 @@ class MantidPixelWriter:
                     s2 = s2.replace('IDX_MONITOR', idx_monitor)
                     s2 = s2.replace('x_cp', str(pix.p_cp.x))
                     s2 = s2.replace('y_cp', str(pix.p_cp.y))
+                    s2 = s2.replace('z_cp', str(pix.p_cp.z))
                     s2_s.append(s2)
 
                 mon_txt_blocks.append('\n\n'.join(
