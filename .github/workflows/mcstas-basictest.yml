@@ -254,6 +254,7 @@ jobs:
              python3 -mpip install PyYAML ply McStasscript ncrystal mcpl mcpl-extra jinja2
            fi
 
+    # Start of Unix tests
     - name: Launch RNG test instrument
       id: RNG-test
       if: runner.os != 'Windows'
@@ -294,7 +295,8 @@ jobs:
 
     - name: Launch BNL_H8 instrument
       id: h8-test
-      # Status: Works on Windows + Unixes
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
@@ -316,8 +318,9 @@ jobs:
            ../install_mcstas/bin/${MCSTAS_PYGEN_EXECUTABLE} BNL_H8.instr
 
     - name: Launch BNL_H8 instrument (MPI)
-      if: matrix.os != 'windows-11-arm'
       id: h8-test-mpi
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
@@ -340,6 +343,8 @@ jobs:
 
     - name: Launch MCPL test instrument
       id: mcpl-test
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
@@ -360,6 +365,8 @@ jobs:
 
     - name: Launch MCPL test instrument (mpi)
       id: mcpl-test-mpi
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
@@ -381,6 +388,8 @@ jobs:
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
@@ -401,7 +410,8 @@ jobs:
 
     - name: Launch NCrystal test instrument (mpi)
       id: ncrystal-test-mpi
-      if: matrix.os != 'windows-11-arm'
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
@@ -487,6 +497,77 @@ jobs:
              ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR
              mcviewtest $PWD
            fi
+
+    # END of Unix tests
+
+    # Start of Windows tests
+    - name: Prepare rundirs Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      run: mkdir run_rng run_std run_mcpl_output run_mcpl_input run_mcpl_input_once run_union run_ncrystal
+
+    - name: Prepare rng instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_rng
+      run: copy ..\install\share\mcstas\resources\examples\Tests_RNG\Test_RNG_rand01\Test_RNG_rand01.instr test.instr
+
+    - name: Prepare std instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_std
+      run: copy ..\install\share\mcstas\resources\examples\BNL\BNL_H8\BNL_H8.instr test.instr
+
+    - name: Prepare NCrystal instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_ncrystal
+      run: copy ..\install\share\mcstas\resources\examples\NCrystal\NCrystal_example\NCrystal_example.instr test.instr
+
+    - name: Prepare MCPL_input instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_mcpl_input
+      run: |
+        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
+        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl.gz .
+
+    - name: Prepare MCPL_input_once instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_mcpl_input_once
+      run: |
+        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\Test_MCPL_input_once.instr test.instr
+        copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\voutput.mcpl.gz .
+
+    - name: Prepare MCPL_output instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_mcpl_output
+      run: copy ..\install\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
+
+    - name: Run rng instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_rng
+      run: ..\install\bin\mcrun --verbose test.instr -s1000 Ncount=1000 -d RNGtest
+
+    - name: Test RNG instrument output Windows
+      if: runner.os == 'Windows' # Windows only
+      working-directory: run_rng
+      shell: bash
+      run:   |
+        export SUM=`grep -v \# RNGtest/rngout.dat | dos2unix | md5sum | cut -f1 -d\ `
+        export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
+        if [ "${EXPECTED}" == "${SUM}" ];
+        then
+          echo RNG test success!
+          true
+        else
+          echo RNG test failure!
+          false
+        fi
+    # END of Windows tests
 
     - name: 'Tar output files'
       id: tar-package
