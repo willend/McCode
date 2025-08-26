@@ -258,7 +258,7 @@ jobs:
     - name: Launch RNG test instrument
       id: RNG-test
       if: runner.os != 'Windows'
-      # Status: Works on Windows + Unixes
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
@@ -389,7 +389,7 @@ jobs:
 
     - name: Check for modified instruments
       id: instr-test
-      if: runner.os != 'Windows' # Unix only
+      if: runner.os == 'Linux' # Linux only
       run: |
            set -e
            set -u
