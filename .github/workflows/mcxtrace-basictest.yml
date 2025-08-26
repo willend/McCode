@@ -223,7 +223,7 @@ jobs:
 
     - name: set MCXTRACE env var
       if: runner.os == 'Windows'
-      run: echo MCXTRACE=%CD%\install\share\mcstas\resources >> %GITHUB_ENV%
+      run: echo MCXTRACE=%CD%\install\share\mcxtrace\resources >> %GITHUB_ENV%
 
     - name: check MCXTRACE env var
       if: runner.os == 'Windows'
@@ -424,6 +424,62 @@ jobs:
            fi
 
     # END of Unix tests
+
+    # Start of Windows tests
+    - name: Prepare rundirs Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      run: mkdir run_rng run_std run_mcpl_output run_mcpl_input run_union
+
+    - name: Prepare and run rng instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_rng
+      run: |
+        copy ..\install\share\mcxtrace\resources\examples\Tests_RNG\Test_RNG_rand01\Test_RNG_rand01.instr test.instr
+        ..\install\bin\mxrun --verbose test.instr -s1000 Ncount=1000 -d RNGtest
+
+    - name: Prepare and run CRL instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_std
+      run: |
+        copy ..\install\share\mcxtrace\resources\examples\Tests_optics\Test_CRL\Test_CRL.instr test.instr
+        ..\install\bin\mxrun --verbose test.instr -s1000 -y
+
+    - name: Prepare and run MCPL_input instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_mcpl_input
+      run: |
+        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
+        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl.gz .
+        ..\install\bin\mxrun --verbose test.instr -s1000 -y
+
+    - name: Prepare and run MCPL_output instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      working-directory: run_mcpl_output
+      run: |
+        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
+        ..\install\bin\mxrun --verbose test.instr -s1000 -y
+
+    - name: Test RNG instrument output Windows
+      if: runner.os == 'Windows' # Windows only
+      working-directory: run_rng
+      shell: bash
+      run:   |
+        export SUM=`grep -v \# RNGtest/rngout.dat | dos2unix | md5sum | cut -f1 -d\ `
+        export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
+        if [ "${EXPECTED}" == "${SUM}" ];
+        then
+          echo RNG test success!
+          true
+        else
+          echo RNG test failure!
+          false
+        fi
+    # END of Windows tests
 
     - name: 'Tar output files'
       id: tar-package
