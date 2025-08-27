@@ -495,7 +495,7 @@ jobs:
            export P3=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.instr//`
            echo SED $P3
            export P4=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo ${COMPILIST}`
-           echo Pre sort $4
+           echo Pre sort $P4
            export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps | wc -l | xargs echo`
            echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:\n $CHANGEDINSTR
            cd -
