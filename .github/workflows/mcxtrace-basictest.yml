@@ -76,7 +76,7 @@ jobs:
       id: setup-macos
       if: runner.os == 'macOS'
       run: |
-           brew install bison flex gfortran gsl
+           brew install bison flex gfortran gsl xraylib
 
     - name: Setup (Windows)
       id: setup-Windows
