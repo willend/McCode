@@ -412,9 +412,13 @@ jobs:
                export COMPILIST=`echo $COMPILIST $MATCH`
              done
            fi
-           export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo ${COMPILIST} | sort | uniq | sed s/\ /,/g`
+           export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo`
+           export CHANGEDINSTR=`echo $CHANGEDINSTR $COMPILIST | sort | uniq | sed s/\ /,/g`
            export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcxtrace-comps | wc -l | xargs echo`
-           echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:\n $CHANGEDINSTR
+           echo ----
+           echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:
+           echo $CHANGEDINSTR
+           echo ----
            cd -
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
