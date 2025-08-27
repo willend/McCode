@@ -487,7 +487,8 @@ jobs:
                export COMPILIST=`echo $COMPILIST $MATCH`
              done
            fi
-           export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo ${COMPILIST} | sort | uniq | sed s/\ /,/g`
+           export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.instr//g | sort | uniq | sed s/\ /,/g`
+           export CHANGEDINSTR=`echo $CHANGEDINSTR $COMPILIST`
            export P1=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps`
            echo GREP $P1
            export P2=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename`
