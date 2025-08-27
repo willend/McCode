@@ -70,7 +70,7 @@ jobs:
       id: setup-linux
       if: runner.os == 'Linux'
       run: |
-           echo No dependencies needed here
+           sudo apt -y install libgsl-dev
 
     - name: Setup (macOS)
       id: setup-macos

@@ -70,13 +70,15 @@ jobs:
       id: setup-linux
       if: runner.os == 'Linux'
       run: |
-           sudo apt -y install libxrl-dev
+           sudo apt -y install libgsl-dev libxrl-dev
 
     - name: Setup (macOS)
       id: setup-macos
       if: runner.os == 'macOS'
       run: |
            brew install bison flex gfortran gsl
+           brew tap tschoonj/tap
+           brew install xraylib
 
     - name: Setup (Windows)
       id: setup-Windows
