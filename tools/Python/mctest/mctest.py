@@ -197,28 +197,31 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
         instrname = splitext(basename(f))[0]
         instrdir = join(testdir, instrname)
 
-        shutil.copytree(os.path.dirname(f),instrdir)
+        try:
+            shutil.copytree(os.path.dirname(f),instrdir)
 
-        f_new=join(instrdir,os.path.basename(f))
+            f_new=join(instrdir,os.path.basename(f))
 
-        # Read instr file content to look for tests
-        text = open(f, encoding='utf-8').read()
+            # Read instr file content to look for tests
+            text = open(f, encoding='utf-8').read()
 
-        # create a test object for every test defined in the instrument header
-        instrtests = create_instr_test_objs(sourcefile=f, localfile=f_new, header=text)
-        tests = tests + instrtests
+            # create a test object for every test defined in the instrument header
+            instrtests = create_instr_test_objs(sourcefile=f, localfile=f_new, header=text)
+            tests = tests + instrtests
 
-        # extract and record %Example info from text
-        numtests = len([t for t in instrtests if t.testnb > 0]) 
-        if numtests == 0:
-            formatstr = "%-" + "%ds: NO TEST" % maxnamelen
-            logging.debug(formatstr % instrname)
-        elif numtests == 1:
-            formatstr = "%-" + "%ds: TEST" % maxnamelen
-            logging.debug(formatstr % instrname)
-        else:
-            formatstr = "%-" + "%ds: TESTS (%d)" % (maxnamelen, numtests)
-            logging.debug(formatstr % instrname)
+            # extract and record %Example info from text
+            numtests = len([t for t in instrtests if t.testnb > 0]) 
+            if numtests == 0:
+                formatstr = "%-" + "%ds: NO TEST" % maxnamelen
+                logging.debug(formatstr % instrname)
+            elif numtests == 1:
+                formatstr = "%-" + "%ds: TEST" % maxnamelen
+                logging.debug(formatstr % instrname)
+            else:
+                formatstr = "%-" + "%ds: TESTS (%d)" % (maxnamelen, numtests)
+                logging.debug(formatstr % instrname)
+        except:
+            pass
 
 
     # compile, record time
@@ -696,7 +699,9 @@ def main(args):
     suffix = '_' + ncount
 
     if instrfilter:
-        suffix = '_' + instrfilter
+        isuffix=instrfilter.replace(',', '_')
+        suffix = '_' + isuffix
+
     if args.suffix:
         suffix = '_' + args.suffix[0]
 
@@ -741,7 +746,7 @@ if __name__ == '__main__':
     parser.add_argument('--mpi', nargs=1, help='mpi nodecount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--openacc', action='store_true', help='openacc flag sent to %s' % (mccode_config.configuration["MCRUN"]))
     parser.add_argument('--config', nargs="?", help='test this specific config only - label name or absolute path')
-    parser.add_argument('--instr', nargs="?", help='test only intruments matching this filter (py regex)')
+    parser.add_argument('--instr', nargs="?", help='test only intruments matching this filter (py regex). Comma-separated list allowed for multiple filters.')
     parser.add_argument('--mccoderoot', nargs='?', help='manually select root search folder for mccode installations')
     parser.add_argument('--testroot', nargs='?', help='output test results in a datetime folder in this root')
     parser.add_argument('--testdir', nargs='?', help='output test results directly in this dir (overrides testroot)')

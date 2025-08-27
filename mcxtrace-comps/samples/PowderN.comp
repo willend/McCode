@@ -164,7 +164,7 @@
 * line_info: [struct]     Internal structure containing many members/info
 * line_info.type: [char]  Interaction type of event 't'=Transmit, 'i'=Incoherent, 'c'=Coherent
 * line_info.dq: [Angs^-1] Wavevector transfer of last coherent scattering event.
-*
+* 
 * %Link
 * See also: Single_crystal
 * %Link
