@@ -464,7 +464,7 @@ jobs:
 
     - name: Check for modified instruments
       id: instr-test
-      if: runner.os == 'Linux' # Linux only
+      if: runner.os != 'Windows' # Not Windows
       run: |
            set -e
            set -u
