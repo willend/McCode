@@ -515,7 +515,10 @@ jobs:
           set /p CHANGEDINSTR=<changedinstr.txt
           mkdir run_mctest
           cd run_mctest
-          ..\install\bin\mctest --verbose --testdir=. --instr=%CHANGEDINSTR%
+          echo %CHANGEDINSTR%
+          echo $CHANGEDINSTR
+          echo ${CHANGEDINSTR}
+          echo ..\install\bin\mctest --verbose --testdir=. --instr=%CHANGEDINSTR%
         )
 
     # Start of Windows tests
