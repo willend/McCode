@@ -425,8 +425,8 @@ jobs:
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
              mkdir run_mxtest && cd run_mxtest
-             ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --nobrowse --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
-             mxviewtest $PWD
+             ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
+             mxviewtest --nobrowse $PWD
            fi
 
     # END of Unix tests
