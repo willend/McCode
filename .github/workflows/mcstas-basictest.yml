@@ -512,7 +512,10 @@ jobs:
       shell: cmd
       run: |
         if exist changedinstr.txt (
-          rem file exists
+          set /p CHANGEDINSTR=<changedinstr.txt
+          mkdir run_mctest
+          cd run_mctest
+          ..\install\bin\mctest --verbose --testdir=. --instr=%CHANGEDINSTR%
         )
 
     # Start of Windows tests
