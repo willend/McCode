@@ -464,7 +464,6 @@ jobs:
 
     - name: Check for modified instruments
       id: instr-test
-      if: runner.os != 'Windows' # Not Windows
       run: |
            set -e
            set -u
@@ -473,7 +472,6 @@ jobs:
            export MCRUN_EXECUTABLE="mcrun"
            export MCTEST_EXECUTABLE="mctest"
            export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
-           test -f ./install_mcstas/bin/${MCSTAS_EXECUTABLE}
            # Check if any instr files were modified during last commit
            cd src
            export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
@@ -497,12 +495,27 @@ jobs:
            cd -
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             mkdir run_mctest && cd run_mctest
-             ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
-             mcviewtest --nobrowse $PWD
+             if [ "$RUNNER_OS" != "Windows" ]; then
+               mkdir run_mctest && cd run_mctest
+               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
+               mcviewtest --nobrowse $PWD
+             else
+               echo ..\\install\\bin\\mctest --verbose --testdir=. --instr=$CHANGEDINSTR > changedinstr.bat
+             fi
            fi
 
     # END of Unix tests
+
+    - name: Run modified instruments Win
+      id: instr-test-Win
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      run: |
+        if exist changedinstr.bat (
+          mkdir run_mctest
+          cd run_mctest
+          call ..\changedinstr.bat
+        )
 
     # Start of Windows tests
     - name: Prepare rundirs Windows
