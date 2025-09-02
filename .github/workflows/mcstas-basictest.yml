@@ -472,7 +472,6 @@ jobs:
            export MCRUN_EXECUTABLE="mcrun"
            export MCTEST_EXECUTABLE="mctest"
            export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
-           test -f ./install_mcstas/bin/${MCSTAS_EXECUTABLE}
            # Check if any instr files were modified during last commit
            cd src
            export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
