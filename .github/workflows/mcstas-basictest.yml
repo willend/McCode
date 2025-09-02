@@ -506,7 +506,7 @@ jobs:
 
     # END of Unix tests
 
-    - name: Check for modified instruments Win
+    - name: Run modified instruments Win
       id: instr-test-Win
       if: runner.os == 'Windows' # Windows only
       shell: cmd
