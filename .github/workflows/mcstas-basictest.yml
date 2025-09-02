@@ -498,7 +498,7 @@ jobs:
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
              mkdir run_mctest && cd run_mctest
-             ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
+             ../install_mcstas/bin/${MCTEST_EXECUTABLE} --nobrowse --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
              mcviewtest $PWD
            fi
 
