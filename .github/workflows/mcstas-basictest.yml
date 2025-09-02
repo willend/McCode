@@ -500,7 +500,7 @@ jobs:
                ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
                mcviewtest --nobrowse $PWD
              else
-               echo ..\install\bin\mctest --verbose --testdir=. --instr=$CHANGEDINSTR > changedinstr.bat
+               echo ..\\install\\bin\\mctest --verbose --testdir=. --instr=$CHANGEDINSTR > changedinstr.bat
              fi
            fi
 
