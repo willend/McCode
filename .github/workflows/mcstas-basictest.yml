@@ -464,7 +464,6 @@ jobs:
 
     - name: Check for modified instruments
       id: instr-test
-      if: runner.os != 'Windows' # Not Windows
       run: |
            set -e
            set -u
@@ -497,12 +496,25 @@ jobs:
            cd -
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             mkdir run_mctest && cd run_mctest
-             ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
-             mcviewtest --nobrowse $PWD
+             if [ "$RUNNER_OS" != "Windows" ]; then
+               mkdir run_mctest && cd run_mctest
+               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
+               mcviewtest --nobrowse $PWD
+             else
+               echo $CHANGEDINSTR > changedinstr.txt
+             fi
            fi
 
     # END of Unix tests
+
+    - name: Check for modified instruments Win
+      id: instr-test-Win
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      run: |
+        if exist changedinstr.txt (
+        rem file exists
+      )
 
     # Start of Windows tests
     - name: Prepare rundirs Windows
