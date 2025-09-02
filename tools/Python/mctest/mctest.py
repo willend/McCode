@@ -296,6 +296,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
     # run, record time
     logging.info("")
     logging.info("Running tests / getting status...")
+    failed=False
     for test in tests:
         if test.linted:
             formatstr = "%-" + "%ds:  Linter only" % (maxnamelen+1)
@@ -303,6 +304,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
             continue
         elif not test.compiled:
             formatstr = "%-" + "%ds:   NO COMPILE" % (maxnamelen+1)
+            failed=True
             logging.info(formatstr % test.instrname)
             continue
         
@@ -345,6 +347,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
         else:
             formatstr = "%-" + "%ds: RUNTIME ERROR" % (maxnamelen+1)
             logging.info(formatstr % instrname + ", " + cmd)
+            failed=True
             continue
 
         # test value extraction
@@ -354,6 +357,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
                 test.testval = extraction[0]
             else:
                 test.testval = -1
+                failed=True
         # Look for detector output in run_stdout
         else:
             metalog = LineLogger()
@@ -364,7 +368,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
                 test.testval=float(metalog.lst[0])
             except:
                 test.testval=-1
-
+                failed=True
         # save test result to disk
         test.testcomplete = True
         test.save(infolder=join(testdir, test.instrname))
@@ -404,7 +408,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
     for t in tests:
         obj[t.get_display_name()] = t.get_json_repr()
     obj["_meta"] = metainfo
-    return obj
+    return obj, failed
 
 #
 # Utility
@@ -471,14 +475,20 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, suffix):
 
     logging.info("Testing: %s" % version)
     logging.info("")
-    results = mccode_test(mccoderoot, labeldir, limit, instrfilter)
+    results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter)
     
     reportfile = os.path.join(labeldir, "testresults_%s.json" % (mccode_config.configuration["MCCODE"]+"-"+version+suffix))
     open(os.path.join(reportfile), "w").write(json.dumps(results, indent=2))
 
     logging.debug("")
     logging.debug("Test results written to: %s" % reportfile)
-
+    print("======================================")
+    print("Overall test result:")
+    if (failed):
+        print("FAILED! One or more tests errored")
+        exit(-1)
+    else:
+        print("SUCCESS")
 
 def run_version_test(testdir, mccoderoot, limit, instrfilter, version, suffix):
     ''' as run_default_test, but activates/deactivates and ses a specific mccode version if it exists '''
@@ -496,7 +506,7 @@ def run_version_test(testdir, mccoderoot, limit, instrfilter, version, suffix):
         logging.info("Testing: %s" % version)
         logging.info("")
 
-        results = mccode_test(mccoderoot, labeldir, limit, instrfilter, version)
+        results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, version)
     finally:
         deactivate_mccode_version(oldpath)
 
@@ -565,7 +575,7 @@ def run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, suffi
 
                 # craete the proper test dir
                 labeldir = create_label_dir(testdir, label)
-                results = mccode_test(mccoderoot, labeldir, limit, instrfilter, label0)
+                results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, label0)
 
                 # write local test result
                 reportfile = os.path.join(labeldir, "testresults_%s.json" % (os.path.basename(labeldir)))

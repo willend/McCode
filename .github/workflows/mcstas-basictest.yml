@@ -499,7 +499,7 @@ jobs:
            then
              mkdir run_mctest && cd run_mctest
              ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
-             mcviewtest $PWD
+             mcviewtest --nobrowse $PWD
            fi
 
     # END of Unix tests

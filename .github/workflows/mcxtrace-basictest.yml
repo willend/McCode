@@ -426,7 +426,7 @@ jobs:
            then
              mkdir run_mxtest && cd run_mxtest
              ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
-             mxviewtest $PWD
+             mxviewtest --nobrowse $PWD
            fi
 
     # END of Unix tests
