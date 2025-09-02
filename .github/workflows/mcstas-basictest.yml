@@ -512,13 +512,15 @@ jobs:
       shell: cmd
       run: |
         if exist changedinstr.txt (
-          set /p CHANGEDINSTR=<changedinstr.txt
+          set /p CHANGED=<changedinstr.txt
+          set TEST="HEJ"
           mkdir run_mctest
           cd run_mctest
-          echo %CHANGEDINSTR%
-          echo $CHANGEDINSTR
-          echo ${CHANGEDINSTR}
-          echo ..\install\bin\mctest --verbose --testdir=. --instr=%CHANGEDINSTR%
+          echo %CHANGED%
+          echo %TEST%
+          echo $CHANGED
+          echo ${CHANGED}
+          echo ..\install\bin\mctest --verbose --testdir=. --instr=%CHANGED%
         )
 
     # Start of Windows tests
