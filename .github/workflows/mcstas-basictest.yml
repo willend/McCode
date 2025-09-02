@@ -513,8 +513,8 @@ jobs:
       shell: cmd
       run: |
         if exist changedinstr.txt (
-        rem file exists
-      )
+          rem file exists
+        )
 
     # Start of Windows tests
     - name: Prepare rundirs Windows
