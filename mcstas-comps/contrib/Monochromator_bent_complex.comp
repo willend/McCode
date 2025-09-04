@@ -118,6 +118,9 @@ INITIALIZE
 	int MAX_TOKENS = 6*n_crystals;
 
 	char** planes = malloc(n_crystals*sizeof(char*));
+	if (planes == NULL) {
+    	exit(fprintf(stderr, "Error: memory allocation failed for planes\n"));
+	}
     int token_count = 0;
     // Remove trailing newline, if any
     plane_of_reflection[strcspn(plane_of_reflection, "\n")] = '\0';
@@ -125,6 +128,9 @@ INITIALIZE
     // Tokenize the string using ';' as delimiter
     char *plane = strtok(plane_of_reflection, ";");
     while (plane != NULL && token_count < MAX_TOKENS) {
+		if (planes[token_count] == NULL) {
+        exit(fprintf(stderr, "Error: memory allocation failed for planes[%d]\n", i));
+    	}
         planes[token_count++] = plane;
         plane = strtok(NULL, ";");
     }
