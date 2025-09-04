@@ -128,9 +128,6 @@ INITIALIZE
     // Tokenize the string using ';' as delimiter
     char *plane = strtok(plane_of_reflection, ";");
     while (plane != NULL && token_count < MAX_TOKENS) {
-		if (planes[token_count] == NULL) {
-        exit(fprintf(stderr, "Error: memory allocation failed for planes[%d]\n", i));
-    	}
         planes[token_count++] = plane;
         plane = strtok(NULL, ";");
     }
