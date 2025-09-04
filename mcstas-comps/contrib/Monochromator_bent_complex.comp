@@ -125,11 +125,9 @@ INITIALIZE
     // Tokenize the string using ';' as delimiter
     char *plane = strtok(plane_of_reflection, ";");
     while (plane != NULL && token_count < MAX_TOKENS) {
-		planes[token_count] = malloc(6*sizeof(char));
         planes[token_count++] = plane;
         plane = strtok(NULL, ";");
     }
-	free(plane);
 
     // Print the tokens
 	if (mono_arr.verbosity){
@@ -235,9 +233,7 @@ INITIALIZE
 		mono_arr.crystal[i].lattice_spacing_gradient_field[2][1] = 0;
 		mono_arr.crystal[i].lattice_spacing_gradient_field[2][2] = -cos(chi)
 													*tau_size_zero*curvature;
-		free(planes[i]);
 	}
-	// Free the temporary malloced variables
 	free(planes);
 	//TODO: This is very gpu unfriendly. Should be changed to depend on OPENACC usage
 	// Initialize neutron structs values 
