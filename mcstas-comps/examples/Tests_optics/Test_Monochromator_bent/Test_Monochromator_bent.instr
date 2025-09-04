@@ -74,7 +74,7 @@ COMPONENT Monochromator = Monochromator_bent(
  xthickness = 0.008, radius_x = 10,
  n_crystals = 1,
  plane_of_reflection = "Ge511", angle_to_cut_horizontal = -19.47,
- angle_to_cut_vertical = 0, mosaicity=mono_mos)
+ mosaicity=mono_mos)
 AT (0,0,0) RELATIVE monochromator_arm
 ROTATED (0,-19.47,0) RELATIVE monochromator_arm
 
