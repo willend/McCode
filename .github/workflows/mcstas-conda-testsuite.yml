@@ -23,7 +23,7 @@ jobs:
           - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
 #          - { os: windows-11-arm, python: '3.12', mpi: 'msmpi' }
 
-    name: ${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}
+    name: ${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     env:
       CC: ${{ matrix.CC }}
@@ -162,9 +162,6 @@ jobs:
     - name: Test suite, up to 2-core MPI
       id: test-suite
       run: |
-           set -e
-           set -u
-           set -x
            export PATH=${PATH}:${CONDA_PREFIX}/bin/:${CONDA_PREFIX}/bin/
            mkdir run_test-suite && cd run_test-suite
            export MCTEST_EXECUTABLE="mctest"
