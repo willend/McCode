@@ -101,7 +101,7 @@ jobs:
            if [ "$RUNNER_OS" == "Linux" ]; then export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=/usr/lib -DNEXUSINCLUDE=/usr/include/nexus"; fi
            if [ "$RUNNER_OS" == "Windows" ]; then export MPIINC=`cygpath -m -s  "${MSMPI_INC}"`; export MPILIB=`cygpath -m -s  "${MSMPI_LIB64}"`; export EXTRA_ARGS_FOR_CMAKE="-DMPILIBDIR=${MPILIB} -DMPIINCLUDEDIR=${MPIINC} -DMCCODE_BUILD_WINDOWS_MINGW=ON"; fi
            cmake \
-               -DCMAKE_INSTALL_PREFIX=../install_mcstas \
+               -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \
                -S ../src \
                -G "Unix Makefiles" \
                -DMCVERSION="3.99.99" \
@@ -126,7 +126,7 @@ jobs:
            then
              export MCSTAS_EXECUTABLE="mcstas.exe"
              export MCRUN_EXECUTABLE="mcrun.bat"
-             cd ../install_mcstas/
+             cd ${CONDA_PREFIX}
              TOPDIR=`cygpath -m $PWD`
              cd -
            fi
