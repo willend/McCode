@@ -18,8 +18,6 @@ jobs:
         include:
           - { os: ubuntu-latest, python: '3.12', mpi: 'openmpi' }
           - { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
-          - { os: ubuntu-latest, python: '3.12', mpi: 'openmpi' }
-          - { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
           #- { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
           - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
@@ -43,7 +41,8 @@ jobs:
       with:
         activate-environment: true
         auto-update-conda: true
-        channels: conda-forge,nodefaults
+        conda-remove-defaults: true
+        channels: conda-forge
         python-version: ${{ matrix.python }}
 
     - name: Setup common
