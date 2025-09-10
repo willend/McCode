@@ -108,8 +108,8 @@ jobs:
            mkdir build_mcstas
            cd build_mcstas
            export EXTRA_ARGS_FOR_CMAKE=""
-           if [ "$RUNNER_OS" != "Windows" ]; then export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus -G Unix\ Makefiles"; fi
-           if [ "$RUNNER_OS" == "Windows" ]; then export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib -G NMake\ Makefiles"; fi
+           if [ "$RUNNER_OS" != "Windows" ]; then export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus -G 'Unix Makefiles'"; fi
+           if [ "$RUNNER_OS" == "Windows" ]; then export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib -G 'NMake Makefiles'"; fi
            cmake \
                -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \
                -S ../src \
