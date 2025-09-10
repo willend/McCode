@@ -81,6 +81,8 @@ jobs:
            python3 --version
            which cmake
            cmake --version
+           echo C compiler: $CC
+           $CC --version
            #NB: bison and flex in path are actually too old, on mac we
            #inject these via a brew keg later
 
