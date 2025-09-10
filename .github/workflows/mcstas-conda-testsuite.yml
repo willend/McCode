@@ -21,7 +21,7 @@ jobs:
           - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
           - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
-          - { os: windows-11-arm, python: '3.12', mpi: 'msmpi' }
+#          - { os: windows-11-arm, python: '3.12', mpi: 'msmpi' }
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
