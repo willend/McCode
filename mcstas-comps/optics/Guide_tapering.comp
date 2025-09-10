@@ -248,7 +248,7 @@ w1c = (double*)malloc(sizeof(double)*segno);
         ii = 0;
 	/* Use ret==NULL as termination criterion on while, otherwise
 	   the reading may on some systems continue until "800" segments */
-	int dymmy=1;
+	char dymmy=1;
 	char *ret=&dymmy;
         while (!feof(num) && ret)
         {
