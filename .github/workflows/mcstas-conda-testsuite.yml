@@ -172,7 +172,7 @@ jobs:
            echo $PATH
            if [ "${{ matrix.os }}" != "windows-11-arm" ];
            then
-             ${MCTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }}--mpi=2
+             ${MCTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }} --mpi=2
            else
              ${MCTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}
            fi
