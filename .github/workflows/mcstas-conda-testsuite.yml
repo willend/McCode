@@ -18,7 +18,7 @@ jobs:
         include:
           - { os: ubuntu-latest, python: '3.12', mpi: 'openmpi' }
           - { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
-          #- { os: macos-latest, python: '3.12', mpi: 'openmpi' }
+          - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
           - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
 
