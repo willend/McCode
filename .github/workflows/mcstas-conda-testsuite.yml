@@ -21,6 +21,7 @@ jobs:
           - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
           - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
+          - { os: windows-11-arm, python: '3.12', mpi: 'msmpi' }
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
@@ -36,6 +37,16 @@ jobs:
       uses: actions/checkout@v5
       with:
         path: src
+
+    - name: Setup VS in shell Intel
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Setup VS in shell arm64
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: arm64
 
     - uses: conda-incubator/setup-miniconda@v3
       with:
@@ -159,7 +170,12 @@ jobs:
              export TMPDIR=${HOME}/tmp
            fi
            echo $PATH
-           ${MCTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }}_${{ matrix.CC }} --mpi=2
+           if [ "${{ matrix.os }}" != "windows-11-arm" ];
+           then
+             ${MCTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }}--mpi=2
+           else
+             ${MCTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}
+           fi
 
     - name: 'Tar output files'
       id: tar-package
