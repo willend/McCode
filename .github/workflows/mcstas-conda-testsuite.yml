@@ -97,6 +97,7 @@ jobs:
            mkdir build_mcstas
            cd build_mcstas
            export EXTRA_ARGS_FOR_CMAKE=""
+           if [ "$RUNNER_OS" != "Windows" ]; then export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus"; fi
            if [ "$RUNNER_OS" == "Windows" ]; then export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib"; fi
            cmake \
                -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \
