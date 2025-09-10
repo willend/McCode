@@ -94,7 +94,7 @@ jobs:
            mkdir build_mcstas
            cd build_mcstas
            export EXTRA_ARGS_FOR_CMAKE=""
-           if [ "$RUNNER_OS" == "Windows" ]; then export MPIINC=`cygpath -m -s  "${MSMPI_INC}"`; export MPILIB=`cygpath -m -s  "${MSMPI_LIB64}"`; export EXTRA_ARGS_FOR_CMAKE="-DMPILIBDIR=${MPILIB} -DMPIINCLUDEDIR=${MPIINC} -DMCCODE_BUILD_WINDOWS_MINGW=ON"; fi
+           if [ "$RUNNER_OS" == "Windows" ]; then export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib"; fi
            cmake \
                -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \
                -S ../src \
