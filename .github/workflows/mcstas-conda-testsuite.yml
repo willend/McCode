@@ -156,7 +156,7 @@ jobs:
            if [ "$RUNNER_OS" == Windows ]; then
              export CONDAPREF=`cygpath -m ${CONDA_PREFIX}`
              sed -i.bak 's+/DUSE_NEXUS+/I${CONDAPREF}/Library/include/nexus /DUSE_NEXUS+g' ${CONDA_PREFIX}/share/mcstas/tools/Python/mccodelib/mccode_config.json
-             sed -i.bak 's+\$\{CONDA_PREFIX\}+/${CONDAPREF}+g' ${CONDA_PREFIX}/share/mcstas/tools/Python/mccodelib/mccode_config.json
+             sed -i.bak 's+\$\{CONDA_PREFIX\}+/'${CONDAPREF}'+g' ${CONDA_PREFIX}/share/mcstas/tools/Python/mccodelib/mccode_config.json
            fi
            echo *******************************************************************************
            echo Resulting mccode_config.json:
