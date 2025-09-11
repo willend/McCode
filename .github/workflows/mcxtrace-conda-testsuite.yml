@@ -194,13 +194,12 @@ jobs:
            set -e
            set -u
            set -x
-           find run_* -type f -name \*.exe -exec rm \{\} \;
-           find run_* -type f -name \*.out -exec rm \{\} \;
-           find run_* -type f -name \*.obj -exec rm \{\} \;
-           find run_* -type f -name \*.pdb -exec rm \{\} \;
-           find run_* -type f -name \*.ilk -exec rm \{\} \;
-           find run_* -type d -name \*.out.dSYM -exec rm -rf \{\} \;
-           tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_*
+           find run_test-suite -type f -name \*.exe -exec rm \{\} \;
+           find run_test-suite -name \*.out\* -exec rm -rf \{\} \;
+           find run_test-suite -type f -name \*.obj -exec rm \{\} \;
+           find run_test-suite -type f -name \*.pdb -exec rm \{\} \;
+           find run_test-suite -type f -name \*.ilk -exec rm \{\} \;
+           tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_test-suite
 
     - name: 'Upload Artifact'
       id: tar-upload
