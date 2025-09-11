@@ -194,12 +194,13 @@ jobs:
            set -e
            set -u
            set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             tar cvfz mcstas-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_* --exclude="*.exe" --exclude="*.pdb" --exclude="*.ilk" --exclude="*.obj"
-           else
-             tar cvfz mcstas-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_* --exclude="*.out" --exclude="*.out.dSYM"
-           fi
+           find run_* -type f -name \*.exe -exec rm \{\};
+           find run_* -type f -name \*.out -exec rm \{\};
+           find run_* -type f -name \*.obj -exec rm \{\};
+           find run_* -type f -name \*.pdb -exec rm \{\};
+           find run_* -type f -name \*.ilk -exec rm \{\};
+           find run_* -type d -name \*.out.dSYM -exec rm -rf \{\};
+           tar cvfz mcstas-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_*
 
     - name: 'Upload Artifact'
       id: tar-upload
