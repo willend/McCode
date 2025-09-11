@@ -1,0 +1,216 @@
+name: mcxtrace-conda-testsuite
+on:
+  schedule:
+    - cron: '00 02 * * *'  # 02:00 every day
+
+  workflow_dispatch:
+    inputs:
+      manual-debugging:
+        type: boolean
+        description: Launch manual debugging tmate for inspection (automatic in case of errors)
+        default: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, python: '3.12', mpi: 'openmpi' }
+          - { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
+          - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
+          - { os: macos-latest, python: '3.12', mpi: 'mpich' }
+          - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
+#          - { os: windows-11-arm, python: '3.12', mpi: 'msmpi' }
+
+    name: ${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.CC }}
+      CXX: ${{ matrix.CXX }}
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+      with:
+        path: src
+
+    - name: Setup VS in shell Intel
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Setup VS in shell arm64
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: arm64
+
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        activate-environment: true
+        auto-update-conda: true
+        conda-remove-defaults: true
+        channels: conda-forge
+        python-version: ${{ matrix.python }}
+
+    - name: Setup common
+      id: setup-common
+      run: |
+           conda install cmake c-compiler pyaml numpy ply jinja2 gsl libnexus cif2hkl mcpl xraylib -y
+
+    - name: Setup Unixes
+      id: setup-unix
+      if: runner.os != 'Windows'
+      run: |
+           conda install make flex bison bash -y
+
+    - name: Setup Windows
+      id: setup-Windows
+      if: runner.os == 'Windows'
+      run: |
+           conda install winflexbison mslex msmpi -y
+
+    - name: Setup OpenMPI
+      id: setup-openmpi
+      if: runner.os != 'Windows' && matrix.mpi =='openmpi'
+      run: |
+           conda install openmpi=4 -y
+
+    - name: Setup MPICH
+      id: setup-mpich
+      if: runner.os != 'Windows' && matrix.mpi =='mpich'
+      run: |
+           conda install mpich -y
+
+    - name: Check versions
+      id: version-checks
+      run: |
+           which python3
+           python3 --version
+           which cmake
+           cmake --version
+           if [ "$RUNNER_OS" != "Windows" ];
+           then
+             echo C compiler: $CC
+             $CC --version
+           fi
+
+    - name: Configure build and install mcxtrace
+      id: mcxtrace-install
+      run: |
+           if [ "$RUNNER_OS" == "macOS" ]; then export SDKROOT=$(xcrun --sdk macosx --show-sdk-path); fi
+           set -e
+           set -u
+           set -x
+           mkdir build_mcxtrace
+           cd build_mcxtrace
+           export EXTRA_ARGS_FOR_CMAKE=""
+           if [ "$RUNNER_OS" != "Windows" ];
+           then
+             export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus";
+             export GENERATOR="Unix Makefiles";
+           fi
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib";
+             export GENERATOR="NMake Makefiles"
+           fi
+           cmake \
+               -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \
+               -S ../src \
+               -DMCVERSION="3.99.99" \
+               -DMCCODE_BUILD_CONDA_PKG=ON \
+               -DBUILD_SHARED_LIBS=ON \
+               -DCMAKE_INSTALL_LIBDIR=lib \
+               -DCMAKE_BUILD_TYPE=Release \
+               -DBUILD_MCXTRACE=ON \
+               -DMCCODE_USE_LEGACY_DESTINATIONS=OFF \
+               -DBUILD_TOOLS=ON \
+               -DENABLE_COMPONENTS=ON \
+               -DENSURE_MCPL=OFF \
+               -DENSURE_NCRYSTAL=OFF \
+               -DENABLE_CIF2HKL=OFF \
+               -DENABLE_NEUTRONICS=OFF \
+               -G "${GENERATOR}" \
+               ${EXTRA_ARGS_FOR_CMAKE}
+           cmake --build . --config Release
+           cmake --build . --target install --config Release
+           export MCXTRACE_EXECUTABLE="mcxtrace"
+           export MXRUN_EXECUTABLE="mxrun"
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export MCXTRACE_EXECUTABLE="mcxtrace.exe"
+             export MXRUN_EXECUTABLE="mxrun.bat"
+             cd ${CONDA_PREFIX}
+             TOPDIR=`cygpath -m $PWD`
+             cd -
+           fi
+           test -f "${CONDA_PREFIX}/bin/${MCXTRACE_EXECUTABLE}"
+           test -f "${CONDA_PREFIX}/bin/${MXRUN_EXECUTABLE}"
+           test -f "${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/__init__.py"
+           test -d "${CONDA_PREFIX}/share/mcxtrace/resources/data"
+           if [ "$RUNNER_OS" == macOS ]; then if [ "${{ matrix.mpi }}" == "openmpi" ]; then sed -i.bak 's/mpirun/mpirun\ --verbose\ --mca\ btl_tcp_if_include\ lo0/g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json ; fi ; fi
+           if [ "$RUNNER_OS" == Windows ]; then
+             export CONDAPREF=`cygpath -m ${CONDA_PREFIX}`
+             sed -i.bak 's+/DUSE_NEXUS+/I${CONDAPREF}/Library/include/nexus /DUSE_NEXUS+g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
+             sed -i.bak 's+${CONDA_PREFIX}+'${CONDAPREF}'+g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
+           fi
+           echo *******************************************************************************
+           echo Resulting mccode_config.json:
+           echo *******************************************************************************
+           cat ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
+           echo *******************************************************************************
+
+    - name: Test suite, up to 2-core MPI
+      id: test-suite
+      run: |
+           export PATH=${PATH}:${CONDA_PREFIX}/bin/:${CONDA_PREFIX}/bin/
+           mkdir run_test-suite && cd run_test-suite
+           export MXTEST_EXECUTABLE="mxtest"
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export MXTEST_EXECUTABLE="mxtest.bat"
+           fi
+           if [ "$RUNNER_OS" == "macOS" ];
+           then
+             mkdir ${HOME}/tmp
+             export TMPDIR=${HOME}/tmp
+           fi
+           echo $PATH
+           if [ "${{ matrix.os }}" != "windows-11-arm" ];
+           then
+             ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }} --mpi=2
+           else
+             ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}
+           fi
+
+    - name: 'Tar output files'
+      id: tar-package
+      if: always()
+      run: |
+           set -e
+           set -u
+           set -x
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_* --exclude='*.exe' --exclude='*.pdb' --exclude='*.ilk' --exclude='*.obj'
+           else
+             tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_* --exclude='*.out'
+           fi
+
+    - name: 'Upload Artifact'
+      id: tar-upload
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: mcxtrace-artefacts-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}
+        path: "mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz"
+
+    - name: Setup tmate session for manual debugging
+      uses: mxschmitt/action-tmate@v3
+      if: always() && (inputs.manual-debugging == true)
+      with:
+        limit-access-to-actor: true
