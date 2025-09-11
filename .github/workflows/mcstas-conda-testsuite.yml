@@ -194,11 +194,13 @@ jobs:
            set -e
            set -u
            set -x
-           find run_test-suite -type f -name \*.exe -exec rm \{\} \;
-           find run_test-suite -name \*.out\* -exec rm -rf \{\} \;
-           find run_test-suite -type f -name \*.obj -exec rm \{\} \;
-           find run_test-suite -type f -name \*.pdb -exec rm \{\} \;
-           find run_test-suite -type f -name \*.ilk -exec rm \{\} \;
+           find run_test-suite -type f -name \*.exe -exec echo rm \{\} \; > cleanup
+           find run_test-suite -name \*.out\* -exec echo rm -rf \{\} \; >> cleanup
+           find run_test-suite -type f -name \*.obj -exec echo rm \{\} \; >> cleanup
+           find run_test-suite -type f -name \*.pdb -exec echo rm \{\} \; >> cleanup
+           find run_test-suite -type f -name \*.ilk -exec echo rm \{\} \; >> cleanup
+           bash cleanup
+           rm cleanup
            tar cvfz mcstas-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_test-suite
 
     - name: 'Upload Artifact'
