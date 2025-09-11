@@ -196,9 +196,9 @@ jobs:
            set -x
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_* --exclude='*.exe' --exclude='*.pdb' --exclude='*.ilk' --exclude='*.obj'
+             tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_* --exclude="*.exe" --exclude="*.pdb" --exclude="*.ilk" --exclude="*.obj"
            else
-             tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_* --exclude='*.out'
+             tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_* --exclude="*.out" --exclude="*.out.dSYM"
            fi
 
     - name: 'Upload Artifact'
