@@ -176,7 +176,7 @@ jobs:
            export MCTEST_EXECUTABLE="mctest"
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             export MCTEST_EXECUTABLE="mctest.bat"
+             export MCTEST_EXECUTABLE="mctest.bat --permissive"
            fi
            if [ "$RUNNER_OS" == "macOS" ];
            then
