@@ -154,7 +154,7 @@ jobs:
            test -d "${CONDA_PREFIX}/share/mcxtrace/resources/data"
            if [ "$RUNNER_OS" == macOS ]; then
              if [ "${{ matrix.mpi }}" == "openmpi" ]; then
-               sed -i.bak 's/mpirun/mpirun\ --hostfile\ ${HOME}/hostfile\ --verbose\ --mca\ btl_tcp_if_include\ lo0/g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
+               sed -i.bak 's+mpirun+mpirun\ --hostfile\ ${HOME}/hostfile\ --verbose\ --mca\ btl_tcp_if_include\ lo0+g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
                echo localhost localhost | xargs -n1 echo > ${HOME}/hostfile
              fi
            fi
