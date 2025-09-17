@@ -86,7 +86,7 @@ def parse_args( argv ):
                             default='3.99.99',
                             help='Set build version (default: 3.99.99)')
     parser.add_argument('-s','--srcdir',
-                            default='../src/',
+                            default='src',
                             help='Source dir (default: src)')
     parser.add_argument('-b','--builddir',
                             default=None,
@@ -98,7 +98,7 @@ def parse_args( argv ):
         args.platform = autodetect_platform()
 
     if not args.builddir:
-        args.builddir = '../build_' + args.mode
+        args.builddir = 'build_' + args.mode
     if args.outfile!='stdout':
         p = pathlib.Path(args.outfile)
         if not args.force and p.exists():
