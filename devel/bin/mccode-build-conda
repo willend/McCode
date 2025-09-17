@@ -2,71 +2,69 @@
 import sys
 import pathlib
 import os
+import subprocess
+
+def syscall( command ):
+    result = subprocess.run(
+        command,
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE,
+        universal_newlines = True)
+    return result
 
 def mccode_build_conda ( cfg ):
-    #Wrapper to build and install McStas/McXtrace in an existing conda env
-
-    script='''#!/usr/bin/env bash
-#
-# conda + bash based build + install script for ''' + cfg.mode + ''' on ''' + cfg.platform +'''
-#
-set -e
-set -u
-set -x
-
-'''
-
+    
     if ( cfg.is_mac ):
-        script += '# Probe SDK location on mac:\n'
-        script += 'export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)\n\n'
+        res=syscall("xcrun --sdk macosx --show-sdk-path")
+        os.environ["SDKROOT"] = res.stdout
 
-    base = pathlib.PurePosixPath(cfg.build_dir)
-    script += '# Create and cd to build directory:\n'
-    script += 'cd "''' + str(base.parent) + '"\n'
-    script += 'mkdir "''' + str(base.name) + '"\n'
-    script += 'cd ' + str(base.name) + '\n\n'
-
-    script += '# Set platform specifics for ' + cfg.platform + '\n'
+    pathlib.Path(cfg.build_dir).mkdir(parents=True, exist_ok=True)
+    os.chdir(cfg.build_dir)
+    
     if ( cfg.is_unix ):
-        script += 'export EXTRA_ARGS_FOR_CMAKE=\"-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus\"\n'
-        script += 'export CMAKE_GENERATOR=\"Unix Makefiles\"\n\n'
+        os.environ["EXTRA_ARGS_FOR_CMAKE"]='\"-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus\"'
+        os.environ["CMAKE_GENERATOR"]='\"Unix Makefiles\"'
 
     if ( cfg.is_win ):
-        script += 'export EXTRA_ARGS_FOR_CMAKE=\"-DMPILIB=msmpi.lib\"\n'
-        script += 'export CMAKE_GENERATOR=\"NMake Makefiles\"\n\n'
+        os.environ["EXTRA_ARGS_FOR_CMAKE"]='\"-DMPILIB=msmpi.lib\"'
+        os.environ["CMAKE_GENERATOR"]='\"NMake Makefiles\"'
 
-    script += '# Run Cmake for configuring ' + cfg.mode + ' on ' + cfg.platform + '\n'
-    script += 'cmake \\\n'
-    script += '    -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \\\n'
-    script += '    -S '+ cfg.src_dir +' \\\n'
-    script += '    -DMCVERSION="'+ cfg.version +'" \\\n'
-    script += '    -DMCCODE_BUILD_CONDA_PKG=ON \\\n'
-    script += '    -DBUILD_SHARED_LIBS=ON \\\n'
-    script += '    -DCMAKE_INSTALL_LIBDIR=lib \\\n'
-    script += '    -DCMAKE_BUILD_TYPE=Release \\\n'
+    cmd = 'cmake '
+    cmd += '-DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} '
+    cmd += '-S '+ cfg.src_dir +' '
+    cmd += '-DMCVERSION="'+ cfg.version +'" '
+    cmd += '-DMCCODE_BUILD_CONDA_PKG=ON '
+    cmd += '-DBUILD_SHARED_LIBS=ON '
+    cmd += '-DCMAKE_INSTALL_LIBDIR=lib '
+    cmd += '-DCMAKE_BUILD_TYPE=Release '
     if ( cfg.is_mcstas ):
-        script += '    -DBUILD_MCSTAS=ON \\\n'
+        cmd += '-DBUILD_MCSTAS=ON '
     else:
-        script += '    -DBUILD_MCXTRACE=ON \\\n'
-    script += '    -DMCCODE_USE_LEGACY_DESTINATIONS=OFF \\\n'
-    script += '    -DBUILD_TOOLS=ON \\\n'
-    script += '    -DENABLE_COMPONENTS=ON \\\n'
-    script += '    -DENSURE_MCPL=OFF \\\n'
-    script += '    -DENSURE_NCRYSTAL=OFF \\\n'
-    script += '    -DENABLE_CIF2HKL=OFF \\\n'
-    script += '    -DENABLE_NEUTRONICS=OFF \\\n'
-    script += '    -G "${CMAKE_GENERATOR}" \\\n'
-    script += '    ${EXTRA_ARGS_FOR_CMAKE}\n\n'
+        cmd += '-DBUILD_MCXTRACE=ON '
+    cmd += '-DMCCODE_USE_LEGACY_DESTINATIONS=OFF '
+    cmd += '-DBUILD_TOOLS=ON '
+    cmd += '-DENABLE_COMPONENTS=ON '
+    cmd += '-DENSURE_MCPL=OFF '
+    cmd += '-DENSURE_NCRYSTAL=OFF '
+    cmd += '-DENABLE_CIF2HKL=OFF '
+    cmd += '-DENABLE_NEUTRONICS=OFF '
+    cmd += '-G "${CMAKE_GENERATOR}" '
+    cmd += '${EXTRA_ARGS_FOR_CMAKE}'
+
+    res=syscall(cmd)
+    print(res.stdout)
+    print(res.stderr)
     
-    script += '# Run Cmake for building ' + cfg.mode + ' on ' + cfg.platform + '\n'
-    script += 'cmake --build . --config Release\n\n'
+    
+    cmd = 'cmake --build . --config Release\n\n'
+    res=syscall(cmd)
+    print(res.stdout)
+    print(res.stderr)
 
-
-    script += '# Run Cmake for installing ' + cfg.mode + ' on ' + cfg.platform + '\n'
-    script += 'cmake --build . --target install --config Release\n\n'
-
-    script += '# END of build script\n'
-    return script
+    cmd = 'cmake --build . --target install --config Release\n\n'
+    res=syscall(cmd)
+    print(res.stdout)
+    print(res.stderr)
 
 def parse_args( argv ):
     from argparse import ArgumentParser as AP
@@ -137,11 +135,7 @@ def create_cfg( args ):
 def main():
     args = parse_args( sys.argv )
     cfg = create_cfg( args )
-    script = mccode_build_conda( cfg )
-    if not args.outfile:
-        print(script,end='')
-    else:
-        args.outfile.write_text(script)
+    mccode_build_conda( cfg )
 
 if __name__=='__main__':
     main()
