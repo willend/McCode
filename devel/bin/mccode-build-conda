@@ -26,12 +26,12 @@ set -x
 
     script += '# Set platform specifics for ' + cfg.platform + '\n'
     if ( cfg.is_unix ):
-        script += 'export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus"\n'
-        script += 'export CMAKE_GENERATOR="Unix Makefiles"\n\n'
+        script += 'export EXTRA_ARGS_FOR_CMAKE=\"-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus\"\n'
+        script += 'export CMAKE_GENERATOR=\"Unix Makefiles\"\n\n'
 
     if ( cfg.is_win ):
-        script += 'export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib"\n'
-        script += 'export CMAKE_GENERATOR="NMake Makefiles"\n\n'
+        script += 'export EXTRA_ARGS_FOR_CMAKE=\"-DMPILIB=msmpi.lib\"\n'
+        script += 'export CMAKE_GENERATOR=\"NMake Makefiles\"\n\n'
 
     script += '# Run Cmake for configuring ' + cfg.mode + ' on ' + cfg.platform + '\n'
     script += 'cmake \\\n'
