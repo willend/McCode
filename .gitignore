@@ -14,3 +14,5 @@
 3rdparty/
 Mambaforge-Linux-x86_64.sh
 
+#Python venv:
+/venv/
