@@ -19,11 +19,13 @@ set -x
     if ( cfg.is_mac ):
         script += '# Probe SDK location on mac:\n'
         script += 'export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)\n\n'
-        
+
+    base = pathlib.(cfg.build_dir).basename())
+    top = pathlib.(cfg.build_dir).parent())
     script += '# Create and cd to build directory:\n'
-    script += 'cd "''' + str(pathlib.PurePosixPath(cfg.build_dir).parent()) + '"\n'
-    script += 'mkdir "''' + str(pathlib.PurePosixPath(cfg.build_dir).basename()) + '"\n'
-    script += 'cd ' + str(pathlib.PurePosixPath(cfg.build_dir).basename()) + '\n\n'
+    script += 'cd "''' + str(top.PurePosixPath()) + '"\n'
+    script += 'mkdir "''' + str(base) + '"\n'
+    script += 'cd ' + str(base) + '\n\n'
 
     script += '# Set platform specifics for ' + cfg.platform + '\n'
     if ( cfg.is_unix ):
