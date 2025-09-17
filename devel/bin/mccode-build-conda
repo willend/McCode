@@ -9,7 +9,8 @@ def syscall( command ):
         command,
         stdout = subprocess.PIPE,
         stderr = subprocess.PIPE,
-        universal_newlines = True)
+        universal_newlines = True,
+        shell=True)
     return result
 
 def mccode_build_conda ( cfg ):
