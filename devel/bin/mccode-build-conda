@@ -87,10 +87,10 @@ def parse_args( argv ):
                             help='Set build version (default: 3.99.99)')
     parser.add_argument('-s','--srcdir',
                             default='../src/',
-                            help='Source dir (default: ../src/)')
+                            help='Source dir (default: src)')
     parser.add_argument('-b','--builddir',
                             default=None,
-                            help='Build dir (default: ../build_mcstas | ../build_mcxtrace)')
+                            help='Build dir (default: build_mcstas | build_mcxtrace)')
 
     args = parser.parse_args(argv[1:])
 
