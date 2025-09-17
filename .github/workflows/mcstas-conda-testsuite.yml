@@ -50,7 +50,7 @@ jobs:
 
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        activate-environment: true
+        activate-environment: mcstas
         auto-update-conda: true
         conda-remove-defaults: true
         channels: conda-forge
@@ -59,7 +59,8 @@ jobs:
     - name: Setup conda
       id: setup-conda
       run: |
-           ./src/devel/bin/create-conda-yml -m mcstas -n test -o dependencies.yml
+           ls
+           ./devel/bin/create-conda-yml -m mcstas -n mcstas -o dependencies.yml
            conda env update --file dependencies.yml --prune
 
     - name: Check versions
