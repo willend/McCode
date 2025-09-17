@@ -26,12 +26,16 @@ def create_deplist( cfg ):
         deps += ['bash']
     if cfg.is_win:
         deps += ['mslex']
+
+    pyqt_with_version = 'pyqt >=5.10'
     if cfg.include_mcgui:
-        deps += ['pyqt','qscintilla2']
+        deps += [pyqt_with_version,'qscintilla2']
     if cfg.include_vis:
         deps += ['matplotlib',
                  'tornado >=5',
-                 'scipy','pillow','pyqtgraph','pyqt >=5.10','qtpy',
+                 'scipy','pillow','pyqtgraph',
+                 pyqt_with_version,
+                 'qtpy',
                  'nodejs','ply','jinja2',
                  'mcstasscript','jupytext','jupyterlab' ]
         if cfg.is_unix:
