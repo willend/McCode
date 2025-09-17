@@ -59,8 +59,7 @@ jobs:
     - name: Setup conda
       id: setup-conda
       run: |
-           ls
-           ./devel/bin/create-conda-yml -m mcstas -n mcstas -o dependencies.yml
+           ./src/devel/bin/mccode-create-conda-yml -m mcstas -n mcstas -o dependencies.yml
            conda env update --file dependencies.yml --prune
 
     - name: Check versions
