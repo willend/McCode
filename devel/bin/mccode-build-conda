@@ -36,7 +36,7 @@ set -x
     script += '# Run Cmake for configuring ' + cfg.mode + ' on ' + cfg.platform + '\n'
     script += 'cmake \\\n'
     script += '    -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \\\n'
-    script += '    -S '+ cfg.src_dir +'" \\\n'
+    script += '    -S '+ cfg.src_dir +' \\\n'
     script += '    -DMCVERSION="'+ cfg.version +'" \\\n'
     script += '    -DMCCODE_BUILD_CONDA_PKG=ON \\\n'
     script += '    -DBUILD_SHARED_LIBS=ON \\\n'
