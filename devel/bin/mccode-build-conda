@@ -21,8 +21,9 @@ set -x
         script += 'export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)\n\n'
         
     script += '# Create and cd to build directory:\n'
-    script += 'mkdir "''' + str(pathlib.PurePosixPath(cfg.build_dir)) + '"\n'
-    script += 'cd ' + cfg.build_dir + '\n\n'
+    script += 'cd "''' + str(pathlib.PurePosixPath(cfg.build_dir).parent()) + '"\n'
+    script += 'mkdir "''' + str(pathlib.PurePosixPath(cfg.build_dir).basename()) + '"\n'
+    script += 'cd ' + str(pathlib.PurePosixPath(cfg.build_dir).basename()) + '\n\n'
 
     script += '# Set platform specifics for ' + cfg.platform + '\n'
     if ( cfg.is_unix ):
