@@ -20,7 +20,7 @@ set -x
         script += '# Probe SDK location on mac:\n'
         script += 'export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)\n\n'
 
-    base = pathlib.Path(cfg.build_dir).basename()
+    base = pathlib.Path(cfg.build_dir).name()
     top = pathlib.Path(cfg.build_dir).parent()
     script += '# Create and cd to build directory:\n'
     script += 'cd "''' + str(top.PurePosixPath()) + '"\n'
