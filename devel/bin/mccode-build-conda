@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+import sys
+import pathlib
+import os
+
+def mccode_build_conda ( cfg ):
+    #Wrapper to build and install McStas/McXtrace in an existing conda env
+
+    script='''#!/usr/bin/env bash
+#
+# conda + bash based build + install script for ''' + cfg.mode + ''' on ''' + cfg.platform +'''
+#
+set -e
+set -u
+set -x
+
+'''
+
+    if ( cfg.is_mac ):
+        script += '# Probe SDK location on mac:\n'
+        script += 'export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)\n\n'
+        
+    script += '# Create and cd to build directory:\n'
+    script += 'mkdir -p ''' + cfg.build_dir + '\n'
+    script += 'cd ' + cfg.build_dir + '\n\n'
+
+    script += '# Set platform specifics for ' + cfg.platform + '\n'
+    if ( cfg.is_unix ):
+        script += 'export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus"\n'
+        script += 'export CMAKE_GENERATOR="Unix Makefiles"\n\n'
+
+    if ( cfg.is_win ):
+        script += 'export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib"\n'
+        script += 'export CMAKE_GENERATOR="NMake Makefiles"\n\n'
+
+    script += '# Run Cmake for configuring ' + cfg.mode + ' on ' + cfg.platform + '\n'
+    script += 'cmake \\\n'
+    script += '    -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \\\n'
+    script += '    -S '+ cfg.src_dir +'" \\\n'
+    script += '    -DMCVERSION="'+ cfg.version +'" \\\n'
+    script += '    -DMCCODE_BUILD_CONDA_PKG=ON \\\n'
+    script += '    -DBUILD_SHARED_LIBS=ON \\\n'
+    script += '    -DCMAKE_INSTALL_LIBDIR=lib \\\n'
+    script += '    -DCMAKE_BUILD_TYPE=Release \\\n'
+    if ( cfg.is_mcstas ):
+        script += '    -DBUILD_MCSTAS=ON \\\n'
+    else:
+        script += '    -DBUILD_MCXTRACE=ON \\\n'
+    script += '    -DMCCODE_USE_LEGACY_DESTINATIONS=OFF \\\n'
+    script += '    -DBUILD_TOOLS=ON \\\n'
+    script += '    -DENABLE_COMPONENTS=ON \\\n'
+    script += '    -DENSURE_MCPL=OFF \\\n'
+    script += '    -DENSURE_NCRYSTAL=OFF \\\n'
+    script += '    -DENABLE_CIF2HKL=OFF \\\n'
+    script += '    -DENABLE_NEUTRONICS=OFF \\\n'
+    script += '    -G "${CMAKE_GENERATOR}" \\\n'
+    script += '    ${EXTRA_ARGS_FOR_CMAKE}\n\n'
+    
+    script += '# Run Cmake for building ' + cfg.mode + ' on ' + cfg.platform + '\n'
+    script += 'cmake --build . --config Release\n\n'
+
+
+    script += '# Run Cmake for installing ' + cfg.mode + ' on ' + cfg.platform + '\n'
+    script += 'cmake --build . --target install --config Release\n\n'
+
+    script += '# END of build script\n'
+    return script
+
+def parse_args( argv ):
+    from argparse import ArgumentParser as AP
+    parser = AP( prog = os.path.basename(argv[0]),
+                 description=('Build and install McStas or McXtrace trace witin conda environment'))
+    parser.add_argument('-m','--mode', choices=['mcstas', 'mcxtrace'],
+                        default='mcstas',
+                        help='Choose McStas or McXtrace mode (default: mcstas)')
+    parser.add_argument('-p','--platform', choices=['win', 'linux', 'mac'],
+                        default=None,
+                        help=('Generate settings for specific platform'
+                              ' (default: current platform)'))
+    parser.add_argument('-o','--outfile',type=str,metavar='FILE',
+                        default='stdout',
+                        help='Output destination (defaults to stdout)')
+    parser.add_argument('-f','--force', action='store_true',
+                        help='Allow overwriting existing output file')
+    parser.add_argument('-v','--version',
+                            default='3.99.99',
+                            help='Set build version (default: 3.99.99)')
+    parser.add_argument('-s','--srcdir',
+                            default='../src/',
+                            help='Source dir (default: ../src/)')
+    parser.add_argument('-b','--builddir',
+                            default=None,
+                            help='Build dir (default: ../build_mcstas | ../build_mcxtrace)')
+
+    args = parser.parse_args(argv[1:])
+
+    if not args.platform:
+        args.platform = autodetect_platform()
+
+    if not args.builddir:
+        args.builddir = '../build_' + args.mode
+    if args.outfile!='stdout':
+        p = pathlib.Path(args.outfile)
+        if not args.force and p.exists():
+            parser.error(f'File already exists (use --force to overwrite): {p}')
+        elif not p.parent.is_dir():
+            parser.error(f'Directory not found: {p.parent}')
+        args.outfile=p.resolve().absolute()
+    else:
+        args.outfile = None
+
+    return args
+
+def autodetect_platform():
+    import platform
+    return {'Windows':'win',
+            'Darwin':'mac',
+            'Linux':'linux'}[platform.system()]
+
+def create_cfg( args ):
+    class Cfg:
+        mode = args.mode
+        is_mcstas = ( args.mode=='mcstas' )
+        is_mcxtrace = not is_mcstas
+        platform = args.platform
+        is_win   = ( args.platform=='win' )
+        is_linux = ( args.platform=='linux' )
+        is_mac   = ( args.platform=='mac' )
+        is_unix  = ( is_linux or is_mac )
+        src_dir = ( args.srcdir )
+        build_dir = ( args.builddir )
+        version = ( args.version )
+    return Cfg()
+
+def main():
+    args = parse_args( sys.argv )
+    cfg = create_cfg( args )
+    script = mccode_build_conda( cfg )
+    if not args.outfile:
+        print(script,end='')
+    else:
+        args.outfile.write_text(script)
+
+if __name__=='__main__':
+    main()
