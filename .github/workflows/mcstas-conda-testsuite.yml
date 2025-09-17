@@ -56,34 +56,11 @@ jobs:
         channels: conda-forge
         python-version: ${{ matrix.python }}
 
-    - name: Setup common
-      id: setup-common
+    - name: Setup conda
+      id: setup-conda
       run: |
-           conda install cmake c-compiler pyaml numpy ply jinja2 gsl libnexus cif2hkl mcpl ncrystal -y
-
-    - name: Setup Unixes
-      id: setup-unix
-      if: runner.os != 'Windows'
-      run: |
-           conda install make flex bison bash -y
-
-    - name: Setup Windows
-      id: setup-Windows
-      if: runner.os == 'Windows'
-      run: |
-           conda install winflexbison mslex msmpi -y
-
-    - name: Setup OpenMPI
-      id: setup-openmpi
-      if: runner.os != 'Windows' && matrix.mpi =='openmpi'
-      run: |
-           conda install openmpi=4 -y
-
-    - name: Setup MPICH
-      id: setup-mpich
-      if: runner.os != 'Windows' && matrix.mpi =='mpich'
-      run: |
-           conda install mpich -y
+           ./src/devel/bin/create-conda-yml -m mcstas -n test -o dependencies.yml
+           conda env update --file dependencies.yml --prune
 
     - name: Check versions
       id: version-checks
@@ -101,43 +78,13 @@ jobs:
     - name: Configure build and install mcstas
       id: mcstas-install
       run: |
-           if [ "$RUNNER_OS" == "macOS" ]; then export SDKROOT=$(xcrun --sdk macosx --show-sdk-path); fi
-           set -e
-           set -u
-           set -x
-           mkdir build_mcstas
-           cd build_mcstas
-           export EXTRA_ARGS_FOR_CMAKE=""
-           if [ "$RUNNER_OS" != "Windows" ];
-           then
-             export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus";
-             export GENERATOR="Unix Makefiles";
-           fi
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib";
-             export GENERATOR="NMake Makefiles"
-           fi
-           cmake \
-               -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \
-               -S ../src \
-               -DMCVERSION="3.99.99" \
-               -DMCCODE_BUILD_CONDA_PKG=ON \
-               -DBUILD_SHARED_LIBS=ON \
-               -DCMAKE_INSTALL_LIBDIR=lib \
-               -DCMAKE_BUILD_TYPE=Release \
-               -DBUILD_MCSTAS=ON \
-               -DMCCODE_USE_LEGACY_DESTINATIONS=OFF \
-               -DBUILD_TOOLS=ON \
-               -DENABLE_COMPONENTS=ON \
-               -DENSURE_MCPL=OFF \
-               -DENSURE_NCRYSTAL=OFF \
-               -DENABLE_CIF2HKL=OFF \
-               -DENABLE_NEUTRONICS=OFF \
-               -G "${GENERATOR}" \
-               ${EXTRA_ARGS_FOR_CMAKE}
-           cmake --build . --config Release
-           cmake --build . --target install --config Release
+           ./src/devel/bin/mccode-build-conda -m mcstas -o build.sh
+           chmod a+x build.sh
+           ./build.sh
+
+     - name: Post install checks
+      id: post-install-checks
+      run: |
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
            if [ "$RUNNER_OS" == "Windows" ];
