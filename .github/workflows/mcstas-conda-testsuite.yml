@@ -79,8 +79,7 @@ jobs:
       id: mcstas-install
       run: |
            ./src/devel/bin/mccode-build-conda -m mcstas -o build.sh -s $PWD/src -b $PWD/build_mcstas
-           chmod a+x build.sh
-           ./build.sh
+           bash build.sh
 
     - name: Post install checks
       id: post-install-checks
