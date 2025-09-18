@@ -144,18 +144,7 @@ jobs:
            set -e
            set -u
            set -x
-           touch cleanup
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             echo unalias rm > cleanup
-           fi
-           find run_test-suite -type f -name \*.exe -exec echo rm \{\} \; >> cleanup
-           find run_test-suite -name \*.out\* -exec echo rm -rf \{\} \; >> cleanup
-           find run_test-suite -type f -name \*.obj -exec echo rm \{\} \; >> cleanup
-           find run_test-suite -type f -name \*.pdb -exec echo rm \{\} \; >> cleanup
-           find run_test-suite -type f -name \*.ilk -exec echo rm \{\} \; >> cleanup
-           bash cleanup
-           rm cleanup
+           ./src/devel/bin/cleanfiles -d run_test_suite 
            tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_test-suite
 
     - name: 'Upload Artifact'

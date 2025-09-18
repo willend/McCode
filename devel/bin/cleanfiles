@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+import sys
+import pathlib
+import os
+
+
+def cleanup( cfg ):
+
+    if cfg.is_unix:
+        patterns = ['*.out*']
+    if cfg.is_win:
+        patterns = ['*.exe','*.obj','*.pdb','*.ilk']
+
+    for pattern in patterns:
+        for p in pathlib.Path(cfg.dirname).glob(pattern):
+            p.unlink()
+
+
+def parse_args( argv ):
+    from argparse import ArgumentParser as AP
+    parser = AP( prog = os.path.basename(argv[0]),
+                 description=('Purge binaries etc. from McCode output directory hierarchy'))
+    parser.add_argument('-p','--platform', choices=['win', 'linux', 'mac'],
+                        default=None,
+                        help=('Generate settings for specific platform'
+                              ' (default: current platform)'))
+    parser.add_argument('-d','--dir',
+                            default=None,
+                            help='Directory to clean up')
+
+    args = parser.parse_args(argv[1:])
+
+    if not args.platform:
+        args.platform = autodetect_platform()
+
+    if not args.dir:
+        sys.exit('I need a directory to work on!')
+    else:
+        if not pathlib.Path(args.dir).is_dir():
+            sys.exit('Directory ' + args.dir + ' is not a directory!')
+            
+    return args
+
+def autodetect_platform():
+    import platform
+    return {'Windows':'win',
+            'Darwin':'mac',
+            'Linux':'linux'}[platform.system()]
+
+def create_cfg( args ):
+    class Cfg:
+        platform = args.platform
+        is_win   = ( args.platform=='win' )
+        is_linux = ( args.platform=='linux' )
+        is_mac   = ( args.platform=='mac' )
+        is_unix  = ( is_linux or is_mac )
+        dirname  = ( args.dir )
+    return Cfg()
+
+def main():
+    args = parse_args( sys.argv )
+    cfg = create_cfg( args )
+    cleanup( cfg )
+
+if __name__=='__main__':
+    main()
