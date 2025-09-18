@@ -53,7 +53,8 @@ jobs:
       id: setup-conda
       run: |
            ./src/devel/bin/mccode-create-conda-yml -m mcxtrace -n mcxtrace -o dependencies.yml
-           conda env update --file dependencies.yml --prune
+           conda env update --file dependencies.yml
+           echo DONE
 
     - name: Check versions
       id: version-checks

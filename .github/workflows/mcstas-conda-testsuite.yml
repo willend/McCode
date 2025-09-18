@@ -16,11 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #- { os: ubuntu-latest, python: '3.12', mpi: 'openmpi' }
-          #- { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
+          - { os: ubuntu-latest, python: '3.12', mpi: 'openmpi' }
+          - { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
           - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
-          #- { os: windows-latest, python: '3.12', mpi: 'msmpi' }
+          - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
 
     name: ${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
