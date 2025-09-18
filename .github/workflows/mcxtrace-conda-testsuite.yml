@@ -78,14 +78,14 @@ jobs:
     - name: Configure build and install mcxtrace
       id: mcxtrace-install
       run: |
-           ./src/devel/bin/mccode-build-conda -m mcxtrace -s $PWD/src -b $PWD/build_mcstas
+           ./src/devel/bin/mccode-build-conda -m mcxtrace -s $PWD/src -b $PWD/build_mcxtrace
 
     - name: Post install checks
       id: post-install-checks
       if: runner.os != 'Windows' 
       run: |
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCRUN_EXECUTABLE="mcrun"
+           export MCXTRACE_EXECUTABLE="mcxtrace"
+           export MXRUN_EXECUTABLE="mxrun"
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export MCXTRACE_EXECUTABLE="mcxtrace.exe"
