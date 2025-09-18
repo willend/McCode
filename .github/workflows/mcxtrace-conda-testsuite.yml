@@ -144,7 +144,12 @@ jobs:
            set -e
            set -u
            set -x
-           find run_test-suite -type f -name \*.exe -exec echo rm \{\} \; > cleanup
+           touch cleanup
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             echo unalias rm > cleanup
+           fi
+           find run_test-suite -type f -name \*.exe -exec echo rm \{\} \; >> cleanup
            find run_test-suite -name \*.out\* -exec echo rm -rf \{\} \; >> cleanup
            find run_test-suite -type f -name \*.obj -exec echo rm \{\} \; >> cleanup
            find run_test-suite -type f -name \*.pdb -exec echo rm \{\} \; >> cleanup
