@@ -422,14 +422,33 @@ jobs:
            echo $CHANGEDINSTR
            echo ----
            cd -
+           export PERMISSIVE=" "
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             mkdir run_mxtest && cd run_mxtest
-             ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
-             mxviewtest --nobrowse $PWD
+             if [ "$RUNNER_OS" != "Windows" ]; then
+               mkdir run_mxtest && cd run_mxtest
+               if [ "$RUNNER_OS" == macOS ]; then
+                 export PERMISSIVE="--permissive"
+               fi
+               ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES $PERMISSIVE
+               mxviewtest --nobrowse $PWD
+             else
+               echo ..\\install\\bin\\mxtest --verbose --testdir=. --instr=$CHANGEDINSTR --permissive > changedinstr.bat
+             fi
            fi
 
     # END of Unix tests
+
+    - name: Run modified instruments Win
+      id: instr-test-Win
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      run: |
+        if exist changedinstr.bat (
+          mkdir run_mxtest
+          cd run_mxtest
+          call ..\changedinstr.bat
+        )
 
     # Start of Windows tests
     - name: Prepare rundirs Windows
