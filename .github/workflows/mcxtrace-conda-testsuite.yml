@@ -21,7 +21,6 @@ jobs:
           - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
           - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
-#          - { os: windows-11-arm, python: '3.12', mpi: 'msmpi' }
 
     name: ${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
@@ -39,14 +38,8 @@ jobs:
         path: src
 
     - name: Setup VS in shell Intel
-      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
+      if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
-
-    - name: Setup VS in shell arm64
-      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: arm64
 
     - uses: conda-incubator/setup-miniconda@v3
       with:
@@ -73,6 +66,9 @@ jobs:
            then
              echo C compiler: $CC
              $CC --version
+           else
+             echo C compiler: cl.exe
+             cl.exe
            fi
 
     - name: Configure build and install mcxtrace
@@ -80,62 +76,33 @@ jobs:
       run: |
            ./src/devel/bin/mccode-build-conda -m mcxtrace -s $PWD/src -b $PWD/build_mcxtrace
 
-    - name: Post install checks
-      id: post-install-checks
-      if: runner.os != 'Windows' 
+    - name: Post install openmpi hacks macOS
+      id: post-install-openmpi-hacks-macOS
+      if: runner.os == 'macOS' 
       run: |
-           export MCXTRACE_EXECUTABLE="mcxtrace"
-           export MXRUN_EXECUTABLE="mxrun"
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export MCXTRACE_EXECUTABLE="mcxtrace.exe"
-             export MXRUN_EXECUTABLE="mxrun.bat"
-             cd ${CONDA_PREFIX}
-             TOPDIR=`cygpath -m $PWD`
-             cd -
-           fi
-           test -f "${CONDA_PREFIX}/bin/${MCXTRACE_EXECUTABLE}"
-           test -f "${CONDA_PREFIX}/bin/${MXRUN_EXECUTABLE}"
-           test -f "${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/__init__.py"
-           test -d "${CONDA_PREFIX}/share/mcxtrace/resources/data"
-           if [ "$RUNNER_OS" == macOS ]; then
              if [ "${{ matrix.mpi }}" == "openmpi" ]; then
                sed -i.bak 's+mpirun+mpirun\ -mca\ regx\ naive\ --verbose\ --mca\ btl_tcp_if_include\ lo0+g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
              fi
-           fi
-           if [ "$RUNNER_OS" == Windows ]; then
-             export CONDAPREF=`cygpath -m ${CONDA_PREFIX}`
-             sed -i.bak 's+/DUSE_NEXUS+/I${CONDAPREF}/Library/include/nexus /DUSE_NEXUS+g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
-             sed -i.bak 's+${CONDA_PREFIX}+'${CONDAPREF}'+g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
-           fi
-           echo *******************************************************************************
-           echo Resulting mccode_config.json:
-           echo *******************************************************************************
-           cat ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
-           echo *******************************************************************************
 
     - name: Test suite, up to 2-core MPI
       id: test-suite
       run: |
-           export PATH=${PATH}:${CONDA_PREFIX}/bin/:${CONDA_PREFIX}/bin/
+           # Create and cd to directory for test output data
            mkdir run_test-suite && cd run_test-suite
+           # Test script name
            export MXTEST_EXECUTABLE="mxtest"
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export MXTEST_EXECUTABLE="mxtest.bat --permissive"
            fi
+           # Workaround for warning about "too long" tmpdir name on macOS/openmpi
            if [ "$RUNNER_OS" == "macOS" ];
            then
              mkdir ${HOME}/tmp
              export TMPDIR=${HOME}/tmp
            fi
-           echo $PATH
-           if [ "${{ matrix.os }}" != "windows-11-arm" ];
-           then
-             ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }} --mpi=2
-           else
-             ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}
-           fi
+           # Run the test with 2 core mpi
+           ${MXTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }} --mpi=2
 
     - name: 'Tar output files'
       id: tar-package
@@ -144,6 +111,7 @@ jobs:
            set -e
            set -u
            set -x
+           # Clear out binaries from sim dir and tar up artifact
            ./src/devel/bin/mccode-simdir-cleanfiles -d run_test-suite
            tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_test-suite
 
