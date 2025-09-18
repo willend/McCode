@@ -50,40 +50,17 @@ jobs:
 
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        activate-environment: true
+        activate-environment: mcxtrace
         auto-update-conda: true
         conda-remove-defaults: true
         channels: conda-forge
         python-version: ${{ matrix.python }}
 
-    - name: Setup common
-      id: setup-common
+    - name: Setup conda
+      id: setup-conda
       run: |
-           conda install cmake c-compiler pyaml numpy ply jinja2 gsl libnexus cif2hkl mcpl xraylib -y
-
-    - name: Setup Unixes
-      id: setup-unix
-      if: runner.os != 'Windows'
-      run: |
-           conda install make flex bison bash -y
-
-    - name: Setup Windows
-      id: setup-Windows
-      if: runner.os == 'Windows'
-      run: |
-           conda install winflexbison mslex msmpi -y
-
-    - name: Setup OpenMPI
-      id: setup-openmpi
-      if: runner.os != 'Windows' && matrix.mpi =='openmpi'
-      run: |
-           conda install openmpi=4 -y
-
-    - name: Setup MPICH
-      id: setup-mpich
-      if: runner.os != 'Windows' && matrix.mpi =='mpich'
-      run: |
-           conda install mpich -y
+           ./src/devel/bin/mccode-create-conda-yml -m mcxtrace -n mcxtrace -o dependencies.yml
+           conda env update --file dependencies.yml --prune
 
     - name: Check versions
       id: version-checks
@@ -101,45 +78,14 @@ jobs:
     - name: Configure build and install mcxtrace
       id: mcxtrace-install
       run: |
-           if [ "$RUNNER_OS" == "macOS" ]; then export SDKROOT=$(xcrun --sdk macosx --show-sdk-path); fi
-           set -e
-           set -u
-           set -x
-           mkdir build_mcxtrace
-           cd build_mcxtrace
-           export EXTRA_ARGS_FOR_CMAKE=""
-           if [ "$RUNNER_OS" != "Windows" ];
-           then
-             export EXTRA_ARGS_FOR_CMAKE="-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus";
-             export GENERATOR="Unix Makefiles";
-           fi
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export EXTRA_ARGS_FOR_CMAKE="-DMPILIB=msmpi.lib";
-             export GENERATOR="NMake Makefiles"
-           fi
-           cmake \
-               -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} \
-               -S ../src \
-               -DMCVERSION="3.99.99" \
-               -DMCCODE_BUILD_CONDA_PKG=ON \
-               -DBUILD_SHARED_LIBS=ON \
-               -DCMAKE_INSTALL_LIBDIR=lib \
-               -DCMAKE_BUILD_TYPE=Release \
-               -DBUILD_MCXTRACE=ON \
-               -DMCCODE_USE_LEGACY_DESTINATIONS=OFF \
-               -DBUILD_TOOLS=ON \
-               -DENABLE_COMPONENTS=ON \
-               -DENSURE_MCPL=OFF \
-               -DENSURE_NCRYSTAL=OFF \
-               -DENABLE_CIF2HKL=OFF \
-               -DENABLE_NEUTRONICS=OFF \
-               -G "${GENERATOR}" \
-               ${EXTRA_ARGS_FOR_CMAKE}
-           cmake --build . --config Release
-           cmake --build . --target install --config Release
-           export MCXTRACE_EXECUTABLE="mcxtrace"
-           export MXRUN_EXECUTABLE="mxrun"
+           ./src/devel/bin/mccode-build-conda -m mcxtrace -s $PWD/src -b $PWD/build_mcstas
+
+    - name: Post install checks
+      id: post-install-checks
+      if: runner.os != 'Windows' 
+      run: |
+           export MCSTAS_EXECUTABLE="mcstas"
+           export MCRUN_EXECUTABLE="mcrun"
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export MCXTRACE_EXECUTABLE="mcxtrace.exe"
