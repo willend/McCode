@@ -87,7 +87,7 @@ jobs:
       run: |
         cygpath -sm "$MSMPI_INC" > includepath.txt
         cygpath -sm "$MSMPI_LIB64" > libpath.txt
-           choco install winflexbison3
+        choco install winflexbison3
         choco install wget
         if [ "$CC" == "gcc.exe" ]; then choco install mingw; fi
         pip install mslex PyYAML ply mcpl mcpl-extra
@@ -391,7 +391,6 @@ jobs:
 
     - name: Check for modified instruments
       id: instr-test
-      if: runner.os != 'Windows' # Not Windows
       run: |
            set -e
            set -u
