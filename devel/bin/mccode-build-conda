@@ -21,9 +21,11 @@ def mccode_build_conda ( cfg ):
 
     pathlib.Path(cfg.build_dir).mkdir(parents=True, exist_ok=True)
     os.chdir(cfg.build_dir)
+
+    CONDAPREFIX = str(pathlib.PurePosixPath(os.getenv('CONDA_PREFIX')))
     
     if ( cfg.is_unix ):
-        EXTRAARGS = '-DNEXUSLIB=${CONDA_PREFIX}/lib  -DNEXUSINCLUDE=${CONDA_PREFIX}/include/nexus'
+        EXTRAARGS = '-DNEXUSLIB=' + CONDAPREFIX + '/lib  -DNEXUSINCLUDE=' + CONDAPREFIX + '/include/nexus'
         GENERATOR = 'Unix Makefiles'
 
     if ( cfg.is_win ):
@@ -31,7 +33,7 @@ def mccode_build_conda ( cfg ):
         GENERATOR = 'NMake Makefiles'
 
     cmd = 'cmake '
-    cmd += '-DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} '
+    cmd += '-DCMAKE_INSTALL_PREFIX=' + CONDAPREFIX + ' '
     cmd += '-S '+ cfg.src_dir +' '
     cmd += '-DMCVERSION="'+ cfg.version +'" '
     cmd += '-DMCCODE_BUILD_CONDA_PKG=ON '
