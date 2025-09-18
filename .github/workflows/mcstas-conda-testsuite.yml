@@ -144,7 +144,7 @@ jobs:
            set -e
            set -u
            set -x
-           ./src/devel/bin/cleanfiles -d run_test_suite 
+           ./src/devel/bin/cleanfiles -d run_test-suite
            tar cvfz mcstas-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_test-suite
 
     - name: 'Upload Artifact'
