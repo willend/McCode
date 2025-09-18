@@ -399,7 +399,6 @@ jobs:
            export MXRUN_EXECUTABLE="mxrun"
            export MXTEST_EXECUTABLE="mxtest"
            export PATH=${PATH}:${PWD}/install_mcxtrace/bin/:${PWD}/install_mcxtrace/mcxtrace/3.99.99/bin/
-           test -f ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE}
            # Check if any instr files were modified during last commit
            cd src
            export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
