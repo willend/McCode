@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+import sys
+import pathlib
+import os
+import subprocess
+
+def syscall( command ):
+    result = subprocess.run(
+        command,
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE,
+        universal_newlines = True,
+        shell=True)
+    return result
+
+def mccode_build_conda ( cfg ):
+    
+    if ( cfg.is_mac ):
+        res=syscall("xcrun --sdk macosx --show-sdk-path")
+        os.environ["SDKROOT"] = res.stdout
+
+    pathlib.Path(cfg.build_dir).mkdir(parents=True, exist_ok=True)
+    os.chdir(cfg.build_dir)
+
+    CONDAPREFIX = str(pathlib.PurePosixPath(os.getenv('CONDA_PREFIX')))
+    
+    if ( cfg.is_unix ):
+        EXTRAARGS = '-DNEXUSLIB=' + CONDAPREFIX + '/lib  -DNEXUSINCLUDE=' + CONDAPREFIX + '/include/nexus'
+        GENERATOR = 'Unix Makefiles'
+
+    if ( cfg.is_win ):
+        EXTRAARGS = '-DMPILIB=msmpi.lib'
+        GENERATOR = 'NMake Makefiles'
+
+    cmd = 'cmake '
+    cmd += '-DCMAKE_INSTALL_PREFIX=' + CONDAPREFIX + ' '
+    cmd += '-S '+ cfg.src_dir +' '
+    cmd += '-DMCVERSION="'+ cfg.version +'" '
+    cmd += '-DMCCODE_BUILD_CONDA_PKG=ON '
+    cmd += '-DBUILD_SHARED_LIBS=ON '
+    cmd += '-DCMAKE_INSTALL_LIBDIR=lib '
+    cmd += '-DCMAKE_BUILD_TYPE=Release '
+    if ( cfg.is_mcstas ):
+        cmd += '-DBUILD_MCSTAS=ON '
+    else:
+        cmd += '-DBUILD_MCXTRACE=ON '
+    cmd += '-DMCCODE_USE_LEGACY_DESTINATIONS=OFF '
+    cmd += '-DBUILD_TOOLS=ON '
+    cmd += '-DENABLE_COMPONENTS=ON '
+    cmd += '-DENSURE_MCPL=OFF '
+    cmd += '-DENSURE_NCRYSTAL=OFF '
+    cmd += '-DENABLE_CIF2HKL=OFF '
+    cmd += '-DENABLE_NEUTRONICS=OFF '
+    cmd += '-G "' + GENERATOR + '" '
+    cmd += EXTRAARGS
+
+    res=syscall(cmd)
+    print(res.stdout)
+    print(res.stderr)
+    
+    
+    cmd = 'cmake --build . --config Release\n\n'
+    res=syscall(cmd)
+    print(res.stdout)
+    print(res.stderr)
+
+    cmd = 'cmake --build . --target install --config Release\n\n'
+    res=syscall(cmd)
+    print(res.stdout)
+    print(res.stderr)
+
+def parse_args( argv ):
+    from argparse import ArgumentParser as AP
+    parser = AP( prog = os.path.basename(argv[0]),
+                 description=('Build and install McStas or McXtrace trace witin conda environment'))
+    parser.add_argument('-m','--mode', choices=['mcstas', 'mcxtrace'],
+                        default='mcstas',
+                        help='Choose McStas or McXtrace mode (default: mcstas)')
+    parser.add_argument('-p','--platform', choices=['win', 'linux', 'mac'],
+                        default=None,
+                        help=('Generate settings for specific platform'
+                              ' (default: current platform)'))
+    parser.add_argument('-f','--force', action='store_true',
+                        help='Allow overwriting existing output file')
+    parser.add_argument('-v','--version',
+                            default='3.99.99',
+                            help='Set build version (default: 3.99.99)')
+    parser.add_argument('-s','--srcdir',
+                            default='src',
+                            help='Source dir (default: src)')
+    parser.add_argument('-b','--builddir',
+                            default=None,
+                            help='Build dir (default: build_mcstas | build_mcxtrace)')
+
+    args = parser.parse_args(argv[1:])
+
+    if not args.platform:
+        args.platform = autodetect_platform()
+
+    if not args.builddir:
+        args.builddir = 'build_' + args.mode
+
+    return args
+
+def autodetect_platform():
+    import platform
+    return {'Windows':'win',
+            'Darwin':'mac',
+            'Linux':'linux'}[platform.system()]
+
+def create_cfg( args ):
+    class Cfg:
+        mode = args.mode
+        is_mcstas = ( args.mode=='mcstas' )
+        is_mcxtrace = not is_mcstas
+        platform = args.platform
+        is_win   = ( args.platform=='win' )
+        is_linux = ( args.platform=='linux' )
+        is_mac   = ( args.platform=='mac' )
+        is_unix  = ( is_linux or is_mac )
+        src_dir = ( args.srcdir )
+        build_dir = ( args.builddir )
+        version = ( args.version )
+    return Cfg()
+
+def main():
+    args = parse_args( sys.argv )
+    cfg = create_cfg( args )
+    mccode_build_conda( cfg )
+
+if __name__=='__main__':
+    main()

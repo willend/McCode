@@ -80,7 +80,10 @@ def load_config(path=None):
         conda_prefix = os.environ.get('CONDA_PREFIX')
         if conda_prefix:
             entries_with_conda_prefix=['CFLAGS','NEXUSFLAGS','MPIFLAGS','OACCFLAGS','CC','MPICC','MPIRUN']
-            conda_prefix = str(pathlib.Path(conda_prefix).absolute().resolve())
+            if OsPlatform.system() == 'Windows':
+                conda_prefix = str(pathlib.PureWindowsPath(conda_prefix).as_posix())
+            else:
+                conda_prefix = str(pathlib.Path(conda_prefix).absolute().resolve())
             for e in entries_with_conda_prefix:
                 if '${CONDA_PREFIX}' in compilation[e]:
                     compilation[e] = str(compilation[e].replace('${CONDA_PREFIX}',conda_prefix))

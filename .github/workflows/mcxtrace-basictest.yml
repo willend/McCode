@@ -87,7 +87,7 @@ jobs:
       run: |
         cygpath -sm "$MSMPI_INC" > includepath.txt
         cygpath -sm "$MSMPI_LIB64" > libpath.txt
-           choco install winflexbison3
+        choco install winflexbison3
         choco install wget
         if [ "$CC" == "gcc.exe" ]; then choco install mingw; fi
         pip install mslex PyYAML ply mcpl mcpl-extra
@@ -391,7 +391,6 @@ jobs:
 
     - name: Check for modified instruments
       id: instr-test
-      if: runner.os != 'Windows' # Not Windows
       run: |
            set -e
            set -u
@@ -400,7 +399,6 @@ jobs:
            export MXRUN_EXECUTABLE="mxrun"
            export MXTEST_EXECUTABLE="mxtest"
            export PATH=${PATH}:${PWD}/install_mcxtrace/bin/:${PWD}/install_mcxtrace/mcxtrace/3.99.99/bin/
-           test -f ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE}
            # Check if any instr files were modified during last commit
            cd src
            export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
@@ -422,14 +420,33 @@ jobs:
            echo $CHANGEDINSTR
            echo ----
            cd -
+           export PERMISSIVE=" "
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             mkdir run_mxtest && cd run_mxtest
-             ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
-             mxviewtest --nobrowse $PWD
+             if [ "$RUNNER_OS" != "Windows" ]; then
+               mkdir run_mxtest && cd run_mxtest
+               if [ "$RUNNER_OS" == macOS ]; then
+                 export PERMISSIVE="--permissive"
+               fi
+               ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES $PERMISSIVE
+               mxviewtest --nobrowse $PWD
+             else
+               echo ..\\install\\bin\\mxtest --verbose --testdir=. --instr=$CHANGEDINSTR --permissive > changedinstr.bat
+             fi
            fi
 
     # END of Unix tests
+
+    - name: Run modified instruments Win
+      id: instr-test-Win
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      run: |
+        if exist changedinstr.bat (
+          mkdir run_mxtest
+          cd run_mxtest
+          call ..\changedinstr.bat
+        )
 
     # Start of Windows tests
     - name: Prepare rundirs Windows

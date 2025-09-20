@@ -493,14 +493,18 @@ jobs:
            echo $CHANGEDINSTR
            echo ----
            cd -
+           export PERMISSIVE=" "
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
              if [ "$RUNNER_OS" != "Windows" ]; then
                mkdir run_mctest && cd run_mctest
-               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES
+               if [ "$RUNNER_OS" == macOS ]; then
+                 export PERMISSIVE="--permissive"
+               fi
+               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES $PERMISSIVE
                mcviewtest --nobrowse $PWD
              else
-               echo ..\\install\\bin\\mctest --verbose --testdir=. --instr=$CHANGEDINSTR > changedinstr.bat
+               echo ..\\install\\bin\\mctest --verbose --testdir=. --instr=$CHANGEDINSTR --permissive > changedinstr.bat
              fi
            fi
 

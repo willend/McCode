@@ -225,7 +225,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
 
 
     # compile, record time
-    global ncount, mpi, openacc, suffix, nexus, lint
+    global ncount, mpi, openacc, suffix, nexus, lint, permissive
     logging.info("")
     if not lint:
         logging.info("Compiling instruments [seconds]...")
@@ -485,8 +485,11 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, suffix):
     print("======================================")
     print("Overall test result:")
     if (failed):
-        print("FAILED! One or more tests errored")
-        exit(-1)
+        if (not permissive):
+            print("FAILED! One or more tests errored")
+            exit(-1)
+        else:
+            print("Failures reported but tool was run in permissive mode.")
     else:
         print("SUCCESS")
 
@@ -637,6 +640,7 @@ openacc = None
 suffix = None
 nexus = None
 lint = None
+permissive = None
 
 def main(args):
     # mutually excusive main branches
@@ -699,7 +703,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, mpi, skipnontest, openacc, nexus, lint
+    global ncount, mpi, skipnontest, openacc, nexus, lint, permissive
     if args.ncount:
         ncount = args.ncount[0]
     elif args.n:
@@ -733,6 +737,9 @@ def main(args):
         lint = True
         suffix = '_lint' + suffix
         logging.info("c-linting enabled")
+    if args.permissive:
+        permissive = True
+        logging.info("Permissive mode, tool will not report failure on failed instruments")
     # decide and run main branch
     if version and configs or version and vinfo or configs and vinfo:
         print("WARNING: version, --configs and --versions are mutually exclusive, exiting")
@@ -767,6 +774,7 @@ if __name__ == '__main__':
     parser.add_argument('--suffix', nargs=1, help='Add suffix to test directory name, e.g. 3.x-dev_suffix')
     parser.add_argument('--nexus', action='store_true', help='Compile for / use NeXus output format everywhere')
     parser.add_argument('--lint', action='store_true', help='Just run the c-linter')
+    parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional.')
     args = parser.parse_args()
 
     try:

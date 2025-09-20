@@ -81,19 +81,11 @@ phiPS = 0.1, Rad = 370.0, phirot=0.0, sc_aim=0.98, sans_aim=0.98
 
 SHARE
 %{
-double min(double A, double B) {
+double gs_min(double A, double B) {
 if (A<B) return A; else return B;
 };
 
-double max(double A, double B) {
-if (A>B) return A; else return B;
-};
-
-int imin(int A, int B) {
-if (A<B) return A; else return B;
-};
-
-int imax(int A, int B) {
+double gs_max(double A, double B) {
 if (A>B) return A; else return B;
 };
 
@@ -520,8 +512,8 @@ if (fabs(x-xx)<=xwidth && zz>=0.0 && zz<=zthick) {tt[i]=t; i++;};
 
 stop:
 
-*t0 = min(tt[0],tt[1]);
-*t1 = max(tt[0],tt[1]);
+*t0 = gs_min(tt[0],tt[1]);
+*t1 = gs_max(tt[0],tt[1]);
 
 return i;
 };
@@ -592,8 +584,8 @@ Qmin = 1e-5;    /* reasonable smallest SANS Q, should be close to zero, but fini
 Qminl= log10(1e-5);  /* logarithm of Qmin */
 l10  = log(10.0);    /* constant ln(10)   */
 
-sc_a   = max(0.01,min(0.99,sc_aim));
-sans_a = max(0.01,min(0.99,sans_aim));
+sc_a   = gs_max(0.01,gs_min(0.99,sc_aim));
+sans_a = gs_max(0.01,gs_min(0.99,sans_aim));
 
 zthick = zsapph + zsamp + zsilicon;
 
@@ -654,7 +646,7 @@ ac = pow(PI/0.1875/fabs(phiPS),1.0/3.0)*fabs(Rad);   /* units Aangstroem */
 
 Qmaxo = 1e10;
 for (li = 1; li<=20; li++) {
-Qmax = min(25.9/fabs(Rad),PI/li);
+Qmax = gs_min(25.9/fabs(Rad),PI/li);
 if (Qmax<Qmaxo) {
 Qstp = 0.1*PI/ac;
 Qno  = (int)(-floor(-Qmax/Qstp)+0.5);
@@ -1103,7 +1095,7 @@ beta[6] = lambda*5e-9*(lambda/abslensilicon     + 1.0/inclensilicon    )/PI;
 xi[7]   = 0.0;
 beta[7] = 0.0;
 
-Qmax = min(25.9/fabs(Rad),PI/lambda);  /* resonably small angle */
+Qmax = gs_min(25.9/fabs(Rad),PI/lambda);  /* resonably small angle */
 qmaxl= log10(Qmax);
 Ymax = 0.25*Qmax*Qmax/(k0*k0);
 if (Ymax>=0.9999) Ymax = 1.0;          /* avoid rounding errors */
@@ -1121,7 +1113,7 @@ Stot = Sinc2 + S1;              */
 
 if (rand01()<=sc_a) {
 
-fcut = max(Ymax,sans_a);
+fcut = gs_max(Ymax,sans_a);
 
 if (rand01()<=fcut) {
 
