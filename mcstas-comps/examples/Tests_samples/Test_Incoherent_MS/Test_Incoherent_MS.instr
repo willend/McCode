@@ -73,6 +73,7 @@ DECLARE
   double focus_w;
   double focus_h;
   int sample_case=0; // 0 = none, 1 = thin, 2 = thick
+  #pragma acc declare create(sample_case)
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
@@ -99,7 +100,8 @@ INITIALIZE
     total_scattering=1;
   } else {
     fprintf(stderr,"ERROR: Sample case %s is not supported!\n",sample);
-  } 
+  }
+  #pragma acc update device(sample_case)
   
   if (total_scattering){
     focus_w = 0;
