@@ -70,6 +70,8 @@ EXTEND %{
   if (!SCATTERED) ABSORB;
 %}
 
+/* Original instrument setup with automatic limits:
+
 COMPONENT ChopMon2 = StatisticalChopper_Monitor(
   options ="banana auto time bins=500, y bins=100",
   radius=2,
@@ -80,6 +82,22 @@ AT (0,0,0) RELATIVE PREVIOUS
 
 COMPONENT time_mon2 =  Monitor_nD(
          options = "banana, auto time,bins=1002",
+         radius=2.1, yheight = 0.11)
+	 AT (0,0,0) RELATIVE PREVIOUS */
+
+/* We now instead provide fixed-binning monitors to allow test to run
+   in stable fashion on GPU and using MPI: */
+  
+COMPONENT ChopMon2 = StatisticalChopper_Monitor(
+  options ="banana time limits=[-0.0019 0.0037] bins=500, y bins=100",
+  radius=2,
+  yheight=0.11,
+  comp="chop1",
+  restore_neutron=1)
+AT (0,0,0) RELATIVE PREVIOUS
+
+COMPONENT time_mon2 =  Monitor_nD(
+         options = "banana, time limits=[-0.0019 0.0037] bins=1002",
          radius=2.1, yheight = 0.11)
      AT (0,0,0) RELATIVE PREVIOUS
 
