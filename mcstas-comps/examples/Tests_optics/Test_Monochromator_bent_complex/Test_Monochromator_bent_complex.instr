@@ -18,14 +18,14 @@
 * %D
 * Used as a test instrument to highlight Monochromator Bent complex's capabilities
 *
-* %Example: Test_Mono_bent_complex.instr mos=60 Detector: E_PSD_mon_end_I=0.000215194
+* %Example: Test_Monochromator_bent_complexx.instr mos=60 Detector: E_PSD_mon_end_I=0.000215194
 *
 * %P
 * Par1: [unit] Parameter1 description
 *
 * %E
 *******************************************************************************/
-DEFINE INSTRUMENT template_simple(
+DEFINE INSTRUMENT Test_Monochromator_bent_complex(
     double sample_x=0.005, 
     double sample_y=0.015, 
     double L0 = 1.38000,
