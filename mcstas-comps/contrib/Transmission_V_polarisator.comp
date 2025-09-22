@@ -263,19 +263,26 @@ TRACE
   double n1, n2;
   int    bounces = 0;
   double v, L, sinW, Wlen_Si, Wlen_Fe;
-  
+
+  /* On the GPU we need Polarizer_guide_Vars pr. thread... */
+  #ifdef OPENACC
+  Polarizer_guide_Vars_type Vars_thread=Vars;
+  /* whereas on CPU we can make do with a single, shared structure: */
+  #else
+  #define Vars_thread Vars
+  #endif
   
   dt = -1; dt0 = -1;
   /* propagate to box input (with gravitation) in comp local coords */
   /* 0=Z0 side: n=(0, 0, 1) ; W = (0, 0, 0) (at z=0, guide input)*/
   B = -vz; C = -z;
 
-  ret = solve_2nd_order(&dt0, NULL, Vars.A[0], B, C);
+  ret = solve_2nd_order(&dt0, NULL, Vars_thread.A[0], B, C);
   if (ret && dt0>0)
   { 
     dt = dt0; 
     PROP_DT(dt);
-    Vars.N_reflection[8]++;
+    Vars_thread.N_reflection[8]++;
   }
   /* check if we are in the box input, else absorb */
   if(dt > 0 && fabs(x) <= w1/2 && fabs(y) <= h1/2)
@@ -299,26 +306,26 @@ TRACE
       /* starts with the exit side intersection (the last one !)*/
       /* 5=+Z side: n=(0, 0, 1) ; W = (0, 0, l) (at z=l, guide exit)*/
 
-      B = vz; C = z - Vars.wz[5];
-      ret = solve_2nd_order(&dt0, NULL, Vars.A[5], B, C);
+      B = vz; C = z - Vars_thread.wz[5];
+      ret = solve_2nd_order(&dt0, NULL, Vars_thread.A[5], B, C);
       if (ret && dt0>0)     
       { dt = dt0; side=5;  
-        Vars.n_dot_v[5] = B; }
+        Vars_thread.n_dot_v[5] = B; }
       else
-      { fprintf(stderr,"%s: warning: neutron trajectory is parallel to guide exit, and thus can not exit\n", Vars.compcurname); ABSORB; }
+      { fprintf(stderr,"%s: warning: neutron trajectory is parallel to guide exit, and thus can not exit\n", Vars_thread.compcurname); ABSORB; }
 
 
 
       /* now look if there is a previous intersection with guide sides */
 
-      side0 = Polarizer_guide_Trace(&dt, &dt0, &Vars, x, y, z, vx, vy, vz);
+      side0 = Polarizer_guide_Trace(&dt, &dt0, &Vars_thread, x, y, z, vx, vy, vz);
       if (side0) side= side0;
 
       /* only positive dt are valid */
       /* exit reflection loops if no intersection (neutron is after box) */
 
       if (side == 0 || dt < 0)
-        { fprintf(stderr,"%s: warning: neutron has entered guide, but can not exit !\n", Vars.compcurname); ABSORB; } /* should never occur */   
+        { fprintf(stderr,"%s: warning: neutron has entered guide, but can not exit !\n", Vars_thread.compcurname); ABSORB; } /* should never occur */   
 
 
       /* propagate to dt */
@@ -329,13 +336,13 @@ TRACE
       /* do reflection on speed for l/r/u/d sides */
 
       if (side == 5) /* neutron reaches end of guide: end loop and exit comp */
-        { Vars.N_reflection[side]++; SCATTER; break; }
+        { Vars_thread.N_reflection[side]++; SCATTER; break; }
 
       /* else reflection on a guide wall */
 
       if (side == 1 || side == 2 || side == 3 || side == 4)
         {
-          if(Vars.M[side] == 0 || Qc == 0)  /* walls are absorbing */
+          if(Vars_thread.M[side] == 0 || Qc == 0)  /* walls are absorbing */
           { ABSORB; }
         }
 
@@ -345,7 +352,7 @@ TRACE
 
         if (sy < 0) /* spin down */
          { 
-          q = 2*V2Q*fabs(Vars.n_dot_v[side])/Vars.norm_n[side];
+          q = 2*V2Q*fabs(Vars_thread.n_dot_v[side])/Vars_thread.norm_n[side];
           v = sqrt(vx*vx + vy*vy + vz*vz);
           L = (2*PI/V2K)/v;
           sinW=(q*L)/(4*PI);
@@ -359,11 +366,11 @@ TRACE
           selectF = rand01();
           if(selectF <= Table_Value(dwTable, q, 1))
              {
-              Vars.N_reflection[side]++;                       
-              dt0 = 2*Vars.n_dot_v[side]/Vars.norm_n2[side];
-              vx -= Vars.nx[side]*dt0;
-              vy -= Vars.ny[side]*dt0;
-              vz -= Vars.nz[side]*dt0;
+              Vars_thread.N_reflection[side]++;                       
+              dt0 = 2*Vars_thread.n_dot_v[side]/Vars_thread.norm_n2[side];
+              vx -= Vars_thread.nx[side]*dt0;
+              vy -= Vars_thread.ny[side]*dt0;
+              vz -= Vars_thread.nz[side]*dt0;
               SCATTER;
              }
 
@@ -373,7 +380,7 @@ TRACE
               p=p*exp(-1.0*((Si_cross_tot*Wlen_Si)+(Fe_cross_tot*Wlen_Fe)));
              }
 
-           Vars.N_reflection[0]++; 
+           Vars_thread.N_reflection[0]++; 
 
           }  /* sy<0 */
 
@@ -382,7 +389,7 @@ TRACE
 
         if (sy > 0) /* spin up */
          { 
-          q = 2*V2Q*fabs(Vars.n_dot_v[side])/Vars.norm_n[side];
+          q = 2*V2Q*fabs(Vars_thread.n_dot_v[side])/Vars_thread.norm_n[side];
           v = sqrt(vx*vx + vy*vy + vz*vz);
           L = (2*PI/V2K)/v;
           sinW=(q*L)/(4*PI);
@@ -396,11 +403,11 @@ TRACE
           selectF = rand01();
           if(selectF <= Table_Value(upTable, q, 1))
              {
-              Vars.N_reflection[side]++;                       
-              dt0 = 2*Vars.n_dot_v[side]/Vars.norm_n2[side];
-              vx -= Vars.nx[side]*dt0;
-              vy -= Vars.ny[side]*dt0;
-              vz -= Vars.nz[side]*dt0;
+              Vars_thread.N_reflection[side]++;                       
+              dt0 = 2*Vars_thread.n_dot_v[side]/Vars_thread.norm_n2[side];
+              vx -= Vars_thread.nx[side]*dt0;
+              vy -= Vars_thread.ny[side]*dt0;
+              vz -= Vars_thread.nz[side]*dt0;
               SCATTER;
              }
 
@@ -410,7 +417,7 @@ TRACE
               p=p*exp(-1.0*((Si_cross_tot*Wlen_Si)+(Fe_cross_tot*Wlen_Fe)));
              }
 
-           Vars.N_reflection[0]++; 
+           Vars_thread.N_reflection[0]++; 
 
           }  /* sy>0 */
 
@@ -423,25 +430,25 @@ TRACE
 
         /* change/mirror velocity: v_f = v - n.2*n.v/|n|^2 */  
 
-        Vars.N_reflection[side]++;                       /* Vars.norm_n2 > 0 was checked at INIT */
-        dt0 = 2*Vars.n_dot_v[side]/Vars.norm_n2[side];   /* 2*n.v/|n|^2 */
-        vx -= Vars.nx[side]*dt0;
-        vy -= Vars.ny[side]*dt0;
-        vz -= Vars.nz[side]*dt0;
+        Vars_thread.N_reflection[side]++;                       /* Vars_thread.norm_n2 > 0 was checked at INIT */
+        dt0 = 2*Vars_thread.n_dot_v[side]/Vars_thread.norm_n2[side];   /* 2*n.v/|n|^2 */
+        vx -= Vars_thread.nx[side]*dt0;
+        vy -= Vars_thread.ny[side]*dt0;
+        vz -= Vars_thread.nz[side]*dt0;
 
         /* compute q and modify neutron weight */
         /* scattering q=|k_i-k_f| = V2Q*|vf - v| = V2Q*2*n.v/|n| */
 
-        q = 2*V2Q*fabs(Vars.n_dot_v[side])/Vars.norm_n[side];
+        q = 2*V2Q*fabs(Vars_thread.n_dot_v[side])/Vars_thread.norm_n[side];
 
         B = R0;
 
         if(q > Qc)
         {
           if (W>0)
-            arg = (q-Vars.M[side]*Qc)/W;
+            arg = (q-Vars_thread.M[side]*Qc)/W;
           else
-            arg = (q-Vars.M[side]*Qc)*10000; /* W = 0.00001 */
+            arg = (q-Vars_thread.M[side]*Qc)*10000; /* W = 0.00001 */
 
           if(arg < 10)
           {
@@ -455,7 +462,7 @@ TRACE
          p *= B;
          SCATTER;
 
-         Vars.N_reflection[0]++;
+         Vars_thread.N_reflection[0]++;
         /*************************************************************************************************/
        }
 
