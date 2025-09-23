@@ -471,8 +471,7 @@ struct scattering_process_struct *p_scattering_array;
 
 // refraction related
 int has_refraction_info;
-double refraction_rho;
-double refraction_bc;
+double refraction_scattering_length_density; // [AA^-2]
 double refraction_Qc;
 };
 
@@ -2646,11 +2645,7 @@ int sample_box_intersect_advanced(double *t, double *nx, double *ny, double *nz,
 	Coords normal_vector_rotated;
 	Coords normal_vector;
 	
-	
-	// Rotate back to master coordinate system	
-	normal_vector_rotated = coords_set(nx[0], nx[1], nx[2]);
-    normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
-    
+	// Sort solution according to intersection time and rotate normal vectors to master coordinate system 
     switch(*num_solutions) {
     case 2:
         if (t[0] > t[1]) {
@@ -2668,7 +2663,7 @@ int sample_box_intersect_advanced(double *t, double *nx, double *ny, double *nz,
 			ny[0] = temp;
 			
 			temp = nz[1];
-			nz[1] = nx[0];
+			nz[1] = nz[0];
 			nz[0] = temp;
 			
 			// Switch surface_index
@@ -4127,7 +4122,7 @@ int sample_cylinder_intersect(double *t, double *nx, double *ny, double *nz, int
     double radius = geometry->geometry_parameters.p_cylinder_storage->cyl_radius;
     double height = geometry->geometry_parameters.p_cylinder_storage->height;
     
-    // Declare variables for the function
+    // Declare position variables for the local coordinate system
     double x_new,y_new,z_new;
     
     // Coordinate transformation
@@ -4137,69 +4132,77 @@ int sample_cylinder_intersect(double *t, double *nx, double *ny, double *nz, int
     
     Coords coordinates = coords_set(x_new,y_new,z_new);
     Coords rotated_coordinates;
-    // printf("Cords coordinates = (%f,%f,%f)\n",coordinates.x,coordinates.y,coordinates.z);
-    
-    // debug
-    // Rotation rotation_matrix_debug[3][3];
-    // rot_set_rotation(rotation_matrix_debug,-1.0*geometry->rotation.x,-1.0*geometry->rotation.y,-1.0*geometry->rotation.z);
-    // rot_transpose(geometry->rotation_matrix,rotation_matrix_debug);
 
     // Rotate the position of the neutron around the center of the cylinder
     rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,coordinates);
-    // rotated_coordinates = rot_apply(rotation_matrix_debug,coordinates);
-    //     printf("Cords rotated_coordinates = (%f,%f,%f)\n",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z);
     
     Coords velocity = coords_set(v[0],v[1],v[2]);
     Coords rotated_velocity;
-    //     printf("Cords velocity = (%f,%f,%f)\n",velocity.x,velocity.y,velocity.z);
     
     // Rotate the position of the neutron around the center of the cylinder
     rotated_velocity = rot_apply(geometry->transpose_rotation_matrix,velocity);
-    // rotated_velocity = rot_apply(rotation_matrix_debug,velocity);
-    //     printf("Cords rotated_velocity = (%f,%f,%f)\n",rotated_velocity.x,rotated_velocity.y,rotated_velocity.z);
     
-    
-    
-    // Cases where the velocity is parallel with the cylinder axis have given problems, and is checked for explicitly
-    if (sqrt(rotated_velocity.x*rotated_velocity.x+rotated_velocity.z*rotated_velocity.z)/fabs(rotated_velocity.y) < 0.00001) {
-      // The velocity is parallel with the cylinder axis. Either there is two solutions
-      if (sqrt(rotated_coordinates.x*rotated_coordinates.x+rotated_coordinates.z*rotated_coordinates.z) > radius) {
-        *num_solutions = 0;
-        return 0;
-      } else {
-        *num_solutions = 2;
-        t[0] = (0.5*height - rotated_coordinates.y)/rotated_velocity.y;
-        t[1] = (-0.5*height - rotated_coordinates.y)/rotated_velocity.y;
-        return 1;
-      }
-    }
-    
-    int output;
-    // Run McStas built in sphere intersect funtion (sphere centered around origin)
-    if ((output = cylinder_intersect(&t[0],&t[1],
-	                                 rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,
-	                                 rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,radius,height)) == 0) {
-        *num_solutions = 0;t[0]=-1;t[1]=-1;
+	int output;    
+	// Cases where the velocity is parallel with the cylinder axis have given problems, and is checked for explicitly
+	if (sqrt(rotated_velocity.x*rotated_velocity.x+rotated_velocity.z*rotated_velocity.z)/fabs(rotated_velocity.y) < 0.00001) {
+	  // The velocity is parallel with the cylinder axis. Either there are no solutions or two solutions
+	  if (sqrt(rotated_coordinates.x*rotated_coordinates.x+rotated_coordinates.z*rotated_coordinates.z) > radius) {
+	    *num_solutions = 0;
+	    return 0;
+	  } else {
+	    *num_solutions = 2;
+	    t[0] = (0.5*height - rotated_coordinates.y)/rotated_velocity.y;
+		surface_index[0] = 1; // index indicating top
+		
+	    t[1] = (-0.5*height - rotated_coordinates.y)/rotated_velocity.y;
+		surface_index[1] = 2; // index indicating bottom
+		
+		// sort solutions
+		if (t[0] > t[1]) {
+		  double d_temp;
+		  
+		  d_temp = t[0];
+		  t[0] = t[1];
+		  t[1] = d_temp;
+		  
+		  int i_temp;
+		  
+		  i_temp = surface_index[0];
+		  surface_index[0] = surface_index[1];
+		  surface_index[1] = i_temp;
+		}
+	  }
+	} else {
+	  // velocity not parallel to cylinder axis, call standard mcstas cylinder intersect 
+
+	  // Run McStas built in sphere intersect funtion (sphere centered around origin)
+	  if ((output = cylinder_intersect(&t[0],&t[1],
+	                                   rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,
+	                                   rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,radius,height)) == 0) {
+	      *num_solutions = 0;t[0]=-1;t[1]=-1;
+	  }
+	  else if (t[1] != 0) *num_solutions = 2;
+	  else {*num_solutions = 1; t[1]=-1;}
+	
+	  // decode output value
+	  // Check the bitmask for entry and exit
+	  if (*num_solutions > 0) {
+	    int entry_index = 0;
+	    if (output & 2) entry_index = 1; // Entry intersects top cap
+	    if (output & 4) entry_index = 2; // Entry intersects bottom cap
+	    surface_index[0] = entry_index;
+	  }
+	
+	  if (*num_solutions > 1) {
+	    int exit_index = 0;		
+	    if (output & 8) exit_index = 1;  // Exit intersects top cap
+	    if (output & 16) exit_index = 2; // Exit intersects bottom cap
+	    surface_index[1] = exit_index;
+	  }
 	}
-    else if (t[1] != 0) *num_solutions = 2;
-    else {*num_solutions = 1; t[1]=-1;}
+    
 	
-	// decode output value
-    // Check the bitmask for entry and exit
-	if (*num_solutions > 0) {
-	  int entry_index = 0;
-      if (output & 2) entry_index = 1; // Entry intersects top cap
-      if (output & 4) entry_index = 2; // Entry intersects bottom cap
-	  surface_index[0] = entry_index;
-    }
-	
-	if (*num_solutions > 1) {
-	  int exit_index = 0;		
-      if (output & 8) exit_index = 1;  // Exit intersects top cap
-      if (output & 16) exit_index = 2; // Exit intersects bottom cap
-	  surface_index[1] = exit_index;
-	}
-	
+	// Calculate normal vectors from surface index and cylinder geometry
     int index;
     double x, y, z, dt;
     Coords normal_vector_rotated;
@@ -4238,7 +4241,7 @@ int sample_cylinder_intersect(double *t, double *nx, double *ny, double *nz, int
 };
 
 int r_within_cylinder(Coords pos,struct geometry_struct *geometry) {
-// Unpack parameters
+	// Unpack parameters
     double radius = geometry->geometry_parameters.p_cylinder_storage->cyl_radius;
     double height = geometry->geometry_parameters.p_cylinder_storage->height;
 

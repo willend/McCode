@@ -37,6 +37,7 @@
 * refraction_sigma_coh: [barn]     coherent cross section of refracting material. Use negative value to indicate a negative coherent scattering length
 * refraction_density: [g/cm3]      density of the refracting material. density < 0 means the material is outside/before the shape.
 * refraction_weight: [g/mol]       molar mass of the refracting material
+* refraction_SLD: [AA^-2]       scattering length density of material (overwrites sigma_coh, density and weight)
 * init:           [string] Name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
@@ -53,7 +54,10 @@
 
 DEFINE COMPONENT Union_make_material
 
-SETTING PARAMETERS(string process_string="NULL", my_absorption,absorber=0, refraction_density=0, refraction_sigma_coh=0, refraction_weight=0, string init="init")
+SETTING PARAMETERS(string process_string="NULL", my_absorption,absorber=0, 
+refraction_density=0, refraction_sigma_coh=0, refraction_weight=0, 
+refraction_SLD=-1500,
+string init="init")
 
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
@@ -237,20 +241,30 @@ struct pointer_to_global_process_list *global_process_list = COMP_GETPAR3(Union_
   
   this_material.has_refraction_info = 0;
   if (refraction_density != 0 || refraction_weight != 0 || refraction_sigma_coh != 0) {
+	  
+	  double refraction_rho, refraction_bc;
       if (refraction_density==0 || refraction_weight<=0)
         exit(printf("Union_make_material: %s: FATAL: invalid material density or molar weight: density=%g weight=%g\n",
           NAME_CURRENT_COMP, refraction_density, refraction_weight));
-      this_material.refraction_rho = fabs(refraction_density)*6.02214179*1e23*1e-24/refraction_weight; // per at/Angs^3
+
+	  refraction_rho = fabs(refraction_density)*6.02214179*1e23*1e-24/refraction_weight; // per at/Angs^3  
         
       if (refraction_sigma_coh==0)
         exit(printf("Refractor: %s: FATAL: invalid material coherent cross section: sigma_coh=%g\n",
           NAME_CURRENT_COMP, refraction_sigma_coh));
-      this_material.refraction_bc = sqrt(fabs(refraction_sigma_coh)*100/4/PI)*1e-5;         // bound coherent scattering length
-      if (refraction_sigma_coh<0) this_material.refraction_bc *= -1;
-    
-      this_material.refraction_Qc = 4*sqrt(PI*this_material.refraction_rho*fabs(this_material.refraction_bc));
-    
+
+	  refraction_bc = sqrt(fabs(refraction_sigma_coh)*100/4/PI)*1e-5;         // bound coherent scattering length
+	  if (refraction_sigma_coh<0) refraction_bc *= -1.0;
+	  
+	  this_material.refraction_scattering_length_density = refraction_rho*refraction_bc;
+	  this_material.refraction_Qc = 4*sqrt(PI*refraction_rho*fabs(refraction_bc));
       this_material.has_refraction_info = 1;
+  }
+  
+  if (refraction_SLD > -1499.0) { // refraction_SLD can be negative, zero or positive, it can however not be this negative, so this is used as input check
+	  this_material.refraction_scattering_length_density = refraction_SLD;  	
+	  this_material.refraction_Qc = 4.0*sqrt(PI*fabs(refraction_SLD));  
+	  this_material.has_refraction_info = 1;
   }
   
   // packing the information into the global_material_element, which is then included in the global_material_list.

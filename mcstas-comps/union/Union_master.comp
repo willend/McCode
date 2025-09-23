@@ -2069,7 +2069,7 @@ TRACE
 		      }
 			  
 			#ifdef Union_trace_verbal_setting
-			  	printf(" Creating entering surface stack %d \n",current_volume);
+			  	printf(" Created leaving surface stack for volume %d with %d effects \n",previous_volume, n_leaving);
 			#endif
 			  
 			  if (current_volume == 0) {
@@ -2091,7 +2091,7 @@ TRACE
 			  int n_total = n_leaving + n_entering;
 			  
 			#ifdef Union_trace_verbal_setting
-			  	printf(" Combining into one surface stack \n");
+			  	printf(" Created entering surface stack for volume %d with %d effects. Combining into one surface stack \n",current_volume, n_entering);
 			#endif
 			  
 			  // Make combined list, leaving bottom to top followed by entering top to bottom
@@ -2128,7 +2128,9 @@ TRACE
 			  surface_wavevector_before[2] = surface_wavevector[2];
 			  
 		      #ifdef Union_trace_verbal_setting
+			    double dot_product_before = nx*vx + ny*vy + nz*vz;
 			  	printf(" Entering surface stack loop \n");
+			  	printf("  - normal dot v  = %lf \n", dot_product_before);
  			  #endif
 			  
 			  while (1) {
@@ -2204,9 +2206,15 @@ TRACE
 				vx = surface_wavevector[0]*K2V;
 				vy = surface_wavevector[1]*K2V;
 				vz = surface_wavevector[2]*K2V;			  			  
-				#ifdef Union_trace_verbal_setting
-					printf(" ray direction updtaed by surface stack \n", continues);
+                #ifdef Union_trace_verbal_setting
+					printf(" ray direction updated by surface stack \n");
 					printf("r = (%f,%f,%f) v = (%f,%f,%f) \n", x, y, z, vx, vy, vz);
+  				    printf("  - normal dot v  = %lf \n", nx*vx + ny*vy + nz*vz);
+					if (surface_transverse_index < 0) printf("Should have different sign \n");										
+					if (surface_transverse_index >= n_total) printf("Should have same sign \n");
+					if (dot_product_before * (nx*vx + ny*vy + nz*vz) < 0) {
+					    printf("Sign did change \n");
+					} else printf("Sign did not change \n");
 				#endif
 
 			    // Report new velocity back, 
@@ -2234,6 +2242,9 @@ TRACE
               #ifdef Union_trace_verbal_setting
                 printf("Entering refraction system \n");
                 printf("r = (%f,%f,%f) v = (%f,%f,%f) \n", x, y, z, vx, vy, vz);
+				printf("n = (%f,%f,%f)\n", nx, ny, nz);				
+				dot_product_before = nx*vx + ny*vy + nz*vz;
+				printf("normal dot v  = %lf \n", dot_product_before);
 				printf("min_volume = %d, min_solution = %d\n", min_volume, min_solution);
               #endif
             
@@ -2253,7 +2264,7 @@ TRACE
 				    if (Volumes[previous_volume]->p_physics->is_vacuum == 1) {
 					  n1 = 1.0;					  
 			        } else {
-                      n1 = sqrt(1.0-(lambda*lambda*Volumes[previous_volume]->p_physics->refraction_rho*Volumes[previous_volume]->p_physics->refraction_bc/PI));
+                      n1 = sqrt(1.0-(lambda*lambda*Volumes[previous_volume]->p_physics->refraction_scattering_length_density/PI));
 			        }
                 
                     // If the intersection is found with this volume, it is leaving, and the normal needs to be flipped
@@ -2275,7 +2286,7 @@ TRACE
 				    if (Volumes[current_volume]->p_physics->is_vacuum == 1) {					  
 					  n2 = 1.0;
 				    } else {
-					  n2 = sqrt(1.0-(lambda*lambda*Volumes[current_volume]->p_physics->refraction_rho*Volumes[current_volume]->p_physics->refraction_bc/PI));
+					  n2 = sqrt(1.0-(lambda*lambda*Volumes[current_volume]->p_physics->refraction_scattering_length_density/PI));
 			        }
 				  }
               }
@@ -2374,14 +2385,14 @@ TRACE
                   Coords V_reflect = coords_scale(I_reflect, v_length);
                 
                   // compute refracted angle theta2...
-                  double sqr_cos_theta2 = 1-(n1/n2)*(n1/n2)*(1.0-cos_theta1*cos_theta1);
+                  double sqr_cos_theta2 = 1.0-(n1/n2)*(n1/n2)*(1.0-cos_theta1*cos_theta1);
                 
                   // now choose which one to use, and compute outgoing velocity
                   if (0 < sqr_cos_theta2 && sqr_cos_theta2 < 1.0) {
                       // refraction is possible
                     
                       // theta2: refracted angle to the surface normal
-                      double cos_theta2= sqrt(sqr_cos_theta2);
+                      double cos_theta2 = sqrt(sqr_cos_theta2);
                     
                       // select reflection (or refraction) from Monte-Carlo choice with probability R
                       // in this case we expect R to be small (q > Qc)
@@ -2392,16 +2403,19 @@ TRACE
                           coords_get(V_reflect, &vx, &vy, &vz);
                         
                           current_volume = previous_volume; // Reflected, stays in current volume
-						  
-							#ifdef Union_trace_verbal_setting
-						  		printf(" Refraction system : ray reflected, (branch 1) going back to volume %d\n", previous_volume);
-							#endif
                         
                           // Update velocity in all ways used in master
                           v[0] = vx; v[1] = vy; v[2] = vz;
                           v_length = sqrt(vx*vx + vy*vy + vz*vz);
                           k_new[0] = V2K*vx; k_new[1] = V2K*vy; k_new[2] = V2K*vz;
                           ray_velocity = coords_set(vx, vy, vz);
+						  
+						  #ifdef Union_trace_verbal_setting
+						  	printf(" Refraction system : ray reflected, (branch 1) going back to volume %d\n", previous_volume);
+	
+							printf(" normal dot v  = %lf \n", nx*vx + ny*vy + nz*vz);
+							if ((nx*vx + ny*vy + nz*vz)*dot_product_before > 0) printf(" SIGN SHOULD HAVE CHANGED BUT DIDN'T \n");
+						  #endif
 						  
                           ignore_closest = min_volume;
 					      ignore_surface_index = intersection_time_table.surface_index[min_volume][min_solution];
@@ -2435,16 +2449,19 @@ TRACE
                         
                           coords_get(V_refract, &vx, &vy, &vz);
                         
-                          #ifdef Union_trace_verbal_setting
-                          	printf(" Refraction system : ray refracted, continues to to volume %d\n", current_volume);
-                          #endif
-
                         
                           // Update velocity in all ways used in master
                           v[0] = vx; v[1] = vy; v[2] = vz;
                           v_length = sqrt(vx*vx + vy*vy + vz*vz);
                           k_new[0] = V2K*vx; k_new[1] = V2K*vy; k_new[2] = V2K*vz;
                           ray_velocity = coords_set(vx, vy, vz);
+						  
+						  #ifdef Union_trace_verbal_setting
+						  	printf(" Refraction system : ray refracted, continues to to volume %d\n", current_volume);
+
+							printf(" normal dot v  = %lf theta2 = %lf \n", nx*vx + ny*vy + nz*vz, theta2);
+							if ((nx*vx + ny*vy + nz*vz)*dot_product_before < 0) printf(" SIGN SHOULD NOT HAVE CHANGED BUT DID \n");
+						  #endif
                         
                           // Reflected can ignore some intersections in next geometry iteration
                           ignore_closest = min_volume; // Ignore closest intersection in next geometry iteration
@@ -2479,21 +2496,20 @@ TRACE
                       if (0 < reflectivity && reflectivity < 1) p *= reflectivity; // should be R0
                       coords_get(V_reflect, &vx, &vy, &vz);
                     
-                      current_volume = previous_volume; // Reflected, stays in current volume
-					  
-					  #ifdef Union_trace_verbal_setting
-					  	printf(" Refraction system : ray reflected (branch 3), going back to volume %d\n", previous_volume);
-					  #endif					  
+                      current_volume = previous_volume; // Reflected, stays in current volume				  
                     
                       // Update velocity in all ways used in master
                       v[0] = vx; v[1] = vy; v[2] = vz;
                       v_length = sqrt(vx*vx + vy*vy + vz*vz);
                       k_new[0] = V2K*vx; k_new[1] = V2K*vy; k_new[2] = V2K*vz;
                       ray_velocity = coords_set(vx, vy, vz);
+					  
+					  #ifdef Union_trace_verbal_setting
+					  	printf(" Refraction system : ray reflected (branch 3), going back to volume %d\n", previous_volume);
+						printf(" normal dot v  = %lf \n", nx*vx + ny*vy + nz*vz);
+						if ((nx*vx + ny*vy + nz*vz)*dot_product_before > 0) printf(" SIGN SHOULD HAVE CHANGED BUT DIDN'T \n");
+					  #endif
                     
-                      //r[0] = x; r[1] = y; r[2] = z;
-                      //ray_position = coords_set(x,y,z);
-
                       // Reflected can ignore some intersections in next geometry iteration
 					  ignore_closest = min_volume;
 					  ignore_surface_index = intersection_time_table.surface_index[min_volume][min_solution];                    
@@ -2504,18 +2520,6 @@ TRACE
                       r_start[0] = x; r_start[1] = y; r_start[2] = z;
                       time_propagated_without_scattering = 0.0;
 					  
-					  /*
-					  if (vx*nx + vy*ny + nz*vz < 0) {
-						  printf("Negative dot product betwen v and n after reflection, problem? value = %lf\n", vx*nx + vy*ny + nz*vz);
-						  // ABSORB;						  
-					  }
-					  */
-					  
-                      /*
-                       #ifndef OPENACC
-                       strcpy(event, "reflect");
-                       #endif
-                       */
                   }
               }
 			  
@@ -2529,6 +2533,7 @@ TRACE
 		  #ifdef Union_trace_verbal_setting
 			  	printf("After refraction system \n");
 				printf("r = (%f,%f,%f) v = (%f,%f,%f) \n", x, y, z, vx, vy, vz);
+				printf("  - normal_dot_v = %lf \n", nx*vx + ny*vy + nz*vz);				
 				printf("CURRENT_VOLUME = %d \n", current_volume);				
 		  #endif
 				
