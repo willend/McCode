@@ -28,8 +28,8 @@
     "XRLFLAGS": "-Wl,-rpath,GETPATH(miniconda3/lib) -LGETPATH(miniconda3/lib) -lxrl -IGETPATH(miniconda3/include)",
     "CC": "gcc",
     "OACC": "nvc",
-    "MPICC": "/opt/nvidia/hpc_sdk/Linux_x86_64/25.7/comm_libs/12.9/openmpi4/openmpi-4.1.5/bin/mpicc",
-    "MPIRUN": "/opt/nvidia/hpc_sdk/Linux_x86_64/25.7/comm_libs/12.9/openmpi4/openmpi-4.1.5/bin/mpirun",
+    "MPICC": "mpicc",
+    "MPIRUN": "mpirun",
     "MPINODES": "8"
   },
   "platform": {
