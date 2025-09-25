@@ -477,14 +477,20 @@ jobs:
            export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
            export NUMCHANGEDCOMPS=`git diff --name-only HEAD HEAD~1|grep \.comp\$ | grep mcstas-comps | wc -l | xargs echo`
            export COMPILIST=""
+           export RUNALL="NO"
            if [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             for comp in $CHANGEDCOMPS;
-             do
-               echo Finding instruments matching component $comp
-               MATCH=`find mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | xargs -n1 basename | sed s/\.instr//g | xargs echo`
-               export COMPILIST=`echo $COMPILIST $MATCH`
-             done
+             if [ "$NUMCHANGEDCOMPS" -lt "10" ];
+             then
+               for comp in $CHANGEDCOMPS;
+               do
+                 echo Finding instruments matching component $comp
+                 MATCH=`find mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | xargs -n1 basename | sed s/\.instr//g | xargs echo`
+                 export COMPILIST=`echo $COMPILIST $MATCH`
+               done
+             else
+               export RUNALL="YES"
+             fi
            fi
            export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo`
            export CHANGEDINSTR=`echo $CHANGEDINSTR $COMPILIST | sort | uniq | sed s/\ /,/g`
@@ -494,18 +500,28 @@ jobs:
            echo $CHANGEDINSTR
            echo ----
            cd -
+           if [ "$NUMCHANGEDINSTR" -gt "10" ];
+           then
+             export RUNALL="YES"
+           fi
            export PERMISSIVE=" "
            if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
            then
+             if [ "$RUNALL" == "NO" ];
+             then
+               export SCOPE="--instr=$CHANGEDINSTR"
+             else
+               export SCOPE=" "
+             fi
              if [ "$RUNNER_OS" != "Windows" ]; then
                mkdir run_mctest && cd run_mctest
                if [ "$RUNNER_OS" == macOS ]; then
                  export PERMISSIVE="--permissive"
                fi
-               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES $PERMISSIVE
+               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
                mcviewtest --nobrowse $PWD
              else
-               echo ..\\install\\bin\\mctest --verbose --testdir=. --instr=$CHANGEDINSTR --permissive > changedinstr.bat
+               echo ..\\install\\bin\\mctest --verbose --testdir=. $SCOPE --permissive > changedinstr.bat
              fi
            fi
 
