@@ -198,6 +198,7 @@ DECLARE
   int *pre_allocated2;
   int *pre_allocated3;
   Coords ray_position;
+
   Coords ray_velocity;
   Coords ray_velocity_rotated;
   Coords ray_velocity_final;
@@ -274,6 +275,7 @@ DECLARE
   
   // Focusing
   struct focus_data_struct temporary_focus_data;
+  struct focus_data_struct *this_focus_data;
   int focus_data_index;
   
   // Record absorption
@@ -603,6 +605,9 @@ exit(-1);
         Volumes[volume_index]->geometry.geometry_parameters = Volumes[volume_index]->geometry.copy_geometry_parameters(&global_geometry_list_master->elements[geometry_list_index].Volume->geometry.geometry_parameters);
           
       }
+	  
+	  // Update focusing absolute_rotation before running through processes, then this will be the baseline for nonisotropic processes
+	  rot_copy(Volumes[volume_index]->geometry.focus_data_array.elements[0].absolute_rotation, ROT_A_CURRENT_COMP);
       
       // This section identifies the different non isotropic processes in the current volume and give them appropriate transformation matrices
       // Identify the number of non isotropic processes in a material (this code can be safely executed for the same material many times)
@@ -636,17 +641,21 @@ exit(-1);
             temporary_focus_data = Volumes[volume_index]->geometry.focus_data_array.elements[0];
             
             // Correct for process rotation
+			// Aim
             temporary_focus_data.Aim = rot_apply(Volumes[volume_index]->p_physics->p_scattering_array[iterator].rotation_matrix,temporary_focus_data.Aim);
+			// Absolute rotation
+			rot_mul(Volumes[volume_index]->p_physics->p_scattering_array[iterator].rotation_matrix, temporary_focus_data.absolute_rotation, temp_rotation_matrix);
+			rot_copy(temporary_focus_data.absolute_rotation, temp_rotation_matrix);
             
             // Add element to focus_array_indices
             // focus_array_indices refers to the correct element in focus_data_array for this volume/process combination
             // focus_data_array[0] is the isotropic version in all cases, so the first non_isotropic goes to focus_data_array[1]
             //  and so forth. When a process is isotropic, this array is appended with a zero.
             // The focus_array_indices maps process numbers to the correct focus_data_array index.
-            add_element_to_int_list(&Volumes[volume_index]->geometry.focus_array_indices,non_isotropic_found+1);
+            add_element_to_int_list(&Volumes[volume_index]->geometry.focus_array_indices, non_isotropic_found+1);
             
             // Add the new focus_data element to this volumes focus_data_array.
-            add_element_to_focus_data_array(&Volumes[volume_index]->geometry.focus_data_array,temporary_focus_data);
+            add_element_to_focus_data_array(&Volumes[volume_index]->geometry.focus_data_array, temporary_focus_data);
             
             // Quick error check to see the length is correct which indirectly confirms the indices are correct
             if (Volumes[volume_index]->geometry.focus_data_array.num_elements != non_isotropic_found + 2) {
@@ -704,14 +713,9 @@ exit(-1);
       Volumes[volume_index]->geometry.center.x = rotated_position.x;
       Volumes[volume_index]->geometry.center.y = rotated_position.y;
       Volumes[volume_index]->geometry.center.z = rotated_position.z;
-      
-      // The focus_data information need to be updated as well
-      rot_mul(ROT_A_CURRENT_COMP,Volumes[volume_index]->geometry.focus_data_array.elements[0].absolute_rotation,temp_rotation_matrix);
-      // Copy the result back to the volumes structure
-      rot_copy(Volumes[volume_index]->geometry.focus_data_array.elements[0].absolute_rotation,temp_rotation_matrix);
-      
+            
       // Use same rotation on the aim vector of the isotropic focus_data element
-      Volumes[volume_index]->geometry.focus_data_array.elements[0].Aim = rot_apply(Volumes[volume_index]->geometry.rotation_matrix,Volumes[volume_index]->geometry.focus_data_array.elements[0].Aim);
+      Volumes[volume_index]->geometry.focus_data_array.elements[0].Aim = rot_apply(Volumes[volume_index]->geometry.rotation_matrix, Volumes[volume_index]->geometry.focus_data_array.elements[0].Aim);
       
       // To allocate enough memory to hold information on all processes, the maximum of these is updated if this volume has more
       if (Volumes[volume_index]->p_physics->number_of_processes > max_number_of_processes)
@@ -1438,7 +1442,15 @@ TRACE
           } else {
             // Since there is a non-zero number of processes in this material, all the scattering cross section for these are calculated
             my_sum = 0; k[0] = V2K*vx; k[1] = V2K*vy; k[2] = V2K*vz; p_my_trace = my_trace; wavevector = coords_set(k[0],k[1],k[2]);
-            //for (process_start = process = Volumes[current_volume]->p_physics->p_scattering_array;process - process_start < Volumes[current_volume]->p_physics->number_of_processes;process++) {
+			
+			// update focus data for this ray
+			int f_index;
+			Coords ray_position_geometry;
+			for (f_index=0; f_index < Volumes[current_volume]->geometry.focus_data_array.num_elements; f_index++) {
+			  this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[f_index];
+			  this_focus_data->RayAim = this_focus_data->Aim; // Temporary solution, cross section should not depend on focusing
+			}
+			
             int p_index;
             for (p_index=0; p_index < Volumes[current_volume]->p_physics->number_of_processes; p_index++ ){ // GPU
             
@@ -1452,14 +1464,15 @@ TRACE
                 k_rotated[0] = k[0]; k_rotated[1] = k[1]; k_rotated[2] = k[2];
               }
               
-              // Find correct focus_data_array index for this volume/process
-              focus_data_index = Volumes[current_volume]->geometry.focus_array_indices.elements[p_index];
-              
               // Call the probability for scattering function assighed to this specific procress (the process pointer is updated in the for loop)
               process = &Volumes[current_volume]->p_physics->p_scattering_array[p_index]; // GPU Allowed
+			  
+              // Find correct focus_data_array index for this volume/process
+              focus_data_index = Volumes[current_volume]->geometry.focus_array_indices.elements[p_index];
+			  this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[focus_data_index];
               
               int physics_output;
-              physics_output = physics_my(process->eProcess, p_my_trace, k_rotated, process->data_transfer,&Volumes[current_volume]->geometry.focus_data_array.elements[focus_data_index], _particle);
+              physics_output = physics_my(process->eProcess, p_my_trace, k_rotated, process->data_transfer, this_focus_data, _particle);
               
               my_sum += *p_my_trace;
               #ifdef Union_trace_verbal_setting
@@ -1703,8 +1716,12 @@ TRACE
             p_old = p;
             k_old[0] = k[0];k_old[1] = k[1];k_old[2] = k[2];
             
-            // Find correct focus_data_array index for this volume/process
+            // Find correct focus_data_array index for this volume/process and correct for ray position
             focus_data_index = Volumes[current_volume]->geometry.focus_array_indices.elements[selected_process];
+			this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[focus_data_index];
+			
+		    Coords ray_position_geometry = coords_sub(ray_position, Volumes[current_volume]->geometry.center);  // ray_position relative to geometry center			  
+		    this_focus_data->RayAim = coords_sub(this_focus_data->Aim, ray_position_geometry); // Aim vector for this ray
         
             // Rotation to local process coordinate system (for non isotropic processes)
             if (Volumes[current_volume]->p_physics->p_scattering_array[selected_process].non_isotropic_rot_index != -1) {
@@ -1721,7 +1738,7 @@ TRACE
             
             // I may replace a intial and final k with one instance that serves as both input and output
             process = &Volumes[current_volume]->p_physics->p_scattering_array[selected_process]; // CPU Only
-            if (0 == physics_scattering(process->eProcess, k_new, k, &p, process->data_transfer, &Volumes[current_volume]->geometry.focus_data_array.elements[0], _particle)) {
+            if (0 == physics_scattering(process->eProcess, k_new, k, &p, process->data_transfer, this_focus_data, _particle)) {
               /*
               // PowderN and Single_crystal requires the option of absorbing the neutron, which is weird. If there is a scattering probability, there should be a new direction.
               // It can arise from need to simplify sampling process and end up in cases where weight factor is 0, and the ray should be absorbed in these cases
