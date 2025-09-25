@@ -105,7 +105,8 @@ double z;
 };
 
 struct focus_data_struct {
-Coords Aim;
+Coords RayAim; // Vector from ray position (within geometry) to target
+Coords Aim; // Vector from geometry to target
 double angular_focus_width;
 double angular_focus_height;
 double spatial_focus_width;
@@ -819,8 +820,8 @@ void add_element_to_int_list(struct pointer_to_1d_int_list *list,int value) {
 void add_element_to_focus_data_array(struct focus_data_array_struct *focus_data_array,struct focus_data_struct focus_data) {
     if (focus_data_array->num_elements == 0) {
       focus_data_array->num_elements++;
-      focus_data_array-> elements = malloc(focus_data_array->num_elements*sizeof(struct focus_data_struct));
-      focus_data_array-> elements[0] = focus_data;
+      focus_data_array->elements = malloc(focus_data_array->num_elements*sizeof(struct focus_data_struct));
+      focus_data_array->elements[0] = focus_data;
     } else {
       struct focus_data_struct *temp=malloc(focus_data_array->num_elements*sizeof(struct focus_data_struct));
       int iterate;
@@ -8738,13 +8739,13 @@ void generate_lists(struct Volume_struct **Volumes, struct starting_lists_struct
 
 void randvec_target_rect_angular_union(Coords *v_out,double *solid_angle_out, struct focus_data_struct *focus_data) {
     // Calls the standard McStas randvec_target_rect_angular focusing function, but is with the new data input format.
-    randvec_target_rect_angular(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->Aim.x,focus_data->Aim.y, focus_data->Aim.z, focus_data->angular_focus_width, focus_data->angular_focus_height,focus_data->absolute_rotation);
+    randvec_target_rect_angular(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->RayAim.x,focus_data->RayAim.y, focus_data->RayAim.z, focus_data->angular_focus_width, focus_data->angular_focus_height,focus_data->absolute_rotation);
     //randvec_target_rect_angular(&vx, &vy, &vz, &solid_angle,aim_x, aim_y, aim_z, VarsInc.aw, VarsInc.ah, ROT_A_CURRENT_COMP);
 };
 
 void randvec_target_rect_union(Coords *v_out,double *solid_angle_out, struct focus_data_struct *focus_data) {
 // Calls the standard McStas randvec_target_rect focusing function, but is with the new data input format.
-    randvec_target_rect(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->Aim.x,focus_data->Aim.y, focus_data->Aim.z, focus_data->spatial_focus_width, focus_data->spatial_focus_height,focus_data->absolute_rotation);
+    randvec_target_rect(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->RayAim.x,focus_data->RayAim.y, focus_data->RayAim.z, focus_data->spatial_focus_width, focus_data->spatial_focus_height,focus_data->absolute_rotation);
     // randvec_target_rect(&vx, &vy, &vz, &solid_angle,aim_x, aim_y, aim_z, VarsInc.xw, VarsInc.yh, ROT_A_CURRENT_COMP);
 };
 
@@ -8755,7 +8756,7 @@ void randvec_target_circle_union(Coords *v_out,double *solid_angle_out, struct f
     //print_position(focus_data->Aim,"Aim vector input for randvec_target_circle");
     //printf("Radius input %f\n",focus_data->spatial_focus_radius);
 
-    randvec_target_circle(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->Aim.x,focus_data->Aim.y, focus_data->Aim.z, focus_data->spatial_focus_radius);
+    randvec_target_circle(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->RayAim.x,focus_data->RayAim.y, focus_data->RayAim.z, focus_data->spatial_focus_radius);
     //randvec_target_circle(&vx, &vy, &vz, &solid_angle, aim_x, aim_y, aim_z, focus_r);
 };
 
@@ -8816,8 +8817,7 @@ void focus_initialize(struct geometry_struct *geometry, Coords POS_A_TARGET, Coo
   {
     Coords ToTarget;
     //ToTarget = coords_sub(POS_A_COMP_INDEX(INDEX_CURRENT_COMP+target_index),POS_A_CURRENT_COMP);
-    ToTarget = coords_sub(POS_A_TARGET,POS_A_CURRENT);
-    //ToTarget = rot_apply(ROT_A_CURRENT_COMP, ToTarget);
+    ToTarget = coords_sub(POS_A_TARGET, POS_A_CURRENT);
     ToTarget = rot_apply(ROT_A_CURRENT, ToTarget);
     coords_get(ToTarget, &focus_data.Aim.x, &focus_data.Aim.y, &focus_data.Aim.z);
   }
