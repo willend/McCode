@@ -8,10 +8,9 @@
 * Component: TOF_PSD_monitor_q
 *
 * %I
-* Based on:   Henrich Frielinghaus, FZJuelich
+* Written by:  Henrich Frielinghaus, FZJuelich
 * Date:       Apr 2013
-* Origin:     xxx
-* Modified by:   xxx
+* Origin:     FZJ
 *
 * Multiple TOF detectors for SANS instrument.
 * The component is to be placed at the sample position.
