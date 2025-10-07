@@ -5,10 +5,12 @@
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Component: SANS_benchmark
+* Component: SANS_benchmark2
 *
 * %I
-* Henrich Frielinghaus
+* Written by:  Henrich Frielinghaus, FZJuelich
+* Date:       Apr 2013
+* Origin:     FZJ
 *
 * Several benchmark SANS samples are defined in this routine. The first ones are analytically defined. Higher numbers are forseen for tables.
 * In principle, the exact definitions can be changed freely - inside this code.
