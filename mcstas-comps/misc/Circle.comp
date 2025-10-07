@@ -24,8 +24,8 @@
 * %P
 * INPUT PARAMETERS:
 * radius: [m]      Outer radius of geometry in (x,z) plane
-* xwidth: [m]      Horiz. dimension of geometry as a width
-* yheight: [m]     Vert. 
+* xwidth: [m]      Horiz. dimension of geometry
+* yheight: [m]     Vert. dimension of geometry
 * zdepth: [m]      Depth dimension of geometry
 *
 * %L
