@@ -66,7 +66,9 @@
 * order_total:     [1] Only log rays that have scattered n times, -1 for all orders
 * order_volume:    [1] Only log rays that have scattered n times in the same geometry, -1 for all orders
 * logger_conditional_extend_index: [1] If a conditional is used with this logger, the result of each conditional calculation can be made available in extend as a array called "logger_conditional_extend", and one would then access logger_conditional_extend[n] if logger_conditional_extend_index is set to n
-* init:              [string] name of Union_init component (typically "init", default)
+* init:            [string] name of Union_init component (typically "init", default)
+* time_min:        [s] Minimum time to log
+* time_max:        [s] Maximum time to log
 *
 * OUTPUT PARAMETERS:
 *
