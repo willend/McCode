@@ -5,14 +5,14 @@
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Component Spherical_Backscattering_Analyser
+* Component: Spherical_Backscattering_Analyser
 *
-* %I
-* Written by: Nikolaos Tsapatsaris (with help from Peter Willendrup, Ruep Lechner, Heloisa Bordallo)
-* Date: 2015
-* Origin: Niels Bohr Institute
-* 
-* %D
+* %Identification
+* Written by: Nikolaos Tsapatsaris with P Willendrup, R Lechner, H Bordallo
+* Date:       2015
+* Origin:     NBI/ESS
+*
+* %Description
 * Spherical backscattering analyser with variable reflectivity, and mosaic gaussian response.
 *
 * Based on earlier developments by Miguel A. Gonzalez 2000, Tilo Seydel 2007, Henrik Jacobsen 2011.
@@ -21,7 +21,7 @@
 * COMPONENT doppler = Spherical_Backscattering_Analyser(
 *   xmin=0, xmax=0, ymin=0, ymax=0, mosaic=21.0, dspread=0.00035, Q=2.003886241, DM=0, radius=2.5, f_doppler=0, A_doppler=0, R0=1, debug=0)
 *
-* %P
+* %Parameters
 * xmin:          [m] Minimum absolute value of x =~ 0.5 * Width of the monochromator
 * xmax:          [m] Maximum absolute value of x =~ 0.5 * Width of the monochromator
 * ymin:          [m] Minimum absolute value of x =~ 0.5 * Width of the monochromator
@@ -36,6 +36,9 @@
 * A_doppler:     [m] Amplitude of doppler drive
 * debug:         [1] if debug > 0 print out some info about the calculations
 *
+* %L
+*
+* %End
 *******************************************************************************/
 
 DEFINE COMPONENT Spherical_Backscattering_Analyser
