@@ -35,7 +35,7 @@
 * tmin: [mu-s]           Beginning of time window
 * tmax: [mu-s]           End of time window
 * nowritefile: [1]       If set, monitor will skip writing to disk
-* restore_neutron: [ ]   Restore neutron state after measurement
+* restore_neutron: [1]   If set, the monitor does not influence the neutron state	
 *
 * %E
 *******************************************************************************/
