@@ -5,19 +5,12 @@
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, Fance
 *
-* Component: SANS_Spheres_Abs
+* Component: SANS_Liposomes_Abs
 *
 * %I
 * Written by: Wim Bouwman, Delft University of Technology
 * Date:       Aug 2012
-* Origin:     
-* Version:    $Revision: 1.0 $
-* Release:    McStas 1.12c
-* Original file: SANS_AnySamp
-* Written by: Henrich Frielinghaus
-* Date:       Sept 2004
-* Origin:     FZ-Juelich/FRJ-2/IFF/KWS-2
-* Version:    $Revision: 1.5 $
+* Origin:     TUDelft
 *
 * Solid dilute monodisperse spheres sample with transmitted beam for Small Angle Neutron Scattering.
 *
