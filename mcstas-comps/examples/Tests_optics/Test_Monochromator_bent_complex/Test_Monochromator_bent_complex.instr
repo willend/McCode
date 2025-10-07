@@ -1,11 +1,10 @@
-
 /*******************************************************************************
-* Instrument: WARP Proposal Instrument Backend
+* Instrument: Test_Monochromator_bent_complex
 *
-* %I
+* %Identification
 * Written by: Jakob Lass (jakob.lass@psi.ch)
-* Date: 02/07 - 2025
-* Origin: PSI - LSN
+* Date: 20250702
+* Origin: PSI/LSN
 * %INSTRUMENT_SITE: Tests_optics
 *
 * This is a first draft for the WARP instrument proposal, as created by
@@ -20,27 +19,27 @@
 *
 * %Example: Test_Monochromator_bent_complex.instr mos=60 Detector: E_PSD_mon_end_I=0.000215194
 *
-* %P
+* %Parameters
 * sample_x: [m] Source horz illumination
 * sample_y: [m] Source vert illumination
 * L0:       [m] Z-displacement of detector wrt. rotation point
 * L1:       [m] Y-displacement of detector wrt. rotation point
 * Ld:       [m] Detector width
 * det_rot:  [m] Detector rotation
-* X:        [m] 
+* mos: [arcmin] Monochromator mosaicity
+* extra:  [deg] Perturbation rotation angle
 *
-* %E
+* %End
 *******************************************************************************/
 DEFINE INSTRUMENT Test_Monochromator_bent_complex(
-    double sample_x=0.005, 
-    double sample_y=0.015, 
-    double L0 = 1.38000,
-    double L1 = 2.47143,
-    double Ld = 2,    
-    double det_rot = -6.00000, 
-    double mos = 60,
-    double extra = 0
-)
+double sample_x=0.005, 
+double sample_y=0.015, 
+double L0=1.38000,
+double L1=2.47143,
+double Ld=2,    
+double det_rot=-6.00000, 
+double mos=60,
+double extra=0)
 
 DECLARE
 %{
