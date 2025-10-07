@@ -504,7 +504,7 @@ jobs:
                ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD --instr=$CHANGEDINSTR --suffix=CHANGES $PERMISSIVE
                mcviewtest --nobrowse $PWD
              else
-               echo ..\\install\\bin\\mctest --verbose --testdir=. --instr=$CHANGEDINSTR --permissive > changedinstr.bat
+               echo ..\\install\\bin\\mctest --verbose --testdir=. --instr=$CHANGEDINSTR --suffix=CHANGES --permissive > changedinstr.bat
              fi
            fi
 
