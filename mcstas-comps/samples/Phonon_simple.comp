@@ -51,8 +51,8 @@
 * target_z: [m]       position of target to focus at. Straight ahead.
 * target_index: [1]   relative index of component to focus at, e.g. next is +1 
 * gap: [meV]          Bandgap energy (unphysical)
-* e_steps_low [1]    Amount of possible intersections beneath the elastic line
-* e_steps_high [1]   Amount of possible intersections above the elastic line
+* e_steps_low: [1]    Amount of possible intersections beneath the elastic line
+* e_steps_high: [1]   Amount of possible intersections above the elastic line
 *
 * CALCULATED PARAMETERS:
 * V_rho: [AA^-3]      Atomic density
