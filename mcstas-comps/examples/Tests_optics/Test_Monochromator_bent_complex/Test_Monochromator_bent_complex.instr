@@ -21,6 +21,12 @@
 * %Example: Test_Monochromator_bent_complex.instr mos=60 Detector: E_PSD_mon_end_I=0.000215194
 *
 * %P
+* sample_x: [m] Source horz illumination
+* sample_y: [m] Source vert illumination
+* L0:       [m] Z-displacement of detector wrt. rotation point
+* L1:       [m] Y-displacement of detector wrt. rotation point
+* Ld:       [m] Detector width
+* det_rot:  [m] Detector rotation
 *
 * %E
 *******************************************************************************/
@@ -31,7 +37,6 @@ DEFINE INSTRUMENT Test_Monochromator_bent_complex(
     double L1 = 2.47143,
     double Ld = 2,    
     double det_rot = -6.00000, 
-    double w=0.04, 
     double h=1.3, 
     double l=2.2, 
     double m=4,
