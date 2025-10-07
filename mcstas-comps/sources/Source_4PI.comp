@@ -24,6 +24,9 @@
 * dE:       [meV] Energy half spread of neutrons (flat or gaussian sigma).
 * lambda0:   [AA] Mean wavelength of neutrons.
 * dlambda:   [AA] Wavelength half spread of neutrons.
+* radius:     [m] Radius of spherical source
+* gauss:      [ ] Flag to indicate if Energy/Wavelength distribution is gaussian
+* flux  [n/s/4PI] Neutron flux
 *
 * %E
 *******************************************************************************/
