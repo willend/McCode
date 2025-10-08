@@ -617,7 +617,7 @@ def parse_params(params_line):
             dval = '"' + m.group(2) + '"'
             name = m.group(1).strip()
         elif re.search(r'=', part):
-            m = re.match("(.*)=(.*)", part)
+            m = re.match("(.*)\s*=\s*(.*)", part)
             dval = m.group(2).strip()
             name = m.group(1).strip()
         else:
