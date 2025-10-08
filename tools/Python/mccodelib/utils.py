@@ -202,34 +202,42 @@ class ComponentParser(object):
     @staticmethod
     def __matchDocStringsToPars(pars, header_P_section):
         # sets docstring values on objects in the "pars" list of McComponentParInfo 
-        parnames = []
-        for i in range(len(pars)):
-            parnames.append(pars[i].par_name)
-        
+        parnames = [p.par_name for p in pars]
         lines = header_P_section.splitlines()
         lastpar = None
-        for i in range(len(lines)):
-            line = lines[i]
-            
-            # check for colon
-            out = re.search(r'(.*):(.*)', line)
+
+        for line in lines:
+            # Try to match "param: description"
+            out = re.search(r'^(.*)([\[\w\s\]])(.*)$', line)
+            candidate = None
+            description = None
+
             if out:
-                # assume that stars in lines have already been stripped
-                candidate = out.group(1).strip()
-                if candidate in parnames:
-                    # candidate is a known par name
-                    j = parnames.index(candidate)
-                    pars[j].doc_and_unit += out.group(2).strip() + ' '
-                    lastpar = pars[j]
-                elif lastpar:
-                    lastpar.doc_and_unit += out.group(2).strip()
-            
+                candidate = out.group(1).rstrip()
+                description = out.group(2).strip()
+            else:
+                # No colon: split on first whitespace only
+                parts = line.split(None, 1)
+                if len(parts) == 2:
+                    candidate, description = parts[0], parts[1].strip()
+                elif len(parts) == 1:
+                    candidate = parts[0]
+                description = ' '
+
+            if candidate and candidate in parnames:
+            # candidate is a known par name
+                j = parnames.index(candidate)
+                pars[j].doc_and_unit += (description + ' ').strip()
+                lastpar = pars[j]
+            elif lastpar and description is not None:
+                # continuation or appended description
+                lastpar.doc_and_unit += ' ' + description.strip()
             elif lastpar and ComponentParser.__stringIsEmptyLine(line):
                 # empty line, close lastpar appending
                 lastpar = None
             elif lastpar:
                 # continuation line, append to lastpar
-                lastpar.doc_and_unit += line.strip()
+                lastpar.doc_and_unit += ' ' + line.strip()
     
     @staticmethod
     def __stringIsEmptyLine(s):
@@ -245,7 +253,11 @@ class ComponentParser(object):
         result = ''        
         text_lns = list(iter(text.splitlines()))
         for l in text_lns:
-            l = l.lstrip('*')
+            # lstrip '*' if present, otherwise just remove left whitespace
+            if l.startswith('*'):
+                l = l.lstrip('*')
+            else:
+                l = l.lstrip()
             l = l.strip()
             result += '\n'
             result += l
@@ -436,7 +448,8 @@ def parse_header(text):
     # params
     par_doc = None
     for l in bites[tag_P].splitlines():
-        m = re.match(r'(\w+):[ \t]*\[([ \w\/\(\)\\\~\-.,\":\%\^\|\{\};\*]*)\][ \t]*(.*)', l)
+        # regex is tolerant for mising ':' in  param: [unit] description
+        m = re.match(r'(\w+)[: \t]*\[([ \w\/\(\)\\\~\-.,\":\%\^\|\{\};\*]*)\][ \t]*(.*)', l)
         par_doc = (None, None, None)
         if m:
             par_doc = (m.group(1), m.group(2), m.group(3).strip())
@@ -604,7 +617,7 @@ def parse_params(params_line):
             dval = '"' + m.group(2) + '"'
             name = m.group(1).strip()
         elif re.search(r'=', part):
-            m = re.match("(.*)=(.*)", part)
+            m = re.match(r'(.*)\s*=\s*(.*)', part)
             dval = m.group(2).strip()
             name = m.group(1).strip()
         else:
