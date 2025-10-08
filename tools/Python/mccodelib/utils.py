@@ -375,7 +375,10 @@ def parse_header(text):
     new_lines = []
     for i in range(len(lines)):
         l = lines[i]
-        new_lines.append(l.strip('*').strip()) # strip spaces then left stars
+        if l.startswith('*'):
+            new_lines.append(l.strip('*').strip()) # strip spaces then left stars
+        else:
+            new_lines.append(l.strip().strip())
     text = '\n'.join(new_lines)
     
     # get tag indices, and deal with cases of missing tags
