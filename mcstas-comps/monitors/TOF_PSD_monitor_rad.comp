@@ -34,16 +34,8 @@
 * nt: [1]                Number of time bins
 * tmin: [mu-s]           Beginning of time window
 * tmax: [mu-s]           End of time window
-* nowritefile: [1]      If set, monitor will skip writing to disk
-*
-* CALCULATED PARAMETERS:
-*
-* PSDr_N: []             Array of neutron counts
-* PSDr_p: []             Array of neutron weight counts
-* PSDr_p2: []            Array of second moments
-* PSDr_av_N: []          Array of neutron counts, averaged
-* PSDr_av_p: []          Array of neutron weight counts, averaged
-* PSDr_av_p2: []         Array of second moments, averaged
+* nowritefile: [1]       If set, monitor will skip writing to disk
+* restore_neutron: [1]   If set, the monitor does not influence the neutron state	
 *
 * %E
 *******************************************************************************/

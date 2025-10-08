@@ -7,23 +7,22 @@
 *
 * Component: PSD_monitor_4PI_spin
 *
-* %I
+* %Identification
 * Written by: Erik B Knudsen
-* Date: April 17, 2010s
+* Date: April 17, 2010
 * Origin: DTU
 *
 * Spherical position-sensitive detector with spin weighting
 *
-* %D
+* %Description
 * An (n times m) pixel spherical PSD monitor using a cylindrical projection.
 * Mostly for test and debugging purposes.
 *
 * Example: PSD_monitor_4PI(radius=0.1,
-            nx=90, ny=90, filename="Output.psd")
+*            nx=90, ny=90, filename="Output.psd")
 *
-* %P
+* %Parameters
 * INPUT PARAMETERS:
-*
 * radius:          [m] Radius of detector 
 * nx:              [1] Number of pixel columns
 * ny:              [1] Number of pixel rows
@@ -33,19 +32,10 @@
 * my:              [1] y-component of spin reference-vector
 * mz:              [1] z-component of spin reference-vector
 *
-* CALCULATED PARAMETERS:
-*
-* PSD_N:    Array of neutron counts
-* PSD_p:    Array of neutron weight counts
-* PSD_p2:   Array of second moments
-*
 * %L
-* <A HREF="http://neutron.risoe.dk/mcstas/components/tests/powder/">Test
-* results</A> (not up-to-date).
 *
-* %E
+* %End
 *******************************************************************************/
-
 
 DEFINE COMPONENT PSD_monitor_4PI_spin
 
