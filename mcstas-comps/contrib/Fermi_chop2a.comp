@@ -11,8 +11,10 @@
 * Date: 6 Feb 2005
 * Origin: SNS Oak Ridge,TN
 * 
+* SNS Fermi Chopper as used in SNS_ARCS
+*
 * %D
-* Models an SNS Fermic Chopper, used in the SNS_ARCS instrument model.
+* Models an SNS Fermi Chopper, used in the SNS_ARCS instrument model.
 *
 * %Parameters
 * nput Parameters:

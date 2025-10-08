@@ -8,6 +8,8 @@
 * Release: McStas 2.7
 * Date: September 2021
 *
+* Parabolid-Parabolid shells for Wolter optic
+*
 * %Description
 * Implements a set of nshells Wolter I Paraboloid/Parabolid pairs using conics.h from ConicTracer.
 * 

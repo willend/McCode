@@ -2,25 +2,31 @@
 *
 *  McStas, version 3.0
 *
-*  Component: vertical_T0 
+*  Component: Vertical_T0a
 *
 * %Identification
 * Written by: Garrett Granroth
 * Date: 2 NOV 2004
 * Origin: SNS Oak Ridge,TN
-* Version: 0.4
+*
+* Vertical T0-chopper as used in SNS_ARCS
+*
+* %D
+* Vertical T0-chopper as used in SNS_ARCS
+*
 * %Parameters
 *  Input Parameters:
 *  
-*  len:  length of slot (m)
-*  w1: center width (m)
-*  w2: edgewidth
-*  nu:     frequency (Hz)
-*  delta:  time from edge of chopper to center Phase angle (sec)
-*  tc:     time when desired neutron is at the center of the chopper (sec)
-*  ymin:   Lower y bound (m)
-*  ymax:   Upper y bound (m)
-*  
+* len:   [m] length of slot
+* w1:    [m] center width
+* w2:    [m] edgewidth
+* nu:   [Hz] frequency
+* delta: [s] time from edge of chopper to center Phase angle
+* tc:    [s] time when desired neutron is at the center of the chopper
+* ymin:  [m] Lower y bound
+* ymax:  [m] Upper y bound
+* 
+* %L
 *
 * %End
 *******************************************************************/
