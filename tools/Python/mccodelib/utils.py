@@ -179,7 +179,7 @@ class ComponentParser(object):
         for p in comma_sep:
             par_info = ComponentParInfo()
             
-            out = re.search(r'(\w+)\s+([\w\-]+)\s*=\s*([-+.\w/*\"]+)', p)
+            out = re.search(r'(\w+)\s+([\w\-]+)\s*=\s*([-+.\w/*\"\s]+)', p)
             if out:
                 # type par_name = def_val
                 par_info.type = out.group(1)
@@ -187,7 +187,7 @@ class ComponentParser(object):
                 par_info.default_value = out.group(3)
             else:
                 # par_name = def_val
-                out = re.search(r'([\w\-]+)\s*=\s*([-+.\w/*\"]+)', p)
+                out = re.search(r'([\w\-]+)\s*=\s*([-+.\w/*\"\s]+)', p)
                 if out:
                     par_info.par_name = out.group(1)
                     par_info.default_value = out.group(2)
@@ -482,15 +482,16 @@ def read_define_instr(file):
         if not re.match(r'DEFINE[ \t]+INSTRUMENT[ \t]+', l):
             continue
         else:
-            lines.append(l.strip())
+            lines.append(re.sub(r'//.*', '', l.strip()))
             break
     
     if len(lines) > 0 and not re.search(r'\)', lines[-1]):
         for l in file:
-            lines.append(l.strip())
+            lines.append(re.sub(r'//.*', '', l.strip()))
             if re.search(r'\)', l):
                 break
-    
+    if not lines[-1] == ')':
+        lines.append(')')
     return ' '.join(lines)
 
 def read_define_comp(file):
@@ -636,7 +637,7 @@ def parse_define_instr(text):
     Not robust to "junk" in the input string.
     '''
     try:
-        m = re.match(r'DEFINE[ \t]+INSTRUMENT[ \t]+(\w+)\s*\(([\w\,\"\s\n\t\r\.\+:;\-=]*)\)', text)
+        m = re.match(r'DEFINE[ \t]+INSTRUMENT[ \t]+(\w+)\s*\(([\w\,\"\s\n\t\r\.\+:;\-=/]*)\)+', text)
         name = m.group(1)
         params = m.group(2).replace('\n', '').strip()
     except:
