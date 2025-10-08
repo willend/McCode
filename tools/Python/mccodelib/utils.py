@@ -234,7 +234,7 @@ class ComponentParser(object):
                 lastpar.doc_and_unit += ' ' + description.strip()
             elif lastpar and ComponentParser.__stringIsEmptyLine(line):
                 # empty line, close lastpar appending
-            lastpar = None
+                lastpar = None
             elif lastpar:
                 # continuation line, append to lastpar
                 lastpar.doc_and_unit += ' ' + line.strip()

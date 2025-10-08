@@ -25,7 +25,8 @@
 *
 * %Parameters
 * Input parameters:
-*
+* synts [unit] description
+synts1: description [unit]
 * (none)
 *
 * %End
@@ -33,7 +34,7 @@
 
 DEFINE COMPONENT Arm
 
-SETTING PARAMETERS ()
+SETTING PARAMETERS (synts=0, synts1=0)
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
 TRACE
