@@ -8,6 +8,8 @@
 * Release: McStas 2.7
 * Date: September 2021
 *
+* Elliptic-Hyperbolic shells for Wolter optic
+*
 * %Description
 * Implements a set of nshells Wolter Ellipsoid/Hyperboloid pairs using conics.h from ConicTracer.
 * 

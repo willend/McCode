@@ -10,8 +10,9 @@
 * %I
 * Written by: Uwe Filges
 * Date: March, 2005
+* Origin: PSI
 *
-* multi pipe circular slit.
+* multi-pipe circular slit.
 *
 * %D
 * No transmission around the slit is allowed.

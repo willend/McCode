@@ -12,6 +12,8 @@
 * Date:       2015
 * Origin:     NBI/ESS
 *
+* Spherical backscattering analyser
+*
 * %Description
 * Spherical backscattering analyser with variable reflectivity, and mosaic gaussian response.
 *
