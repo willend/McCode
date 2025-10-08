@@ -210,7 +210,6 @@ class ComponentParser(object):
         lastpar = None
         for i in range(len(lines)):
             line = lines[i]
-            
             # check for colon
             out = re.search(r'(.*):(.*)', line)
             if out:
@@ -245,7 +244,11 @@ class ComponentParser(object):
         result = ''        
         text_lns = list(iter(text.splitlines()))
         for l in text_lns:
-            l = l.lstrip('*')
+            # lstrip '*' if present, otherwise just remove left whitespace
+            if l.startswith('*'):
+                l = l.lstrip('*')
+            else:
+                l = l.lstrip()
             l = l.strip()
             result += '\n'
             result += l
