@@ -426,6 +426,9 @@ class InstrDocWriter:
 
         h = h.replace(t[0], i.name)
         h = h.replace(t[1], i.name)
+        # If parsing failed to find a short description, use 'name'
+        if re.match(r'^\s*\n*\r*$', i.short_descr):
+            i.short_descr=i.name + ' instrument';
         h = h.replace(t[2], i.short_descr)
         h = h.replace(t[3], i.site)
         h = h.replace(t[4], i.author)
@@ -599,6 +602,9 @@ class CompDocWriter:
 
         h = h.replace(t[0], i.name)
         h = h.replace(t[1], i.name)
+        # If parsing failed to find a short description, use 'name'
+        if re.match(r'^\s*\n*\r*$', i.short_descr):
+            i.short_descr=i.name + ' component';
         h = h.replace(t[2], i.short_descr)
         h = h.replace(t[3], i.site)
         h = h.replace(t[4], i.author)
