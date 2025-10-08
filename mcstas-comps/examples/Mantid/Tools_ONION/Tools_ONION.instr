@@ -9,7 +9,7 @@
 * Origin: ORNL
 * %INSTRUMENT_SITE: Mantid
 *
-* Instrument short description: 
+* Test case for an layered detector shell instrument to provide quick overview of resolution per pixel.
 *
 * %Description
 * Test case for an layered detector shell instrument to provide quick overview of resolution per pixel.

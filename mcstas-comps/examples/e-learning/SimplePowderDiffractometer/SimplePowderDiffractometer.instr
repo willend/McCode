@@ -11,8 +11,7 @@
 * Version: 0.2
 * %INSTRUMENT_SITE: e-learning
 *
-* Instrument short description
-* A simple monochromatic powder diffractometer with variable bandwidth, aluminium sample container with powder sample (default nickel powder).
+* SimplePowderDIffractometer from e-neutrons.org: A simple monochromatic powder diffractometer with variable bandwidth, aluminium sample container with powder sample (default nickel powder).
 *
 * %Description
 * A simple monochromatic powder diffractometer with variable bandwidth, collimation, aluminium sample container and powder sample.
