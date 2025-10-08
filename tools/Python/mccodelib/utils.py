@@ -432,9 +432,9 @@ def parse_header(text):
       descrlines = []
       # remove all "*:" lines
       for l in m5.group(1).strip().splitlines():
-        # PW 2025: Suppressed the : detection,  parameters are looked for further down
-        # if not re.match(r'[^\n]*:', l, flags=re.DOTALL):
-        descrlines.append(l)
+        # PW 2025: Suppressed the : detection, but strip off %INSTRUMENT_SITE and Modified by 
+        if not re.match(r'%INSTRUMENT_SITE:', l, flags=re.DOTALL) and not re.match(r'Modified by:', l, flags=re.DOTALL):
+          descrlines.append(l)
       info.short_descr = '\n'.join(descrlines).strip()
     
     # description
