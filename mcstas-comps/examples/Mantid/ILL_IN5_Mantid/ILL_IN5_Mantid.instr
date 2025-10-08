@@ -10,23 +10,7 @@
 * %INSTRUMENT_SITE: Mantid
 *
 *   The IN5B instrument: chopper system + sample + PSD and tof detector, adapted for
-*   use with Mantid-friendly NeXus output. To compile and run, use these steps:
-*
-*   <ol>
-*     <li>Compile the instrument with NeXus support - zero neutrons:
-*     <ul>
-*       <li>export MCSTAS_CFLAGS="-g -lm -O2 -DUSE_NEXUS -lNeXus"
-*       <li>mcrun -c -n0 --format=NeXus ILL_IN5_Mantid.instr --format=NeXus --no-output-files
-*     </ul>
-*     <li>Generate the IDF in XML format using the (Perl) mcdisplay tool:
-*     <ul>
-*       <li>mcdisplay ILL_IN5_Mantid.instr -n0 --format=Mantid
-*     </ul>
-*     <li>Run a simulation with NeXus output
-*     <ul>
-*       <li>mcrun ILL_IN5_Mantid.instr --format=NeXus
-*     </ul>
-*   </ol>
+*   use with Mantid-friendly NeXus output.
 *
 * %Description
 *
@@ -37,7 +21,7 @@
 *
 * %Example: lambda=4.5 Detector: Det_PSD_I=1.3e6
 * %Example: lambda=4.5 --format=NeXus Detector: Det_PSD_I=1.3e6
-
+*
 *
 * %Parameters
 * lambda: [AA]       mean incident wavelength
