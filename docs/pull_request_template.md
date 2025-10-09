@@ -1,1 +1,29 @@
-TEST
+# PR Checklist for contributing to McStas/McXtrace
+## For a coherent and useful contribution to McStas/McXtrace, please fill in and follow the checklists:
+* ### My contribution includes patches to an **existing component** file
+  * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the component (please attach as screenshot in comments!)
+  * [ ] I have ensured that basic use of the component is OK (e.g. an instrument using it compiles?)
+  * [ ] I have used the `mctest` utility to **test** one or more instruments making use of the component (please attach `mcviewtest` report as screenshot in comments)
+  * [ ] I have used the `mcrun -c-lint` "linter" and followed advice to remove most / all warnings that are raised
+* ### My contribution includes patches to an **existing** instrument file
+  * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the instrument (please attach as screenshot in comments!)
+  * [ ] I have used the `mctest` utility to **test** the instrument (please attach `mcviewtest` report as screenshot in comments)
+  * [ ] I have used the `mcrun -c-lint` "linter" and followed advice to remove most / all warnings that are raised
+* ### My contribution includes a **new component** file
+  * [ ] I have ensured that naming of parameters are in the style of existing components
+  * [ ] I have ensured that component parameters are in the usualy units of McStas/McXtrae (SI + neutron/x-ray 'usual' units)
+  * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the component (please attach as screenshot in comments!)
+  * [ ] I have ensured that basic use of the component is OK (e.g. an instrument using it compiles?)
+  * [ ] I have included a corresponding **example** instrument and will fill in the **new instrument** section below
+* ### My contribution includes a **new instrument** file
+  * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the instrument (please attach as screenshot in comments!)
+  * [ ] I have ensured that basic use of the instrument is OK (e.g. it compiles?)
+  * [ ] ... and provided reasonable default parameters in that instrument that produce reasonable output
+  * [ ] ... and maybe even added a `%Example:` line to describe expected behaviour
+  * [ ] I have used the `mcrun -c-lint` "linter" and followed advice to remove most / all warnings that are raised
+* ### My contribution contains something else
+  * [ ] Explanation follows below
+ 
+--------------
+### Free-form text area
+Please describe what your PR is adding in terms of features or bugfixes:
