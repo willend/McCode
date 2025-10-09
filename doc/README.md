@@ -6,10 +6,10 @@ Additionally, the `mcdoc` tool may be used with the syntax:
 ```
 usage: mcdoc [-h] [--install] [--dir DIR] [--manual] [--comps] [--web] [--verbose] [searchterm]
 
-Generates html docpages from mccode instrument and component files. A docpage is generated for every
-instrument and component file, and an overview page is written and browsed. The default behaviour is to 
-(generate and) open the overview documentation page. Specify a directory to add local results, and a 
-search term for filtered or specific file results.
+Generates html docpages from mccode instrument and component files. A docpage is generated 
+for every instrument and component file, and an overview page is written and browsed. 
+The default behaviour is to (generate and) open the overview documentation page. 
+Specify a directory to add local results, and a search term to filter for specific files. 
 
 positional arguments:
   searchterm         search filter or .instr/.comp file
