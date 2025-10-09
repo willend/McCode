@@ -65,12 +65,36 @@
 * order_volume:    [1]      Only log rays that have scattered n times in the same geometry, -1 for all orders
 * logger_conditional_extend_index: [1] If a conditional is used with this logger, the result of each conditional calculation can be made available in extend as a array called "logger_conditional_extend", and one would then access logger_conditional_extend[n] if logger_conditional_extend_index is set to n
 * init:            [string] Name of Union_init component (typically "init", default)
+* user1: [str]           Variable name of USERVAR to be monitored by user1. (Monitor_nD)
+* user2: [str]           Variable name of USERVAR to be monitored by user2. (Monitor_nD)
+* user3: [str]           Variable name of USERVAR to be monitored by user3. (Monitor_nD)
+* username1: [str]       Name assigned to User1 (Monitor_nD)
+* username2: [str]       Name assigned to User2 (Monitor_nD)
+* username3: [str]       Name assigned to User3 (Monitor_nD)
+* xwidth: [m]            Width of detector. (Monitor_nD)
+* xmin: [m]              Lower x bound of opening (Monitor_nD)
+* xmax: [m]              Upper x bound of opening (Monitor_nD)
+* yheight: [m]           Height of detector. (Monitor_nD)
+* ymin: [m]              Lower y bound of opening (Monitor_nD)
+* ymax: [m]              Upper y bound of opening (Monitor_nD)
+* zdepth: [m]            Thickness of detector (z). (Monitor_nD)
+* zmin: [m]              Lower z bound of opening (Monitor_nD)
+* zmax: [m]              Upper z bound of opening (Monitor_nD)
+* bins: [1]              Number of bins to force for all variables. Use 'bins' keyword in 'options' for heterogeneous bins (Monitor_nD)
+* min: [u]               Minimum range value to force for all variables. Use 'min' or 'limits' keyword in 'options' for other limits (Monitor_nD)
+* max: [u]               Maximum range value to force for all variables. Use 'max' or 'limits' keyword in 'options' for other limits (Monitor_nD)
+* restore_neutron: [0|1] If set, the monitor does not influence the neutron state. Equivalent to setting the 'parallel' option. (Monitor_nD)
+* radius: [m]            Radius of sphere/banana shape monitor (Monitor_nD)
+* options: [str]         String that specifies the configuration of the monitor. The general syntax is "[x] options..." (Monitor_nD)
+* geometry: [str]        Name of an OFF file to specify a complex geometry detector (Monitor_nD)
+* nowritefile: [1]       If set, monitor will skip writing to disk
 *
 * OUTPUT PARAMETERS:
 *
 * GLOBAL PARAMETERS:
 *
 * %L
+* See also <a href="../monitors/Monitor_nD.html">the Monitor_nD mcdoc page"</a>
 *
 * %E
 ******************************************************************************/

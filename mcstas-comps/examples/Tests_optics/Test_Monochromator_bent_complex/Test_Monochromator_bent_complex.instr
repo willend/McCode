@@ -1,12 +1,11 @@
-
 /*******************************************************************************
-* Instrument: WARP Proposal Instrument Backend
+* Instrument: Test_Monochromator_bent_complex
 *
-* %I
+* %Identification
 * Written by: Jakob Lass (jakob.lass@psi.ch)
-* Date: 02/07 - 2025
-* Origin: PSI - LSN
-* %INSTRUMENT_SITE: 
+* Date: 20250702
+* Origin: PSI/LSN
+* %INSTRUMENT_SITE: Tests_optics
 *
 * This is a first draft for the WARP instrument proposal, as created by
 * Daniel Gabriel Mazzone (daniel.mazzone@psi.ch) and Jakob Lass 
@@ -20,27 +19,27 @@
 *
 * %Example: Test_Monochromator_bent_complex.instr mos=60 Detector: E_PSD_mon_end_I=0.000215194
 *
-* %P
-* Par1: [unit] Parameter1 description
+* %Parameters
+* sample_x: [m] Source horz illumination
+* sample_y: [m] Source vert illumination
+* L0:       [m] Z-displacement of detector wrt. rotation point
+* L1:       [m] Y-displacement of detector wrt. rotation point
+* Ld:       [m] Detector width
+* det_rot:  [m] Detector rotation
+* mos: [arcmin] Monochromator mosaicity
+* extra:  [deg] Perturbation rotation angle
 *
-* %E
+* %End
 *******************************************************************************/
 DEFINE INSTRUMENT Test_Monochromator_bent_complex(
-    double sample_x=0.005, 
-    double sample_y=0.015, 
-    double L0 = 1.38000,
-    double L1 = 2.47143,
-    double Ld = 2,    
-    double det_rot = -6.00000, 
-    double w=0.04, 
-    double h=1.3, 
-    double l=2.2, 
-    double m=4,
-    double x = 0.075,
-    double z = 2.2,
-    double mos = 60,
-    double extra = 0
-)
+double sample_x=0.005, 
+double sample_y=0.015, 
+double L0=1.38000,
+double L1=2.47143,
+double Ld=2,    
+double det_rot=-6.00000, 
+double mos=60,
+double extra=0)
 
 DECLARE
 %{
@@ -260,42 +259,6 @@ EXTEND %{
     if(SCATTERED){scat=final_reflection;}
 %}
 
-
-COMPONENT guide_pos = Arm()
-AT (x, 0,z) RELATIVE origin
-ROTATED (90,90,0) RELATIVE origin
-
-// COMPONENT cross_talk_guide = Guide(
-//     w1=w, 
-//     h1=h, 
-//     w2=w, 
-//     h2=h, 
-//     l=l, 
-//     m=m)
-// WHEN (scat > 0)
-// AT (0, 0, 0) RELATIVE PREVIOUS
-
-
-/*
-COMPONENT transmission_position = Arm()
-AT (0, 0, 1.1) RELATIVE source
-
-
-COMPONENT transmission_energies = E_monitor(
-    nE=501, 
-    filename="transmission_energies.dat", 
-    xmin=-0.1, 
-    xmax=0.1, 
-    ymin=-0.1, 
-    ymax=0.1, 
-    Emin=3.0, 
-    Emax=7.5)
-AT (0, 0, 0) RELATIVE PREVIOUS
-ROTATED (0, 0, 0) RELATIVE source
-*/
-
-
-
 COMPONENT detector_pos = Arm()
 AT (0, L1,L0) RELATIVE rotator
 
@@ -324,14 +287,6 @@ COMPONENT E_PSD_mon_end = Monitor_nD(
 WHEN(scat>0)
 AT (0, 0, 1e-9) RELATIVE PREVIOUS
 
-// COMPONENT E_PSD_mon_end2 = Monitor_nD(
-//     options ="x limits=[-2,2] bins=1001.0 energy limits=[2.7 7.15] bins=4451.0",
-//     filename="E_end2.dat", 
-//     xwidth=Ld, 
-//     yheight=0.5,
-// 	restore_neutron=1)
-// WHEN(scat==2)
-// AT (0, 0, 1e-9) RELATIVE PREVIOUS
 FINALLY
 %{
 %}

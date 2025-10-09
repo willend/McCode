@@ -448,7 +448,7 @@ jobs:
                ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
                mxviewtest --nobrowse $PWD
              else
-               echo ..\\install\\bin\\mxtest --verbose --testdir=. $SCOPE --permissive > changedinstr.bat
+               echo ..\\install\\bin\\mxtest --verbose --testdir=. $SCOPE --suffix=CHANGES --permissive > changedinstr.bat
              fi
            fi
 

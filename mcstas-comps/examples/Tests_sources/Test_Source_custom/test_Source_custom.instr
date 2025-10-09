@@ -10,25 +10,27 @@
 * Mads Bertelsen in 2019 while employed at the 
 * European Spallation Source Data Management and 
 * Software Centre
-*
-* This is a test file for the Source_custom component
-* Using the parameters for the HBS bi-spectral source
 * 
-* Instrument test_HBS_bispectral_Source_custom
+* Instrument: test_Source_custom
 * 
 * %Identification
 * Written by: Pablo Gila-Herranz
 * Date: 15:36:54 on April 04, 2025
 * Origin: Materials Physics Center (CFM-MPC), CSIC-UPV/EHU
 * %INSTRUMENT_SITE: Tests_sources
-* 
-* 
+*
+* Test instrument for the Source_custom component 
+*
+* %Description
+* This is a test file for the Source_custom component
+* Using the parameters for the HBS bi-spectral source
+*
 * %Parameters
 * 
 * %End 
 ********************************************************************************/
 
-DEFINE INSTRUMENT test_HBS_bispectral_Source_custom (
+DEFINE INSTRUMENT test_Source_custom (
 )
 
 DECLARE 
