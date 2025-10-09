@@ -1,7 +1,7 @@
-##This is the documentation directory of McStas
+## This is the documentation directory of McStas
 
 It contains the User and Component Manuals.
-Additionally, the 'mcdoc' tool may be used with the syntax:
+Additionally, the `mcdoc` tool may be used with the syntax:
 
 ```
 usage: mcdoc.py [-h] [--install] [--dir DIR] [--manual] [--comps] [--web] [--verbose] [searchterm]
@@ -40,14 +40,15 @@ Finally, to display the help for a single component, type for instance
 Via the `mcrun --edit-user-config` hook you may configure which BROWSER is used by e.g. mcdoc. 
 (A reasonable default has been provided for your platform.)
 
-The list of available McStas Tools is
+The list of available McStas Tools is:
+* `mcstas` - Main instrument compiler
+* `mcrun` - Instrument maker and execution utility
+* `mcgui` - Graphical User Interface instrument builder
+* `mcdoc` - Component library documentation generator/viewer
+* `mcplot` - Simulation result viewer
+* `mcdisplay` - Instrument geometry viewer
+* `mcresplot` - Instrument resolution function viewer
 
-   mcstas        Main instrument compiler
-   mcrun         Instrument maker and execution utility
-   mcgui         Graphical User Interface instrument builder
-   mcdoc         Component library documentation generator/viewer
-   mcplot        Simulation result viewer
-   mcdisplay     Instrument geometry viewer
-   mcresplot     Instrument resolution function viewer
-   mcstas2vitess McStas to Vitess component translation utility
-When used with the -h flag, all tools display a specific help.
+When used with the `-h` flag, all tools display a specific help.
+
+Please also consult our (wiki)[https://github.com/mccode-dev/McCode/wiki]
