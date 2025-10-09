@@ -4,7 +4,7 @@ It contains the User and Component Manuals.
 Additionally, the `mcdoc` tool may be used with the syntax:
 
 ```
-usage: mcdoc.py [-h] [--install] [--dir DIR] [--manual] [--comps] [--web] [--verbose] [searchterm]
+usage: mcdoc [-h] [--install] [--dir DIR] [--manual] [--comps] [--web] [--verbose] [searchterm]
 
 Generates html docpages from mccode instrument and component files. A docpage is generated for every instrument and component file, and an overview page is written and browsed. Default option Read installed docpage. Specify a directory to add local
 results, and a search term for filtered or specific file results.
@@ -51,4 +51,6 @@ The list of available McStas Tools is:
 
 When used with the `-h` flag, all tools display a specific help.
 
-Please also consult our (wiki)[https://github.com/mccode-dev/McCode/wiki]
+Please also consult our wiki found at
+https://github.com/mccode-dev/McCode/wiki
+
