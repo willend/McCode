@@ -7,14 +7,9 @@
 * Component: SANSSpheresPolydisperse
 *
 * %I
-* 
-* Written by Linda Udby (udby@nbi.dk)
-* Modified from SANSSpheres by Martin Cramer Pedersen (mcpe@nbi.dk)
-* Based on a SANS-component in McStas by Peter Willendrup
+* Written by: Linda Udby (udby@nbi.dk) - modified from SANSSpheres by Martin Cramer Pedersen (mcpe@nbi.dk)
 * Date: October 17, 2012
-* Version: $Revision$
 * Origin: KU-Science
-* Release: McStas 1.12c
 *
 * A sample of mono- or polydisperse spherical particles in solution.
 *

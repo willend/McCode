@@ -8,9 +8,11 @@
 * Written by: Jan Saroun, saroun@ujf.cas.cz
 * Date: July 1, 2017
 * Version: $Revision$
-* Origin: 
+* Origin: NPI
 * Release: McStas 2.5
 * Last update: 30/11/2018
+*
+* NPI detector for estimating dhkl from tof
 *
 * %D
 * A cylindrical detector which converts time-of-flight data (x,y,z,time) to a 1D diffractogram in dhkl. 

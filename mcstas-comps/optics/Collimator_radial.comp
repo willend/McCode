@@ -63,7 +63,7 @@
 * verbose:     []          Gives additional information.
 * approx:      []          Use Soller triangular transmission approximation.
 * focusing: [1]             When set allows you to use the collimators for focusing, rather than dispersing.
-* yheight_inner [1]         Defines the inner height of the collimator
+* yheight_inner: [1]         Defines the inner height of the collimator
 *
 * %E
 *******************************************************************************/

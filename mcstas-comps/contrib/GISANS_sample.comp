@@ -9,11 +9,13 @@
 *
 * %I
 * Written by: H. Frielinghaus
-* Date: 10.03.2023
-* Origin: FZJ
+* Date:       March 2023
+* Origin:     FZJ
+*
+* Sample for GISANS
 *
 * %D
-* Sample for GISANS
+*
 * The idea of this sample goes back to the real sample studied in the publication https://doi.org/10.1063/1.4723634
 * This is a sandwich of a sapphire and silicon slab through which the neutrons impinge and the sample in between where the scattering emerges from.
 * The sample consist of spherical polystyrene colloids in heavy water that form aligned crystallites at the solid-liquid interface,
@@ -34,19 +36,11 @@
 *
 * I see this as a start for further developments.
 *
-* %P
-* INPUT PARAMETERS
-* (sample geometry)
-* xwidth:       [m]  Width of sample volume 
-* yheight:      [m]  Height of sample volume 
-* zsapph:       [m]  Thickness of the sapphire layer on one side
-* zsamp:        [m]  Thickness of the overall sample between sapphire and silicon
-* zsampsurf:    [m]  Thickness from the total of zsamp on either side of sapphire/silicon that is oriented
-* zsilicon:     [m]  Thickness of the silicon layer on the other side
-* zsiliconsurf: [m]  Thickness from the total of zsilicon on the sample side (oxidization layer)
+* Information extracted from malformatted docstrings follow:
+*
 * the total thickness of the sandwich is zsapph+zsamp+zsilicon
 * the thicknesses zsampsurf and zsiliconsurf are parts of the total sample/silicon thicknesses
-*
+* 
 * (scattering length densitites, reciprocal total cross section of absorption, reciprocal total cross section of incoherent scattering)
 * units rho... [A-2], abslen... [cm], inclen... [cm]
 * rhosapph,       abslensapph,       inclensapph        for sapphire
@@ -54,13 +48,19 @@
 * rhoPS,          abslenPS,          inclenPS           for polystyrene as colloids in sample
 * rhosiliconsurf, abslensiliconsurf, inclensiliconsurf  for silicon surface (oxide layer)
 * rhosilicon,     abslensilicon,     inclensilicon      for silicon
-*
-* (specs of the polystyrene colloids in heavy water)
+* 
+* %P
+* INPUT PARAMETERS
+* xwidth:       [m]  Width of sample volume 
+* yheight:      [m]  Height of sample volume 
+* zsapph:       [m]  Thickness of the sapphire layer on one side
+* zsamp:        [m]  Thickness of the overall sample between sapphire and silicon
+* zsampsurf:    [m]  Thickness from the total of zsamp on either side of sapphire/silicon that is oriented
+* zsilicon:     [m]  Thickness of the silicon layer on the other side
+* zsiliconsurf: [m]  Thickness from the total of zsilicon on the sample side (oxidization layer)
 * phiPS:       [1] Concentration vol/vol of colloids in D2O
 * Rad:         [A] Radius of colloids in Aangstroem
 * phirot:      [rad] angle of the ordered (aligned) crytallites at the two surfaces towards sapphire/silicon
-* 
-* (specs for the redirection of simulations paths (scattering and sans versus rest) similar to the SANS sample of Henrich Frielinghaus)
 * sc_aim:      [1] how much is scattered versus transmitted
 * sans_aim:    [1] how much goes to the small angle range versus wide angles
 *

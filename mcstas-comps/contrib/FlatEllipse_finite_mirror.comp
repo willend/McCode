@@ -8,6 +8,8 @@
 * Origin: TUM
 * Date: 2022-2023
 *
+* NMO (nested mirror optic) modules 
+*
 * %D
 * Simulates NMO (nested mirror optic) modules as concevied by Böni et al., see
 * Christoph Herb et al., Nucl. Instrum. Meth. A 1040, 1671564 (1-18) 2022.
@@ -22,11 +24,16 @@
 * lEnd:       [m]   z-Value of the mirror end
 * r_0: [m] distance to the mirror at lStart
 * nummirror:  [1]   number of mirrors
-* mirror_width: [mm] width of the individual mirrors
+* mf: [ ] mvalue of the inner side of the coating, m>10 results in perfect reflections
+* mb: [ ] mvalue of the outer side of the coating, m>10 results in perfect reflections
+* mirror_width: [m] width of the individual mirrors
+* mirror_sidelength: [m] side length of the individual mirrors
 * doubleReflections: [1] binary value determining whether the mirror backside is reflective
 * rfront_inner_file: [str] file of distances to the optical axis of the individual mirrors
-*
-*
+* R0: [1]                      Low-angle reflectivity
+* Qc: [AA-1]                   critical scattering vector
+* W: [AA-1]                    width of supermirror cutoff
+* alpha: [AA]                  Slope of reflectivity
 * %L
 * Christoph Herb et al., Nucl. Instrum. Meth. A 1040, 1671564 (1-18) 2022.
 * %E
@@ -35,23 +42,23 @@
 
 DEFINE COMPONENT FlatEllipse_finite_mirror
 SETTING PARAMETERS (
-    sourceDist = 0, //only relevant for the caculated spacing of the mirrors, usually this has to equal LStart
-    LStart=0.6, //only relevant for the calculation of the reflections, z coordinate of the first focal point of the ellipses
-    LEnd = 0.6, //z coordinate of the second focal point of the ellipses
-    lStart = 0., //z coordinate of the beginning of the mirrors
-    lEnd = 0., //z coordinate of the end of the mirrors
-    r_0 = 0.02076, //distance of the defining point at z=0 on the outermost mirror
-    int nummirror= 9, // number of mirrors in the assembly
-    mf = 4, //mvalue of the inner side of the coating, m>10 results in perfect reflections
-    mb = 0, //mvalue of the outer side of the coating, m>10 results in perfect reflections
+    sourceDist = 0,
+    LStart=0.6,
+    LEnd = 0.6,
+    lStart = 0.,
+    lEnd = 0.,
+    r_0 = 0.02076,
+    int nummirror= 9,
+    mf = 4,
+    mb = 0,
     R0 = 0.99,
     Qc = 0.021,
     W = 0.003,
     alpha = 6.07,
-    mirror_width = 0.003, //width of the mirror (m), take care that the mirrors do not intersect
-    mirror_sidelength = 1,//lateral extension of the mirror system along y
-    doubleReflections = 0, //can neutrons be reflected from the backside of a mirror
-    string rfront_inner_file = "NULL"//file name of the file providing the distances to the optical axis of the mirrors at the entrance, lStart, of the respective mirror
+    mirror_width = 0.003,
+    mirror_sidelength = 1,
+    doubleReflections = 0,
+    string rfront_inner_file = "NULL"
 )
 
 

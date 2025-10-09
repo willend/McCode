@@ -44,8 +44,8 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "# Visualise with default parameters (defaults to 'window'/pyqtgraph visualisation)\n",
-    "instr.show_instrument(format='window')"
+    "# Visualise with default parameters (defaults to 'webgl-classic' visualisation - specify by format='window' for pyqtgraph)\n",
+    "instr.show_instrument()"
    ]
   },
   {

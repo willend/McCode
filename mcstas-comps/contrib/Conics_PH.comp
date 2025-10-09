@@ -8,6 +8,8 @@
 * Release: McStas 2.7
 * Date: September 2021
 *
+* Parabolid-Hyperbolic shells for Wolter optic
+*
 * %Description
 * Implements a set of nshells Wolter I Paraboloid/Hyperboloid pairs using conics.h from ConicTracer.
 * 
@@ -38,6 +40,9 @@
 * W: [AA-1]             Width of supermirror cut-off
 * transmit: [1]         Fraction of statistics to assign to transmitted beam - NOT YET IMPLEMENTED
 * mirr_thick: [m]       Thickness of mirror shell surfaces - NOT YET IMPLEMENTED
+*
+* %L
+*
 * %End
 *
 *******************************************************************************/
@@ -45,9 +50,9 @@
 DEFINE COMPONENT Conics_PH
 
 SETTING PARAMETERS (
-    rmin=0.65/2.0,rmax=1.23/2.0, focal_length=10.070, lp=0.84, lh=0.84,
+    rmin=0.325,rmax=0.615, focal_length=10.070, lp=0.84, lh=0.84,
     int nshells=4, m=1, mirr_thick=0, int disk=1, vector radii=NULL,
-    R0 = 0.99, Qc = 0.021, W = 0.003, alpha = 6.07, transmit = 0)
+    R0=0.99, Qc=0.021, W=0.003, alpha=6.07, transmit=0)
 
 SHARE
 %{
