@@ -1,7 +1,7 @@
-## This is the documentation directory of McStas
+## This is the documentation directory of McStas and McXtrace
 
 It contains the User and Component Manuals.
-Additionally, the `mcdoc` tool may be used with the syntax:
+Additionally, the `mcdoc` tool (`mxdoc` for McXtrace) may be used with the syntax:
 
 ```
 usage: mcdoc [-h] [--install] [--dir DIR] [--manual] [--comps] [--web] [--verbose] [searchterm]
@@ -43,6 +43,7 @@ Via the `mcrun --edit-user-config` hook you may configure which BROWSER is used 
 (A reasonable default has been provided for your platform.)
 
 The list of available McStas Tools is:
+(for McXtrace, replace `mcstas` by `mcxtrace` and e.g. `mcrun` by `mxrun` for the tools)
 * `mcstas` - Main instrument compiler
 * `mcrun` - Instrument maker and execution utility
 * `mcgui` - Graphical User Interface instrument builder
@@ -56,3 +57,4 @@ When used with the `-h` flag, all tools display a specific help.
 Please also consult our wiki found at
 https://github.com/mccode-dev/McCode/wiki
 
+Various development and contribution resources can be found in [devel](../devel)
