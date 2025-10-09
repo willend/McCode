@@ -21,6 +21,15 @@
   * [ ] ... and provided reasonable default parameters in that instrument that produce reasonable output
   * [ ] ... and maybe even added a `%Example:` line to describe expected behaviour
   * [ ] I have used the `mcrun -c-lint` "linter" and followed advice to remove most / all warnings that are raised
+* ### My work touches the code-generator in mccode/src
+  * [ ] I have added reasoning and documentation for the change in ./docs/GRAMMAR/ADR-records/
+  * [ ] I am attaching test output in the comments
+* ### My work touches / adds to the runtime lib code (.c,.h etc in multiple locations
+  * [ ] I am have added reasoning and documentation for the change below
+  * [ ] I am attaching test output in the comments
+* ### My PR is meant to fix a specific, existing issue
+  * [ ] I have indicated the issue number here:
+  * [ ] I have added documentation for the fix and possible side effects
 * ### My contribution contains something else
   * [ ] Explanation follows below
 
