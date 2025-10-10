@@ -42,7 +42,7 @@
   * [ ] I have indicated the issue number here:
   * [ ] I have added documentation for the fix and possible side effects
 * ### My contribution contains something else
-  * [ ] Explanation follows below
+  * [ ] Explanation is added in free form text above or below the checklist
 
 --------------
 
