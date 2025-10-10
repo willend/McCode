@@ -1,9 +1,9 @@
 ### Free-form text area
-**Please describe what your PR is adding in terms of features or bugfixes:**
+_Please describe what your PR is adding in terms of features or bugfixes:_
 
 --------------
 ### Development OS / boundary conditions
-**Please describe what OS you developed and tested your additions on, and if any special dependencies are required:**
+_Please describe what OS you developed and tested your additions on, and if any special dependencies are required:_
 
 --------------
 # PR Checklist for contributing to McStas/McXtrace
