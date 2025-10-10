@@ -32,6 +32,7 @@ _Please describe what OS you developed and tested your additions on, and if any 
   * [ ] I have used the `mcrun -c-lint` "linter" and followed advice to remove most / all warnings that are raised
   * [ ] My new instrument is added within the `examples` hierarchy in a folder in the style of `examples/ESS/New_stuff/New_stuff.instr`
   * [ ] My new instrument has a new, unique filename, not clashing with existing example instruments
+  * [ ] My new instrument requires a data/input file. If the datafile is _specific_ for my instrument I have left it in the same `example` folder, but if general use I have placed it in the global `data` folder.
 * ### My work touches the code-generator in mccode/src
   * [ ] I have added reasoning and documentation for the change through an ADR record in our [GRAMMAR](https://github.com/mccode-dev/McCode/tree/main/docs/GRAMMAR) section
   * [ ] I am attaching test output in the comments
