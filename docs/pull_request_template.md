@@ -19,7 +19,7 @@ _Please describe what OS you developed and tested your additions on, and if any 
   * [ ] I have used the `mcrun -c-lint` "linter" and followed advice to remove most / all warnings that are raised
 * ### My contribution includes a **new component** file
   * [ ] I have ensured that naming of parameters are in the style of existing components
-  * [ ] I have ensured that component parameters are in the usualy units of McStas/McXtrae (SI + neutron/x-ray 'usual' units)
+  * [ ] I have ensured that component parameters are in the usually units of McStas/McXtrace (SI + neutron/x-ray 'usual' units)
   * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the component (please attach as screenshot in comments!)
   * [ ] I have ensured that basic use of the component is OK (e.g. an instrument using it compiles?)
   * [ ] I have included a corresponding **example** instrument and will fill in the **new instrument** section below
