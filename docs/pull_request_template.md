@@ -18,8 +18,8 @@ _Please describe what OS you developed and tested your additions on, and if any 
   * [ ] I have used the `mctest` utility to **test** the instrument (please attach `mcviewtest` report as screenshot in comments)
   * [ ] I have used the `mcrun -c-lint` "linter" and followed advice to remove most / all warnings that are raised
 * ### My contribution includes a **new component** file
-  * [ ] I have ensured that naming of parameters are in the style of existing components
-  * [ ] I have ensured that component parameters are in the usually units of McStas/McXtrace (SI + neutron/x-ray 'usual' units)
+  * [ ] I have ensured that naming of parameters are in the style of existing components. (Please check the [McStas](https://github.com/mccode-dev/McCode/blob/main/mcstas-comps/NOMENCLATURE.md) or [McXtrace](https://github.com/mccode-dev/McCode/blob/main/mcxtrace-comps/NOMENCLATURE) NOMENCLATURE docs.)
+  * [ ] I have ensured that component parameters are in the usually units of McStas or McXtrace (SI + neutron/x-ray 'usual' units)
   * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the component (please attach as screenshot in comments!)
   * [ ] I have ensured that basic use of the component is OK (e.g. an instrument using it compiles?)
   * [ ] I have included a corresponding **example** instrument and will fill in the **new instrument** section below
@@ -33,7 +33,7 @@ _Please describe what OS you developed and tested your additions on, and if any 
   * [ ] My new instrument is added within the `examples` hierarchy in a folder in the style of `examples/ESS/New_stuff/New_stuff.instr`
   * [ ] My new instrument has a new, unique filename, not clashing with existing example instruments
 * ### My work touches the code-generator in mccode/src
-  * [ ] I have added reasoning and documentation for the change in ./docs/GRAMMAR/ADR-records/
+  * [ ] I have added reasoning and documentation for the change through an ADR record in our [GRAMMAR](https://github.com/mccode-dev/McCode/tree/main/docs/GRAMMAR) section
   * [ ] I am attaching test output in the comments
 * ### My work touches / adds to the runtime lib code (.c,.h etc in multiple locations
   * [ ] I am have added reasoning and documentation for the change below
