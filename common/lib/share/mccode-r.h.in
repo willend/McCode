@@ -185,13 +185,14 @@ clock_t times (struct tms *__buffer) {
 #if defined(WIN32) || defined(_WIN32)
 #if defined _MSC_VER
 #include <direct.h>
-#define mkdir(a,b) mkdir(a)
 #elif defined __GNUC__
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 // add mkdir prototype for gcc on Windows
-int mkdir(const char *pathname, mode_t mode);
+int mkdir(const char *pathname);
 #endif
+#define mkdir(a,b) mkdir(a)
 #define getpid() _getpid()
 #endif
 
