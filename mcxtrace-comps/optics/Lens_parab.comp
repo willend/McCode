@@ -63,6 +63,9 @@ SHARE
       double tx,ty,tz,tnorm,txn,tyn,tzn;
       double v,w;
 
+      /* Ensure initialisation of t-comps */
+      tx=ty=tz=0;
+
       for(i=0;i<=2;i++){
         result.k[i]=k[i]=a.k[i];
         result.coord[i]=p[i]=a.coord[i];

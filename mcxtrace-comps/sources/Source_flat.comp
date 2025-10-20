@@ -158,7 +158,8 @@ TRACE
   rf = sqrt(dx*dx+dy*dy+dist*dist);
   /*pdir contains the unnormalized solid angle weighting */
   p = pmul*pdir/(4*M_PI);
-
+  /* Initial k-norm fallback-value */
+  k=0;
   if (spectrum_file && strlen(spectrum_file) && strcmp(spectrum_file,"NULL")!=0){
     double pp=0;
     //while (pp<=0){ 
