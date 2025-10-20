@@ -429,13 +429,25 @@ SHARE
       && strcasecmp(ext, "res")) return infile;
       
     OUTFILE = malloc(1024);
-    if (!OUTFILE) return infile;
+    if (!OUTFILE) {
+      free(OUTFILE);
+      return infile;
+    }
     inpath = malloc(1024);
-    if (!inpath) return infile;
+    if (!inpath) {
+      free(OUTFILE);
+      free(inpath);
+      return infile;
+    }
 
     // get input file path from read-table:Open_File
     FILE *f_infile = Open_File(infile, "r", inpath);
-    if (!f_infile) return infile;
+    if (!f_infile) {
+      free(OUTFILE);
+      free(inpath);
+      free(f_infile);
+      return infile;
+    }
     fclose(f_infile);
 
     strncpy(OUTFILE, tmpnam(NULL), 1024); // create an output temporary file name
@@ -471,14 +483,18 @@ SHARE
     }
       
     // test if the result file has been created
-    FILE *file = Open_File(OUTFILE,"r", NULL);
-    if (!file) return(NULL);     
+    FILE *file = fopen(OUTFILE,"r");
+    if (!file) {
+      free(OUTFILE);
+      return(NULL);
+    }
     MPI_MASTER(
     printf("%s: INFO: Converting %s into F2(HKL) list %s\n", 
       __FILE__, infile, OUTFILE);
     printf ("%s\n",cmd);
     );
     fflush(NULL);
+    fclose(file);
     return(OUTFILE);
   } // cif2hkl
 #endif
@@ -764,6 +780,11 @@ SHARE
     
     if (surf_size <= 0 || !surf_k || !surf_FT2 || !surf_dir) surf_size = 1;
     list = (struct hkl_data*) malloc(size*surf_size*sizeof(struct hkl_data));
+    if (!list) {
+      fprintf(stderr,
+              "Single_crystal" Error allocating reflection list\n");
+      return(0);
+    }
 
     for (i=0; i<size; i++)
     for (j=0; j<surf_size; j++)
