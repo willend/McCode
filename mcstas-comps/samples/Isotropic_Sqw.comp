@@ -1382,6 +1382,10 @@ struct Sqw_Data_struct *Sqw_readfile(
   );
 
   double *w_file2full = malloc(w_bins*sizeof(double)); /* lookup table for fast file -> Sqw_full allocation */
+  if (!w_file2full) {
+    fprintf(stderr,"Isotropic_Sqw: Catastrophic Error allocating lookup table w_file2full!\nEXIT\n");
+    exit(-1);
+  }
 
   for (index_w=0; index_w < w_bins; w_file2full[index_w++]=0);
 
@@ -1423,6 +1427,10 @@ struct Sqw_Data_struct *Sqw_readfile(
   }
 
   double *q_file2full=malloc(q_bins*sizeof(double));
+  if (!q_file2full) {
+    fprintf(stderr,"Isotropic_Sqw: Catastrophic Error allocating lookup table q_file2full!\nEXIT\n");
+    exit(-1);
+  }
   for   (index_q=0; index_q < q_bins; q_file2full[index_q++]=0);
 
   for (index_q=0; index_q < q_bins; index_q++) {
