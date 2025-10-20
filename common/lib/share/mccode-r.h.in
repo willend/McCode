@@ -182,7 +182,7 @@ clock_t times (struct tms *__buffer) {
 #  endif /* !WIN32 */
 #endif /* MC_PATHSEP_C */
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32)
 #if defined _MSC_VER
 #include <direct.h>
 #define mkdir(a,b) mkdir(a)
