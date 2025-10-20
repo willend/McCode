@@ -189,8 +189,6 @@ clock_t times (struct tms *__buffer) {
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-// add mkdir prototype for gcc on Windows
-int mkdir(const char *pathname);
 #endif
 #define mkdir(a,b) mkdir(a)
 #define getpid() _getpid()
