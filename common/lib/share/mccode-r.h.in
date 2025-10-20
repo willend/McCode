@@ -173,7 +173,7 @@ clock_t times (struct tms *__buffer) {
 #endif
 
 #ifndef MC_PATHSEP_C
-#  ifdef WIN32
+#  if defined(WIN32) || defined(_WIN32)
 #    define MC_PATHSEP_C '\\'
 #    define MC_PATHSEP_S "\\"
 #  else  /* !WIN32 */
