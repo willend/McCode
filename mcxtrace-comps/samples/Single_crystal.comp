@@ -782,7 +782,7 @@ SHARE
     list = (struct hkl_data*) malloc(size*surf_size*sizeof(struct hkl_data));
     if (!list) {
       fprintf(stderr,
-              "Single_crystal" Error allocating reflection list\n");
+              "Single_crystal: Error allocating reflection list\n");
       return(0);
     }
 
