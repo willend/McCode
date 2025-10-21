@@ -1,13 +1,16 @@
 ### Free-form text area
 _Please describe what your PR is adding in terms of features or bugfixes:_
 
+Underline that only _relevant parts_ of the checklist needs to be filled in.
+
 --------------
 ### Development OS / boundary conditions
 _Please describe what OS you developed and tested your additions on, and if any special dependencies are required:_
 
+
 --------------
 # PR Checklist for contributing to McStas/McXtrace
-## For a coherent and useful contribution to McStas/McXtrace, please fill in and follow the checklists:
+## For a coherent and useful contribution to McStas/McXtrace, please fill in _relevant parts_ of the checklist:
 * ### My contribution includes patches to an **existing component** file
   * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the component (please attach as screenshot in comments!)
   * [ ] I have ensured that basic use of the component is OK (e.g. an instrument using it compiles?)
@@ -43,7 +46,7 @@ _Please describe what OS you developed and tested your additions on, and if any 
   * [ ] I have indicated the issue number here:
   * [ ] I have added documentation for the fix and possible side effects
 * ### My contribution contains something else
-  * [ ] Explanation is added in free form text above or below the checklist
+  * [x] Explanation is added in free form text above or below the checklist
 
 --------------
 
