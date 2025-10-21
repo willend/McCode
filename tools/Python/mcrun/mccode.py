@@ -154,10 +154,14 @@ class McStas:
                 trace='-t'
                 if options.no_trace:
                    trace='--no-trace'
-                if self.options.I is not None:
-                    Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path, '-I', self.options.I])
-                else:
-                    Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path])
+                try:
+                    if self.options.I is not None:
+                        Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path, '-I', self.options.I])
+                    else:
+                        Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path])
+                except:
+                    LOG.error('Code generation failed for instrument %s using code generator %s', self.path, mccode_bin_abspath)
+                    exit(-1)
             else:
                 if self.options.I is not None:
                     Process(mccode_bin_abspath).run(['--no-main', '-o', self.cpath, self.path, '-I', self.options.I])
@@ -314,8 +318,11 @@ class McStas:
         # Lint or compile?
         if options.c_lint is not None:
             args = [self.cpath] + lexer.split(mccode_config.compilation['CLINTERFLAGS'])
-            Process(lexer.quote(mccode_config.compilation['CLINT'])).run(args)
-            LOG.info('End of linting %s', self.cpath)
+            try:
+                Process(lexer.quote(mccode_config.compilation['CLINT'])).run(args)
+                LOG.info('End of linting %s', self.cpath)
+            except:
+                LOG.error('Linting failed on %s - you may need to install the %s package?', self.cpath, mccode_config.compilation['CLINT'])
             exit()
         else:
             # Final assembly of compiler commandline
@@ -323,7 +330,11 @@ class McStas:
                 args = ['-o', self.binpath, self.cpath] + lexer.split(cflags)
             else:
                 args = [self.cpath] + lexer.split(cflags)
-            Process(lexer.quote(options.cc)).run(args)
+            try:
+                Process(lexer.quote(options.cc)).run(args)
+            except:
+                LOG.error('Compilation failed for %s using compiler %s', self.cpath, options.cc)
+                exit(-1)
 
     def run(self, pipe=False, extra_opts=None, override_mpi=None):
         ''' Run simulation '''
