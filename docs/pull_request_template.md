@@ -1,7 +1,7 @@
 ### Free-form text area
 _Please describe what your PR is adding in terms of features or bugfixes:_
 
-Underline that only _relevant parts_ of the checklist needs to be filled in.
+
 
 --------------
 ### Development OS / boundary conditions
@@ -46,7 +46,7 @@ _Please describe what OS you developed and tested your additions on, and if any 
   * [ ] I have indicated the issue number here:
   * [ ] I have added documentation for the fix and possible side effects
 * ### My contribution contains something else
-  * [x] Explanation is added in free form text above or below the checklist
+  * [ ] Explanation is added in free form text above or below the checklist
 
 --------------
 
