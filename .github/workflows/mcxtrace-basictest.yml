@@ -479,8 +479,8 @@ jobs:
         copy ..\install\share\mcxtrace\resources\examples\Tests_RNG\Test_RNG_rand01\Test_RNG_rand01.instr test.instr
         ..\install\bin\mxrun --verbose test.instr -s1000 Ncount=1000 -d RNGtest
 
-    - name: Prepare and run CRL instrument Windows
-      if: runner.os == 'Windows' # Windows only
+    - name: Prepare and run CRL instrument Windows MSVC
+      if: runner.os == 'Windows' && matrix.cc != 'gcc.exe' # Windows MSVC only
       shell: cmd
       working-directory: run_std
       run: |

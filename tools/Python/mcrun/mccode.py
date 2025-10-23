@@ -77,6 +77,26 @@ class Process:
             raise err
         return proc.stdout
 
+def find_and_fix_duplicate_rpath(binary_file):
+    """On macOS, remove duplicate LC_RPATH entries from a binary using install_name_tool."""
+    # Discover duplicate
+    output=Process('otool').run(['-l', binary_file], pipe=True)
+    paths = []
+    bad_paths = set([])
+
+    for line in output.splitlines():
+        if ' path ' in line:
+            path = line.split(' ')[-3]
+            paths.append(path)
+
+    # get duplicates from a list
+    seen = set()
+    bad_paths = [x for x in paths if x in seen or seen.add(x)]
+
+    # Fix any libraries with duplicates
+    for rpath in bad_paths:
+        output=Process('install_name_tool').run(['-delete_rpath', rpath, binary_file],pipe=True)
+        print(output)
 
 class McStas:
     ''' McStas instrument '''
@@ -335,6 +355,10 @@ class McStas:
             except:
                 LOG.error('Compilation failed for %s using compiler %s', self.cpath, options.cc)
                 exit(-1)
+
+        # On macOS, check / remove duplicate rpath entries
+        if sys.platform == 'darwin':
+            find_and_fix_duplicate_rpath(self.binpath)
 
     def run(self, pipe=False, extra_opts=None, override_mpi=None):
         ''' Run simulation '''
