@@ -230,7 +230,8 @@ def main(instr=None, dirname=None, debug=None, n=None, timeout=None, **kwds):
         else:
             npminst = Path(toolpath + "/npminstall.bat")
 
-        print("Executing " + str(npminst))
+        warning="Warning:\n First launch of WEBGL display tool.\n Executing 'npminstall' for installation of required modules.\n Please do not abort execution...  Requires internet access and may take minutes!"
+        proc = subprocess.Popen([mccode_config.configuration['MCCODE']+"_errmsg", warning], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         try:
             proc = subprocess.Popen(npminst, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             print("Installing npm / vite modules")
