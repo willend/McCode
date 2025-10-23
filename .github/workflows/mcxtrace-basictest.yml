@@ -480,7 +480,7 @@ jobs:
         ..\install\bin\mxrun --verbose test.instr -s1000 Ncount=1000 -d RNGtest
 
     - name: Prepare and run CRL instrument Windows MSVC
-      if: runner.os == 'Windows' && if matrix.cc != 'gcc.exe' # Windows MSVC only
+      if: runner.os == 'Windows' && matrix.cc != 'gcc.exe' # Windows MSVC only
       shell: cmd
       working-directory: run_std
       run: |
