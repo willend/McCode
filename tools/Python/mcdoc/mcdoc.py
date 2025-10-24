@@ -772,7 +772,7 @@ function comp() {
   navigator.clipboard.writeText(Text);
 
   // Alert the copied text
-  alert(Text);
+  alert("Now on your clipboard: \n\n" + Text);
 }
 </script>
 
@@ -829,7 +829,7 @@ the others are optional.
   <TH>) RELATIVE</TH>
   <td><input type="text" value="PREVIOUS" id="REF"></td>
   <td rowspan="2">
-    <button style="height:50px" onclick="comp()"><strong>Generate</strong></button>
+    <button style="height:50px" onclick="comp()"><strong>Generate<br>to clipboard</strong></button>
   </td>
   </TR>
   <TR>
