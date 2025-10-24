@@ -52,10 +52,13 @@ def load_config(path=None):
         info=""
     elif path=="user":
         level="user"
+        suffix=""
+        if os.getenv('CONDA_DEFAULT_ENV'):
+            suffix="_" + os.path.basename(os.getenv('CONDA_DEFAULT_ENV'))
         if OsPlatform.system() == 'Windows':
-            userdir =  os.path.join(os.path.expandvars("$USERPROFILE"),"AppData",configuration['MCCODE'],configuration['MCCODE_VERSION'])
+            userdir =  os.path.join(os.path.expandvars("$USERPROFILE"),"AppData",configuration['MCCODE'],configuration['MCCODE_VERSION']+suffix)
         else:
-            userdir =  os.path.join(os.path.expandvars("$HOME"),"." + configuration['MCCODE'],configuration['MCCODE_VERSION'])
+            userdir =  os.path.join(os.path.expandvars("$HOME"),"." + configuration['MCCODE'],configuration['MCCODE_VERSION']+suffix)
         userconfig = os.path.join(userdir,"mccode_config.json")
         info = " from " + userconfig
 
@@ -145,7 +148,10 @@ def save_user_config(Edit=False):
         except Exception as e:
             print("Directory %s could not be created: %s " % (homedirconf, e.__str__()))
 
-    userdir = os.path.join(homedirconf,configuration['MCCODE_VERSION'])
+    suffix=""
+    if os.getenv('CONDA_DEFAULT_ENV'):
+            suffix="_" + os.path.basename(os.getenv('CONDA_DEFAULT_ENV'))
+    userdir = os.path.join(homedirconf,configuration['MCCODE_VERSION']+suffix)
     if not os.path.isdir(userdir):
         try:
             os.mkdir(userdir)
