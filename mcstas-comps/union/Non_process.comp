@@ -38,11 +38,11 @@
 * sigma:            [barns]  Scattering cross section
 * unit_cell_volume: [AA^3]   Unit cell volume
 * packing_factor:    [1]        How dense is the material compared to optimal 0-1
-* init:              [string] name of Union_init component (typically "init", default)
 * interact_fraction: [1]        How large a part of the scattering events should use this process 0-1 (sum of all processes in material = 1)
+* init:              [string] name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
-* Non_storage          // Important to update this output paramter
+* Non_storage          
 * effective_my_scattering   // Variable used in initialize
 *
 * %L
