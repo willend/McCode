@@ -405,10 +405,8 @@ int mask_mode; // ALL/ANY 1/2. In ALL mode, only parts covered by all masks is s
 double geometry_p_interact; // fraction of rays that interact with this volume for each scattering (between 0 and 1, 0 for disable)
 union geometry_parameter_union geometry_parameters; // relevant parameters for this shape
 union geometry_parameter_union (*copy_geometry_parameters)(union geometry_parameter_union*);
-struct focus_data_struct focus_data; // Used for focusing from this geometry
 
-// New focus data implementation to remove the focusing bug for non-isotripic processes
-struct focus_data_array_struct focus_data_array;
+struct focus_data_array_struct focus_data_array; // Focusing specified by user is element 0 and used for isotropic processes, rotated versions are added by master
 struct pointer_to_1d_int_list focus_array_indices; // Add 1D integer array with indecies for correct focus_data for each process
 
 
@@ -837,6 +835,24 @@ void add_element_to_focus_data_array(struct focus_data_array_struct *focus_data_
       focus_data_array->elements[focus_data_array->num_elements-1] = focus_data;
     }
     };
+	
+void copy_focus_data_array(struct focus_data_array_struct *original_array, struct focus_data_array_struct *new_array) {
+	
+	new_array->num_elements = original_array->num_elements;
+	new_array->elements = malloc(new_array->num_elements*sizeof(struct focus_data_struct));
+
+	if (new_array->elements == NULL) {
+		fprintf(stderr, "Memory allocation failed in copy_focus_data_struct \n");
+		exit(1);
+	}
+		
+	int iterate;
+	for (iterate=0;iterate<original_array->num_elements;iterate++) {
+		new_array->elements[iterate] = original_array->elements[iterate];
+	}
+
+	};
+
 
 
 void add_to_logger_with_data(struct logger_with_data_struct *logger_with_data, struct logger_struct *logger) {

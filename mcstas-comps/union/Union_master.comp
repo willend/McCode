@@ -605,7 +605,11 @@ exit(-1);
         // The geometry storage needs a shallow copy as well (hard copy not necessary for any current geometries), may need changes in future
         // A simple copy_geometry_parameters function is added to the geometry in each geometry component
         Volumes[volume_index]->geometry.geometry_parameters = Volumes[volume_index]->geometry.copy_geometry_parameters(&global_geometry_list_master->elements[geometry_list_index].Volume->geometry.geometry_parameters);
-          
+		
+		// Copy focusing data too, it will be modified based on this master components rotation, so should not be reused		
+		copy_focus_data_array(&global_geometry_list_master->elements[geometry_list_index].Volume->geometry.focus_data_array, 
+							  &Volumes[volume_index]->geometry.focus_data_array);
+
       }
       
       // This section identifies the different non isotropic processes in the current volume and give them appropriate transformation matrices
