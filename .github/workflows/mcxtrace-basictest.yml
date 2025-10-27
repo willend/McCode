@@ -75,11 +75,14 @@ jobs:
     - name: Setup (macOS)
       id: setup-macos
       # Temporary workaround for failing build of brew / xraylib on macos-15
-      if: runner.os == 'macOS' && matrix.os !='macos-15'
+      if: runner.os == 'macOS'
       run: |
            brew install bison flex gfortran gsl
-           brew tap tschoonj/tap
-           brew install xraylib
+           if [ "${{ matrix.os }}" != "macos-15" ];
+           then
+             brew tap tschoonj/tap
+             brew install xraylib
+           fi
 
     - name: Setup (Windows)
       id: setup-Windows
