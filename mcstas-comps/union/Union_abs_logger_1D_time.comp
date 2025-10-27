@@ -60,6 +60,8 @@
 * %P
 * INPUT PARAMETERS:
 * yheight:         [m] height of absorption logger
+* time_min:               [s] time at start of recording
+* time_min:               [s] time at end of recording
 * n:               [1] number of bins along y
 * target_geometry: [string] Comma separated list of geometry names that will be logged, leave empty for all volumes (even not defined yet)
 * filename:        [string] Filename of produced data file

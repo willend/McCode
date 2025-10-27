@@ -58,6 +58,12 @@
 * target_geometry: [string] Comma separated list of geometry names that will be logged, leave empty for all volumes (even not defined yet)
 * filename:        [string] Filename of produced data file
 * order_total:     [1]      Only log rays that have scattered n times, -1 for all orders
+* xwidth:          [m]      Width in x direction
+* yheight:         [m]      Height in y direction
+* zdepth:          [m]      Depth in z direction
+* xbins:           [1]      Number of bins in x direction
+* ybins:           [1]      Number of bins in y direction
+* zbins:           [1]      Number of bins in z direction
 * order_volume:    [1]      Only log rays that have scattered n times in the same geometry, -1 for all orders
 * logger_conditional_extend_index: [1] If a conditional is used with this logger, the result of each conditional calculation can be made available in extend as a array called "logger_conditional_extend", and one would then access logger_conditional_extend[n] if logger_conditional_extend_index is set to n
 * init:            [string] Name of Union_init component (typically "init", default)
