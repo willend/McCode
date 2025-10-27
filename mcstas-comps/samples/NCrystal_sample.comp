@@ -368,24 +368,18 @@ FINALLY
 
 MCDISPLAY
 %{
-  //NB: Future McStas (2.5?) is slated to introduce mcdis_cylinder and
-  //mcdis_sphere functions, which we at that point should likely use.
   switch (geoparams.shape) {
   case NC_CYLINDER:
-    mcdis_circle("xz", 0,  geoparams.dy/2.0, 0, geoparams.rradius);
-    mcdis_circle("xz", 0, -geoparams.dy/2.0, 0, geoparams.rradius);
-    mcdis_line(-geoparams.rradius, -geoparams.dy/2.0, 0, -geoparams.rradius, +geoparams.dy/2.0, 0);
-    mcdis_line(+geoparams.rradius, -geoparams.dy/2.0, 0, +geoparams.rradius, +geoparams.dy/2.0, 0);
-    mcdis_line(0, -geoparams.dy/2.0, -geoparams.rradius, 0, +geoparams.dy/2.0, -geoparams.rradius);
-    mcdis_line(0, -geoparams.dy/2.0, +geoparams.rradius, 0, +geoparams.dy/2.0, +geoparams.rradius);
+    mcdis_cylinder( 0., 0., 0.,
+                    geoparams.rradius,
+                    geoparams.dy,
+                    0 , 0.0 , 1.0 , 0.0);
     break;
   case NC_BOX:
     mcdis_box(0., 0., 0., geoparams.dx, geoparams.dy, geoparams.dz,0, 0, 1, 0);
     break;
   case NC_SPHERE:
-    mcdis_circle("xy", 0., 0., 0., geoparams.rradius);
-    mcdis_circle("xz", 0., 0., 0., geoparams.rradius);
-    mcdis_circle("yz", 0., 0., 0., geoparams.rradius);
+    mcdis_sphere(0.0,0.0,0.0,geoparams.rradius);
     break;
   };
 %}
