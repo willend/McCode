@@ -74,7 +74,8 @@ jobs:
 
     - name: Setup (macOS)
       id: setup-macos
-      if: runner.os == 'macOS'
+      # Temporary workaround for failing build of brew / xraylib on macos-15
+      if: runner.os == 'macOS' && matrix.os !='macos-15'
       run: |
            brew install bison flex gfortran gsl
            brew tap tschoonj/tap
