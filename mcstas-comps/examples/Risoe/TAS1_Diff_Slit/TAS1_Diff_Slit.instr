@@ -5,7 +5,7 @@
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Instrument: TAS1_Diff_Powder
+* Instrument: TAS1_Diff_Slit
 *
 * %Identification
 * Written by: A. Abrahamsen, N. B. Christensen, and E. Lauridsen
@@ -13,24 +13,25 @@
 * Origin: Risoe
 * %INSTRUMENT_SITE: Risoe
 *
+* Example formerly known as linup-3.instr
+*
 * The conventional cold-source triple-axis spectrometer TAS1 at Risoe National
-* Laboratory used as a diffractometer for an alignment study with a
-* powder sample.
+* Laboratory used as a diffractometer for a collimation alignment study with a
+* slit sample.
 *
 * %Description
 * This instrument is the conventional cold-source triple-axis spectrometer TAS1
 * at Risoe National Laboratory. It does not exist anymore, but was used as the
 * first detailed work performed with the McStas package.
-* Here it is used as a diffractometer for an alignment study. The
-* sample is a powder and there is no analyzer.
+* Here it is used as a diffractometer for a collimation alignment study. The
+* sample is a slit and there is no analyzer.
 *
-* %Example: PHM=-37.077 Detector: sng_I=4.50892e-07
+* %Example:  C1=30 TT=0 Detector: sng_I=2e-5
 *
 * %Parameters
 * PHM: [deg]   Monochromator arm angle, aka A1
 * TTM: [deg]   Monochromator take-off angle, aka A2
 * TT: [deg]    Take-off angle at the sample position, aka A4
-* TTA: [deg]   Take-off angle at the analyzer position, aka A6
 * C1: [min]    Collimator 1 aperture (mono-sample arm)
 * OMC1: [deg]  Tilt angle of the Collimator 1
 * C2: [min]    Collimator 2 aperture (sample-ana arm)
@@ -42,7 +43,7 @@
 *
 * %End
 *******************************************************************************/
-DEFINE INSTRUMENT TAS1_Diff_Powder(PHM=-37.077,TTM=-74,TT=33.52,TTA=0,C1=30,OMC1=5.5,C2=28,C3=67)
+DEFINE INSTRUMENT TAS1_Diff_Slit(PHM=-37.077, TTM=-74, TT=33.52, C1=30, OMC1=5.5, C2=28, C3=67)
 
 DECLARE
 %{
@@ -77,7 +78,7 @@ INITIALIZE
 
 TRACE
 
-COMPONENT a1 = Progress_bar()
+COMPONENT a1 = Arm()
   AT (0,0,0) ABSOLUTE
 
 COMPONENT source = Source_simple(
@@ -192,32 +193,22 @@ COMPONENT mon = Monitor(
   xmin = -0.025, xmax = 0.025, ymin = -0.0375, ymax = 0.0375)
   AT (0, 0, 1.280) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
 
-COMPONENT slitMS6 = Slit(
-  xmin = -0.010, xmax = 0.010, ymin = -0.016, ymax = 0.016)
-  AT (0,0,1.370) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
-
 COMPONENT emon1 = E_monitor(
   xmin = -0.01, xmax = 0.01, ymin = -0.1, ymax = 0.1,
   Emin = 19.25, Emax = 20.75, nE = 35,
-  filename = "linup_5_1.vmon")
+  filename = "linup_3_1.vmon")
   AT(0, 0, 1.5) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
 
-SPLIT COMPONENT sample = Powder1(
-  radius = 0.007,
-  yheight = 0.015,
-  q = 1.8049,
-  d_phi = 4,
-  pack = 1, j = 6, DW = 1,
-  F2 = 56.8,
-  Vc = 85.0054, sigma_abs = 0.463)
+COMPONENT sample = Slit(
+  xmin = -0.00525, xmax = 0.00525, ymin = -0.02025, ymax = 0.02025)
   AT (0, 0, 1.565) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
+
+COMPONENT slit1mm = Slit(
+  xmin = -0.0005, xmax = 0.0005, ymin = -0.02, ymax = 0.02)
+  AT (0, 0, 0.030) RELATIVE sample ROTATED (0,0,0) RELATIVE sample
 
 COMPONENT a3 = Arm()
   AT (0,0,0) RELATIVE sample ROTATED (0, TT, 0) RELATIVE a2
-
-COMPONENT slitSA1 = Slit(
-  xmin = -0.008, xmax = 0.008, ymin = -0.020, ymax = 0.020)
-  AT (0,0,0.320) RELATIVE a3 ROTATED (0,0,0) RELATIVE a3
 
 COMPONENT c2 = Collimator_linear(
   xmin = -0.02, xmax = 0.02, ymin = -0.0315, ymax = 0.0315,
@@ -228,7 +219,7 @@ COMPONENT ana = Arm()
   AT (0, 0, 0.770) RELATIVE a3 ROTATED (0, 0, 0) RELATIVE a3
 
 COMPONENT a4 = Arm()
-  AT (0, 0, 0) RELATIVE ana ROTATED (0, TTA, 0) RELATIVE a3
+  AT (0, 0, 0) RELATIVE ana ROTATED (0, 0, 0) RELATIVE a3
 
 COMPONENT c3 = Collimator_linear(
   xmin = -0.02, xmax = 0.02, ymin = -0.05, ymax = 0.05,
@@ -239,10 +230,10 @@ COMPONENT sng = Monitor(
   xmin = -0.01, xmax = 0.01, ymin = -0.045, ymax = 0.045)
   AT(0, 0, 0.43) RELATIVE a4 ROTATED (0,0,0) RELATIVE a4
 
-COMPONENT emon2 = E_monitor(
+COMPONENT Emon2 = E_monitor(
   xmin = -0.0125, xmax = 0.0125, ymin = -0.05, ymax = 0.05,
   Emin = 19.25, Emax = 20.75, nE = 35,
-  filename = "linup_5_2.vmon")
+  filename = "linup_3_2.vmon")
   AT(0, 0, 0.430001) RELATIVE a4 ROTATED (0,0,0) RELATIVE a4
 
 END
