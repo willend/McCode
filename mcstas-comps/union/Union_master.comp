@@ -31,15 +31,16 @@
 *
 * %P
 * INPUT PARAMETERS:
-*   verbal:                        [0/1] Toogles terminal output describing the defined simulation
-*   list_verbal:                  [0/1] Toogles information of all internal lists in intersection network
-*   allow_inside_start:     [0/1] Set to 1 if rays are expected to start inside a volume in this master
-*   finally_verbal:             [0/1]Toogles information about cleanup performed in finally section
-*   enable_tagging:          [0/1]  Enable tagging of ray history (geometry, scattering process)
-*   history_limit:               [1]Limit the number of unique histories that are saved
-*   enable_conditionals:  [0/1] Use conditionals with this master
+*   enable_refraction:                   [0/1] Toggles refraction effects, simulated for all materials that have refraction parameters set
+*   enable_reflection:                   [0/1] Toggles reflection effects, simulated for all materials that have refraction parameters set
+*   list_verbal:                         [0/1] Toogles information of all internal lists in intersection network
+*   allow_inside_start:                  [0/1] Set to 1 if rays are expected to start inside a volume in this master
+*   finally_verbal:                      [0/1]Toogles information about cleanup performed in finally section
+*   enable_tagging:                      [0/1]  Enable tagging of ray history (geometry, scattering process)
+*   history_limit:                       [1] Limit the number of unique histories that are saved
+*   enable_conditionals:                 [0/1] Use conditionals with this master
 *   inherit_number_of_scattering_events: [0/1] Inherit the number of scattering events from last master
- * init:                             [string] Name of Union_init component (typically "init", default)
+ *  init:                                [string] Name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
 *
@@ -50,7 +51,9 @@
 
 DEFINE COMPONENT Union_master
 
-SETTING PARAMETERS(verbal = 1,
+SETTING PARAMETERS(int enable_refraction = 1,
+				   int enable_reflection = 1,
+				   verbal = 1,
                    list_verbal = 0,
                    finally_verbal = 0,
                    allow_inside_start=0,
@@ -169,8 +172,7 @@ DECLARE
   double mc_prop;
   double time_to_scattering;
   double length_to_scattering;
-  double length_to_boundery;
-  double length_to_boundery_fp;
+  double length_to_boundary;
   double time_to_boundery;
   int selected_process;
   int scattering_event;
@@ -269,8 +271,8 @@ DECLARE
   
   // Reliability control
   // Safty distance is needed to avoid having ray positions closer to a wall than the precision of intersection functions
-  double safty_distance;
-  double safty_distance2;
+  double safety_distance;
+  double safety_distance2;
   
   // Focusing
   struct focus_data_struct temporary_focus_data;
@@ -355,8 +357,8 @@ exit(-1);
   
   // Parameters describing the safety distances close to surfaces, as scattering should not occur closer to a surface than the
   //  accuracy of the intersection calculation.
-  safty_distance = 1E-11;
-  safty_distance2 = safty_distance*2;
+  safety_distance = 1E-11;
+  safety_distance2 = safety_distance*2.0;
   
   // Write information to the global_master_list_master about the current Union_master
   sprintf(global_master_element.name,"%s",NAME_CURRENT_COMP);
@@ -484,7 +486,7 @@ exit(-1);
       max_conditional_extend_index = global_all_volume_logger_list_master->elements[iterator].logger->logger_extend_index;
     }
   }
-  
+ 
   // The absolute rotation of this component is saved for use in initialization
   rot_transpose(ROT_A_CURRENT_COMP,master_transposed_rotation_matrix);
   
@@ -604,9 +606,6 @@ exit(-1);
         Volumes[volume_index]->geometry.geometry_parameters = Volumes[volume_index]->geometry.copy_geometry_parameters(&global_geometry_list_master->elements[geometry_list_index].Volume->geometry.geometry_parameters);
           
       }
-	  
-	  // Update focusing absolute_rotation before running through processes, then this will be the baseline for nonisotropic processes
-	  rot_copy(Volumes[volume_index]->geometry.focus_data_array.elements[0].absolute_rotation, ROT_A_CURRENT_COMP);
       
       // This section identifies the different non isotropic processes in the current volume and give them appropriate transformation matrices
       // Identify the number of non isotropic processes in a material (this code can be safely executed for the same material many times)
@@ -618,6 +617,9 @@ exit(-1);
             non_isotropic_found++;
         }
       }
+	  
+	  // Update focusing absolute_rotation before running through processes, then this will be the baseline for nonisotropic processes
+	  //rot_copy(Volumes[volume_index]->geometry.focus_data_array.elements[0].absolute_rotation, ROT_A_CURRENT_COMP);
       
       Volumes[volume_index]->geometry.focus_array_indices.num_elements=0;
       // For the non_isotropic volumes found, rotation matrices need to be allocated and calculated
@@ -642,7 +644,8 @@ exit(-1);
             // Correct for process rotation
 			// Aim
             temporary_focus_data.Aim = rot_apply(Volumes[volume_index]->p_physics->p_scattering_array[iterator].rotation_matrix,temporary_focus_data.Aim);
-			// Absolute rotation
+			
+			// Absolute rotation of focus_data needs to updated using the rotation matrix from this process (before it is combined with the rotation matrix of the geometry)
 			rot_mul(Volumes[volume_index]->p_physics->p_scattering_array[iterator].rotation_matrix, temporary_focus_data.absolute_rotation, temp_rotation_matrix);
 			rot_copy(temporary_focus_data.absolute_rotation, temp_rotation_matrix);
             
@@ -688,6 +691,8 @@ exit(-1);
           Volumes[volume_index]->geometry.focus_array_indices.elements[iterator] = 0;
           
       }
+	  
+	  rot_copy(Volumes[volume_index]->geometry.focus_data_array.elements[0].absolute_rotation, ROT_A_CURRENT_COMP);
       
       // This component works in its local coordinate system, and thus all information from the input components should be transformed to its coordinate system.
       // All the input components saved their absolute rotation/position into their Volume structure, and the absolute rotation of the current component is known.
@@ -1426,49 +1431,111 @@ TRACE
               // This volume does not have physical processes but does have an absorption cross section, so the ray weight is reduced accordingly
               
               my_sum_plus_abs = Volumes[current_volume]->p_physics->my_a*(2200/v_length);
-              length_to_boundery = time_to_boundery * v_length;
+              length_to_boundary = time_to_boundery * v_length;
               
               abs_weight_factor = exp(-Volumes[current_volume]->p_physics->my_a*2200*time_to_boundery);
               abs_weight_factor_set = 1;
     
               #ifdef Union_trace_verbal_setting
                 printf("name of material: %s \n",Volumes[current_volume]->name);
-                printf("length to boundery  = %f\n",length_to_boundery);
+                printf("length to boundery  = %f\n",length_to_boundary);
                 printf("absorption cross section  = %f\n",Volumes[current_volume]->p_physics->my_a);
-                printf("chance to get through this length of absorber: %f \%\n", 100*exp(-Volumes[current_volume]->p_physics->my_a*length_to_boundery));
+                printf("chance to get through this length of absorber: %f \%\n", 100*exp(-Volumes[current_volume]->p_physics->my_a*length_to_boundary));
               #endif
             }
           } else {
             // Since there is a non-zero number of processes in this material, all the scattering cross section for these are calculated
-            my_sum = 0; k[0] = V2K*vx; k[1] = V2K*vy; k[2] = V2K*vz; p_my_trace = my_trace; wavevector = coords_set(k[0],k[1],k[2]);
+            my_sum = 0; k[0] = V2K*vx; k[1] = V2K*vy; k[2] = V2K*vz;
+			p_my_trace = my_trace; wavevector = coords_set(k[0],k[1],k[2]);
+			length_to_boundary = time_to_boundery * v_length;
 			
-			// update focus data for this ray
-			int f_index;
+			double forced_length_to_scattering;
 			Coords ray_position_geometry;
-			for (f_index=0; f_index < Volumes[current_volume]->geometry.focus_data_array.num_elements; f_index++) {
-			  this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[f_index];
-			  this_focus_data->RayAim = this_focus_data->Aim; // Temporary solution, cross section should not depend on focusing
+			
+			// If any process in this material needs focusing, sample scattering position and update focus_data accordingly
+			if (Volumes[current_volume]->p_physics->any_process_needs_cross_section_focus == 1) {
+				// Sample length_to_scattering in linear manner
+				forced_length_to_scattering = safety_distance + rand01()*(length_to_boundary - safety_distance2);
+				
+				ray_velocity = coords_set(vx,vy,vz); // Test for root cause
+				// Find location of scattering point in master coordinate system without changing main position / velocity variables
+				Coords direction = coords_scalar_mult(ray_velocity, 1.0/length_of_position_vector(ray_velocity));
+				Coords scattering_displacement = coords_scalar_mult(direction, forced_length_to_scattering);
+				Coords forced_ray_scattering_point = coords_add(ray_position, scattering_displacement);
+				ray_position_geometry = coords_sub(forced_ray_scattering_point, Volumes[current_volume]->geometry.center);  // ray_position relative to geometry center
+				
+
+				
+				// Calculate the aim for non isotropic processes
+				this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[0];				
+				this_focus_data->RayAim = coords_sub(this_focus_data->Aim, ray_position_geometry); // Aim vector for this ray				  
+				
+				#ifdef Union_trace_verbal_setting
+					printf("Prepared for focus in cross section calculation in volume: %s \n",Volumes[current_volume]->name);
+					printf("forced_length_to_scattering =%lf \n", forced_length_to_scattering);
+					print_position(ray_position, "ray_position");
+					print_position(direction, "direction");
+					print_position(scattering_displacement, "scattering_displacement");
+					print_position(forced_ray_scattering_point, "forced_ray_scattering_point");												
+					print_position(ray_position_geometry, "ray_position_geometry");
+					printf("for isotropic processes this RayAim is used \n");
+	  				print_position(this_focus_data->RayAim, "this_focus_data->RayAim");	
+				#endif				
+
+				/*
+				// update focus data for this ray (could limit this to only update the necessary focus_data element, but there are typically very few)
+				int f_index;
+				for (f_index=0; f_index < Volumes[current_volume]->geometry.focus_data_array.num_elements; f_index++) {  
+				  this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[f_index];
+				  // Coords ray_position_geometry_rotated = rot_apply(this_focus_data.absolute_rotation, ray_position_geometry);
+				  this_focus_data->RayAim = coords_sub(this_focus_data->Aim, ray_position_geometry); // Aim vector for this ray
+				}
+
+				printf("calculated forced_length_to_scattering = %lf, new RayAim \n", forced_length_to_scattering);
+				print_position(direction, "direction");
+				print_position(scattering_displacement, "scattering_displacement");
+				print_position(forced_ray_scattering_point, "forced_ray_scattering_point");												
+				print_position(ray_position_geometry, "ray_position_geometry");
+				print_position(this_focus_data->RayAim, "this_focus_data->RayAim");	
+				*/
+							
+			} else {
+				forced_length_to_scattering = -1.0; // Signals that no forcing needed, could also if on the selected process struct
 			}
 			
             int p_index;
             for (p_index=0; p_index < Volumes[current_volume]->p_physics->number_of_processes; p_index++ ){ // GPU
+				
+              // Find correct focus_data_array index for this volume/process
+              focus_data_index = Volumes[current_volume]->geometry.focus_array_indices.elements[p_index];
+  			  this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[focus_data_index];				
             
               if (Volumes[current_volume]->p_physics->p_scattering_array[p_index].non_isotropic_rot_index != -1) {
                 // If the process is not isotropic, the wavevector is transformed into the local coordinate system of the process
-                wavevector_rotated = rot_apply(Volumes[current_volume]->geometry.process_rot_matrix_array[Volumes[current_volume]->p_physics->p_scattering_array[p_index].non_isotropic_rot_index],wavevector);
-                
+				int non_isotropic_rot_index = Volumes[current_volume]->p_physics->p_scattering_array[p_index].non_isotropic_rot_index;
+                wavevector_rotated = rot_apply(Volumes[current_volume]->geometry.process_rot_matrix_array[non_isotropic_rot_index],wavevector);
                 coords_get(wavevector_rotated,&k_rotated[0],&k_rotated[1],&k_rotated[2]);
+				
+				if (Volumes[current_volume]->p_physics->p_scattering_array[p_index].needs_cross_section_focus == 1) {
+					// Prepare focus data using ray_position_geometry of forced scattering point which will be prepared if any process needs cross_section time focusing
+					Coords ray_position_geometry_rotated = rot_apply(Volumes[current_volume]->geometry.process_rot_matrix_array[non_isotropic_rot_index], ray_position_geometry);
+					this_focus_data->RayAim = coords_sub(this_focus_data->Aim, ray_position_geometry_rotated); // Aim vector for this ray
+					#ifdef Union_trace_verbal_setting
+						printf("Checking process number : %d, it was not isotropic, so RayAim updated \n",p_index);						
+						print_position(ray_position_geometry, "ray_position_geometry");						
+						print_position(ray_position_geometry_rotated, "ray_position_geometry_rotated");						
+						print_position(this_focus_data->RayAim, "this_focus_data->RayAim");
+					#endif					
+					
+				}
 
               } else {
                 k_rotated[0] = k[0]; k_rotated[1] = k[1]; k_rotated[2] = k[2];
+				// focus_data RayAim already updated for non isotropic processes
               }
-              
-              // Call the probability for scattering function assighed to this specific procress (the process pointer is updated in the for loop)
-              process = &Volumes[current_volume]->p_physics->p_scattering_array[p_index]; // GPU Allowed
 			  
-              // Find correct focus_data_array index for this volume/process
-              focus_data_index = Volumes[current_volume]->geometry.focus_array_indices.elements[p_index];
-			  this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[focus_data_index];
+              // Call the probability for scattering function assighed to this specific procress (the process pointer is updated in the for loop)
+              process = &Volumes[current_volume]->p_physics->p_scattering_array[p_index]; // GPU Allowed			  
               
               int physics_output;
               physics_output = physics_my(process->eProcess, p_my_trace, k_rotated, process->data_transfer, this_focus_data, _particle);
@@ -1477,131 +1544,115 @@ TRACE
               #ifdef Union_trace_verbal_setting
                 printf("my_trace = %f, my_sum = %f\n",*p_my_trace,my_sum);
               #endif
-              p_my_trace++; // increment the pointer so that it point to the next element (max number of process in any material is allocated)
+			  // increment the pointers so that it point to the next element (max number of process in any material is allocated)
+              p_my_trace++; 
             }
             
             #ifdef Union_trace_verbal_setting
               printf("time_propagated_without_scattering = %f.\n",time_propagated_without_scattering);
               printf("v_length                           = %f.\n",v_length);
+              printf("exp(- length_to_boundary*my_sum) = %f. length_to_boundary = %f. my_sum = %f.\n",exp(-length_to_boundary*my_sum),length_to_boundary,my_sum);
             #endif
+			  
+			my_sum_plus_abs = my_sum + Volumes[current_volume]->p_physics->my_a*(2200/v_length);
             
-            length_to_boundery = time_to_boundery * v_length;
-            
-            #ifdef Union_trace_verbal_setting
-              printf("exp(- length_to_boundery*my_sum) = %f. length_to_boundery = %f. my_sum = %f.\n",exp(-length_to_boundery*my_sum),length_to_boundery,my_sum);
-            #endif
-            
-            // Selecting if a scattering takes place, and what scattering process.
-            // This section have too many if statements, and unessecary calculations
-            // Could make seperate functions for p_interact on/off and interact_fraction on/off,
-            //   and set function pointers to these in initialize, thus avoiding many unessecary if statements and calculations of x/x.
-            
-            my_sum_plus_abs = my_sum + Volumes[current_volume]->p_physics->my_a*(2200/v_length);
-            
-            if (my_sum < 1E-18) {
-                // The scattering cross section is basicly zero, no scattering should occur.
-                scattering_event = 0;
-                abs_weight_factor =  exp(-length_to_boundery*my_sum_plus_abs); // Correct for absorption and the almost zero scattering
-                abs_weight_factor_set = 1;
-            } else if (length_to_boundery < safty_distance2) {
-                // Too close to boundery to safly make another scattering, attenuate
-                scattering_event = 0;
-                abs_weight_factor = exp(-length_to_boundery*my_sum_plus_abs); // Attentuate the beam for the small distance
-                
-            } else {
-                // The scattering cross section is above zero and the distance to the boundery is sufficient for a scattering
-                if (Volumes[current_volume]->geometry.geometry_p_interact != 0) {
-                    // a fraction of the beam (geometry_p_interact) is forced to scatter
-                    real_transmission_probability = exp(-length_to_boundery*my_sum_plus_abs);
-                    mc_transmission_probability = (1.0 - Volumes[current_volume]->geometry.geometry_p_interact);
-                    if ((scattering_event = (rand01() > mc_transmission_probability))) {
-                        // Scattering event happens, this is the correction for the weight
-                        p *= (1.0-real_transmission_probability)/(1.0-mc_transmission_probability); // Absorption simulated in weight
-
-                        // Find length to next scattering knowing the ray will scatter.
-                        length_to_scattering = safty_distance -log(1.0 - rand0max((1.0 - exp(-my_sum_plus_abs*(length_to_boundery-safty_distance2))))) / my_sum_plus_abs;
-                    } else {
-                        // Scattering event does not happen, this is the appropriate correction
-                        p *= real_transmission_probability/mc_transmission_probability; // Absorption simulated in weight
-                        
-                    }
-                } else {
-                    // probability to scatter is the natural value
-                    if(my_sum*length_to_boundery < 1e-6) { // Scattering probability very small, linear method is used as exponential is unreliable
-                      if (length_to_boundery > safty_distance2) {
-                        if (rand01() < exp(-length_to_boundery*my_sum_plus_abs)) {
-                          // Scattering happens, use linear description to select scattering position
-                          length_to_scattering = safty_distance + rand0max(length_to_boundery - safty_distance2);
-                          // Weight factor necessary to correct for using the linear scattering position distribution
-                          abs_weight_factor = length_to_boundery*my_sum*exp(-length_to_scattering*my_sum_plus_abs); // Absorption simulated in weight
-                          abs_weight_factor_set = 1;
-                          
-                          scattering_event = 1;
-                        } else scattering_event = 0;
-                      } else {
-                        // The distance is too short to reliably make a scattering event (in comparison to accuraccy of intersect functions)
-                        abs_weight_factor = exp(-length_to_boundery*my_sum_plus_abs); // Attentuate the beam for the small distance
-                        scattering_event = 0;
-                      }
-                    } else {
-                        // Strong scattering, use exponential description to select scattering position between safetydistance and infinity
-                        length_to_scattering = safty_distance -log(1 - rand01() ) / my_sum_plus_abs;
-                        // Scattering happens if the scattering position is before the boundery (and safty distance)
-                        if (length_to_scattering < length_to_boundery - safty_distance) scattering_event = 1;
-                        else scattering_event = 0;
-                    }
-                }
-                
-                if (scattering_event == 1) {
-                  // Adjust weight for absorption
-                  abs_weight_factor *= my_sum/my_sum_plus_abs;
-                  abs_weight_factor_set = 1;
-                  // Safety feature, alert in case of nonsense my results / negative absorption
-                  if (my_sum/my_sum_plus_abs > 1.0) printf("WARNING: Absorption weight factor above 1! Should not happen! \n");
-                  // Select process
-                  if (Volumes[current_volume]->p_physics->number_of_processes == 1) { // trivial case
-                    // Select the only available process, which will always have index 0
-                    selected_process = 0;
-                  } else {
-                    if (Volumes[current_volume]->p_physics->interact_control == 1) {
-                      // Interact_fraction is used to influence the choice of process in this material
-                      mc_prop = rand01();culmative_probability=0;total_process_interact=1.0;
-                  
-                      // If any of the processes have probability 0, they are excluded from the selection
-                      for (iterator = 0;iterator < Volumes[current_volume]->p_physics->number_of_processes;iterator++) {
-                        if (my_trace[iterator] < 1E-18) {
-                          // When this happens, the total force probability is corrected and the probability for this particular instance is set to 0
-                          total_process_interact -= Volumes[current_volume]->p_physics->p_scattering_array[iterator].process_p_interact;
-                          my_trace_fraction_control[iterator] = 0;
-                          // In cases where my_trace is not zero, the forced fraction is still used.
-                        } else my_trace_fraction_control[iterator] = Volumes[current_volume]->p_physics->p_scattering_array[iterator].process_p_interact;
-                      }
-                      // Randomly select a process using the weights stored in my_trace_fraction_control divided by total_process_interact
-                      for (iterator = 0;iterator < Volumes[current_volume]->p_physics->number_of_processes;iterator++) {
-                        culmative_probability += my_trace_fraction_control[iterator]/total_process_interact;
-                        if (culmative_probability > mc_prop) {
-                          selected_process = iterator;
-                          p *= (my_trace[iterator]/my_sum)*(total_process_interact/my_trace_fraction_control[iterator]);
-                          break;
-                        }
-                      }
-                    
-                    } else {
-                      // Select a process based on their relative attenuations factors
-                      mc_prop = rand01();culmative_probability=0;
-                      for (iterator = 0;iterator < Volumes[current_volume]->p_physics->number_of_processes;iterator++) {
-                        culmative_probability += my_trace[iterator]/my_sum;
-                        if (culmative_probability > mc_prop) {
-                          selected_process = iterator;
-                          break;
-                        }
-                      }
+			// New flow:length_to_boundary
+			  
+			  // Calculate if scattering happens based on my_sub_plus_abs
+            if (my_sum < 1E-18) {			
+				scattering_event = 0;
+			} else if (length_to_boundary < safety_distance2) {
+				scattering_event = 0;
+ 			} else {
+                real_transmission_probability = exp(-length_to_boundary*my_sum_plus_abs);
+ 		        if (Volumes[current_volume]->geometry.geometry_p_interact != 0) {
+                  mc_transmission_probability = (1.0 - Volumes[current_volume]->geometry.geometry_p_interact);
+                  if ((scattering_event = (rand01() > mc_transmission_probability))) {
+                      // Scattering event happens, this is the correction for the weight
+                      p *= (1.0-real_transmission_probability)/(1.0-mc_transmission_probability);
+				  } else {
+                      // Scattering event does not happen, this is the appropriate correction
+                      p *= real_transmission_probability/mc_transmission_probability;				  
+				  }
+			    } else {
+                  // probability to scatter is the natural value				  	
+				  scattering_event = rand01() > real_transmission_probability;
+				}
+			}
+			
+			// If scattering happens
+            if (scattering_event == 1) {
+			  // Select scattering process
+				
+              // Adjust weight for absorption
+              abs_weight_factor *= my_sum/my_sum_plus_abs;
+              abs_weight_factor_set = 1;
+              // Safety feature, alert in case of nonsense my results / negative absorption
+              if (my_sum/my_sum_plus_abs > 1.0) printf("WARNING: Absorption weight factor above 1! Should not happen! \n");
+              // Select process
+              if (Volumes[current_volume]->p_physics->number_of_processes == 1) { // trivial case
+                // Select the only available process, which will always have index 0
+                selected_process = 0;
+              } else {
+                if (Volumes[current_volume]->p_physics->interact_control == 1) {
+                  // Interact_fraction is used to influence the choice of process in this material
+                  mc_prop = rand01();culmative_probability=0;total_process_interact=1.0;
+              
+                  // If any of the processes have probability 0, they are excluded from the selection
+                  for (iterator = 0;iterator < Volumes[current_volume]->p_physics->number_of_processes;iterator++) {
+                    if (my_trace[iterator] < 1E-18) {
+                      // When this happens, the total force probability is corrected and the probability for this particular instance is set to 0
+                      total_process_interact -= Volumes[current_volume]->p_physics->p_scattering_array[iterator].process_p_interact;
+                      my_trace_fraction_control[iterator] = 0;
+                      // In cases where my_trace is not zero, the forced fraction is still used.
+                    } else my_trace_fraction_control[iterator] = Volumes[current_volume]->p_physics->p_scattering_array[iterator].process_p_interact;
+                  }
+                  // Randomly select a process using the weights stored in my_trace_fraction_control divided by total_process_interact
+                  for (iterator = 0;iterator < Volumes[current_volume]->p_physics->number_of_processes;iterator++) {
+                    culmative_probability += my_trace_fraction_control[iterator]/total_process_interact;
+                    if (culmative_probability > mc_prop) {
+                      selected_process = iterator;
+                      p *= (my_trace[iterator]/my_sum)*(total_process_interact/my_trace_fraction_control[iterator]);
+                      break;
                     }
                   }
-                } // end of select process
-            }
-            
-          }
+                
+                } else {
+                  // Select a process based on their relative attenuations factors
+                  mc_prop = rand01();culmative_probability=0;
+                  for (iterator = 0;iterator < Volumes[current_volume]->p_physics->number_of_processes;iterator++) {
+                    culmative_probability += my_trace[iterator]/my_sum;
+                    if (culmative_probability > mc_prop) {
+                      selected_process = iterator;
+                      break;
+                    }
+                  }
+                }
+              }
+			  
+  			  // Select distance to scattering position
+  			  if (Volumes[current_volume]->p_physics->p_scattering_array[selected_process].needs_cross_section_focus == 1) {
+  				// Respect forced length to scattering chosen by process
+  				length_to_scattering = forced_length_to_scattering;
+				// Drawing between 0 and L from constant s = 1/L and should have been q = A*exp(-kz).
+				// Normalizing A*exp(-kz) over 0 to L: A = k/(1-exp(-k*L))
+				// Weight correction is ratio between s and q, L*A*exp(-kz) = L*k*exp(-kz)/(1-exp(-Lk))
+				p *= length_to_boundary*my_sum_plus_abs*exp(-length_to_scattering*my_sum_plus_abs)/(1.0 - exp(-length_to_boundary*my_sum_plus_abs)); 
+				#ifdef Union_trace_verbal_setting
+					printf("Used forced length to scattering, %lf \n", length_to_scattering);						
+				#endif	
+				
+  			  } else {
+  			    // Decided the ray scatters, choose where on truncated exponential from safety_distance to length_to_boundary - safety_distance
+  				length_to_scattering = safety_distance - log(1.0 - rand0max((1.0 - exp(-my_sum_plus_abs*(length_to_boundary-safety_distance2))))) / my_sum_plus_abs;
+				#ifdef Union_trace_verbal_setting
+					printf("Sampled length to scattering, %lf \n", length_to_scattering);						
+				#endif	
+  			  }
+			  
+            } // Done handling scattering 
+			  
+          } // Done handling situation where there are scattering processes in the material
           
         } // Done checking for scttering event and in case of scattering selecting a process
      
@@ -1627,7 +1678,7 @@ TRACE
             } else {
                 // When the ray exits a volume, the absorption position should be exponentially distributed using the total cross section
                 my_abs = Volumes[current_volume]->p_physics->my_a*(2200/v_length);
-                abs_distance = -log(1.0 - rand0max(1.0 - exp(-my_sum_plus_abs*length_to_boundery)) ) / my_sum_plus_abs;
+                abs_distance = -log(1.0 - rand0max(1.0 - exp(-my_sum_plus_abs*length_to_boundary)) ) / my_sum_plus_abs;
             }
 
             t_abs_propagation = abs_distance/v_length;
@@ -1686,7 +1737,7 @@ TRACE
             
             #ifdef Union_trace_verbal_setting
               printf("time to scattering        = %2.20f \n",time_to_scattering);
-              printf("length to boundery = %f, length to scattering = %f \n",length_to_boundery,length_to_scattering);
+              printf("length to boundery = %f, length to scattering = %f \n",length_to_boundary,length_to_scattering);
             #endif
             
             // May be replace by version without gravity
@@ -1702,7 +1753,7 @@ TRACE
             // Safe check that should be unecessary. Used to fine tune how close to the edge of a volume a scattering event is allowed to take place (1E-14 m away currently).
             if (r_within_function(ray_position, &Volumes[current_volume]->geometry) == 0) {
               printf("\nERROR, propagated out of current volume instead of to a point within!\n");
-              printf("length_to_scattering_specified = %2.20f\n             length propagated = %2.20f\n            length_to_boundery = %2.20f \n   current_position = (%lf,%lf,%lf) \n",length_to_scattering,sqrt(time_to_scattering*time_to_scattering*vx*vx+time_to_scattering*time_to_scattering*vy*vy+time_to_scattering*time_to_scattering*vz*vz),length_to_boundery,x,y,z);
+              printf("length_to_scattering_specified = %2.20f\n             length propagated = %2.20f\n            length_to_boundary = %2.20f \n   current_position = (%lf,%lf,%lf) \n",length_to_scattering,sqrt(time_to_scattering*time_to_scattering*vx*vx+time_to_scattering*time_to_scattering*vy*vy+time_to_scattering*time_to_scattering*vz*vz),length_to_boundary,x,y,z);
               
               volume_index = within_which_volume_GPU(ray_position,starting_lists.reduced_start_list,starting_lists.starting_destinations_list,Volumes,&mask_status_list,number_of_volumes,pre_allocated1,pre_allocated2,pre_allocated3);
               
@@ -1720,13 +1771,18 @@ TRACE
 			this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[focus_data_index];
 			
 		    Coords ray_position_geometry = coords_sub(ray_position, Volumes[current_volume]->geometry.center);  // ray_position relative to geometry center			  
+
 		    this_focus_data->RayAim = coords_sub(this_focus_data->Aim, ray_position_geometry); // Aim vector for this ray
         
             // Rotation to local process coordinate system (for non isotropic processes)
             if (Volumes[current_volume]->p_physics->p_scattering_array[selected_process].non_isotropic_rot_index != -1) {
                 ray_velocity_rotated = rot_apply(Volumes[current_volume]->geometry.process_rot_matrix_array[Volumes[current_volume]->p_physics->p_scattering_array[selected_process].non_isotropic_rot_index],ray_velocity);
+				
+				Coords ray_position_geometry_rotated = rot_apply(Volumes[current_volume]->geometry.process_rot_matrix_array[Volumes[current_volume]->p_physics->p_scattering_array[selected_process].non_isotropic_rot_index],ray_position_geometry);
+				this_focus_data->RayAim = coords_sub(this_focus_data->Aim, ray_position_geometry_rotated); // Aim vector for this ray				
             } else {
                 ray_velocity_rotated = ray_velocity;
+				this_focus_data->RayAim = coords_sub(this_focus_data->Aim, ray_position_geometry); // Aim vector for this ray				
             }
 	        #ifdef Union_trace_verbal_setting
             printf("Kin: %g %g %g, selected_process: %i %i\n",k[0],k[1],k[2],selected_process,current_volume);
@@ -1773,6 +1829,7 @@ TRACE
             v_length = sqrt(vx*vx+vy*vy+vz*vz);
             k_new[0] = V2K*vx; k_new[1] = V2K*vy; k_new[2] = V2K*vz;
             if (verbal) if (v_length < 1) printf("velocity set to less than 1\n");
+			ray_velocity = coords_set(vx,vy,vz);
             
             #ifdef Union_trace_verbal_setting
               printf("Running logger system for specific volumes \n");
@@ -1817,11 +1874,11 @@ TRACE
               printf("SCATTERED SUCSSESFULLY \n");
               printf("r = (%f,%f,%f) v = (%f,%f,%f) \n",x,y,z,vx,vy,vz);
             
-	      if (enable_tagging && stop_tagging_ray == 0) printf("Before new process node: current_tagging_node->intensity = %f\n",current_tagging_node->intensity);
+	          if (enable_tagging && stop_tagging_ray == 0) printf("Before new process node: current_tagging_node->intensity = %f\n",current_tagging_node->intensity);
               if (enable_tagging && stop_tagging_ray == 0) printf("Before new process node: current_tagging_node->number_of_rays = %d\n", current_tagging_node->number_of_rays);
             #endif
             
-	    if (enable_tagging && stop_tagging_ray == 0)
+	      if (enable_tagging && stop_tagging_ray == 0)
                 current_tagging_node = goto_process_node(current_tagging_node, selected_process,Volumes[current_volume], &stop_tagging_ray,stop_creating_nodes);
                         
             #ifdef Union_trace_verbal_setting
@@ -2041,18 +2098,18 @@ TRACE
               printf(" TO VOLUME %d \n",current_volume);
             #endif
 			  
+            double n1, n2;
+            int perform_refraction = 1;
+            double nx;
+	        double ny;
+	        double nz;
+			double normal_vector[3];			
+			  
 			if (previous_volume != current_volume) { // With masks, it can happen that the ray takes an extra iteration within the same volume, can skip surface / refraction
-              double n1, n2;
-              int perform_refraction;
-			  
-			  perform_refraction = 1;	  
-			  
-              double nx;
-		      double ny;
-		      double nz;
+
 			  double surface_wavevector_before[3];
 			  double surface_wavevector[3];
-			  double normal_vector[3];
+
             
               nx = intersection_time_table.normal_vector_x[min_volume][min_solution];
               ny = intersection_time_table.normal_vector_y[min_volume][min_solution];
@@ -2111,9 +2168,12 @@ TRACE
 			  	printf(" Created entering surface stack for volume %d with %d effects. Combining into one surface stack \n",current_volume, n_entering);
 			#endif
 			  
-			  // Make combined list, leaving bottom to top followed by entering top to bottom
-			  // Stacks are naturally from bottom to top
-			  for (iterator=0; iterator<n_total; iterator++) {
+			  // Only need to run surface system if there are any surface processes
+			  if (n_total > 0) {
+				  
+			    // Make combined list, leaving bottom to top followed by entering top to bottom
+  			    // Stacks are naturally from bottom to top
+			    for (iterator=0; iterator<n_total; iterator++) {
 				  if (iterator < n_leaving) {
 					  // grab from leaving stack in natural order
 					  interface_stack.p_surface_array[iterator] = leaving_stack->p_surface_array[iterator];
@@ -2121,109 +2181,99 @@ TRACE
 				  	  // grab from entering stack in reverse order
 					  interface_stack.p_surface_array[iterator] = entering_stack->p_surface_array[n_entering - iterator + n_leaving - 1];
 				  }
-			  }
+			    }
 				  
-		      // struct surface_process_struct **surface_list; could do interface_struct like this instead
+		        // struct surface_process_struct **surface_list; could do interface_struct like this instead
 			  			 
-			  int surface_transverse_index = 0;
-			  int surface_direction = 1;
-		      int surface_iterations = 0;
-			  int in_direction;
-			  int continues;
-			  enum in_or_out inward_or_outward;
+			    int surface_transverse_index = 0;
+			    int surface_direction = 1;
+		        int surface_iterations = 0;
+			    int in_direction;
+			    int continues;
+			    enum in_or_out inward_or_outward;
 			  
-			  struct surface_process_struct *surface_pointer;
+			    struct surface_process_struct *surface_pointer;
 			  
-			  // todo:
-			  // get weight and wavevector into the surface_function
-			  // get normal_vector into the surface function
-			  // complete the Template_surface process
+			    surface_wavevector[0] = V2K*vx; surface_wavevector[1] = V2K*vy; surface_wavevector[2] = V2K*vz;
+			    surface_wavevector_before[0] = surface_wavevector[0];
+			    surface_wavevector_before[1] = surface_wavevector[1];
+			    surface_wavevector_before[2] = surface_wavevector[2];
 			  
-			  surface_wavevector[0] = V2K*vx; surface_wavevector[1] = V2K*vy; surface_wavevector[2] = V2K*vz;
-			  surface_wavevector_before[0] = surface_wavevector[0];
-			  surface_wavevector_before[1] = surface_wavevector[1];
-			  surface_wavevector_before[2] = surface_wavevector[2];
+		        #ifdef Union_trace_verbal_setting
+			      double dot_product_before = nx*vx + ny*vy + nz*vz;
+			  	  printf(" Entering surface stack loop \n");
+			  	  printf("  - normal dot v  = %lf \n", dot_product_before);
+ 			    #endif
 			  
-		      #ifdef Union_trace_verbal_setting
-			    double dot_product_before = nx*vx + ny*vy + nz*vz;
-			  	printf(" Entering surface stack loop \n");
-			  	printf("  - normal dot v  = %lf \n", dot_product_before);
- 			  #endif
-			  
-			  while (1) {
-				  
-				#ifdef Union_trace_verbal_setting
-				  	printf(" Start of surface stack with transverse_index = %d \n", surface_transverse_index);
-				#endif
-				  
-  			    // Escape conditions on each side of stack
-  			  	if (surface_transverse_index < 0) {
-  			      // Escaped from incoming direction
-                  perform_refraction = 0;					
-  			      current_volume = previous_volume;
+			    while (1) {
 				  
 				  #ifdef Union_trace_verbal_setting
-				  	printf(" Left stack to incoming side \n");
+				  	printf(" Start of surface stack with transverse_index = %d \n", surface_transverse_index);
 				  #endif
 				  
-  			      break;
-  			    }
-			  
-  			    if (surface_transverse_index >= n_total) {
-  			      // Went through all layers, continue to refraction as normal
-				  #ifdef Union_trace_verbal_setting
-					printf(" Left stack by going all the way through \n");
-				  #endif					
-  			      break;
-  			    }
+  			      // Escape conditions on each side of stack
+  			  	  if (surface_transverse_index < 0) {
+  			        // Escaped from incoming direction
+                    perform_refraction = 0;					
+  			        current_volume = previous_volume;
 				  
-				surface_pointer = interface_stack.p_surface_array[surface_transverse_index];
+				    #ifdef Union_trace_verbal_setting
+				  	  printf(" Left stack to incoming side \n");
+				    #endif
+				  
+  			        break;
+  			      }
 			  
-			    if (surface_transverse_index < n_leaving) in_direction = 1; else in_direction = -1;
-			  	if (surface_direction == in_direction) inward_or_outward = inward_bound; else inward_or_outward = outward_bound; 
+  			      if (surface_transverse_index >= n_total) {
+  			        // Went through all layers, continue to refraction as normal
+				    #ifdef Union_trace_verbal_setting
+					  printf(" Left stack by going all the way through \n");
+				    #endif					
+  			        break;
+  			      }
+				  
+				  surface_pointer = interface_stack.p_surface_array[surface_transverse_index];
+			  
+			      if (surface_transverse_index < n_leaving) in_direction = 1; else in_direction = -1;
+			  	  if (surface_direction == in_direction) inward_or_outward = inward_bound; else inward_or_outward = outward_bound; 
 				
-				// fresh normal in case surface function messed with it
-				normal_vector[0] = nx; normal_vector[1] = ny; normal_vector[2] = nz;
+				  // fresh normal in case surface function messed with it
+				  normal_vector[0] = nx; normal_vector[1] = ny; normal_vector[2] = nz;
 
-                // p, wavevector and continues updated by surface_function
-				#ifdef Union_trace_verbal_setting
+                  // p, wavevector and continues updated by surface_function
+				  #ifdef Union_trace_verbal_setting
 					printf(" Running physics_surface with transverse_index = %d \n", surface_transverse_index);
-				#endif
-			    physics_surface(surface_pointer, &p, surface_wavevector, &continues, normal_vector, inward_or_outward, _particle);
-				#ifdef Union_trace_verbal_setting
-					printf(" physics_surface reported continues = %d \n", continues);
-				#endif
+				  #endif
+			      physics_surface(surface_pointer, &p, surface_wavevector, &continues, normal_vector, inward_or_outward, _particle);
+				  #ifdef Union_trace_verbal_setting
+				  	printf(" physics_surface reported continues = %d \n", continues);
+				  #endif
 				
-				// insert logging
+				  // insert logging
 				
-				if (!continues) surface_direction = -surface_direction; // Flip stack direction if the ray does not continue
+				  if (!continues) surface_direction = -surface_direction; // Flip stack direction if the ray does not continue
 				
-			  	surface_transverse_index += surface_direction; // Go to next element in stack
-			    surface_iterations += 1;
+			  	  surface_transverse_index += surface_direction; // Go to next element in stack
+			      surface_iterations += 1;
 			  
-				if (surface_iterations > 10000) {
+				  if (surface_iterations > 10000) {
 					printf("ERROR: Ray stuck in surface stack, ABSORBED\n");
 					done = 1;
 					ray_sucseeded = 0;
 					break;
-				}
-			  }
+				  }
+			    }
 			  
-			  // Need to check if velocity altered
-			  int velocity_updated_by_surface_stack;
+			    // If velocity was updated, register that to the ray and reset intersection memory
+				// Hardcoded limit of 1E-5 m/s change in any direction
+			    if (fabs(surface_wavevector_before[0] - surface_wavevector[0]) > 1E-5 || 
+					fabs(surface_wavevector_before[1] - surface_wavevector[1]) > 1E-5 || 
+					fabs(surface_wavevector_before[2] - surface_wavevector[2]) > 1E-5) {
 
-			  if (surface_wavevector_before[0] != surface_wavevector[0] || 
-			      surface_wavevector_before[1] != surface_wavevector[1] || 
-			      surface_wavevector_before[2] != surface_wavevector[2]) {
-			    velocity_updated_by_surface_stack = 1;
-			  } 
-			  
-			  if (velocity_updated_by_surface_stack == 1) {  
-  
-				vx = surface_wavevector[0]*K2V;
-				vy = surface_wavevector[1]*K2V;
-				vz = surface_wavevector[2]*K2V;			  			  
-                #ifdef Union_trace_verbal_setting
+				  vx = surface_wavevector[0]*K2V;
+				  vy = surface_wavevector[1]*K2V;
+				  vz = surface_wavevector[2]*K2V;			  			  
+                  #ifdef Union_trace_verbal_setting
 					printf(" ray direction updated by surface stack \n");
 					printf("r = (%f,%f,%f) v = (%f,%f,%f) \n", x, y, z, vx, vy, vz);
   				    printf("  - normal dot v  = %lf \n", nx*vx + ny*vy + nz*vz);
@@ -2232,25 +2282,26 @@ TRACE
 					if (dot_product_before * (nx*vx + ny*vy + nz*vz) < 0) {
 					    printf("Sign did change \n");
 					} else printf("Sign did not change \n");
-				#endif
+				  #endif
 
-			    // Report new velocity back, 
-                // Update velocity in all ways used in master
-                v[0] = vx; v[1] = vy; v[2] = vz;
-                v_length = sqrt(vx*vx + vy*vy + vz*vz);
-                k_new[0] = V2K*vx; k_new[1] = V2K*vy; k_new[2] = V2K*vz;
-                ray_velocity = coords_set(vx, vy, vz);
+			      // Report new velocity back, 
+                  // Update velocity in all ways used in master
+                  v[0] = vx; v[1] = vy; v[2] = vz;
+                  v_length = sqrt(vx*vx + vy*vy + vz*vz);
+                  k_new[0] = V2K*vx; k_new[1] = V2K*vy; k_new[2] = V2K*vz;
+                  ray_velocity = coords_set(vx, vy, vz);
 			  
-                ignore_closest = min_volume;
-		        ignore_surface_index = intersection_time_table.surface_index[min_volume][min_solution];
+                  ignore_closest = min_volume;
+		          ignore_surface_index = intersection_time_table.surface_index[min_volume][min_solution];
             
-                // Since velocity is updated, we need to clear the intersection time table
-                clear_intersection_table(&intersection_time_table);
+                  // Since velocity is updated, we need to clear the intersection time table
+                  clear_intersection_table(&intersection_time_table);
             
-                // Reset origin point for ray
-                r_start[0] = x; r_start[1] = y; r_start[2] = z;
-                time_propagated_without_scattering = 0.0;
-		      }
+                  // Reset origin point for ray
+                  r_start[0] = x; r_start[1] = y; r_start[2] = z;
+                  time_propagated_without_scattering = 0.0;
+		        }
+			  }
 			  
               // Need old and current volume here to compare refraction index
               // Need information on normal vector for intersection
@@ -2334,13 +2385,7 @@ TRACE
             
               if (perform_refraction == 1) {
 				  
-				  // Can not rely on Qc from current volume, that may be the surrounding vacuum, this quantify needs to be calculated before perform refraction
-				  // Look into theory of what the angle of total reflection is based on the two refraction indicies, or better yet, the critical q
-                  //double par[]  = {0.99, Volumes[current_volume]->p_physics->refraction_Qc, 6.0, 1.0, 1.0/300.0};
                   double reflectivity;
-                
-                  int p_reflect = 1;
-                  int p_refract = 1;
                 
                   // Skipping roughness
                   //if (RMS>0) Surface_wavyness(&nx, &ny, &nz, atan(2*RMS/lambda), _particle);
@@ -2413,7 +2458,7 @@ TRACE
                     
                       // select reflection (or refraction) from Monte-Carlo choice with probability R
                       // in this case we expect R to be small (q > Qc)
-                      if (p_reflect && 0.0 < reflectivity && reflectivity < 1.0 && rand01() < reflectivity) {
+                      if (enable_reflection && 0.0 < reflectivity && reflectivity < 1.0 && rand01() < reflectivity) {
                         
                           // choose reflection from MC
                           theta2 = theta1;
@@ -2444,19 +2489,7 @@ TRACE
                           r_start[0] = x; r_start[1] = y; r_start[2] = z;
                           time_propagated_without_scattering = 0.0;
 						  
-						  /*
-						  if (vx*nx + vy*ny + nz*vz < 0) {
-							  printf("Negative dot product betwen v and n after reflection, problem? value = %lf\n", vx*nx + vy*ny + nz*vz);
-							  //ABSORB;							  
-						  }
-						  */
-                        
-                          /*
-                           #ifndef OPENACC
-                           strcpy(event, "reflect");
-                           #endif
-                           */
-                      } else if (p_refract) {
+                      } else if (enable_refraction) {
                           // compute refracted ray
                           theta2 = acos(cos_theta2)*RAD2DEG;
                         
@@ -2491,22 +2524,8 @@ TRACE
                           r_start[0] = x; r_start[1] = y; r_start[2] = z;
                           time_propagated_without_scattering = 0.0;
 						  
-						  /*
-						  if (vx*nx + vy*ny + nz*vz > 0) {
-							  printf("Positive dot product betwen v and n after refraction, problem? value = %lf\n", vx*nx + vy*ny + nz*vz);
-							  //ABSORB;
-						  }
-						  */
-                        
-                          /*
-                        
-                           #ifndef OPENACC
-                           strcpy(event, "refract");
-                           #endif
-                           */
-                          //SCATTER; /* 3 */
                       }
-                  } else if (p_reflect) {
+                  } else if (enable_reflection) {
                       // only reflection: below total reflection
                     
                       theta2 = theta1;
@@ -2536,7 +2555,6 @@ TRACE
                       // Reset origin point for ray
                       r_start[0] = x; r_start[1] = y; r_start[2] = z;
                       time_propagated_without_scattering = 0.0;
-					  
                   }
               }
 			  
@@ -2773,6 +2791,7 @@ if (finally_verbal) printf("Freeing variables which are always allocated \n");
 // free allocated arrays specific to this master union component
 free(scattered_flag);
 free(my_trace);
+free(my_trace_fraction_control);
 free(pre_allocated1);
 free(pre_allocated2);
 free(pre_allocated3);

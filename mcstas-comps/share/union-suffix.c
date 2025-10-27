@@ -50,6 +50,11 @@ int physics_my(enum process choice, double *my,double *k_initial, union data_tra
         case NCrystal:
             output = NCrystal_physics_my(my, k_initial, data_transfer, focus_data, _particle);
             break;
+        #endif	
+        #ifdef PROCESS_NON_DETECTOR
+        case Non:
+            output = Non_physics_my(my, k_initial, data_transfer, focus_data, _particle);
+            break;
         #endif
         #ifdef PROCESS_TEMPLATE_DETECTOR
         case Template:
@@ -110,9 +115,14 @@ int physics_scattering(enum process choice, double *k_final, double *k_initial, 
             output = NCrystal_physics_scattering(k_final, k_initial, weight, data_transfer, focus_data, _particle);
             break;
         #endif
+        #ifdef PROCESS_NON_DETECTOR
+        case Non:
+            output = Non_physics_scattering(k_final, k_initial, weight, data_transfer, focus_data, _particle);
+            break;
+        #endif			
         #ifdef PROCESS_TEMPLATE_DETECTOR
         case Template:
-            output = Incoherent_physics_scattering(k_final, k_initial, weight, data_transfer, focus_data, _particle);
+            output = Template_physics_scattering(k_final, k_initial, weight, data_transfer, focus_data, _particle);
             break;
         #endif
         default: printf("physics_scattering: No scattering process matches input!\n");

@@ -31,14 +31,14 @@
 *
 * %P
 * INPUT PARAMETERS:
-* process_string: [string] Comma seperated names of physical processes
-* my_absorption:  [1/m]    Inverse penetration depth from absorption at standard energy
-* absorber:       [0/1]    Control parameter, if set to 1 the material will have no scattering processes
-* refraction_sigma_coh: [barn]     coherent cross section of refracting material. Use negative value to indicate a negative coherent scattering length
-* refraction_density: [g/cm3]      density of the refracting material. density < 0 means the material is outside/before the shape.
-* refraction_weight: [g/mol]       molar mass of the refracting material
-* refraction_SLD: [AA^-2]       scattering length density of material (overwrites sigma_coh, density and weight)
-* init:           [string] Name of Union_init component (typically "init", default)
+* process_string:       [string] Comma seperated names of physical processes
+* my_absorption:        [1/m]    Inverse penetration depth from absorption at standard energy
+* absorber:             [0/1]    Control parameter, if set to 1 the material will have no scattering processes
+* refraction_sigma_coh: [barn]   Coherent cross section of refracting material. Use negative value to indicate a negative coherent scattering length
+* refraction_density:   [g/cm3]  Density of the refracting material. density < 0 means the material is outside/before the shape.
+* refraction_weight:    [g/mol]  Molar mass of the refracting material
+* refraction_SLD:       [AA^-2]  Scattering length density of material (overwrites sigma_coh, density and weight)
+* init:                 [string] Name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
 * this_material:            Structure that contains information on this material
@@ -55,12 +55,8 @@
 DEFINE COMPONENT Union_make_material
 
 SETTING PARAMETERS(string process_string="NULL", my_absorption,absorber=0, 
-refraction_density=0, refraction_sigma_coh=0, refraction_weight=0, 
-refraction_SLD=-1500,
-string init="init")
-
-
-/* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
+                   refraction_density=0, refraction_sigma_coh=0, refraction_weight=0,  refraction_SLD=-1500,
+				   string init="init")
 
 SHARE
 %{
@@ -150,7 +146,6 @@ int manual_linking_function(char *name, char *input_string) {
 }
 
 #ifndef MATERIAL_DETECTOR
-    //struct pointer_to_global_material_list global_material_list = {0,NULL};
     #define MATERIAL_DETECTOR dummy
 #endif
 
@@ -171,8 +166,6 @@ struct pointer_to_1d_int_list accepted_processes;
 
 // Add setup for loggers since make_material is called before any volume / master
 #ifndef UNION_LOGGER_DECLARE
-	//struct pointer_to_global_logger_list global_all_volume_logger_list = {0,NULL};
-    //struct pointer_to_global_logger_list global_specific_volumes_logger_list = {0,NULL};
 	#define UNION_LOGGER_DECLARE dummy
 #endif
 
@@ -198,13 +191,13 @@ INITIALIZE
     exit(1);
   }
 
-if (_getcomp_index(init) < 0) {
-fprintf(stderr,"Union_make_material:%s: Error identifying Union_init component, %s is not a known component name.\n",
-NAME_CURRENT_COMP, init);
-exit(-1);
-}
+  if (_getcomp_index(init) < 0) {
+    fprintf(stderr,"Union_make_material:%s: Error identifying Union_init component, %s is not a known component name.\n",
+    NAME_CURRENT_COMP, init);
+    exit(-1);
+  }
 
-struct pointer_to_global_process_list *global_process_list = COMP_GETPAR3(Union_init, init, global_process_list);
+  struct pointer_to_global_process_list *global_process_list = COMP_GETPAR3(Union_init, init, global_process_list);
   struct pointer_to_global_material_list *global_material_list = COMP_GETPAR3(Union_init, init, global_material_list);
   
   if (absorber == 0) {
@@ -229,16 +222,22 @@ struct pointer_to_global_process_list *global_process_list = COMP_GETPAR3(Union_
     exit(1);
   }
   
+  this_material.any_process_needs_cross_section_focus = -1; // Assume no process need focusing in cross section calculation
   // add process element to this_material, building an array of processes called p_scattering_array
   if (this_material.number_of_processes > 0) this_material.p_scattering_array = malloc(this_material.number_of_processes * sizeof(struct scattering_process_struct));
   for (loop_index=0;loop_index<accepted_processes.num_elements;loop_index++) {
         this_material.p_scattering_array[loop_index]=*global_process_list->elements[accepted_processes.elements[loop_index]].p_scattering_process;
+		
+		// Check if each process needs focusing capability in the calculation of cross section / inverse penetration depth
+		if (this_material.p_scattering_array[loop_index].needs_cross_section_focus == 1) {
+			this_material.any_process_needs_cross_section_focus = 1;
+		}
   }
   
   this_material.my_a = my_absorption;  // add the absorption to this material
   sprintf(this_material.name,"%s",NAME_CURRENT_COMP);
   
-  
+  // Section on refracation information
   this_material.has_refraction_info = 0;
   if (refraction_density != 0 || refraction_weight != 0 || refraction_sigma_coh != 0) {
 	  
