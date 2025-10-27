@@ -925,7 +925,7 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
     for i in range(len(comp_infos)):
         try:
             p = comp_infos[i]
-            f = comp_files[i]
+            f = comp_info[i].filepath
             doc = CompDocWriter(p)
             text = doc.create()
             h = pathlib.Path(os.path.splitext(f)[0] + '.html')
@@ -934,12 +934,13 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
                 print("writing doc file... %s" % h)
             write_file(h, text, failsilent=True)
         except:
+            print("Could not work on comp " + str(i) + " of " + str(len(comp_infos)) + ": " + comp_infos[i].name)
             pass
 
     for i in range(len(instr_infos)):
         try:
             p = instr_infos[i]
-            f = instr_files[i]
+            f = instr_infos[i].filepath
             doc = InstrDocWriter(p)
             text = doc.create()
             h = pathlib.Path(os.path.splitext(f)[0] + '.html')
@@ -948,6 +949,8 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
                 print("writing doc file... %s" % h)
             write_file(h, text, failsilent=True)
         except:
+            print("Could not work on instr " + str(i) + " of " + str(len(instr_infos)) + ": " + instr_infos[i].name)
+            print(instr_infos[i].filepath)
             pass
 
 def main(args):
