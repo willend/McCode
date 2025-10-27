@@ -116,9 +116,11 @@ int Template_physics_scattering(double *k_final, double *k_initial, double *weig
 // These lines help with future error correction, and tell other Union components
 //  that at least one process have been defined.
 #ifndef PROCESS_DETECTOR
-    // Obsolete
-    //struct pointer_to_global_process_list global_process_list = {0,NULL};
     #define PROCESS_DETECTOR dummy
+#endif
+
+#ifndef PROCESS_TEMPLATE_DETECTOR
+    #define PROCESS_TEMPLATE_DETECTOR dummy
 #endif
 %}
 
@@ -144,7 +146,11 @@ INITIALIZE
   // Need to specify if this process is isotropic
   This_process.non_isotropic_rot_index = -1; // Yes (powder)
   //This_process.non_isotropic_rot_index =  1;  // No (single crystal)
-
+  
+  // Need to specify if this process need to use focusing in calculation of inverse penetration depth (physics_my)
+  //This_process.needs_cross_section_focus = 1; // Yes
+  This_process.needs_cross_section_focus =  -1;  // No
+  
   // The type of the process must be saved in the global enum process
   This_process.eProcess = Template;
 

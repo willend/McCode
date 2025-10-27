@@ -33,6 +33,7 @@ enum process {
   Texture,
   IncoherentPhonon,
   NCrystal,
+  Non,
   Template
 };
 
@@ -465,6 +466,7 @@ struct physics_struct
 char name[256]; // User defined material name
 int interact_control;
 int is_vacuum;
+int any_process_needs_cross_section_focus;
 double my_a;
 int number_of_processes;
 // pointer to array of pointers to physics_sub structures that each describe a scattering process
@@ -502,6 +504,7 @@ char name[256];                // User defined process name
 enum process eProcess;         // enum value corresponding to this process GPU
 double process_p_interact;     // double between 0 and 1 that describes the fraction of events forced to undergo this process. -1 for disable
 int non_isotropic_rot_index;   // -1 if process is isotrpic, otherwise is the index of the process rotation matrix in the volume
+int needs_cross_section_focus; // 1 if physics_my needs to call focus functions, otherwise -1
 Rotation rotation_matrix;      // rotation matrix of process, reported by component in local frame, transformed and moved to volume struct in main
 
 union data_transfer_union data_transfer; // The way to reach the storage space allocated for this process (see examples in process.comp files)
