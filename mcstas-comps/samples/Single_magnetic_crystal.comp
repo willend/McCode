@@ -85,8 +85,8 @@
 *              empty ("") or NULL for sigma_inc scattering only [string]
 * order:      limit multiple scattering up to given order
 *                 (0: all, 1: first, 2: second, ...) [1]
-* q_min: [AA^⁻1]  lower boundary of momentum transfer range to generate hkls in
-* q_max: [AA^⁻1]  upper boundary of momentum transfer range to generate hkls in
+* q_min: [AA^-1]  lower boundary of momentum transfer range to generate hkls in
+* q_max: [AA^-1]  upper boundary of momentum transfer range to generate hkls in
 *
 * Optional input parameters:
 *
