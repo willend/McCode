@@ -879,6 +879,7 @@ def write_file(filename, text, failsilent=False):
 
 def parse_and_filter(indir, namefilter=None, recursive=False, printlog=False):
     ''' read and parse headers and definitions of component and instrument files '''
+    indir=pathlib.Path(indir).resolve()
     instr_files, comp_files = utils.get_instr_comp_files(indir, recursive)
     print("parsing root folder:", indir)
     comp_info_lst = []
