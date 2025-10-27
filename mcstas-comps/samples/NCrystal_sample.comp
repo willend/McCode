@@ -1,8 +1,7 @@
 /*****************************************************************************
 *
-*  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)
-*
-*  Copyright 2015-2022 NCrystal developers
+*  This file used to be part of NCrystal (https://mctools.github.io/ncrystal/),
+*  but since McStas 3.2 (2022) this component is maintained as part of McStas.
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -21,6 +20,7 @@
 *
 * %I
 * Written by: NCrystal developers
+* Date: 2017
 * Version: 1.0.0
 * Origin: NCrystal Developers (European Spallation Source ERIC and DTU Nutech)
 *
@@ -28,25 +28,23 @@
 * (<a href="https://github.com/mctools/ncrystal">www</a>).
 *
 * %D
-* McStas sample component for the NCrystal scattering library.
-* Find more information at <a href="https://github.com/mctools/ncrystal/wiki">the NCrystal wiki</a>.
-* In particular, browse the available datafiles at <a href="https://github.com/mctools/ncrystal/wiki/Data-library">Data-library</a>
-* and read about the format of the configuration string expected in
-* the "cfg" parameter at <a href="https://github.com/mctools/ncrystal/wiki/Using-NCrystal">Using-NCrystal</a>.
+* McStas sample component using the NCrystal library for thermal neutron
+* transport in a single bulk material filling a single simple convex volume
+* (box, sphere or cylinder).
 *
-* <p/>NCrystal is available under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a>.
-* Depending on the configuration choices, optional NCrystal
-* modules under different licenses might be enabled,
-* see <a href="https://github.com/mctools/ncrystal/blob/master/NOTICE">here</a> for more details.
+* The geometrical layout of the volume is determined via the xwidth, yheight,
+* zdepth, and radius parameters, and the material being modelled is determined
+* via an NCrystal configuration string ("cfg-string").
 *
-* Note also that for more complicated geometries, it might be desirable to use
-* NCrystal via the McStas Union components instead.
+* For more information about NCrystal and cfg-strings, refer to the <a href="https://github.com/mctools/ncrystal/wiki">NCrystal wiki</a>.
+* In particular, browse the available datafiles at <a href="https://github.com/mctools/ncrystal/wiki/Data-library">Data-library</a> and read about the
+* format of the cfg-string expected in the "cfg" parameter at <a href="https://github.com/mctools/ncrystal/wiki/Using-NCrystal">Using-NCrystal</a>.
 *
-* <p/>This NCrystal_sample component used to be shipped with NCrystal itself,
-* but starting with McStas 3.2 it is shipped along with McStas itself
-* (accordingly the components version number is reset to 1.0.0 to avoid
-* confusion). As engine it will use whichever NCrystal installation is
-* available and associated with the "ncrystal-config" command.
+* For more complicated geometries, it might be desirable to use NCrystal via the
+* McStas Union components instead.
+*
+* Note that the physics backend of this component will be whichever NCrystal
+* installation is available and associated with the "ncrystal-config" command.
 *
 * %P
 * Input parameters:
@@ -65,7 +63,7 @@
 *******************************************************************************/
 
 DEFINE COMPONENT NCrystal_sample
-SETTING PARAMETERS (string cfg="void", absorptionmode=1, multscat=1, xwidth=0, yheight=0, zdepth=0, radius=0 )
+SETTING PARAMETERS (string cfg="void", xwidth=0, yheight=0, zdepth=0, radius=0, absorptionmode=1, multscat=1 )
 DEPENDENCY "@NCRYSTALFLAGS@"
 NOACC /* Notice: you must remove this line if using the legacy McStas 2.x branch. */
 
@@ -370,24 +368,18 @@ FINALLY
 
 MCDISPLAY
 %{
-  //NB: Future McStas (2.5?) is slated to introduce mcdis_cylinder and
-  //mcdis_sphere functions, which we at that point should likely use.
   switch (geoparams.shape) {
   case NC_CYLINDER:
-    mcdis_circle("xz", 0,  geoparams.dy/2.0, 0, geoparams.rradius);
-    mcdis_circle("xz", 0, -geoparams.dy/2.0, 0, geoparams.rradius);
-    mcdis_line(-geoparams.rradius, -geoparams.dy/2.0, 0, -geoparams.rradius, +geoparams.dy/2.0, 0);
-    mcdis_line(+geoparams.rradius, -geoparams.dy/2.0, 0, +geoparams.rradius, +geoparams.dy/2.0, 0);
-    mcdis_line(0, -geoparams.dy/2.0, -geoparams.rradius, 0, +geoparams.dy/2.0, -geoparams.rradius);
-    mcdis_line(0, -geoparams.dy/2.0, +geoparams.rradius, 0, +geoparams.dy/2.0, +geoparams.rradius);
+    mcdis_cylinder( 0., 0., 0.,
+                    geoparams.rradius,
+                    geoparams.dy,
+                    0 , 0.0 , 1.0 , 0.0);
     break;
   case NC_BOX:
     mcdis_box(0., 0., 0., geoparams.dx, geoparams.dy, geoparams.dz,0, 0, 1, 0);
     break;
   case NC_SPHERE:
-    mcdis_circle("xy", 0., 0., 0., geoparams.rradius);
-    mcdis_circle("xz", 0., 0., 0., geoparams.rradius);
-    mcdis_circle("yz", 0., 0., 0., geoparams.rradius);
+    mcdis_sphere(0.0,0.0,0.0,geoparams.rradius);
     break;
   };
 %}
