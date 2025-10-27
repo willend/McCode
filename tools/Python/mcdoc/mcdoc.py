@@ -925,7 +925,10 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
     for i in range(len(comp_infos)):
         try:
             p = comp_infos[i]
-            f = comp_files[i]
+            try:
+                f = comp_files[i]
+            except:
+                f = comp_infos[i].filepath
             doc = CompDocWriter(p)
             text = doc.create()
             h = pathlib.Path(os.path.splitext(f)[0] + '.html')
@@ -940,7 +943,10 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
     for i in range(len(instr_infos)):
         try:
             p = instr_infos[i]
-            f = instr_infos[i].filepath
+            try:
+                f = instr_infos[i].filepath
+            except:
+                f = instr_files[i]
             doc = InstrDocWriter(p)
             text = doc.create()
             h = pathlib.Path(os.path.splitext(f)[0] + '.html')
