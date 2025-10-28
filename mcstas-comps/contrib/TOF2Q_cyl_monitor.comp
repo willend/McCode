@@ -24,18 +24,18 @@
 * %P
 * INPUT PARAMETERS:
 *
-* radius:          Cylinder radius (m)
-* height:          Cylinder height (m)
-* nq:              Number of q bins (1)
-* nh:              Number of bins in detector height (1)
-* nphi:            Number of angular bins (1)
-* q_min:           Minimum q value (1/AA)
-* q_max:           Maximum q value (1/AA)
-* L_chop2samp:     Distance from resolution chopper to sample position (m)
-* t_chop:          Fleight time of mean wave length from source to resolution chopper (ms)
-* pixel:           Flag, 0: no pixelation and perfect time. 1: make pixels from nphi and nh and time resolution limitation.
-* filename:        Name of file in which to store the detector image (text)
-* restore_neutron: If set, the monitor does not influence the neutron state (1)
+* radius:          [m] Cylinder radius
+* height:          [m] Cylinder height
+* nq:              [1] Number of q bins
+* nh:              [1] Number of bins in detector height
+* nphi:            [1] Number of angular bins
+* q_min:        [1/AA] Minimum q value
+* q_max:        [1/AA] Maximum q value
+* L_chop2samp:     [m] Distance from resolution chopper to sample position
+* t_chop:         [ms] Flight time of mean wave length from source to resolution chopper
+* pixel:           [1] Flag, 0: no pixelation and perfect time. 1: make pixels from nphi and nh and time resolution limitation.
+* filename:      [str] Name of file in which to store the detector image
+* restore_neutron: [1] If set, the monitor does not influence the neutron state
 *
 * CALCULATED PARAMETERS:
 *
