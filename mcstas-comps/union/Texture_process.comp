@@ -2269,6 +2269,10 @@ INITIALIZE
   // Need to specify if this process is isotropic
   //This_process.non_isotropic_rot_index = -1; // Yes (powder)
   This_process.non_isotropic_rot_index =  1;  // No (single crystal or texture)
+  
+  // Need to specify if this process need to use focusing in calculation of inverse penetration depth (physics_my)
+  //This_process.needs_cross_section_focus = 1; // Yes
+  This_process.needs_cross_section_focus =  -1;  // No
 
   // The type of the process must be saved in the global enum process
   This_process.eProcess = Texture;

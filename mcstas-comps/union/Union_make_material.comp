@@ -31,10 +31,14 @@
 *
 * %P
 * INPUT PARAMETERS:
-* process_string: [string] Comma seperated names of physical processes
-* my_absorption:  [1/m]    Inverse penetration depth from absorption at standard energy
-* absorber:       [0/1]    Control parameter, if set to 1 the material will have no scattering processes
-* init:           [string] Name of Union_init component (typically "init", default)
+* process_string:       [string] Comma seperated names of physical processes
+* my_absorption:        [1/m]    Inverse penetration depth from absorption at standard energy
+* absorber:             [0/1]    Control parameter, if set to 1 the material will have no scattering processes
+* refraction_sigma_coh: [barn]   Coherent cross section of refracting material. Use negative value to indicate a negative coherent scattering length
+* refraction_density:   [g/cm3]  Density of the refracting material. density < 0 means the material is outside/before the shape.
+* refraction_weight:    [g/mol]  Molar mass of the refracting material
+* refraction_SLD:       [AA^-2]  Scattering length density of material (overwrites sigma_coh, density and weight)
+* init:                 [string] Name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
 * this_material:            Structure that contains information on this material
@@ -50,10 +54,9 @@
 
 DEFINE COMPONENT Union_make_material
 
-SETTING PARAMETERS(string process_string="NULL", my_absorption,absorber=0, string init="init")
-
-
-/* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
+SETTING PARAMETERS(string process_string="NULL", my_absorption,absorber=0, 
+                   refraction_density=0, refraction_sigma_coh=0, refraction_weight=0,  refraction_SLD=-1500,
+				   string init="init")
 
 SHARE
 %{
@@ -91,13 +94,13 @@ void manual_linking_function_material(char *input_string, struct pointer_to_glob
    // get the first token
    token = strtok(local_string,",");
    
-   // walk through other tokens
+   // walk through tokens
    while( token != NULL ) 
    {
       //printf( " %s\n", token );
       for (loop_index=0;loop_index<global_process_list->num_elements;loop_index++) {
         if (strcmp(token,global_process_list->elements[loop_index].name) == 0) {
-          add_element_to_int_list(accepted_processes,loop_index);
+          add_element_to_int_list(accepted_processes, loop_index);
           break;
         }
         
@@ -134,7 +137,6 @@ int manual_linking_function(char *name, char *input_string) {
    /* walk through other tokens */
    while( token != NULL ) 
    {
-      //printf( " %s\n", token );
       if (strcmp(token,name) == 0) return_integer=1;
       
       token = strtok(NULL,",");
@@ -144,7 +146,6 @@ int manual_linking_function(char *name, char *input_string) {
 }
 
 #ifndef MATERIAL_DETECTOR
-    //struct pointer_to_global_material_list global_material_list = {0,NULL};
     #define MATERIAL_DETECTOR dummy
 #endif
 
@@ -165,8 +166,6 @@ struct pointer_to_1d_int_list accepted_processes;
 
 // Add setup for loggers since make_material is called before any volume / master
 #ifndef UNION_LOGGER_DECLARE
-	//struct pointer_to_global_logger_list global_all_volume_logger_list = {0,NULL};
-    //struct pointer_to_global_logger_list global_specific_volumes_logger_list = {0,NULL};
 	#define UNION_LOGGER_DECLARE dummy
 #endif
 
@@ -177,13 +176,6 @@ INITIALIZE
 
   accepted_processes.num_elements = 0;
   accepted_processes.elements = NULL;
-
-  /*
-  // Comma test
-  printf("Starting comma test on string: %s \n",process_string);
-  printf("Number of commas in string: %d \n",count_commas(process_string));
-  exit(1);
-  */
   
 
   if (0 == strcmp(NAME_CURRENT_COMP,"vacuum") || 0 == strcmp(NAME_CURRENT_COMP,"Vacuum")) {
@@ -199,13 +191,13 @@ INITIALIZE
     exit(1);
   }
 
-if (_getcomp_index(init) < 0) {
-fprintf(stderr,"Union_make_material:%s: Error identifying Union_init component, %s is not a known component name.\n",
-NAME_CURRENT_COMP, init);
-exit(-1);
-}
+  if (_getcomp_index(init) < 0) {
+    fprintf(stderr,"Union_make_material:%s: Error identifying Union_init component, %s is not a known component name.\n",
+    NAME_CURRENT_COMP, init);
+    exit(-1);
+  }
 
-struct pointer_to_global_process_list *global_process_list = COMP_GETPAR3(Union_init, init, global_process_list);
+  struct pointer_to_global_process_list *global_process_list = COMP_GETPAR3(Union_init, init, global_process_list);
   struct pointer_to_global_material_list *global_material_list = COMP_GETPAR3(Union_init, init, global_material_list);
   
   if (absorber == 0) {
@@ -230,19 +222,54 @@ struct pointer_to_global_process_list *global_process_list = COMP_GETPAR3(Union_
     exit(1);
   }
   
+  this_material.any_process_needs_cross_section_focus = -1; // Assume no process need focusing in cross section calculation
   // add process element to this_material, building an array of processes called p_scattering_array
   if (this_material.number_of_processes > 0) this_material.p_scattering_array = malloc(this_material.number_of_processes * sizeof(struct scattering_process_struct));
   for (loop_index=0;loop_index<accepted_processes.num_elements;loop_index++) {
         this_material.p_scattering_array[loop_index]=*global_process_list->elements[accepted_processes.elements[loop_index]].p_scattering_process;
+		
+		// Check if each process needs focusing capability in the calculation of cross section / inverse penetration depth
+		if (this_material.p_scattering_array[loop_index].needs_cross_section_focus == 1) {
+			this_material.any_process_needs_cross_section_focus = 1;
+		}
   }
   
   this_material.my_a = my_absorption;  // add the absorption to this material
   sprintf(this_material.name,"%s",NAME_CURRENT_COMP);
   
+  // Section on refracation information
+  this_material.has_refraction_info = 0;
+  if (refraction_density != 0 || refraction_weight != 0 || refraction_sigma_coh != 0) {
+	  
+	  double refraction_rho, refraction_bc;
+      if (refraction_density==0 || refraction_weight<=0)
+        exit(printf("Union_make_material: %s: FATAL: invalid material density or molar weight: density=%g weight=%g\n",
+          NAME_CURRENT_COMP, refraction_density, refraction_weight));
+
+	  refraction_rho = fabs(refraction_density)*6.02214179*1e23*1e-24/refraction_weight; // per at/Angs^3  
+        
+      if (refraction_sigma_coh==0)
+        exit(printf("Refractor: %s: FATAL: invalid material coherent cross section: sigma_coh=%g\n",
+          NAME_CURRENT_COMP, refraction_sigma_coh));
+
+	  refraction_bc = sqrt(fabs(refraction_sigma_coh)*100/4/PI)*1e-5;         // bound coherent scattering length
+	  if (refraction_sigma_coh<0) refraction_bc *= -1.0;
+	  
+	  this_material.refraction_scattering_length_density = refraction_rho*refraction_bc;
+	  this_material.refraction_Qc = 4*sqrt(PI*refraction_rho*fabs(refraction_bc));
+      this_material.has_refraction_info = 1;
+  }
+  
+  if (refraction_SLD > -1499.0) { // refraction_SLD can be negative, zero or positive, it can however not be this negative, so this is used as input check
+	  this_material.refraction_scattering_length_density = refraction_SLD;  	
+	  this_material.refraction_Qc = 4.0*sqrt(PI*fabs(refraction_SLD));  
+	  this_material.has_refraction_info = 1;
+  }
+  
   // packing the information into the global_material_element, which is then included in the global_material_list.
   sprintf(global_material_element.name,"%s",NAME_CURRENT_COMP);
   global_material_element.component_index = INDEX_CURRENT_COMP;
-  global_material_element.physics = &this_material; // Would be nicer if this material was a pointer, now we have the (small) data two places
+  global_material_element.physics = &this_material;
   add_element_to_material_list(global_material_list, global_material_element);
   
  %}

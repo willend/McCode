@@ -54,10 +54,8 @@
 * cy: [AA or AA^-1]                                       c on y axis
 * cz: [AA or AA^-1]                                       c on z axis
 * reflections: [string]                                   File name containing structure factors of reflections. Use empty ("") or NULL for incoherent scattering only
-* order: [1]                                              Limit multiple scattering up to given order (0: all, 1: first, 2: second, ...)
+* order: [1]                                              Limit multiple scattering up to given order (0: all, 1: first, 2: second, ...) (Not supported in Union)
 * p_transmit: [1]                                         Monte Carlo probability for neutrons to be transmitted without any scattering. Used to improve statistics from weak reflections
-* sigma_abs: [barns]                                      Absorption cross-section per unit cell at 2200 m/s
-* sigma_inc: [barns]                                      Incoherent scattering cross-section per unit cell Use -1 to inactivate
 * aa: [deg]                                               Unit cell angles alpha, beta and gamma. Then uses norms of vectors a,b and c as lattice parameters
 * bb: [deg]                                               Beta angle
 * cc: [deg]                                               Gamma angle
@@ -1079,6 +1077,10 @@ INITIALIZE
   // Need to specify if this process is isotropic
   //This_process.non_isotropic_rot_index = -1; // Yes (powder)
   This_process.non_isotropic_rot_index =  1;  // No (single crystal)
+  
+  // Need to specify if this process need to use focusing in calculation of inverse penetration depth (physics_my)
+  //This_process.needs_cross_section_focus = 1; // Yes
+  This_process.needs_cross_section_focus =  -1;  // No
 
   // The type of the process must be saved in the global enum process
   This_process.eProcess = Single_crystal;

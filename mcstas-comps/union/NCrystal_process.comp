@@ -1,5 +1,24 @@
 /*******************************************************************************
 *
+* Used NCrystal_sample as basis for creating a Union process that can use the  
+* NCrystal library.                                                            
+* Changes by Mads Bertelsen, 13/8 2020.                                        
+*
+*  This file is part of NCrystal (see https://mctools.github.io/ncrystal/)
+*
+*  Copyright 2015-2022 NCrystal developers
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *  McStas, neutron ray-tracing package
 *  Copyright(C) 2007 Risoe National Laboratory.
 *
@@ -56,7 +75,7 @@
 * cfg:               [str]    NCrystal material configuration string (details <a href="https://github.com/mctools/ncrystal/wiki/Using-NCrystal">on this page</a>).
 * packing_factor:    [1]      Material packing factor
 * interact_fraction: [1]      How large a part of the scattering events should use this process 0-1 (sum of all processes in material = 1)
-* init:              [string] name of Union_init component (typically "init", default)
+* init:              [string] Name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
 * NCrystal_storage          // Storage used to communicate with the probability and scattering function
@@ -374,6 +393,10 @@ INITIALIZE
   // Need to specify if this process is isotropic
   //This_process.non_isotropic_rot_index = -1; // Yes (powder)
   This_process.non_isotropic_rot_index =  1;  // No (single crystal)
+  
+  // Need to specify if this process need to use focusing in calculation of inverse penetration depth (physics_my)
+  //This_process.needs_cross_section_focus = 1; // Yes
+  This_process.needs_cross_section_focus =  -1;  // No
     
   // The type of the process must be saved in the global enum process
   This_process.eProcess = NCrystal;
