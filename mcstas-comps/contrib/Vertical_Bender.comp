@@ -59,28 +59,28 @@
 *
 * %P
 * INPUT PARAMETERS:
-* xwidth:       Width at the guide entry (m)
-* yheight:      Height at the guide entry (m)
-* length:       length of guide along center (m)
-* radius:       Radius of curvature of the guide (+:curve up/-:curve down) (m)
-* nchan:        Number of channels (1)
-* d:            Width of spacers (subdividing absorbing walls) (m)
-* endFlat:      If endflat>0 then entrance and exit planes are parallel. (1)
-* rTopPar:      Parameters for reflectivity of bender top surface
-* rBottomPar:   Parameters for reflectivity of bender bottom surface
-* rSidesPar:    Parameters for reflectivity of bender sides surface
-* diststep1:    inital collision search steps for trajectory in cylinder when gravity is non zero ( 0.020 m)
-* diststep2:    final steps for trajectory in cylinder                  ( 0.002 m)
-* debug:        0 to 10 for zero to maximum print out - reduce number of neutrons to run !
-* alwaystrack   default 0,  1 to force tracking even when gravity is off
+* xwidth:          [m] Width at the guide entry
+* yheight:         [m] Height at the guide entry
+* length:          [m] length of guide along center
+* radius:          [m] Radius of curvature of the guide (+:curve up/-:curve down)
+* nchan:           [1] Number of channels
+* d:               [m] Width of spacers (subdividing absorbing walls)
+* endFlat:         [1] If endflat>0 then entrance and exit planes are parallel.
+* rTopPar:    [vector] Parameters for reflectivity of bender top surface
+* rBottomPar: [vector] Parameters for reflectivity of bender bottom surface
+* rSidesPar:  [vector] Parameters for reflectivity of bender sides surface
+* diststep1:       [m] inital collision search steps for trajectory in cylinder when gravity is non zero
+* diststep2:       [m] final steps for trajectory in cylinder
+* debug:           [1] 0 to 10 for zero to maximum print out - reduce number of neutrons to run !
+* alwaystrack:     [1] default 0, 1 to force tracking even when gravity is off
 *
 * CALCULATED PARAMETERS:
 *
-* localG:       Gravity vector in guide reference system (m/s/s)
-* normalXXX:    Several normal vector used for defining the geometry (1)
-* pointXXX:     Several points used for defining the geometry (1)
-* rXXXParPtr:   Pointers to reflection parameters used with ref. functions.
-* i_bounce      number of SCATTER events
+* localG:      [m/s/s] Gravity vector in guide reference system (m/s/s)
+* normalXXX:           Several normal vector used for defining the geometry (1)
+* pointXXX:            Several points used for defining the geometry (1)
+* rXXXParPtr:          Pointers to reflection parameters used with ref. functions.
+* i_bounce             number of SCATTER events
 *
 * %L
 *

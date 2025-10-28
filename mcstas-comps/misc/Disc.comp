@@ -23,13 +23,13 @@
 *
 * %P
 * INPUT PARAMETERS:
-* radius: [m]      Outer radius of geometry in (x,z) plane
-* xwidth: [m]      Horiz. dimension of geometry
+* radius:  [m]     Outer radius of geometry in (x,z) plane
+* xwidth:  [m]     Horiz. dimension of geometry
 * yheight: [m]     Vert. dimensuon of geometry
-* zdepth: [m]      Depth dimension of geometry
-* nx: [ ]          x-comp of orientation vector
-* ny: [ ]          y-comp of orientation vector
-* nz: [ ]          z-comp of orientation vector
+* zdepth:  [m]     Depth dimension of geometry
+* nx:      [1]     x-comp of orientation vector
+* ny:      [1]     y-comp of orientation vector
+* nz:      [1]     z-comp of orientation vector
 *
 * %L
 * mcdoc page of <a href="Shape.html">Shape</a></b> component
