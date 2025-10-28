@@ -31,20 +31,20 @@
 * INPUT PARAMETERS:
 *
 * Inherited from NPI_tof_theta_monitor:
-* radius:   Cylinder radius (m)
-* yheight:  Cylinder height (m)
-* nt:       Number of time bins (1)
-* tmin:     Beginning of time window (mu-s)
-* tmax:     End of time window (mu-s)
-* nphi:     Number of angular bins (deg)
-* amin:		minimum angle to detect (deg)
-* amax:		maximum angle to detect (deg)
-* filename: Name of file in which to store the detector image (text)
-* restore_neutron: If set, the monitor does not influence the neutron state (1)
+* radius:          [m] Cylinder radius
+* yheight:         [m] Cylinder height
+* nt:              [1] Number of time bins
+* tmin:         [mu-s] Beginning of time window
+* tmax:         [mu-s] End of time window
+* nphi:          [deg] Number of angular bins
+* amin:	         [deg] minimum angle to detect
+* amax:	         [deg] maximum angle to detect
+* filename:      [str] Name of file in which to store the detector image
+* restore_neutron: [1] If set, the monitor does not influence the neutron state
 *
 * Newly added
-* amin:	[deg]	minimum of scattering angle to be detected
-* amax: [deg]	maximum of scattering angle to be detected
+* amin:	         [deg] minimum of scattering angle to be detected
+* amax:          [deg] maximum of scattering angle to be detected
 *
 * CALCULATED PARAMETERS:
 *
