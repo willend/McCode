@@ -1,4 +1,4 @@
-# Installation instructions for McStas 3.5.32
+# Installation instructions for McStas 3.5.38
 
 Please consult the individual platform instructions:
 
