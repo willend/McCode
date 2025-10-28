@@ -804,7 +804,7 @@ class McStartSimDialog(QtWidgets.QDialog):
         params = []
         for w in self._wParams:
             p = []
-            p.append(str(w[0].text()).rstrip(':'))
+            p.append(str(w[0].text()).rstrip(':').strip())
             p.append(str(w[1].text()))
             params.append(p)
         

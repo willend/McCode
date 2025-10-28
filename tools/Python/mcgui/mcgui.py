@@ -13,6 +13,12 @@ import time
 import re
 import pathlib
 import shutil
+
+if not os.name == 'nt':
+    import shlex as lexer
+else:
+    import mslex as lexer
+
 try:
     from PyQt6 import QtWidgets, QtCore
     from PyQt6.QtWidgets import QApplication, QWidget
@@ -421,9 +427,7 @@ class McGuiState(QtCore.QObject):
             runstr = runstr + ' --bufsiz=' + Bufsiz
 
         # parse instrument params
-        for p in params:
-            runstr = runstr + ' ' + p[0] + '=' + p[1]
-        
+        runstr += ' ' + lexer.join('%s=%s'%(p[0],p[1]) for p in params)
         print('Running: ' + runstr)
         
         # Add & for backgrounding on Unix systems
