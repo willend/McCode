@@ -67,7 +67,7 @@ class Process:
             args = []
         # Run executable as shell
         # command = [self.executable, *args]
-        command = self.executable + " " + " ".join(args)
+        command = self.executable + " " + lexer.join(args)
         LOG.debug(f'CMD: {command}')
         try:
             proc = run(command, shell=True, check=True, text=True, capture_output=pipe)
