@@ -92,6 +92,20 @@ TRACE %{
   /* component Shape does nothing */
 %}
 
-MCDISPLAY INHERIT Incoherent
-
+MCDISPLAY
+%{
+      if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {	/* OFF file */
+            off_display(offdata);
+      }
+      else
+        if (radius > 0 &&  yheight) {	/* cylinder along y*/
+          cylinder(0,0,0,radius,yheight,thickness, nx, ny, nz);
+      }
+      else if (xwidth && yheight) { 	/* box/rectangle */
+          box(0,0,0,xwidth,yheight,zdepth,thickness, nx, ny, nz);
+      }
+      else if (radius > 0 && !yheight) {	/* sphere */
+          sphere(0,0,0,radius);
+      }
+%}
 END
