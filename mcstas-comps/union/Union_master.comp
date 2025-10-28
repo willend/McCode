@@ -2271,10 +2271,10 @@ TRACE
 			    }
 			  
 			    // If velocity was updated, register that to the ray and reset intersection memory
-				// Hardcoded limit of 1E-5 m/s change in any direction
-			    if (fabs(surface_wavevector_before[0] - surface_wavevector[0]) > 1E-5 || 
-					fabs(surface_wavevector_before[1] - surface_wavevector[1]) > 1E-5 || 
-					fabs(surface_wavevector_before[2] - surface_wavevector[2]) > 1E-5) {
+				// Hardcoded limit of 1E-10 m/s change in any direction
+			    if (fabs(surface_wavevector_before[0] - surface_wavevector[0]) > 1E-10 || 
+					fabs(surface_wavevector_before[1] - surface_wavevector[1]) > 1E-10 || 
+					fabs(surface_wavevector_before[2] - surface_wavevector[2]) > 1E-10) {
 
 				  vx = surface_wavevector[0]*K2V;
 				  vy = surface_wavevector[1]*K2V;
