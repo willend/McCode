@@ -23,10 +23,10 @@
 * %P
 * INPUT PARAMETERS
 *
-* xw: []  width in X-dir (m) (full width, might be larger for trumpets)
-* yw: []  width in Y-dir (m) (full width, might be larger for trumpets)
-* xc: []  Number of x-channels
-* yc: []  Number of y-channels
+* xw: [m]  width in X-dir (full width, might be larger for trumpets)
+* yw: [m]  width in Y-dir (full width, might be larger for trumpets)
+* xc: [1]  Number of x-channels
+* yc: [1]  Number of y-channels
 *
 *
 * %E
