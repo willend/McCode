@@ -4,12 +4,12 @@
 * Instrument: Union_NCrystal_example
 *
 * %Identification
-* Written by: NCrystal developers, Mads Bertelsen
+* Written by: T. Kittelmann, X. X. Cai, Mads Bertelsen
 * Date: 2020
 * Origin: ESS
 * %INSTRUMENT_SITE: NCrystal
 *
-* Example instrument for use of NCrystal_sample in Union.
+* Example instrument for use of NCrystal in Union.
 *
 * %Description
 * This instrument examplifies how NCrystal may be used in Union
