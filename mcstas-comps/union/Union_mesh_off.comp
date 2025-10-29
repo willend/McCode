@@ -340,8 +340,10 @@ if (mask_string &&
 //==============================================================================
 //                       READ FIle   
 //==============================================================================
-// Read input file and put into storage 
-// test 2
+// Read input file and put into storage. 
+// We assume that the input file is using triangular faces, otherwise
+// the check for closed mesh using the Euler-Poincare characteristic
+// is wrong.
 printf("\nSTART read file: ");
 int n_verts, n_faces, n_edges;
 FILE *fp;
@@ -372,29 +374,114 @@ printf("\nN Edges = %d", n_edges);
 Coords verts[n_verts];
 fp = fopen(filename,"r");
 n_lines = 0;
+int vert_index = 0;
+int face_vertices = 0;
+int faces[n_faces][3]; 
+int face_index = 0;
 while (fgets(buffer, sizeof(buffer), fp)) {
+   // Skip any comments and the first two lines
    if (!strncmp(buffer, "#",1)){
       printf("\nFound comment");
       continue;
+   } else if (n_lines<2){
+      ++n_lines;
+      continue;
    }
-   // We are only interested in vertices right now, so stop reading after that
-   if (n_lines>(n_verts+2)){
-      break;
+   // If we are in the vertex area of the file, record the vertex
+   if (n_lines<n_verts+2){
+      // Some .off files have more than three values
+      // these are usually normal vectors or colors. ignore these
+      sscanf(buffer,"%lf %lf %lf", 
+             &verts[vert_index].x, &verts[vert_index].y, &verts[vert_index].z);
+      ++vert_index;
    }
-   
-   sscanf(buffer,"%f %f %f", 
-          &verts[n_lines].x, &verts[n_lines].y, &verts[n_lines].z);
+   // If we are in the facet area of the file, record the facet
+   if (n_lines>=(n_verts+2)){
+      // The faces are always after the vertices in an off file.
+      sscanf(buffer,"%d %d %d %d", 
+             &face_vertices, 
+             &faces[face_index][0], 
+             &faces[face_index][1], 
+             &faces[face_index][2]);
+      printf("\nBuffer = %s", buffer);
+      ++face_index;
+   }  
    ++n_lines;
 
 }
-
-
 fclose(fp);
 
 
+printf("\nThe first vertice is = %g,%g,%g\n", 
+       verts[0].x,verts[0].y,verts[0].z);
+printf("\nThe first facet is = %d,%d,%d\n",
+       faces[0][0], faces[0][1], faces[0][2]);
 
+// Now we need to loop over all the faces and make a list of unique
+// vertice vertice pair. 
+// In each face there are three possible combinations
+// Algorithm: Make a list of all vertex vertex pairs,
+// Then make a copy of said list with all unique vertex vertex pairs
 
+int vert_pairs[3*n_faces][2];
+int unique_verts[3*n_faces][2];
+int unique_index = 0;
+int pair_index = 0;
+int pair_is_unique;
+int vert1, vert2, vert3, vert_pair_0;
+// Make list of vertex vertex pairs
+for (int i=0; i < n_faces; i++){
+   vert1 = faces[i][0];
+   vert2 = faces[i][1];
+   vert3 = faces[i][2];
+   vert_pairs[i][0] = vert1; 
+   vert_pairs[i][1] = vert2;
+   vert_pairs[i + n_faces][0] = vert1;
+   vert_pairs[i + n_faces][1] = vert3;
+   vert_pairs[i + 2*n_faces][0] = vert2;
+   vert_pairs[i + 2*n_faces][1] = vert3;
+}
+printf("\n final face is = %d,%d,%d\n", vert1, vert2, vert3);
+// Make a copy of only the unique pairs
+for (int i=0; i < 3*n_faces; i++){
+   // Check if the first vertex exist in the unique list
+   vert1 = vert_pairs[i][0];
+   vert2 = vert_pairs[i][1];
+   pair_is_unique = 1;
+   for (int j = 0; j<unique_index; j++){
+      if (unique_verts[j][0]==vert1){
+         if (unique_verts[j][1]==vert2) {
+            pair_is_unique=0;
+            break;
+         }
+      } 
+      else if (unique_verts[j][0]==vert2){
+         if (unique_verts[j][1]==vert1) {
+            pair_is_unique=0; 
+            break;
+         }
+      }
+   }
+   if (pair_is_unique){
+      unique_verts[unique_index][0] = vert1;
+      unique_verts[unique_index][1] = vert2;
+      ++unique_index;
+   }
+}
+n_edges = unique_index; // The number of edges is the number of unique 
+// vertex vertex pairs.
+int euler_pointcare = n_faces + n_verts - n_edges;
 
+printf("\nNumber of edges is the unique index, %d", unique_index);
+printf("\nEuler Pointcare characteristic is %d",
+       n_faces + n_verts - unique_index);
+if (euler_pointcare != 2){
+   printf("ERROR: Input mesh from %s, is not a closed shape."
+          "\nUnion_mesh_off requires the user input to be a convex hull.",
+          NAME_CURRENT_COMP);
+   exit(1);
+} 
+printf("\n");
 exit(0);
 
 	// int n_facets = (n_lines-2)/7;
