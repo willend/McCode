@@ -116,7 +116,7 @@ INITIALIZE
     }
 
     char line[256];
-    long long ncount;
+    long long ncount=mcget_ncount();
 
     if(Emax<Emin){
         fprintf(stderr,"Warning(%s): Nonsensical energy interval: E=[%g,%g]. Aborting.\n",NAME_CURRENT_COMP,Emin,Emax);

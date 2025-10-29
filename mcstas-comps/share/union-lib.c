@@ -33,7 +33,18 @@ enum process {
   Texture,
   IncoherentPhonon,
   NCrystal,
+  Non,
   Template
+};
+
+enum surface {
+  Mirror,
+  SurfaceTemplate  	
+};
+
+enum in_or_out {
+	inward_bound,
+	outward_bound
 };
 
 struct intersection_time_table_struct {
@@ -41,11 +52,13 @@ int num_volumes;
 int *calculated;
 int *n_elements;
 double **intersection_times;
+double **normal_vector_x;
+double **normal_vector_y;
+double **normal_vector_z;
+int **surface_index;
 };
 
 struct line_segment{
-//struct position point1;
-//struct position point2;
 Coords point1;
 Coords point2;
 int number_of_dashes;
@@ -75,12 +88,6 @@ struct line_segment *lines;
 #pragma acc shape(lines[0:number_of_lines]) init_needed(number_of_lines)
 };
 
-// 2D lists not needed anyway
-// struct pointer_to_2d_int_list {
-// int n_lists;
-// struct pointer_to_1d_int_list *lists;
-// }
-
 // Todo: see if the union geometry_parameter_union and other geometry structs can be here
 union geometry_parameter_union{
     struct sphere_storage   *p_sphere_storage;
@@ -99,7 +106,8 @@ double z;
 };
 
 struct focus_data_struct {
-Coords Aim;
+Coords RayAim; // Vector from ray position (within geometry) to target
+Coords Aim; // Vector from geometry to target
 double angular_focus_width;
 double angular_focus_height;
 double spatial_focus_width;
@@ -397,16 +405,14 @@ int mask_mode; // ALL/ANY 1/2. In ALL mode, only parts covered by all masks is s
 double geometry_p_interact; // fraction of rays that interact with this volume for each scattering (between 0 and 1, 0 for disable)
 union geometry_parameter_union geometry_parameters; // relevant parameters for this shape
 union geometry_parameter_union (*copy_geometry_parameters)(union geometry_parameter_union*);
-struct focus_data_struct focus_data; // Used for focusing from this geometry
 
-// New focus data implementation to remove the focusing bug for non-isotripic processes
-struct focus_data_array_struct focus_data_array;
+struct focus_data_array_struct focus_data_array; // Focusing specified by user is element 0 and used for isotropic processes, rotated versions are added by master
 struct pointer_to_1d_int_list focus_array_indices; // Add 1D integer array with indecies for correct focus_data for each process
 
 
 // intersect_function takes position/velocity of ray and parameters, returns time list
-int (*intersect_function)(double*,int*,double*,double*,struct geometry_struct*);
-//                        t_array,n_ar,r      ,v
+int (*intersect_function)(double*, double*, double*, double*, int*, int*, double*, double*, struct geometry_struct*);
+//                        t_array, nx array, ny array, nz array, surface_index array, n arary, r ,v
 
 // within_function that checks if the ray origin is within this volume
 int (*within_function)(Coords,struct geometry_struct*);
@@ -445,6 +451,12 @@ struct pointer_to_1d_int_list masked_by_mask_index_list;
 //struct indexed_mask_lists_struct mask_intersect_lists;
 // Simpler way of storing the mask_intersect_lists
 struct pointer_to_1d_int_list mask_intersect_list;
+
+// Surfaces
+// Could make structure for this and support functions?
+int number_of_faces;
+struct surface_stack_struct **surface_stack_for_each_face;
+struct surface_stack_struct *internal_cut_surface_stack;
 };
 
 struct physics_struct
@@ -452,10 +464,16 @@ struct physics_struct
 char name[256]; // User defined material name
 int interact_control;
 int is_vacuum;
+int any_process_needs_cross_section_focus;
 double my_a;
 int number_of_processes;
 // pointer to array of pointers to physics_sub structures that each describe a scattering process
 struct scattering_process_struct *p_scattering_array;
+
+// refraction related
+int has_refraction_info;
+double refraction_scattering_length_density; // [AA^-2]
+double refraction_Qc;
 };
 
 union data_transfer_union{
@@ -484,6 +502,7 @@ char name[256];                // User defined process name
 enum process eProcess;         // enum value corresponding to this process GPU
 double process_p_interact;     // double between 0 and 1 that describes the fraction of events forced to undergo this process. -1 for disable
 int non_isotropic_rot_index;   // -1 if process is isotrpic, otherwise is the index of the process rotation matrix in the volume
+int needs_cross_section_focus; // 1 if physics_my needs to call focus functions, otherwise -1
 Rotation rotation_matrix;      // rotation matrix of process, reported by component in local frame, transformed and moved to volume struct in main
 
 union data_transfer_union data_transfer; // The way to reach the storage space allocated for this process (see examples in process.comp files)
@@ -495,6 +514,26 @@ int (*probability_for_scattering_function)(double*,double*,union data_transfer_u
 // A scattering_function takes k_i and parameters, returns k_f
 int (*scattering_function)(double*,double*,double*,union data_transfer_union,struct focus_data_struct*, _class_particle *_particle);
 //                         k_f,    k_i,    weight, parameters               , focus data / function
+};
+
+
+union surface_data_transfer_union 
+{
+	struct Mirror_surface_storage_struct *pointer_to_a_Mirror_surface_storage_struct;
+	struct Template_surface_storage_struct *pointer_to_a_Template_surface_storage_struct;	
+};
+
+struct surface_process_struct
+{
+char name[256];
+enum surface eSurface;
+union surface_data_transfer_union data_transfer;
+};
+
+struct surface_stack_struct
+{
+int number_of_surfaces;
+struct surface_process_struct **p_surface_array;
 };
 
 struct Volume_struct
@@ -517,19 +556,34 @@ struct pointer_to_1d_int_list start_logic_list;
 struct pointer_to_1d_int_list starting_destinations_list;
 };
 
-struct global_positions_to_transform_list_struct {
+struct global_positions_to_transform_list_struct
+{
 int num_elements;
 Coords **positions;
 };
 
-struct global_rotations_to_transform_list_struct {
+struct global_rotations_to_transform_list_struct
+{
 int num_elements;
 Rotation **rotations;
 };
 
+struct global_surface_element_struct
+{
+char name[256]; // Name of the process
+int component_index;
+struct surface_process_struct *p_surface_process;
+};
+
+struct pointer_to_global_surface_list 
+{
+int num_elements;
+struct global_surface_element_struct *elements;
+};
+
 struct global_process_element_struct
 {
-char name[128]; // Name of the process
+char name[256]; // Name of the process
 int component_index;
 struct scattering_process_struct *p_scattering_process;
 };
@@ -767,8 +821,8 @@ void add_element_to_int_list(struct pointer_to_1d_int_list *list,int value) {
 void add_element_to_focus_data_array(struct focus_data_array_struct *focus_data_array,struct focus_data_struct focus_data) {
     if (focus_data_array->num_elements == 0) {
       focus_data_array->num_elements++;
-      focus_data_array-> elements = malloc(focus_data_array->num_elements*sizeof(struct focus_data_struct));
-      focus_data_array-> elements[0] = focus_data;
+      focus_data_array->elements = malloc(focus_data_array->num_elements*sizeof(struct focus_data_struct));
+      focus_data_array->elements[0] = focus_data;
     } else {
       struct focus_data_struct *temp=malloc(focus_data_array->num_elements*sizeof(struct focus_data_struct));
       int iterate;
@@ -781,6 +835,24 @@ void add_element_to_focus_data_array(struct focus_data_array_struct *focus_data_
       focus_data_array->elements[focus_data_array->num_elements-1] = focus_data;
     }
     };
+	
+void copy_focus_data_array(struct focus_data_array_struct *original_array, struct focus_data_array_struct *new_array) {
+	
+	new_array->num_elements = original_array->num_elements;
+	new_array->elements = malloc(new_array->num_elements*sizeof(struct focus_data_struct));
+
+	if (new_array->elements == NULL) {
+		fprintf(stderr, "Memory allocation failed in copy_focus_data_struct \n");
+		exit(1);
+	}
+		
+	int iterate;
+	for (iterate=0;iterate<original_array->num_elements;iterate++) {
+		new_array->elements[iterate] = original_array->elements[iterate];
+	}
+
+	};
+
 
 
 void add_to_logger_with_data(struct logger_with_data_struct *logger_with_data, struct logger_struct *logger) {
@@ -1020,8 +1092,8 @@ void add_element_to_process_list(struct pointer_to_global_process_list *list,str
 void add_element_to_material_list(struct pointer_to_global_material_list *list,struct global_material_element_struct new_element) {
     if (list->num_elements == 0) {
     list->num_elements++;
-    list-> elements = malloc(list->num_elements*sizeof(struct global_material_element_struct));
-    list-> elements[0] = new_element;
+    list->elements = malloc(list->num_elements*sizeof(struct global_material_element_struct));
+    list->elements[0] = new_element;
     }
     else {
     struct global_material_element_struct *temp=malloc(list->num_elements*sizeof(struct global_material_element_struct));
@@ -1036,11 +1108,53 @@ void add_element_to_material_list(struct pointer_to_global_material_list *list,s
     }
 };
 
+void add_element_to_surface_list(struct pointer_to_global_surface_list *list, struct global_surface_element_struct new_element) {
+    if (list->num_elements == 0) {
+    list->num_elements++;
+    list->elements = malloc(list->num_elements*sizeof(struct global_surface_element_struct));
+    list->elements[0] = new_element;
+    }
+    else {
+      struct global_surface_element_struct *temp=malloc(list->num_elements*sizeof(struct global_surface_element_struct));
+    int iterate;
+    for (iterate=0;iterate<list->num_elements;iterate++) temp[iterate] = list->elements[iterate];
+    free(list->elements);
+    list->num_elements++;
+    list-> elements = malloc(list->num_elements*sizeof(struct global_surface_element_struct));
+    for (iterate=0;iterate<list->num_elements-1;iterate++) list->elements[iterate] = temp[iterate];
+    free(temp);
+    list->elements[list->num_elements-1] = new_element;
+    }
+};
+
+void add_element_to_surface_stack(struct surface_stack_struct *list, struct surface_process_struct *new_element) {
+    if (list->number_of_surfaces == 0) {
+        list->p_surface_array = malloc(sizeof(struct surface_process_struct*));
+        if (!list->p_surface_array) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(EXIT_FAILURE);
+        }
+        list->p_surface_array[0] = new_element;
+        list->number_of_surfaces = 1;
+    } else {
+        // Reallocate with space for one more element
+        struct surface_process_struct **temp = realloc(list->p_surface_array, 
+            (list->number_of_surfaces + 1) * sizeof(struct surface_process_struct*));
+        if (!temp) {
+            fprintf(stderr, "Memory reallocation failed\n");
+            exit(EXIT_FAILURE);
+        }
+        list->p_surface_array = temp;
+        list->p_surface_array[list->number_of_surfaces] = new_element;
+        list->number_of_surfaces++;
+    }
+};
+
 void add_element_to_geometry_list(struct pointer_to_global_geometry_list *list,struct global_geometry_element_struct new_element) {
     if (list->num_elements == 0) {
     list->num_elements++;
-    list-> elements = malloc(list->num_elements*sizeof(struct global_geometry_element_struct));
-    list-> elements[0] = new_element;
+    list->elements = malloc(list->num_elements*sizeof(struct global_geometry_element_struct));
+    list->elements[0] = new_element;
     }
     else {
     struct global_geometry_element_struct *temp=malloc(list->num_elements*sizeof(struct global_geometry_element_struct));
@@ -1058,8 +1172,8 @@ void add_element_to_geometry_list(struct pointer_to_global_geometry_list *list,s
 void add_element_to_logger_list(struct pointer_to_global_logger_list *list,struct global_logger_element_struct new_element) {
     if (list->num_elements == 0) {
     list->num_elements++;
-    list-> elements = malloc(list->num_elements*sizeof(struct global_logger_element_struct));
-    list-> elements[0] = new_element;
+    list->elements = malloc(list->num_elements*sizeof(struct global_logger_element_struct));
+    list->elements[0] = new_element;
     }
     else {
     struct global_logger_element_struct *temp=malloc(list->num_elements*sizeof(struct global_logger_element_struct));
@@ -1723,6 +1837,7 @@ int clear_intersection_table(struct intersection_time_table_struct *intersection
 };
 
 void print_intersection_table(struct intersection_time_table_struct *intersection_time_table) {
+
     int num_volumes,iterate,solutions;
     int max_number_of_solutions = 0;
     
@@ -1742,7 +1857,10 @@ void print_intersection_table(struct intersection_time_table_struct *intersectio
     printf("           ");
     printf("| CALCULATED  |");
     for (solutions = 0;solutions < max_number_of_solutions;solutions++) {
-        printf(" - SOLUTION %d - |",solutions);
+        printf(" - SOLUTION %d - |", solutions);
+    }
+    for (solutions = 0;solutions < max_number_of_solutions;solutions++) {
+        printf(" - SURFACE %d - |", solutions);
     }
 
     printf("\n");
@@ -1759,6 +1877,12 @@ void print_intersection_table(struct intersection_time_table_struct *intersectio
              printf("   %1.7f   |",intersection_time_table->intersection_times[iterate][solutions]);
           else
             printf("                |");
+        }
+        for (solutions = 0;solutions < max_number_of_solutions;solutions++) {
+          if (intersection_time_table->n_elements[iterate] > solutions && intersection_time_table->calculated[iterate] == 1)
+             printf("   %1.9d   |",intersection_time_table->surface_index[iterate][solutions]);
+          else
+            printf("               |");
         }
     printf("\n");
     }
@@ -1915,10 +2039,16 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     direction[2] = r2[2] - r1[2];
     int geometry_output;
     
+	// Todo: switch to nicer intersect function call
+	double double_dummy[2];
+	int int_dummy[2];
+	
+	
     // Find intersections
     for (volume_index = 1;volume_index < number_of_volumes; volume_index++) {
         if (volume_index != N) {
-            geometry_output = Geometries[volume_index]->intersect_function(temp_intersection,&number_of_solutions,r1,direction,Geometries[volume_index]);
+            geometry_output = Geometries[volume_index]->intersect_function(temp_intersection, double_dummy, double_dummy, double_dummy, int_dummy, 
+			                                                               &number_of_solutions, r1, direction, Geometries[volume_index]);
              // printf("No solutions for intersection (Volume %d) with %d \n",N,volume_index);
                 for (iterate=0;iterate<number_of_solutions;iterate++) {
                     // print_1d_double_list(intersection_list,"intersection_list");
@@ -2389,7 +2519,7 @@ int A_overlaps_B(struct geometry_struct *child, struct geometry_struct *parent) 
 
 // -------------    Functions for box ray tracing used in trace ---------------------------------
 // These functions needs to be fast, as they may be used many times for each ray
-int sample_box_intersect_advanced(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
+int sample_box_intersect_advanced(double *t, double *nx, double *ny, double *nz, int *surface_index, int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
     // possible approaches
     // rotate to a simple coordinate system by rotating the ray (easier to switch to McStas standard)
     
@@ -2438,7 +2568,11 @@ int sample_box_intersect_advanced(double *t,int *num_solutions,double *r,double 
     z_result = rotated_coordinates.z + t[*num_solutions]*rotated_velocity.z; // only for debug
     //printf("Test solution for face number 0: (x,y) = (%f,%f,%f)\n",x_result,y_result,z_result);
     if (x_result >= -0.5*width1 && x_result <= 0.5*width1 && y_result >= -0.5*height1 && y_result <= 0.5*height1) {
-        (*num_solutions)++;
+		nx[*num_solutions] = normal_vectors.x;
+		ny[*num_solutions] = normal_vectors.y;
+		nz[*num_solutions] = -normal_vectors.z;
+		surface_index[*num_solutions] = 0;
+        (*num_solutions)++;		
         //printf("Solution found for face number 0\n");
     }
     
@@ -2451,7 +2585,11 @@ int sample_box_intersect_advanced(double *t,int *num_solutions,double *r,double 
     //z_result = rotated_coordinates.z + t[*num_solutions]*rotated_velocity.z; // only for debug
     //printf("Test solution for face number 1: (x,y) = (%f,%f,%f)\n",x_result,y_result,z_result);
     if (x_result >= -0.5*width2 && x_result <= 0.5*width2 && y_result >= -0.5*height2 && y_result <= 0.5*height2) {
-        (*num_solutions)++;
+		nx[*num_solutions] = normal_vectors.x;
+		ny[*num_solutions] = normal_vectors.y;
+		nz[*num_solutions] = normal_vectors.z;
+		surface_index[*num_solutions] = 1;				
+        (*num_solutions)++;		
         //printf("Solution found for face number 1\n");
     }
     // These were done first as they are fastest, and most likely to be the solutions (normal to do small depth and large width/height), and standard orientation is to have one of these faces towards the source. When the fastest and most likely are done first, there is larger chance to skip more and slower calculations
@@ -2464,7 +2602,11 @@ int sample_box_intersect_advanced(double *t,int *num_solutions,double *r,double 
         y_result = rotated_coordinates.y + t[*num_solutions]*rotated_velocity.y;
         z_result = rotated_coordinates.z + t[*num_solutions]*rotated_velocity.z;
         if (z_result > -0.5*depth && z_result < 0.5*depth && y_result >= -0.5*(height1+(height2-height1)*(0.5*depth+z_result)/depth) && y_result < 0.5*(height1+(height2-height1)*(0.5*depth+z_result)/depth)) {
-            (*num_solutions)++;
+			nx[*num_solutions] = normal_vectors.x;
+			ny[*num_solutions] = normal_vectors.y;
+			nz[*num_solutions] = normal_vectors.z;	
+			surface_index[*num_solutions] = 2;					
+            (*num_solutions)++;			
             //printf("Solution found for face number 2\n");
         }
     }
@@ -2477,7 +2619,11 @@ int sample_box_intersect_advanced(double *t,int *num_solutions,double *r,double 
         y_result = rotated_coordinates.y + t[*num_solutions]*rotated_velocity.y;
         z_result = rotated_coordinates.z + t[*num_solutions]*rotated_velocity.z;
         if (z_result > -0.5*depth && z_result < 0.5*depth && y_result > -0.5*(height1+(height2-height1)*(0.5*depth+z_result)/depth) && y_result <= 0.5*(height1+(height2-height1)*(0.5*depth+z_result)/depth)) {
-            (*num_solutions)++;
+			nx[*num_solutions] = normal_vectors.x;
+			ny[*num_solutions] = normal_vectors.y;
+			nz[*num_solutions] = normal_vectors.z;
+			surface_index[*num_solutions] = 3;						
+            (*num_solutions)++;			
             //printf("Solution found for face number 3\n");
         }
     }
@@ -2490,7 +2636,11 @@ int sample_box_intersect_advanced(double *t,int *num_solutions,double *r,double 
         //y_result = rotated_coordinates.y + t[*num_solutions]*rotated_velocity.y;
         z_result = rotated_coordinates.z + t[*num_solutions]*rotated_velocity.z;
         if (z_result > -0.5*depth && z_result < 0.5*depth && x_result >= -0.5*(width1+(width2-width1)*(0.5*depth+z_result)/depth) && x_result < 0.5*(width1+(width2-width1)*(0.5*depth+z_result)/depth)) {
-            (*num_solutions)++;
+			nx[*num_solutions] = normal_vectors.x;
+			ny[*num_solutions] = normal_vectors.y;
+			nz[*num_solutions] = normal_vectors.z;
+			surface_index[*num_solutions] = 4;			
+            (*num_solutions)++;			
             //printf("Solution found for face number 4\n");
         }
     }
@@ -2503,21 +2653,63 @@ int sample_box_intersect_advanced(double *t,int *num_solutions,double *r,double 
         //y_result = rotated_coordinates.y + t[*num_solutions]*rotated_velocity.y;
         z_result = rotated_coordinates.z + t[*num_solutions]*rotated_velocity.z;
         if (z_result > -0.5*depth && z_result < 0.5*depth && x_result > -0.5*(width1+(width2-width1)*(0.5*depth+z_result)/depth) && x_result <= 0.5*(width1+(width2-width1)*(0.5*depth+z_result)/depth)) {
-            (*num_solutions)++;
+			nx[*num_solutions] = normal_vectors.x;
+			ny[*num_solutions] = normal_vectors.y;
+			nz[*num_solutions] = normal_vectors.z;
+			surface_index[*num_solutions] = 5;						
+            (*num_solutions)++;			
             //printf("Solution found for face number 5\n");
         }
     }
-    
+	
+	Coords normal_vector_rotated;
+	Coords normal_vector;
+	
+	// Sort solution according to intersection time and rotate normal vectors to master coordinate system 
     switch(*num_solutions) {
     case 2:
         if (t[0] > t[1]) {
             double temp = t[1];
             t[1] = t[0];
             t[0] = temp;
+			
+			// Also switch the normal vectors
+			temp = nx[1];
+			nx[1] = nx[0];
+			nx[0] = temp;
+			
+			temp = ny[1];
+			ny[1] = ny[0];
+			ny[0] = temp;
+			
+			temp = nz[1];
+			nz[1] = nz[0];
+			nz[0] = temp;
+			
+			// Switch surface_index
+			int temp_int = surface_index[1];
+			surface_index[1] = surface_index[0];
+			surface_index[0] = temp_int;
         }
+		
+		// Rotate back to master coordinate system	
+		normal_vector_rotated = coords_set(nx[0], ny[0], nz[0]);
+	    normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		nx[0] = normal_vector.x; ny[0] = normal_vector.y; nz[0] = normal_vector.z;
+		
+		normal_vector_rotated = coords_set(nx[1], ny[1], nz[1]);
+	    normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		nx[1] = normal_vector.x; ny[1] = normal_vector.y; nz[1] = normal_vector.z;		
+		
         return 1;
     case 1:
         t[1] = -1;
+		
+		// Rotate back to master coordinate system	
+		normal_vector_rotated = coords_set(nx[0], ny[0], nz[0]);
+	    normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		nx[0] = normal_vector.x; ny[0] = normal_vector.y; nz[0] = normal_vector.z;
+		
         return 1;
     case 0:
         t[0] = -1;
@@ -2583,11 +2775,11 @@ void box_corners_local_frame(Coords *corner_points, struct geometry_struct *geom
     corner_points[7] = coords_add(corner_points[4],coords_scalar_mult(y_vector,height2));
 };
 
-int sample_box_intersect_simple(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
+int sample_box_intersect_simple(double *t, double *nx, double *ny, double *nz, int *surface_index, int *num_solutions, double *r, double *v, struct geometry_struct *geometry) {
     double width = geometry->geometry_parameters.p_box_storage->x_width1;
     double height = geometry->geometry_parameters.p_box_storage->y_height1;
     double depth = geometry->geometry_parameters.p_box_storage->z_depth;
-    
+	
     // Declare variables for the function
     double x_new,y_new,z_new;
     
@@ -2598,28 +2790,89 @@ int sample_box_intersect_simple(double *t,int *num_solutions,double *r,double *v
     
     Coords coordinates = coords_set(x_new,y_new,z_new);
     Coords rotated_coordinates;
-    // printf("Cords coordinates = (%f,%f,%f)\n",coordinates.x,coordinates.y,coordinates.z);
+    //printf("Cords coordinates = (%f,%f,%f)\n",coordinates.x,coordinates.y,coordinates.z);
     
     // Rotate the position of the neutron around the center of the cylinder
     rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,coordinates);
     // rotated_coordinates = rot_apply(rotation_matrix_debug,coordinates);
-    //     printf("Cords rotated_coordinates = (%f,%f,%f)\n",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z);
+    //printf("Cords rotated_coordinates = (%f,%f,%f)\n",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z);
     
     Coords velocity = coords_set(v[0],v[1],v[2]);
     Coords rotated_velocity;
-    //     printf("Cords velocity = (%f,%f,%f)\n",velocity.x,velocity.y,velocity.z);
+    //printf("Cords velocity = (%f,%f,%f)\n",velocity.x,velocity.y,velocity.z);
     
     // Rotate the position of the neutron around the center of the cylinder
     rotated_velocity = rot_apply(geometry->transpose_rotation_matrix,velocity);
     // rotated_velocity = rot_apply(rotation_matrix_debug,velocity);
-    //     printf("Cords rotated_velocity = (%f,%f,%f)\n",rotated_velocity.x,rotated_velocity.y,rotated_velocity.z);
+    //printf("Cords rotated_velocity = (%f,%f,%f)\n",rotated_velocity.x,rotated_velocity.y,rotated_velocity.z);
     
     int output;
-    // Run McStas built in sphere intersect funtion (sphere centered around origin)
+    // Run McStas built in box intersect funtion (box centered around origin)
     if ((output = box_intersect(&t[0],&t[1],rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,width,height,depth)) == 0) {
-        *num_solutions = 0;t[0]=-1;t[1]=-1;}
+        *num_solutions = 0;t[0]=-1;t[1]=-1;
+	}
     else if (t[1] != 0) *num_solutions = 2;
     else {*num_solutions = 1;t[1]=-1;} // t[2] is a memory error!
+	
+    // Rewritten code from refractor.comp
+    int index;
+    double x, y, z, dt;
+    double rotated_nx, rotated_ny, rotated_nz;
+    Coords normal_vector_rotated;
+    Coords normal_vector;
+    for (index=0; index<*num_solutions; index++) {
+
+        dt = t[index];
+        
+        // Intersection point in box coordinate system
+        x = rotated_coordinates.x + dt*rotated_velocity.x;
+        y = rotated_coordinates.y + dt*rotated_velocity.y;
+        z = rotated_coordinates.z + dt*rotated_velocity.z;
+        
+        // determine hit face: difference to plane is closest to 0 (in box coordinate system)
+		// A deviation of 0 means its on that surface, due to finite accuracy it will never be exact, so the closest is chosen
+		double x_deviation = fabs(fabs(x/width) - 0.5); 
+	    double y_deviation =  fabs(fabs(y/height) - 0.5);
+		double z_deviation = fabs(fabs(z/depth) - 0.5);
+		
+		if (x_deviation <= y_deviation && x_deviation <= z_deviation) {
+		    normal_vector_rotated = coords_set(x > 0 ? 1.0 : -1.0, 0.0, 0.0);
+		} else if (y_deviation <= x_deviation && y_deviation <= z_deviation) {
+		    normal_vector_rotated = coords_set(0.0, y > 0 ? 1.0 : -1.0, 0.0);
+		} else {
+		    normal_vector_rotated = coords_set(0.0, 0.0, z > 0 ? 1.0 : -1.0);
+		}
+		
+		// Set surface index
+		if (normal_vector_rotated.z < -0.5)
+			// back
+			surface_index[index] = 0;
+		else if(normal_vector_rotated.z > 0.5)
+			// front
+			surface_index[index] = 1;
+		else if(normal_vector_rotated.x > 0.5)
+			// left
+			surface_index[index] = 2;			
+		else if(normal_vector_rotated.x < -0.5)
+			// right
+			surface_index[index] = 3;			
+		else if(normal_vector_rotated.y > 0.5)
+			// top
+			surface_index[index] = 4;			
+		else if(normal_vector_rotated.y < -0.5)
+			// bottom
+			surface_index[index] = 5;
+		
+        // Rotate back to master coordinate system
+        normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		
+        // Set the normal vector components
+        nx[index] = normal_vector.x;
+        ny[index] = normal_vector.y;
+        nz[index] = normal_vector.z;
+		
+		NORM(nx[index], ny[index], nz[index]);
+    }
     
     return output;
 };
@@ -2707,7 +2960,7 @@ int r_within_cone(Coords pos,struct geometry_struct *geometry) {
     else return 1;
     };
 
-int sample_cone_intersect(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
+int sample_cone_intersect(double *t, double *nx, double *ny, double *nz, int *surface_index, int *num_solutions, double *r, double *v, struct geometry_struct *geometry) {
 
     /*
     double radius_top = geometry->geometry_parameters.p_cone_storage->cone_radius_top;
@@ -2763,7 +3016,9 @@ int sample_cone_intersect(double *t,int *num_solutions,double *r,double *v,struc
     //     printf("Cords rotated_velocity = (%f,%f,%f)\n",rotated_velocity.x,rotated_velocity.y,rotated_velocity.z);
     
 
-    
+    Coords normal_vector_rotated;
+    Coords normal_vector;
+	    
     // Test if the ray gets close to the cone by making a sphere around cone and check intersection
     double Y;
     double max_r;
@@ -2796,7 +3051,8 @@ int sample_cone_intersect(double *t,int *num_solutions,double *r,double *v,struc
         }
     }
     
-    
+    //Coords normal_vector_rotated;
+	//Coords normal_vector;
     
     double tmp;
     
@@ -2811,12 +3067,23 @@ int sample_cone_intersect(double *t,int *num_solutions,double *r,double *v,struc
     double xpos;
     double zpos;
     xpos=rotated_coordinates.x+t_plane[0]*rotated_velocity.x;
-        zpos=rotated_coordinates.z+t_plane[0]*rotated_velocity.z;
+    zpos=rotated_coordinates.z+t_plane[0]*rotated_velocity.z;
  
 
     if ((xpos*xpos + zpos*zpos) > radius_top*radius_top){
         t_plane[0] = -1;
         *num_solutions = *num_solutions-1;
+    } else {
+		normal_vector_rotated = coords_set(0,1,0);
+			
+	    normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		
+	    // Set the normal vector components
+	    nx[0] = normal_vector.x;
+	    ny[0] = normal_vector.y;
+	    nz[0] = normal_vector.z;
+		
+		surface_index[0] = 1; // top index
     }
     xpos=rotated_coordinates.x+t_plane[1]*rotated_velocity.x;
     zpos=rotated_coordinates.z+t_plane[1]*rotated_velocity.z;
@@ -2824,22 +3091,54 @@ int sample_cone_intersect(double *t,int *num_solutions,double *r,double *v,struc
     if ((xpos*xpos + zpos*zpos) > radius_bottom*radius_bottom){
         t_plane[1] = -1;
         *num_solutions = *num_solutions-1;
+    } else {
+		normal_vector_rotated = coords_set(0,-1,0);
+			
+	    normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		
+	    // Set the normal vector components
+	    nx[1] = normal_vector.x;
+	    ny[1] = normal_vector.y;
+	    nz[1] = normal_vector.z;
+		
+		surface_index[1] = 2; // bottom index
+    }
+    
+    // sort solutions:
+    if (t_plane[0]>t_plane[1]){
+       tmp = t_plane[1];
+       t_plane[1] = t_plane[0];
+       t_plane[0] = tmp;
+	   
+	   // Also switch the normal vectors
+	   tmp = nx[1];
+ 	   nx[1] = nx[0];
+	   nx[0] = tmp;
+	
+	   tmp = ny[1];
+	   ny[1] = ny[0];
+	   ny[0] = tmp;
+	
+	   tmp = nz[1];
+	   nz[1] = nz[0];
+	   nz[0] = tmp;
+	
+	   // Switch surface_index
+	   int temp_int = surface_index[1];
+	   surface_index[1] = surface_index[0];
+	   surface_index[0] = temp_int;
     }
 
     
-    // sort solutions:
-        if (t_plane[0]>t_plane[1]){
-            tmp = t_plane[1];
-            t_plane[1] = t_plane[0];
-            t_plane[0] = tmp;
-        }
-
-    
+	double nx_cone[2], ny_cone[2], nz_cone[2];
+	int surface_index_cone[2];
+	double r_current;
+	double x, y, z, dt;
+	
     if (*num_solutions == 2){
         // Intersect only on planes
         t[0] = t_plane[0];
         t[1] = t_plane[1];
-        
         
     } else {
         // Intersects with cone
@@ -2858,9 +3157,67 @@ int sample_cone_intersect(double *t,int *num_solutions,double *r,double *v,struc
         // remove solutions on cone over top and under bottom
         if (fabs(t_cone[0]*rotated_velocity.y+rotated_coordinates.y) > height/2) {
             t_cone[0] = -1;
+        } else {
+	        dt = t_cone[0];
+        
+	        // Intersection point in cylinder coordinate system
+	        x = rotated_coordinates.x + dt*rotated_velocity.x;
+	        y = rotated_coordinates.y + dt*rotated_velocity.y;
+	        z = rotated_coordinates.z + dt*rotated_velocity.z;
+			
+			r_current = radius_top + ((y-0.5*height)/height)*(radius_top - radius_bottom);
+				
+			
+			if (radius_bottom==radius_top) {
+ 			    normal_vector_rotated = coords_set(x/r_current, 0.0, z/r_current);
+			} else {
+			    normal_vector_rotated = coords_set(x/r_current, (radius_bottom - radius_top)/height, z/r_current);
+			}
+
+			NORM(normal_vector_rotated.x, normal_vector_rotated.y, normal_vector_rotated.z);
+			
+	        // Rotate back to master coordinate system
+	        normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		
+	        // Set the normal vector components
+	        nx_cone[0] = normal_vector.x;
+	        ny_cone[0] = normal_vector.y;
+	        nz_cone[0] = normal_vector.z;
+			
+			surface_index_cone[0] = 0;
+			
         }
         if (fabs(t_cone[1]*rotated_velocity.y+rotated_coordinates.y) > height/2) {
             t_cone[1] = -1;
+		} else { 
+			
+		    dt = t_cone[1];
+			
+	        // Intersection point in cylinder coordinate system
+	        x = rotated_coordinates.x + dt*rotated_velocity.x;
+	        y = rotated_coordinates.y + dt*rotated_velocity.y;
+	        z = rotated_coordinates.z + dt*rotated_velocity.z;
+			
+			r_current = radius_top + ((y-0.5*height)/height)*(radius_top - radius_bottom);
+				
+			
+			if (radius_bottom==radius_top) {
+ 			    normal_vector_rotated = coords_set(x/r_current, 0.0, z/r_current);
+			} else {
+			    normal_vector_rotated = coords_set(x/r_current, (radius_bottom - radius_top)/height, z/r_current);
+			}
+
+			NORM(normal_vector_rotated.x, normal_vector_rotated.y, normal_vector_rotated.z);
+			
+	        // Rotate back to master coordinate system
+	        normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		
+	        // Set the normal vector components
+	        nx_cone[1] = normal_vector.x;
+	        ny_cone[1] = normal_vector.y;
+	        nz_cone[1] = normal_vector.z;
+			
+			surface_index_cone[1] = 0;			
         }
 
         
@@ -2869,19 +3226,52 @@ int sample_cone_intersect(double *t,int *num_solutions,double *r,double *v,struc
             tmp = t_cone[1];
             t_cone[1] = t_cone[0];
             t_cone[0] = tmp;
+			
+	 	   // Also switch the normal vectors
+	 	   tmp = nx_cone[1];
+	  	   nx_cone[1] = nx_cone[0];
+	 	   nx_cone[0] = tmp;
+	
+	 	   tmp = ny_cone[1];
+	 	   ny_cone[1] = ny_cone[0];
+	 	   ny_cone[0] = tmp;
+	
+	 	   tmp = nz_cone[1];
+	 	   nz_cone[1] = nz_cone[0];
+	 	   nz_cone[0] = tmp;
+	
+	 	   // Switch surface_index
+	 	   int temp_int = surface_index_cone[1];
+	 	   surface_index_cone[1] = surface_index_cone[0];
+	 	   surface_index_cone[0] = temp_int;
         }
         
         if (*num_solutions == 1){
             t[0] = t_cone[1];
+			nx[0] = nx_cone[1];
+			ny[0] = ny_cone[1];
+			nz[0] = nz_cone[1];
+			surface_index[0] = surface_index_cone[1];
+			
             t[1] = t_plane[1];
         }
         if (*num_solutions == 0){
             t[0] = t_cone[0];
+			nx[0] = nx_cone[0];
+			ny[0] = ny_cone[0];
+			nz[0] = nz_cone[0];
+			surface_index[0] = surface_index_cone[0];
+			
             t[1] = t_cone[1];
+			nx[1] = nx_cone[1];
+			ny[1] = ny_cone[1];
+			nz[1] = nz_cone[1];
+			surface_index[1] = surface_index_cone[1];
         }
     }
 
 
+    /*
     // Count solutions
     *num_solutions = 0;
     if (t[0] > 0){
@@ -2894,22 +3284,45 @@ int sample_cone_intersect(double *t,int *num_solutions,double *r,double *v,struc
     }else {
         t[1]=-1;
     }
+	*/
+	
+	*num_solutions = 2;
     
     
     if (t[0] > t[1]) {
         tmp = t[1];
         t[1] = t[0];
         t[0] = tmp;
+		
+ 	   tmp = nx[1];
+  	   nx[1] = nx[0];
+ 	   nx[0] = tmp;
+	
+ 	   tmp = ny[1];
+ 	   ny[1] = ny[0];
+ 	   ny[0] = tmp;
+	
+ 	   tmp = nz[1];
+ 	   nz[1] = nz[0];
+ 	   nz[0] = tmp;
+	
+ 	   // Switch surface_index
+ 	   int temp_int = surface_index[1];
+ 	   surface_index[1] = surface_index[0];
+ 	   surface_index[0] = temp_int;
     }
 switch(*num_solutions) {
     case 2:
+	    //printf("case 2 t[0]=%lf (%lf, %lf, %lf) t[1]=%lf (%lf, %lf, %lf) \n", t[0], nx[0], ny[0], nz[0], t[1], nx[1], ny[1], nz[1]);
         return 1;
     case 1:
         t[0] = -1;
+	    //printf("case 1 t[0]=%lf t[1]=%lf \n", t[0], t[1]);		
         return 1;
     case 0:
         t[0] = -1;
         t[1] = -1;
+	    //printf("case 0 t[0]=%lf t[1]=%lf \n", t[0], t[1]);		
         return 0;
 }
 
@@ -3548,7 +3961,12 @@ int existence_of_intersection(Coords point1, Coords point2, struct geometry_stru
 
     start_point[0] = point1.x;start_point[1] = point1.y;start_point[2] = point1.z;
     vector_between_v[0] = vector_between.x;vector_between_v[1] = vector_between.y;vector_between_v[2] = vector_between.z;
-    geometry->intersect_function(temp_solution,&number_of_solutions,start_point,vector_between_v,geometry);
+	
+	// todo: Switch to nicer intersect call
+	double dummy_double[2];
+	int dummy_int[2];
+	
+    geometry->intersect_function(temp_solution, dummy_double, dummy_double, dummy_double, dummy_int, &number_of_solutions, start_point, vector_between_v, geometry);
     if (number_of_solutions > 0) {
         if (temp_solution[0] > 0 && temp_solution[0] < 1) return 1;
         if (number_of_solutions == 2) {
@@ -3618,7 +4036,7 @@ int box_overlaps_box(struct geometry_struct *geometry1,struct geometry_struct *g
 
 // -------------    Functions for sphere ray tracing used in trace ------------------------------
 // These functions needs to be fast, as they may be used many times for each ray
-int sample_sphere_intersect(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
+int sample_sphere_intersect(double *t, double *nx, double *ny, double *nz, int *surface_index, int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
     double radius = geometry->geometry_parameters.p_sphere_storage->sph_radius;
     
     // Declare variables for the function
@@ -3635,6 +4053,41 @@ int sample_sphere_intersect(double *t,int *num_solutions,double *r,double *v,str
         *num_solutions = 0;t[0]=-1;t[1]=-1;}
     else if (t[1] != 0) *num_solutions = 2;
     else {*num_solutions = 1;t[1]=-1;}
+	
+	// Calculate normals
+	int iterator;
+	double x_intersect, y_intersect, z_intersect; // relative to sphere center
+	Coords coordinates;
+	Coords rotated_coordinates;	
+	
+	for (iterator=0;iterator<*num_solutions;iterator++) {
+		x_intersect = t[iterator]*v[0] + x_new;
+		y_intersect = t[iterator]*v[1] + y_new;
+		z_intersect = t[iterator]*v[2] + z_new;
+		
+	    coordinates = coords_set(x_intersect,y_intersect,z_intersect);
+		NORM(coordinates.x, coordinates.y, coordinates.z);
+		nx[iterator] = coordinates.x;
+		ny[iterator] = coordinates.y;
+		nz[iterator] = coordinates.z;				
+		surface_index[iterator] = 0;
+		
+		/*
+		// Since the ray was never rotated into the sphere coordinate system (due to symmetry)
+		//  rotating back is not necessary
+			
+	    // printf("Cords coordinates = (%f,%f,%f)\n",coordinates.x,coordinates.y,coordinates.z);
+    
+	    // debug
+	    // Rotation rotation_matrix_debug[3][3];
+	    // rot_set_rotation(rotation_matrix_debug,-1.0*geometry->rotation.x,-1.0*geometry->rotation.y,-1.0*geometry->rotation.z);
+	    // rot_transpose(geometry->rotation_matrix,rotation_matrix_debug);
+
+	    // Rotate the position of the neutron around the center of the cylinder
+	    rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,coordinates);
+		*/
+			
+	}
     
     return output;
 };
@@ -3685,11 +4138,11 @@ int sphere_within_sphere(struct geometry_struct *geometry_child,struct geometry_
 
 // -------------    Functions for cylinder ray tracing used in trace ------------------------------
 // These functions needs to be fast, as they may be used many times for each ray
-int sample_cylinder_intersect(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
+int sample_cylinder_intersect(double *t, double *nx, double *ny, double *nz, int *surface_index, int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
     double radius = geometry->geometry_parameters.p_cylinder_storage->cyl_radius;
     double height = geometry->geometry_parameters.p_cylinder_storage->height;
     
-    // Declare variables for the function
+    // Declare position variables for the local coordinate system
     double x_new,y_new,z_new;
     
     // Coordinate transformation
@@ -3699,55 +4152,116 @@ int sample_cylinder_intersect(double *t,int *num_solutions,double *r,double *v,s
     
     Coords coordinates = coords_set(x_new,y_new,z_new);
     Coords rotated_coordinates;
-    // printf("Cords coordinates = (%f,%f,%f)\n",coordinates.x,coordinates.y,coordinates.z);
-    
-    // debug
-    // Rotation rotation_matrix_debug[3][3];
-    // rot_set_rotation(rotation_matrix_debug,-1.0*geometry->rotation.x,-1.0*geometry->rotation.y,-1.0*geometry->rotation.z);
-    // rot_transpose(geometry->rotation_matrix,rotation_matrix_debug);
 
     // Rotate the position of the neutron around the center of the cylinder
     rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,coordinates);
-    // rotated_coordinates = rot_apply(rotation_matrix_debug,coordinates);
-    //     printf("Cords rotated_coordinates = (%f,%f,%f)\n",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z);
     
     Coords velocity = coords_set(v[0],v[1],v[2]);
     Coords rotated_velocity;
-    //     printf("Cords velocity = (%f,%f,%f)\n",velocity.x,velocity.y,velocity.z);
     
     // Rotate the position of the neutron around the center of the cylinder
     rotated_velocity = rot_apply(geometry->transpose_rotation_matrix,velocity);
-    // rotated_velocity = rot_apply(rotation_matrix_debug,velocity);
-    //     printf("Cords rotated_velocity = (%f,%f,%f)\n",rotated_velocity.x,rotated_velocity.y,rotated_velocity.z);
     
+	int output;    
+	// Cases where the velocity is parallel with the cylinder axis have given problems, and is checked for explicitly
+	if (sqrt(rotated_velocity.x*rotated_velocity.x+rotated_velocity.z*rotated_velocity.z)/fabs(rotated_velocity.y) < 0.00001) {
+	  // The velocity is parallel with the cylinder axis. Either there are no solutions or two solutions
+	  if (sqrt(rotated_coordinates.x*rotated_coordinates.x+rotated_coordinates.z*rotated_coordinates.z) > radius) {
+	    *num_solutions = 0;
+	    return 0;
+	  } else {
+	    *num_solutions = 2;
+	    t[0] = (0.5*height - rotated_coordinates.y)/rotated_velocity.y;
+		surface_index[0] = 1; // index indicating top
+		
+	    t[1] = (-0.5*height - rotated_coordinates.y)/rotated_velocity.y;
+		surface_index[1] = 2; // index indicating bottom
+		
+		// sort solutions
+		if (t[0] > t[1]) {
+		  double d_temp;
+		  
+		  d_temp = t[0];
+		  t[0] = t[1];
+		  t[1] = d_temp;
+		  
+		  int i_temp;
+		  
+		  i_temp = surface_index[0];
+		  surface_index[0] = surface_index[1];
+		  surface_index[1] = i_temp;
+		}
+	  }
+	} else {
+	  // velocity not parallel to cylinder axis, call standard mcstas cylinder intersect 
+
+	  // Run McStas built in sphere intersect funtion (sphere centered around origin)
+	  if ((output = cylinder_intersect(&t[0],&t[1],
+	                                   rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,
+	                                   rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,radius,height)) == 0) {
+	      *num_solutions = 0;t[0]=-1;t[1]=-1;
+	  }
+	  else if (t[1] != 0) *num_solutions = 2;
+	  else {*num_solutions = 1; t[1]=-1;}
+	
+	  // decode output value
+	  // Check the bitmask for entry and exit
+	  if (*num_solutions > 0) {
+	    int entry_index = 0;
+	    if (output & 2) entry_index = 1; // Entry intersects top cap
+	    if (output & 4) entry_index = 2; // Entry intersects bottom cap
+	    surface_index[0] = entry_index;
+	  }
+	
+	  if (*num_solutions > 1) {
+	    int exit_index = 0;		
+	    if (output & 8) exit_index = 1;  // Exit intersects top cap
+	    if (output & 16) exit_index = 2; // Exit intersects bottom cap
+	    surface_index[1] = exit_index;
+	  }
+	}
     
-    
-    // Cases where the velocity is parallel with the cylinder axis have given problems, and is checked for explicitly
-    if (sqrt(rotated_velocity.x*rotated_velocity.x+rotated_velocity.z*rotated_velocity.z)/fabs(rotated_velocity.y) < 0.00001) {
-      // The velocity is parallel with the cylinder axis. Either there is two solutions
-      if (sqrt(rotated_coordinates.x*rotated_coordinates.x+rotated_coordinates.z*rotated_coordinates.z) > radius) {
-        *num_solutions = 0;
-        return 0;
-      } else {
-        *num_solutions = 2;
-        t[0] = (0.5*height - rotated_coordinates.y)/rotated_velocity.y;
-        t[1] = (-0.5*height - rotated_coordinates.y)/rotated_velocity.y;
-        return 1;
-      }
+	
+	// Calculate normal vectors from surface index and cylinder geometry
+    int index;
+    double x, y, z, dt;
+    Coords normal_vector_rotated;
+    Coords normal_vector;
+	
+    for (index=0; index<*num_solutions; index++) {
+		
+		// top and bottom easy
+		if (surface_index[index] == 1) {
+			normal_vector_rotated = coords_set(0,1,0);
+			
+		} else if (surface_index[index] == 2) {
+			normal_vector_rotated = coords_set(0,-1,0);			
+		} else {
+	        dt = t[index];
+        
+	        // Intersection point in cylinder coordinate system
+	        x = rotated_coordinates.x + dt*rotated_velocity.x;
+	        y = rotated_coordinates.y + dt*rotated_velocity.y;
+	        z = rotated_coordinates.z + dt*rotated_velocity.z;
+			
+			normal_vector_rotated = coords_set(x,0,z);			
+			NORM(normal_vector_rotated.x, normal_vector_rotated.y, normal_vector_rotated.z);
+		}
+		
+        // Rotate back to master coordinate system
+        normal_vector = rot_apply(geometry->rotation_matrix, normal_vector_rotated);
+		
+        // Set the normal vector components
+        nx[index] = normal_vector.x;
+        ny[index] = normal_vector.y;
+        nz[index] = normal_vector.z;
     }
-    
-    int output;
-    // Run McStas built in sphere intersect funtion (sphere centered around origin)
-    if ((output = cylinder_intersect(&t[0],&t[1],rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,radius,height)) == 0) {
-        *num_solutions = 0;t[0]=-1;t[1]=-1;}
-    else if (t[1] != 0) *num_solutions = 2;
-    else {*num_solutions = 1;t[1]=-1;}
     
     return output;
 };
 
 int r_within_cylinder(Coords pos,struct geometry_struct *geometry) {
-// Unpack parameters
+	// Unpack parameters
     double radius = geometry->geometry_parameters.p_cylinder_storage->cyl_radius;
     double height = geometry->geometry_parameters.p_cylinder_storage->height;
 
@@ -3947,7 +4461,10 @@ int cylinder_overlaps_cylinder(struct geometry_struct *geometry1,struct geometry
                 radial_position[1] = base_point.y + circ_point.y;
                 radial_position[2] = base_point.z + circ_point.z;
                 // sample_cylinder_intersect(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,radial_position,cyl_direction_pointer,geometry2);
+				double nx_dummy[2], ny_dummy[2], nz_dummy[2];
+				int surface_index_dummy[2];
+                sample_cylinder_intersect(temp_solution, nx_dummy, ny_dummy, nz_dummy, surface_index_dummy,
+				                          &number_of_solutions,radial_position,cyl_direction_pointer,geometry2);
                 for (solutions = 0;solutions < number_of_solutions;solutions++) {
                     if (temp_solution[solutions] > 0 && temp_solution[solutions] < height1) {
                         // cylinders must overlap.
@@ -3969,7 +4486,8 @@ int cylinder_overlaps_cylinder(struct geometry_struct *geometry1,struct geometry
                 base_point_vector[2] = base_point.z;
             
                 // The vector circ_point is from the base to the circumference. This is used to check the bottom cap.
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,base_point_vector,cyl_radial_direction,geometry2);
+                sample_cylinder_intersect(temp_solution,nx_dummy, ny_dummy, nz_dummy, surface_index_dummy, 
+				                          &number_of_solutions,base_point_vector,cyl_radial_direction,geometry2);
                 for (solutions = 0;solutions < number_of_solutions;solutions++) {
                     if (temp_solution[solutions] > 0 && temp_solution[solutions] < 1) {
                         // cylinders must overlap.
@@ -3987,7 +4505,8 @@ int cylinder_overlaps_cylinder(struct geometry_struct *geometry1,struct geometry
                 base_point_vector[2] = base_point.z + height1*cyl_direction1.z;
             
                 // The vector circ_point is from the base to the circumference. This is used to check the bottom cap.
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,base_point_vector,cyl_radial_direction,geometry2);
+                sample_cylinder_intersect(temp_solution, nx_dummy, ny_dummy, nz_dummy, surface_index_dummy,
+				                          &number_of_solutions,base_point_vector,cyl_radial_direction,geometry2);
                 for (solutions = 0;solutions < number_of_solutions;solutions++) {
                     if (temp_solution[solutions] > 0 && temp_solution[solutions] < 1) {
                         // cylinders must overlap.
@@ -4175,7 +4694,10 @@ int cylinder_within_cylinder(struct geometry_struct *geometry_child,struct geome
                 }
             
                 // sample_cylinder_intersect(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,radial_position,cyl_direction_pointer,geometry_parent);
+				double nx_dummy[2], ny_dummy[2], nz_dummy[2];
+				int surface_index_dummy[2];
+                sample_cylinder_intersect(temp_solution, nx_dummy, ny_dummy, nz_dummy, surface_index_dummy, 
+				                          &number_of_solutions,radial_position,cyl_direction_pointer,geometry_parent);
             
                 if (number_of_solutions == 2) {
                     if (temp_solution[0]*temp_solution[1] > 0) {
@@ -4220,7 +4742,8 @@ int cylinder_within_cylinder(struct geometry_struct *geometry_child,struct geome
                 base_point_vector[2] = base_point.z;
             
                 // The vector circ_point is from the base to the circumference. This is used to check the bottom cap.
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,base_point_vector,cyl_radial_direction,geometry_parent);
+                sample_cylinder_intersect(temp_solution, nx_dummy, ny_dummy, nz_dummy, surface_index_dummy,
+				                          &number_of_solutions,base_point_vector,cyl_radial_direction,geometry_parent);
                 
                 if (number_of_solutions == 2) {
                     if (temp_solution[0]*temp_solution[1] > 0) {
@@ -4262,7 +4785,8 @@ int cylinder_within_cylinder(struct geometry_struct *geometry_child,struct geome
                 }
             
                 // The vector circ_point is from the base to the circumference. This is used to check the bottom cap.
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,base_point_vector,cyl_radial_direction,geometry_parent);
+                sample_cylinder_intersect(temp_solution, nx_dummy, ny_dummy, nz_dummy, surface_index_dummy,
+				                          &number_of_solutions,base_point_vector,cyl_radial_direction,geometry_parent);
                 if (number_of_solutions == 2) {
                     if (temp_solution[0]*temp_solution[1] > 0) {
                         // If both solutions are in the future or past, the point is outside the cylinder
@@ -4447,7 +4971,10 @@ int cylinder_within_cylinder_backup(struct geometry_struct *geometry_child,struc
                 radial_position[1] = base_point.y + circ_point.y;
                 radial_position[2] = base_point.z + circ_point.z;
                 // sample_cylinder_intersect(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,radial_position,cyl_direction_pointer,geometry_child);
+				double nx_dummy[2], ny_dummy[2], nz_dummy[2];
+				int surface_index_dummy[2];
+                sample_cylinder_intersect(temp_solution, nx_dummy, ny_dummy, nz_dummy, surface_index_dummy,
+				                          &number_of_solutions,radial_position,cyl_direction_pointer,geometry_child);
                 for (solutions = 0;solutions < number_of_solutions;solutions++) {
                     if (temp_solution[solutions] > 0 && temp_solution[solutions] < height1) {
                         // cylinders must overlap.
@@ -4469,7 +4996,8 @@ int cylinder_within_cylinder_backup(struct geometry_struct *geometry_child,struc
                 base_point_vector[2] = base_point.z;
             
                 // The vector circ_point is from the base to the circumference. This is used to check the bottom cap.
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,base_point_vector,cyl_radial_direction,geometry_child);
+                sample_cylinder_intersect(temp_solution, nx_dummy, ny_dummy, nz_dummy, surface_index_dummy,
+				                          &number_of_solutions,base_point_vector,cyl_radial_direction,geometry_child);
                 for (solutions = 0;solutions < number_of_solutions;solutions++) {
                     if (temp_solution[solutions] > 0 && temp_solution[solutions] < 1) {
                         // cylinders must overlap.
@@ -4487,7 +5015,8 @@ int cylinder_within_cylinder_backup(struct geometry_struct *geometry_child,struc
                 base_point_vector[2] = base_point.z + height1*cyl_direction1.z;
             
                 // The vector circ_point is from the base to the circumference. This is used to check the bottom cap.
-                sample_cylinder_intersect(temp_solution,&number_of_solutions,base_point_vector,cyl_radial_direction,geometry_child);
+                sample_cylinder_intersect(temp_solution, nx_dummy, ny_dummy, nz_dummy, surface_index_dummy,
+				                          &number_of_solutions,base_point_vector,cyl_radial_direction,geometry_child);
                 for (solutions = 0;solutions < number_of_solutions;solutions++) {
                     if (temp_solution[solutions] > 0 && temp_solution[solutions] < 1) {
                         // cylinders must overlap.
@@ -5867,26 +6396,29 @@ int box_within_cone(struct geometry_struct *geometry_child,struct geometry_struc
 
 
 // Flexible intersection function
-int intersect_function(double *t,int *num_solutions,double *r,double *v,struct geometry_struct *geometry) {
+int intersect_function(double *t, double *nx, double *ny, double *nz, int *surface_index, int *num_solutions, double *r, double *v, struct geometry_struct *geometry) {
     int output = 0;
     switch(geometry->eShape) {
         case box:
-            if (geometry->geometry_parameters.p_box_storage->is_rectangle == 1)
-                output = sample_box_intersect_simple(t, num_solutions, r, v, geometry);
-            else
-                output = sample_box_intersect_advanced(t, num_solutions, r, v, geometry);
+            if (geometry->geometry_parameters.p_box_storage->is_rectangle == 1) {
+                output = sample_box_intersect_simple(t, nx, ny, nz, surface_index, num_solutions, r, v, geometry);
+			} else {
+                output = sample_box_intersect_advanced(t, nx, ny, nz, surface_index, num_solutions, r, v, geometry);
+			}
             break;
         case sphere:
-            output = sample_sphere_intersect(t, num_solutions, r, v, geometry);
+            output = sample_sphere_intersect(t, nx, ny, nz, surface_index, num_solutions, r, v, geometry);
             break;
         case cylinder:
-            output = sample_cylinder_intersect(t, num_solutions, r, v, geometry);
+            output = sample_cylinder_intersect(t, nx, ny, nz, surface_index, num_solutions, r, v, geometry);
             break;
         case cone:
-            output = sample_cone_intersect(t, num_solutions, r, v, geometry);
+            output = sample_cone_intersect(t, nx, ny, nz, surface_index, num_solutions, r, v, geometry);
             break;
         #ifndef OPENACC
         case mesh:
+			printf("Intersection function: mesh not updated for normals yet!");
+			exit(1);
             output = sample_mesh_intersect(t, num_solutions, r, v, geometry);
             break;
         #endif
@@ -5894,7 +6426,7 @@ int intersect_function(double *t,int *num_solutions,double *r,double *v,struct g
             printf("Intersection function: No matching geometry found!");
             break;
     }
-    
+	
     return output;
 };
 
@@ -8226,13 +8758,13 @@ void generate_lists(struct Volume_struct **Volumes, struct starting_lists_struct
 
 void randvec_target_rect_angular_union(Coords *v_out,double *solid_angle_out, struct focus_data_struct *focus_data) {
     // Calls the standard McStas randvec_target_rect_angular focusing function, but is with the new data input format.
-    randvec_target_rect_angular(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->Aim.x,focus_data->Aim.y, focus_data->Aim.z, focus_data->angular_focus_width, focus_data->angular_focus_height,focus_data->absolute_rotation);
+    randvec_target_rect_angular(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->RayAim.x,focus_data->RayAim.y, focus_data->RayAim.z, focus_data->angular_focus_width, focus_data->angular_focus_height,focus_data->absolute_rotation);
     //randvec_target_rect_angular(&vx, &vy, &vz, &solid_angle,aim_x, aim_y, aim_z, VarsInc.aw, VarsInc.ah, ROT_A_CURRENT_COMP);
 };
 
 void randvec_target_rect_union(Coords *v_out,double *solid_angle_out, struct focus_data_struct *focus_data) {
 // Calls the standard McStas randvec_target_rect focusing function, but is with the new data input format.
-    randvec_target_rect(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->Aim.x,focus_data->Aim.y, focus_data->Aim.z, focus_data->spatial_focus_width, focus_data->spatial_focus_height,focus_data->absolute_rotation);
+    randvec_target_rect(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->RayAim.x,focus_data->RayAim.y, focus_data->RayAim.z, focus_data->spatial_focus_width, focus_data->spatial_focus_height,focus_data->absolute_rotation);
     // randvec_target_rect(&vx, &vy, &vz, &solid_angle,aim_x, aim_y, aim_z, VarsInc.xw, VarsInc.yh, ROT_A_CURRENT_COMP);
 };
 
@@ -8243,7 +8775,7 @@ void randvec_target_circle_union(Coords *v_out,double *solid_angle_out, struct f
     //print_position(focus_data->Aim,"Aim vector input for randvec_target_circle");
     //printf("Radius input %f\n",focus_data->spatial_focus_radius);
 
-    randvec_target_circle(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->Aim.x,focus_data->Aim.y, focus_data->Aim.z, focus_data->spatial_focus_radius);
+    randvec_target_circle(&v_out->x, &v_out->y, &v_out->z, solid_angle_out, focus_data->RayAim.x,focus_data->RayAim.y, focus_data->RayAim.z, focus_data->spatial_focus_radius);
     //randvec_target_circle(&vx, &vy, &vz, &solid_angle, aim_x, aim_y, aim_z, focus_r);
 };
 
@@ -8304,8 +8836,7 @@ void focus_initialize(struct geometry_struct *geometry, Coords POS_A_TARGET, Coo
   {
     Coords ToTarget;
     //ToTarget = coords_sub(POS_A_COMP_INDEX(INDEX_CURRENT_COMP+target_index),POS_A_CURRENT_COMP);
-    ToTarget = coords_sub(POS_A_TARGET,POS_A_CURRENT);
-    //ToTarget = rot_apply(ROT_A_CURRENT_COMP, ToTarget);
+    ToTarget = coords_sub(POS_A_TARGET, POS_A_CURRENT);
     ToTarget = rot_apply(ROT_A_CURRENT, ToTarget);
     coords_get(ToTarget, &focus_data.Aim.x, &focus_data.Aim.y, &focus_data.Aim.z);
   }
@@ -8429,5 +8960,73 @@ void record_abs_to_file(double *r, double t1, double *r_old, double t2, double w
 
 };
 
+void manual_linking_function_surface(char *input_string, struct pointer_to_global_surface_list *global_surface_list, struct pointer_to_1d_int_list *accepted_surfaces, char *component_name) {
 
+   char *token;
+   int loop_index;
+   char local_string[256];
+   
+   strcpy(local_string, input_string);
+   
+   // get the first token
+   token = strtok(local_string,",");
+   
+   // walk through tokens
+   while(token != NULL) 
+   {
+      //printf( " %s\n", token );
+      for (loop_index=0; loop_index<global_surface_list->num_elements; loop_index++) {
+        if (strcmp(token, global_surface_list->elements[loop_index].name) == 0) {
+          add_element_to_int_list(accepted_surfaces, loop_index);
+          break;
+        } 
+
+        if (loop_index == global_surface_list->num_elements - 1) {
+          // All possible surface names have been looked through, and the break was not executed.
+          // Alert the user to this problem by showing the surface name that was not found and the currently available surface definitions
+            printf("\n");
+            printf("ERROR: The surface string \"%s\" in Union geometry \"%s\" had an entry that did not match a specified surface definition. \n", input_string, component_name);
+            printf("       The unrecoignized surface name was: \"%s\" \n",token);
+            printf("       The surfaces available at this point (need to be defined before the geometry): \n");
+            for (loop_index=0; loop_index<global_surface_list->num_elements; loop_index++)
+              printf("         %s\n",global_surface_list->elements[loop_index].name);
+            exit(1);
+        }
+      }
+      
+      // Updates the token
+      token = strtok(NULL,",");
+   }
+}
+
+void fill_surface_stack(char *input_string, struct pointer_to_global_surface_list *global_surface_list, char *component_name,
+                        struct surface_stack_struct *surface_stack) {
+	// Takes empty surface_stack struct, allocates the memory and fills it with appropriate pointers to the surfaces requested in input_string
+				   
+	if (input_string && strlen(input_string) && strcmp(input_string, "NULL") && strcmp(input_string, "0") && strcmp(input_string, "None")) {
+		
+      struct pointer_to_1d_int_list accepted_surfaces;
+	  accepted_surfaces.num_elements = 0;
+
+	  manual_linking_function_surface(input_string, global_surface_list, &accepted_surfaces, component_name);
+	 
+	  surface_stack->number_of_surfaces = accepted_surfaces.num_elements;
+	  surface_stack->p_surface_array = malloc(surface_stack->number_of_surfaces*sizeof(struct surface_process_struct*));
+	
+	  int loop_index;
+  	  for (loop_index=0; loop_index<accepted_surfaces.num_elements; loop_index++) {
+	      surface_stack->p_surface_array[loop_index]=global_surface_list->elements[accepted_surfaces.elements[loop_index]].p_surface_process;
+	  }
+		
+	} else {
+	  surface_stack->number_of_surfaces = 0;
+	}
+
+}
+
+void overwrite_if_empty(char *input_string, char *overwrite) {
+   if (!(input_string && strlen(input_string) && strcmp(input_string, "NULL") && strcmp(input_string, "0"))) {
+	   strcpy(input_string, overwrite);
+   }
+}
 

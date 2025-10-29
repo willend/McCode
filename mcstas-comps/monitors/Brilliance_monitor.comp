@@ -49,7 +49,7 @@
 * filename: [string]    Defines filenames for the detector images. Stored as:<br>Peak_&lt;filename&gt; and Mean_&lt;filename&gt;
 * restore_neutron: [1]  If set, the monitor does not influence the neutron state
 * Freq: [Hz]            Source frequency. Use freq=1 for reactor source
-* srcarea:    Source area [cm^2]
+* srcarea: [cm^2]       Source area
 * tofcuts: [1]          Flag to generate TOF-distributions as function of wavelength
 * toflambda: [1]        Flag to generate TOF-lambda distribution output
 * source_dist: [m]      Distance from source. Beware when transporting through neutron optics!

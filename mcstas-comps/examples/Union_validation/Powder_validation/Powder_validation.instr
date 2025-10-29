@@ -5,13 +5,15 @@
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Instrument: incoherent_validation
+* Instrument: Powder_validation
 *
 * %Identification
 * Written by: Mads Bertelsen
 * Date: May 2016
 * Origin: Johns Hopkins University, Baltimore
 * %INSTRUMENT_SITE: Union_validation
+*
+* Validation of Union powder against standard PowderN component. 
 *
 * %Description
 * Validation of Union powder against standard PowderN component. 

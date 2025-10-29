@@ -52,8 +52,8 @@
 * gap: [m]         typical gap  between adjacent slabs 
 * NH: [columns]    number of slabs horizontal 
 * NV: [rows]       number of slabs vertical   
-* mosaich: []      Horisontal mosaic FWHM (arc minutes)
-* mosaicv: []      Vertical mosaic FWHM (arc minutes)
+* mosaich: [arcmin]      Horisontal mosaic FWHM
+* mosaicv: [arcmin]      Vertical mosaic FWHM
 * r0: [1]          Maximum reflectivity 
 * Q: [AA-1]        Scattering vector 
 * RV: [m]          radius of vertical focussing, flat for 0 
@@ -61,7 +61,7 @@
 *
 * optional parameters
 * DM: [Angstrom]   monochromator d-spacing instead of Q=2*pi/DM 
-* mosaic: []       sets mosaich=mosaicv (arc minutes)
+* mosaic: [arcmin]       sets mosaich=mosaicv
 * width: [m]       total width of monochromator 
 * height: [m]      total height of monochromator 
 * verbose: [0/1]   verbosity level 

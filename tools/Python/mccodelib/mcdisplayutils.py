@@ -11,6 +11,11 @@ from .particleparser import ParticleBundleRayFactory, ParticleTraceParser
 from .fcparticleparser import FlowChartParticleTraceParser
 from . import mccode_config
 
+if not os.name == 'nt':
+    import shlex as lexer
+else:
+    import mslex as lexer
+
 class McDisplayReader(object):
     ''' High-level trace manager '''
     def __init__(self, instr=None, inspect=None, default=False, n=300, dir=None, debug=False, options=None, trace=1, **kwds):
@@ -26,10 +31,9 @@ class McDisplayReader(object):
         cmd = f"{mcruncmd} {instr} --no-output-files --trace={trace} --ncount={n}"
 
         if dir:
-            cmd = cmd + ' --dir=' + dir
-        if options is not None:
-            for option in options:
-                cmd = f"{cmd} {option}"
+            cmd = cmd + ' --dir=' + lexer.quote(dir)
+        if options:
+            cmd += ' ' + lexer.join(options)
         
         self.debug = debug
         self.count = n

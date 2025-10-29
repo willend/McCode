@@ -43,7 +43,7 @@
 * kabsmin:           [A^-1]   Lower cut-off for the neutron wave-vector k
 * kabsmax:           [A^-1]   Higher cut-off for the neutron wave-vector k
 * interact_fraction: [1]      How large a part of the scattering events should use this process 0-1 (sum of all processes in material = 1)
-* init:              [string] name of Union_init component (typically "init", default)
+* init:              [string] Name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
 *
@@ -4650,6 +4650,10 @@ INITIALIZE
   // Need to specify if this process is isotropic
   This_process.non_isotropic_rot_index = -1; // Yes (powder)
   //This_process.non_isotropic_rot_index =  1;  // No (single crystal)
+  
+  // Need to specify if this process need to use focusing in calculation of inverse penetration depth (physics_my)
+  //This_process.needs_cross_section_focus = 1; // Yes
+  This_process.needs_cross_section_focus =  -1;  // No
 
   // The type of the process must be saved in the global enum process
   This_process.eProcess = IncoherentPhonon;

@@ -51,50 +51,42 @@
 *
 * %P
 * INPUT PARAMETERS:
-* radius:   Outer radius of sample in (x,z) plane [m]
-* xwidth:    Width of crystal [m]
-* yheight:   Height of crystal [m]
-* zdepth:    Depth of crystal (no extinction simulated) [m]
-* geometry:   Name of an Object File Format (OFF) file for complex geometry. 
-*               The OFF file may be generated from XYZ coordinates using qhull/powercrust [str]
-* delta_d_d: Lattice spacing variance, gaussian RMS [1]
-* mosaic:    Crystal mosaic (isotropic), gaussian RMS [arc minutes]
-* mosaic_h:  Horizontal (rotation around Y) mosaic (anisotropic),
-*               gaussian RMS [arc minutes]
-* mosaic_v:  Vertical (rotation around Z) mosaic (anisotropic),
-*               gaussian RMS [arc minutes]
-* mosaic_n:  Out-of-plane (Rotation around X) mosaic (anisotropic),
-*               gaussian RMS [arc minutes]
-* recip_cell: Choice of direct/reciprocal (0/1) unit cell definition [1]
-* ax:        
-* ay:        Coordinates of first (direct/recip) unit cell vector [AA or AA^-1]
-* az:        
-* bx:        
-* by:        Coordinates of second (direct/recip) unit cell vector [AA or AA^-1]
-* bz:        
-* cx:        
-* cy:        Coordinates of third (direct/recip) unit cell vector [AA or AA^-1]
-* cz:        
-* mx:        
-* my:        Coordinates of vector defining the SF/NSF direction [1]
-* mz:        
-* na:
-* nb:        Unit cell multipliers. The specified unit cell vectors are scaled by these factors. Note that the mulitpliers are applied directly to the raw input data. I.e. if recip. cell vectors  are given, multipliers should be <1 (= 1/n). F.i. used to specify a magnetic unit cell which is larger than the chemical unit cell. 
-* nc:
-* atom_sites: File name containing the atoms present in the unit cell. Use
-*              empty ("") or NULL for sigma_inc scattering only [string]
-* order:      limit multiple scattering up to given order
-*                 (0: all, 1: first, 2: second, ...) [1]
-* q_min: [AA^⁻1]  lower boundary of momentum transfer range to generate hkls in
-* q_max: [AA^⁻1]  upper boundary of momentum transfer range to generate hkls in
+* radius:        [m] Outer radius of sample in (x,z) plane
+* xwidth:        [m] Width of crystal
+* yheight:       [m] Height of crystal
+* zdepth:        [m] Depth of crystal (no extinction simulated)
+* geometry:    [str] Name of an Object File Format (OFF) file for complex geometry. The OFF file may be generated from XYZ coordinates using qhull/powercrust
+* delta_d_d:     [1] Lattice spacing variance, gaussian RMS
+* mosaic:   [arcmin] Crystal mosaic (isotropic), gaussian RMS
+* mosaic_h: [arcmin] Horizontal (rotation around Y) mosaic (anisotropic), gaussian RMS
+* mosaic_v: [arcmin] Vertical (rotation around Z) mosaic (anisotropic), gaussian RMS
+* mosaic_n: [arcmin] Out-of-plane (Rotation around X) mosaic (anisotropic), gaussian RMS
+* recip_cell:    [1] Choice of direct/reciprocal (0/1) unit cell definition
+* ax:  [AA or AA^-1]
+* ay:  [AA or AA^-1] Coordinates of first (direct/recip) unit cell vector
+* az:  [AA or AA^-1]
+* bx:  [AA or AA^-1]
+* by:  [AA or AA^-1] Coordinates of second (direct/recip) unit cell vector
+* bz:  [AA or AA^-1]
+* cx:  [AA or AA^-1]
+* cy:  [AA or AA^-1] Coordinates of third (direct/recip) unit cell vector
+* cz:  [AA or AA^-1]        
+* mx:            [1]
+* my:            [1] Coordinates of vector defining the SF/NSF direction
+* mz:            [1]
+* na:            [1]
+* nb:            [1] Unit cell multipliers. The specified unit cell vectors are scaled by these factors. Note that the mulitpliers are applied directly to the raw input data. I.e. if recip. cell vectors  are given, multipliers should be <1 (= 1/n). F.i. used to specify a magnetic unit cell which is larger than the chemical unit cell. 
+* nc:            [1]
+* atom_sites:  [str] File name containing the atoms present in the unit cell. Use empty ("") or NULL for sigma_inc scattering only
+* order:         [1] limit multiple scattering up to given order (0: all, 1: first, 2: second, ...)
+* q_min:     [AA^-1] lower boundary of momentum transfer range to generate hkls in
+* q_max:     [AA^-1] upper boundary of momentum transfer range to generate hkls in
 *
 * Optional input parameters:
 *
-* p_transmit: Monte Carlo probability for neutrons to be transmitted
-*               without any scattering. Used to improve statistics from
-*               weak reflections [1]
-* sigma_abs:  absorption cross-section per unit cell at 2200 m/s [barns]
-* sigma_inc:  incoherent scattering cross-section per unit cell [barns]
+* p_transmit:    [1] Monte Carlo probability for neutrons to be transmitted without any scattering. Used to improve statistics from weak reflections
+* sigma_abs: [barns] absorption cross-section per unit cell at 2200 m/s
+* sigma_inc: [barns] incoherent scattering cross-section per unit cell
 *
 * CALCULATED PARAMETERS:
 *

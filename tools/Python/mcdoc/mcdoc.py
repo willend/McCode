@@ -426,6 +426,9 @@ class InstrDocWriter:
 
         h = h.replace(t[0], i.name)
         h = h.replace(t[1], i.name)
+        # If parsing failed to find a short description, use 'name'
+        if re.match(r'^\s*\n*\r*$', i.short_descr):
+            i.short_descr=i.name + ' instrument';
         h = h.replace(t[2], i.short_descr)
         h = h.replace(t[3], i.site)
         h = h.replace(t[4], i.author)
@@ -599,6 +602,9 @@ class CompDocWriter:
 
         h = h.replace(t[0], i.name)
         h = h.replace(t[1], i.name)
+        # If parsing failed to find a short description, use 'name'
+        if re.match(r'^\s*\n*\r*$', i.short_descr):
+            i.short_descr=i.name + ' component';
         h = h.replace(t[2], i.short_descr)
         h = h.replace(t[3], i.site)
         h = h.replace(t[4], i.author)
@@ -766,7 +772,7 @@ function comp() {
   navigator.clipboard.writeText(Text);
 
   // Alert the copied text
-  alert(Text);
+  alert("Now on your clipboard: \n\n" + Text);
 }
 </script>
 
@@ -823,7 +829,7 @@ the others are optional.
   <TH>) RELATIVE</TH>
   <td><input type="text" value="PREVIOUS" id="REF"></td>
   <td rowspan="2">
-    <button style="height:50px" onclick="comp()"><strong>Generate</strong></button>
+    <button style="height:50px" onclick="comp()"><strong>Generate<br>to clipboard</strong></button>
   </td>
   </TR>
   <TR>
@@ -873,6 +879,7 @@ def write_file(filename, text, failsilent=False):
 
 def parse_and_filter(indir, namefilter=None, recursive=False, printlog=False):
     ''' read and parse headers and definitions of component and instrument files '''
+    indir=pathlib.Path(indir).resolve()
     instr_files, comp_files = utils.get_instr_comp_files(indir, recursive)
     print("parsing root folder:", indir)
     comp_info_lst = []
@@ -916,27 +923,41 @@ def parse_and_filter(indir, namefilter=None, recursive=False, printlog=False):
 def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files, printlog=False):
     ''' Writes component and instrument docs files '''
     for i in range(len(comp_infos)):
-        p = comp_infos[i]
-        f = comp_files[i]
-        doc = CompDocWriter(p)
-        text = doc.create()
-        h = pathlib.Path(os.path.splitext(f)[0] + '.html')
-        h = pathlib.Path(str(h).replace(mccode_config.directories['resourcedir'], mccode_config.directories['docdir']))
-        if printlog:
-            print("writing doc file... %s" % h)
-        write_file(h, text, failsilent=True)
+        try:
+            p = comp_infos[i]
+            try:
+                f = comp_files[i]
+            except:
+                f = comp_infos[i].filepath
+            doc = CompDocWriter(p)
+            text = doc.create()
+            h = pathlib.Path(os.path.splitext(f)[0] + '.html')
+            h = pathlib.Path(str(h).replace(mccode_config.directories['resourcedir'], mccode_config.directories['docdir']))
+            if printlog:
+                print("writing doc file... %s" % h)
+            write_file(h, text, failsilent=True)
+        except:
+            print("Could not work on comp " + str(i) + " of " + str(len(comp_infos)) + ": " + comp_infos[i].name)
+            pass
 
     for i in range(len(instr_infos)):
-        p = instr_infos[i]
-        f = instr_files[i]
-        doc = InstrDocWriter(p)
-        text = doc.create()
-        h = pathlib.Path(os.path.splitext(f)[0] + '.html')
-        h = pathlib.Path(str(h).replace(mccode_config.directories['resourcedir'], mccode_config.directories['docdir']))
-        if printlog:
-            print("writing doc file... %s" % h)
-        write_file(h, text, failsilent=True)
-
+        try:
+            p = instr_infos[i]
+            try:
+                f = instr_infos[i].filepath
+            except:
+                f = instr_files[i]
+            doc = InstrDocWriter(p)
+            text = doc.create()
+            h = pathlib.Path(os.path.splitext(f)[0] + '.html')
+            h = pathlib.Path(str(h).replace(mccode_config.directories['resourcedir'], mccode_config.directories['docdir']))
+            if printlog:
+                print("writing doc file... %s" % h)
+            write_file(h, text, failsilent=True)
+        except:
+            print("Could not work on instr " + str(i) + " of " + str(len(instr_infos)) + ": " + instr_infos[i].name)
+            print(instr_infos[i].filepath)
+            pass
 
 def main(args):
     logging.basicConfig(level=logging.INFO)

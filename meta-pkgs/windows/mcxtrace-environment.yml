@@ -8,6 +8,7 @@ dependencies:
   - m2-msys2-runtime
   - m2-which
   - m2-sed
+  - m2-grep
   - mcxtrace
   - gsl
   - msmpi

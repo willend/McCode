@@ -15,6 +15,7 @@
 * Release: McStas 1.12
 * Modified by: KL, 7 June 2005
 *
+* SANS sample, spherical shells in thin solution with gaussian size distribution
 *
 * %D
 * Sample for Small Angle Neutron Scattering - spherical shells in thin solution with gaussian size distribution
@@ -30,23 +31,23 @@
 *
 * INPUT PARAMETERS
 *
-* R:         Radius of scattering hard spheres (AA)
-* polydisp:  Polydispersity of R
-* dbilayer:  Thickness of shell (AA)
-* Phi:       Particle volume fraction (1)
-* Delta_rho: Excess scattering length density (fm/AA^3)
-* sigma_a:   Absorption cross section density at 2200 m/s (m^-1)
-* qmax:      Maximum momentum transfer (AA^-1)
-* Rdet:      Detector (disk-shaped) radius (m)
-* dist:      Distance from sample to detector (m)
-* xwidth:    horiz. dimension of sample, as a width (m)
-* yheight:   vert . dimension of sample, as a height (m)
-* zthick:    thickness of sample (m)
+* R:              [AA] Radius of scattering hard spheres
+* polydisp:        [1] Polydispersity of R
+* dbilayer:       [AA] Thickness of shell
+* Phi:             [1] Particle volume fraction
+* Delta_rho: [fm/AA^3] Excess scattering length density
+* sigma_a:      [m^-1] Absorption cross section density at 2200 m/s
+* qmax:        [AA^-1] Maximum momentum transfer
+* Rdet:            [m] Detector (disk-shaped) radius
+* dist:            [m] Distance from sample to detector
+* xwidth:          [m] horiz. dimension of sample, as a width
+* yheight:         [m] vert . dimension of sample, as a height
+* zthick:          [m] thickness of sample
 *
 * Variables calculated in the component
 *
-* my_s: Attenuation factor due to scattering (m^-1)
-* my_a: Attenuation factor due to absorbtion (m^-1)
+* my_s:         [m^-1] Attenuation factor due to scattering 
+* my_a:         [m^-1] Attenuation factor due to absorbtion
 *
 * %Link
 * The test/example instrument <a href="../examples/SANS.instr">SANS.instr</a>.

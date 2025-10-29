@@ -5,7 +5,7 @@
 *         Risoe National Laboratory, Roskilde, Denmark
 *         Institut Laue Langevin, Grenoble, France
 *
-* Instrument: TAS1_Diff_Vana
+* Instrument: TAS1_Diff_Powder
 *
 * %Identification
 * Written by: A. Abrahamsen, N. B. Christensen, and E. Lauridsen
@@ -13,28 +13,30 @@
 * Origin: Risoe
 * %INSTRUMENT_SITE: Risoe
 *
+* Example formerly known as linup-5.instr
+*
 * The conventional cold-source triple-axis spectrometer TAS1 at Risoe National
 * Laboratory used as a diffractometer for an alignment study with a
-* vanadium sample.
+* powder sample.
 *
 * %Description
 * This instrument is the conventional cold-source triple-axis spectrometer TAS1
 * at Risoe National Laboratory. It does not exist anymore, but was used as the
 * first detailed work performed with the McStas package.
 * Here it is used as a diffractometer for an alignment study. The
-* sample is a vanadium cylinder and there is no analyzer.
+* sample is a powder and there is no analyzer.
 *
-* %Example: PHM=-37.077 Detector: sng_I=1.95173e-09
+* %Example: PHM=-37.077 Detector: sng_I=4.50892e-07
 *
 * %Parameters
-* PHM:  [deg] Monochromator arm angle, aka A1
-* TTM:  [deg] Monochromator take-off angle, aka A2
-* TT:   [deg] Take-off angle at the sample position, aka A4
-* TTA:  [deg] Take-off angle at the analyzer position, aka A6
-* C1:   [min] Collimator 1 aperture (mono-sample arm)
-* OMC1: [deg] Tilt angle of the Collimator 1
-* C2:   [min] Collimator 2 aperture (sample-ana arm)
-* C3:   [min] Collimator 3 aperture (ana-detector arm)
+* PHM: [deg]   Monochromator arm angle, aka A1
+* TTM: [deg]   Monochromator take-off angle, aka A2
+* TT: [deg]    Take-off angle at the sample position, aka A4
+* TTA: [deg]   Take-off angle at the analyzer position, aka A6
+* C1: [min]    Collimator 1 aperture (mono-sample arm)
+* OMC1: [deg]  Tilt angle of the Collimator 1
+* C2: [min]    Collimator 2 aperture (sample-ana arm)
+* C3: [min]    Collimator 3 aperture (ana-detector arm)
 *
 * %Link
 * The McStas User manual
@@ -42,7 +44,7 @@
 *
 * %End
 *******************************************************************************/
-DEFINE INSTRUMENT TAS1_Diff_Vana(PHM=-37.077,TTM=-74,TT=33.52,TTA=0,C1=30,OMC1=5.5,C2=28,C3=67)
+DEFINE INSTRUMENT TAS1_Diff_Powder(PHM=-37.077,TTM=-74,TT=33.52,TTA=0,C1=30,OMC1=5.5,C2=28,C3=67)
 
 DECLARE
 %{
@@ -192,34 +194,32 @@ COMPONENT mon = Monitor(
   xmin = -0.025, xmax = 0.025, ymin = -0.0375, ymax = 0.0375)
   AT (0, 0, 1.280) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
 
+COMPONENT slitMS6 = Slit(
+  xmin = -0.010, xmax = 0.010, ymin = -0.016, ymax = 0.016)
+  AT (0,0,1.370) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
+
 COMPONENT emon1 = E_monitor(
   xmin = -0.01, xmax = 0.01, ymin = -0.1, ymax = 0.1,
   Emin = 19.25, Emax = 20.75, nE = 35,
-  filename = "linup_4_1.vmon")
+  filename = "linup_5_1.vmon")
   AT(0, 0, 1.5) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
 
-COMPONENT sample_check = PSD_monitor(
-  xmin=-0.020, xmax=0.020,
-  ymin =-0.0095, ymax=0.0095, nx=40, ny=1,
-  filename="linup_4_2.psd")
-  AT (0, 0, 1.554) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
-
-SPLIT COMPONENT sample = Incoherent(
-  thickness = 0.0025, radius = 0.010,
-  yheight = 0.019,
-  focus_xw = 0.04, focus_yh=0.063, /* Guess focus (no GET_X yet...); check with PSD. */
-  pack = 1,
-  target_index=+2)
-  AT (-0.0015, 0, 1.565) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
+SPLIT COMPONENT sample = Powder1(
+  radius = 0.007,
+  yheight = 0.015,
+  q = 1.8049,
+  d_phi = 4,
+  pack = 1, j = 6, DW = 1,
+  F2 = 56.8,
+  Vc = 85.0054, sigma_abs = 0.463)
+  AT (0, 0, 1.565) RELATIVE a2 ROTATED (0,0,0) RELATIVE a2
 
 COMPONENT a3 = Arm()
   AT (0,0,0) RELATIVE sample ROTATED (0, TT, 0) RELATIVE a2
 
-COMPONENT focus_check = PSD_monitor(
-  xmin=-0.02, xmax=0.02,
-  ymin =-0.0315, ymax=0.0315, nx=20, ny=20,
-  filename="linup_4_1.psd")
-  AT (0, 0, 0.369999) RELATIVE a3 ROTATED (0,0,0) RELATIVE a3
+COMPONENT slitSA1 = Slit(
+  xmin = -0.008, xmax = 0.008, ymin = -0.020, ymax = 0.020)
+  AT (0,0,0.320) RELATIVE a3 ROTATED (0,0,0) RELATIVE a3
 
 COMPONENT c2 = Collimator_linear(
   xmin = -0.02, xmax = 0.02, ymin = -0.0315, ymax = 0.0315,
@@ -244,7 +244,7 @@ COMPONENT sng = Monitor(
 COMPONENT emon2 = E_monitor(
   xmin = -0.0125, xmax = 0.0125, ymin = -0.05, ymax = 0.05,
   Emin = 19.25, Emax = 20.75, nE = 35,
-  filename = "linup_4_2.vmon")
+  filename = "linup_5_2.vmon")
   AT(0, 0, 0.430001) RELATIVE a4 ROTATED (0,0,0) RELATIVE a4
 
 END

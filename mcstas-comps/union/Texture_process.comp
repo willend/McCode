@@ -3,11 +3,13 @@
 *  McStas, neutron ray-tracing package
 *  Copyright(C) 2007 Risoe National Laboratory.
 *
+* Component: Texture_process
+*
 * %I
 * Written by: Victor Laliena
 * Date: 27.10.18 (last version, 09.07.19)
 * Version: $Revision: 0.1 $
-* Origin:
+* Origin: University of Zaragoza
 *
 * Component for simulating textured powder in Union components
 *
@@ -2267,6 +2269,10 @@ INITIALIZE
   // Need to specify if this process is isotropic
   //This_process.non_isotropic_rot_index = -1; // Yes (powder)
   This_process.non_isotropic_rot_index =  1;  // No (single crystal or texture)
+  
+  // Need to specify if this process need to use focusing in calculation of inverse penetration depth (physics_my)
+  //This_process.needs_cross_section_focus = 1; // Yes
+  This_process.needs_cross_section_focus =  -1;  // No
 
   // The type of the process must be saved in the global enum process
   This_process.eProcess = Texture;

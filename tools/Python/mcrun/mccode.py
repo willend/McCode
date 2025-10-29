@@ -67,7 +67,7 @@ class Process:
             args = []
         # Run executable as shell
         # command = [self.executable, *args]
-        command = self.executable + " " + " ".join(args)
+        command = self.executable + " " + lexer.join(args)
         LOG.debug(f'CMD: {command}')
         try:
             proc = run(command, shell=True, check=True, text=True, capture_output=pipe)
@@ -77,6 +77,26 @@ class Process:
             raise err
         return proc.stdout
 
+def find_and_fix_duplicate_rpath(binary_file):
+    """On macOS, remove duplicate LC_RPATH entries from a binary using install_name_tool."""
+    # Discover duplicate
+    output=Process('otool').run(['-l', binary_file], pipe=True)
+    paths = []
+    bad_paths = set([])
+
+    for line in output.splitlines():
+        if ' path ' in line:
+            path = line.split(' ')[-3]
+            paths.append(path)
+
+    # get duplicates from a list
+    seen = set()
+    bad_paths = [x for x in paths if x in seen or seen.add(x)]
+
+    # Fix any libraries with duplicates
+    for rpath in bad_paths:
+        output=Process('install_name_tool').run(['-delete_rpath', rpath, binary_file],pipe=True)
+        print(output)
 
 class McStas:
     ''' McStas instrument '''
@@ -154,10 +174,14 @@ class McStas:
                 trace='-t'
                 if options.no_trace:
                    trace='--no-trace'
-                if self.options.I is not None:
-                    Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path, '-I', self.options.I])
-                else:
-                    Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path])
+                try:
+                    if self.options.I is not None:
+                        Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path, '-I', self.options.I])
+                    else:
+                        Process(mccode_bin_abspath).run([trace, '-o', self.cpath, self.path])
+                except:
+                    LOG.error('Code generation failed for instrument %s using code generator %s', self.path, mccode_bin_abspath)
+                    exit(-1)
             else:
                 if self.options.I is not None:
                     Process(mccode_bin_abspath).run(['--no-main', '-o', self.cpath, self.path, '-I', self.options.I])
@@ -314,8 +338,11 @@ class McStas:
         # Lint or compile?
         if options.c_lint is not None:
             args = [self.cpath] + lexer.split(mccode_config.compilation['CLINTERFLAGS'])
-            Process(lexer.quote(mccode_config.compilation['CLINT'])).run(args)
-            LOG.info('End of linting %s', self.cpath)
+            try:
+                Process(lexer.quote(mccode_config.compilation['CLINT'])).run(args)
+                LOG.info('End of linting %s', self.cpath)
+            except:
+                LOG.error('Linting failed on %s - you may need to install the %s package?', self.cpath, mccode_config.compilation['CLINT'])
             exit()
         else:
             # Final assembly of compiler commandline
@@ -323,7 +350,15 @@ class McStas:
                 args = ['-o', self.binpath, self.cpath] + lexer.split(cflags)
             else:
                 args = [self.cpath] + lexer.split(cflags)
-            Process(lexer.quote(options.cc)).run(args)
+            try:
+                Process(lexer.quote(options.cc)).run(args)
+            except:
+                LOG.error('Compilation failed for %s using compiler %s', self.cpath, options.cc)
+                exit(-1)
+
+        # On macOS, check / remove duplicate rpath entries
+        if sys.platform == 'darwin':
+            find_and_fix_duplicate_rpath(self.binpath)
 
     def run(self, pipe=False, extra_opts=None, override_mpi=None):
         ''' Run simulation '''

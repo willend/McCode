@@ -993,8 +993,8 @@ cogen(char *output_name, struct instr_def *instr)
     cout("    # Use instr.settings() to add e.g. seed=1000, ncount=1e7, mpi=8, openacc=True, force_compile=False etc.)");
     cout("    \n\n# Show diagram");
     cout("    instr.show_diagram()");
-    cout("    \n\n# Visualise with default parameters (defaults to 'window'/pyqtgraph visualisation)");
-    cout("    instr.show_instrument(format='window')");
+    cout("    \n\n# Visualise with default parameters (defaults to 'webgl-legacy' visualisation)");
+    cout("    instr.show_instrument()");
     cout("    \n\n# Generate a dataset with default parameters.");
     cout("    data = instr.backengine()");
     cout("    \n# Overview plot:");

@@ -8,8 +8,9 @@
 * Component: Radial_div
 *
 * %I
-* Modified by: Kaspar Hewitt Klenø from Hdiv_monitor (1.12b), Jan 2011.
-*
+* Written by: Kaspar Hewitt Klen&oslash;, modified from Hdiv_monitor
+* Date: Jan 2011
+* Origin: NBI
 *
 * A radial divergence sensitive monitor with wavelength restrictions.
 *
@@ -22,18 +23,18 @@
 *%P
 * INPUT PARAMETERS:
 *
-* xmin:            Lower x bound of detector opening (m)
-* xmax:            Upper x bound of detector opening (m)
-* ymin:            Lower y bound of detector opening (m)
-* ymax:            Upper y bound of detector opening (m)
-* xwidth:          Width/diameter of detector (x). Overrides xmin,xmax. (m)
-* yheight:         Height of detector (y). Overrides ymin,ymax. (m)
-* ndiv:            Number of pixel rows (1)
-* maxdiv_r:        Maximal radial divergence detected (degrees)
-* Lmin:            Minimum wavelength detected (AA)
-* Lmax:            Maximum wavelength detected (AA)
-* filename:        Name of file in which to store the detector image (text)
-* restore_neutron: If set, the monitor does not influence the neutron state (1)
+* xmin:        [m] Lower x bound of detector opening
+* xmax:        [m] Upper x bound of detector opening
+* ymin:        [m] Lower y bound of detector opening
+* ymax:        [m] Upper y bound of detector opening
+* xwidth:      [m] Width/diameter of detector (x). Overrides xmin,xmax.
+* yheight:     [m] Height of detector (y). Overrides ymin,ymax.
+* ndiv:        [1] Number of pixel rows
+* maxdiv_r:  [deg] Maximal radial divergence detected
+* Lmin:       [AA] Minimum wavelength detected
+* Lmax:       [AA] Maximum wavelength detected
+* filename:  [str] Name of file in which to store the detector image
+* restore_neutron: [1] If set, the monitor does not influence the neutron state
 *
 * CALCULATED PARAMETERS:
 *

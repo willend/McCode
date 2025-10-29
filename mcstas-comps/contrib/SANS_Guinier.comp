@@ -12,7 +12,7 @@
 * Date:       Sept 2004
 * Origin:     FZ-Juelich/FRJ-2/IFF/KWS-2
 *
-* Sample for Small Angle Neutron Scattering: Guinier model
+* Sample for Small Angle Neutron Scattering, Guinier model
 *
 * %D
 * Sample that scatters with a Guinier shape. This is just an example where analytically

@@ -9,7 +9,7 @@
 * Origin:      Niels Bohr Instute, University of Copenhagen
 * Release:     McStas 2.x
 * Version:     0.2
-* %INSTRUMENT_SITE: e-learning
+* %INSTRUMENT_SITE: elearning
 *
 * Simple reflectometer with two slits, a sample (either none, mirror or multilayer),
 * and a detector. For use in the OMIC summer school 2012.

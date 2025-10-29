@@ -38,11 +38,11 @@
 * sigma:            [barns]  Scattering cross section
 * unit_cell_volume: [AA^3]   Unit cell volume
 * packing_factor:    [1]        How dense is the material compared to optimal 0-1
-* init:              [string] name of Union_init component (typically "init", default)
 * interact_fraction: [1]        How large a part of the scattering events should use this process 0-1 (sum of all processes in material = 1)
+* init:              [string] name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
-* Non_storage          // Important to update this output paramter
+* Non_storage          
 * effective_my_scattering   // Variable used in initialize
 *
 * %L
@@ -104,9 +104,11 @@ int Non_physics_scattering(double *k_final, double *k_initial, double *weight, u
 // These lines help with future error correction, and tell other Union components
 //  that at least one process have been defined.
 #ifndef PROCESS_DETECTOR
-    // Obsolete
-    //struct pointer_to_global_process_list global_process_list = {0,NULL};
     #define PROCESS_DETECTOR dummy
+#endif
+
+#ifndef PROCESS_NON_DETECTOR
+    #define PROCESS_NON_DETECTOR dummy
 #endif
 
 %}
@@ -133,6 +135,13 @@ INITIALIZE
   // Need to specify if this process is isotropic
   This_process.non_isotropic_rot_index = -1; // Yes (powder)
   //This_process.non_isotropic_rot_index =  1;  // No (single crystal)
+  
+  // Need to specify if this process need to use focusing in calculation of inverse penetration depth (physics_my)
+  //This_process.needs_cross_section_focus = 1; // Yes
+  This_process.needs_cross_section_focus =  -1;  // No
+  
+  // The type of the process must be saved in the global enum process
+  This_process.eProcess = Non;
 
   // Packing the data into a structure that is transported to the main component
   This_process.data_transfer.pointer_to_a_Non_physics_storage_struct = &Non_storage;

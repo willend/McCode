@@ -109,10 +109,12 @@ TRACE
       ABSORB;
   }
 
+  /* Initial calculation of k magnitude */
+  k=sqrt(scalar_prod(kx,ky,kz,kx,ky,kz));
+
   /*change direction towards focal point*/
   if(!f){
     /*Focal length given by lambda and delta*/
-    k=sqrt(scalar_prod(kx,ky,kz,kx,ky,kz));
     e=K2E*k;
     f1=Table_Value(matT,e,1);
 

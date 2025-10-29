@@ -40,14 +40,14 @@
 *
 * INPUT PARAMETERS
 *
-* R	     : Radius of scattering hard spheres (AA)
-* Phi	     : Particle volume fraction (1)
-* Delta_rho  : Excess scattering length density (fm/AA^3)
-* sigma_a:   Absorption cross section density at 2200 m/s (m^-1)
-* qmax (AA-1): Maximum scattering vector (typically 10/R to observe the 3rd ring)
-* xwidth  (m): horiz. dimension of sample, as a width (m)
-* yheight (m): vert.. dimension of sample, as a height (m)
-* zthick  (m): thickness of sample (m)
+* R:              [AA] Radius of scattering hard spheres
+* Phi:             [1] Particle volume fraction
+* Delta_rho: [fm/AA^3] Excess scattering length density
+* sigma_a:      [m^-1] Absorption cross section density at 2200 m/s
+* qmax:         [AA-1] Maximum scattering vector (typically 10/R to observe the 3rd ring)
+* xwidth:          [m] horiz. dimension of sample, as a width
+* yheight:         [m] vert.. dimension of sample, as a height
+* zthick:          [m] thickness of sample
 *
 * %Link
 * Sans_spheres component

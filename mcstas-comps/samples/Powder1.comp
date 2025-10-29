@@ -34,10 +34,10 @@
 * radius: [m]         Radius of sample in (x,z) plane 
 * yheight: [m]        Height of sample y direction 
 * pack: [1]           Packing factor 
-* Vc: [AA^3]     Volume of unit cell 
+* Vc: [AA^3]          Volume of unit cell 
 * sigma_abs: [barns]  Absorption cross section per unit cell at 2200 m/s 
 *
-* q:       Scattering vector of reflection [AA^-1]
+* q: [AA^-1]          Scattering vector of reflection 
 * d: [AA]             d-spacing for sample, overrides 'q' 
 * j: [1]              Multiplicity of reflection 
 * F2: [barns]         Structure factor of reflection 

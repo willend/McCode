@@ -8,9 +8,11 @@
 * Written by: Jan Saroun, saroun@ujf.cas.cz
 * Date: July 1, 2017
 * Version: $Revision$
-* Origin: 
+* Origin: NPI
 * Release: McStas 2.5
 * Last update: 30/11/2018
+*
+* NPI detector for estimating dhkl from tof
 *
 * %D
 * A cylindrical detector which converts time-of-flight data (x,y,z,time) to a 1D diffractogram in dhkl. 
@@ -187,23 +189,28 @@ The values are:
 	double da=(a2-a1)/na;
 	double dt=(tmax-tmin)/nt;
 	for (i=0;i<na;i++) {
-		a=a1+(i+0.5)*da;
-		sth=sin(a/2);
-		drange=trange*t2lam/2/sth;
-		tdet=tmin+(j+0.5)*dt;
-		iline=getNearestLine(-1,sth, tdet, trange, n_dhkl, dhkl, mod_shift,Ltof);
-		if (iline>=0) {
-		  io=getNearestLine(iline, sth, tdet, trange, n_dhkl, dhkl, mod_shift,Ltof);
-		  if (io<0) {
-		    TOF_N[i][j] += 1;
-		    TOF_p[i][j] += 1;
-		    TOF_p2[i][j] += 1;
-		  } else {
-		    TOF_N[i][j] += 1;
-		    TOF_p[i][j] += 2;
-		    TOF_p2[i][j] += 4;
-		  }
-		} 
+	  a=a1+(i+0.5)*da;
+	  sth=sin(a/2);
+	  drange=trange*t2lam/2/sth;
+	  for (j=0;j<nt;j++) {
+            TOF_N[i][j] = 0;
+            TOF_p[i][j] = 0;
+            TOF_p2[i][j] = 0;
+            tdet=tmin+(j+0.5)*dt;
+            iline=getNearestLine(-1,sth, tdet, trange, n_dhkl, dhkl, mod_shift,Ltof);
+            if (iline>=0) {
+	      io=getNearestLine(iline, sth, tdet, trange, n_dhkl, dhkl, mod_shift,Ltof);
+	      if (io<0) {
+		TOF_N[i][j] += 1;
+		TOF_p[i][j] += 1;
+		TOF_p2[i][j] += 1;
+	      } else {
+		TOF_N[i][j] += 1;
+		TOF_p[i][j] += 2;
+		TOF_p2[i][j] += 4;
+	      }
+	    }
+	  }
 	}
   }
 
