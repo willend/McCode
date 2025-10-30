@@ -103,10 +103,13 @@ def write_browse(instrument, raybundle, dirname, instrname, timeout, nobrowse=No
     def copy(a, b):
         shutil_copy(str(a), str(b))
 
+    suffix=""
+    if os.getenv('CONDA_DEFAULT_ENV'):
+            suffix="_" + os.path.basename(os.getenv('CONDA_DEFAULT_ENV'))
     if os.name == 'nt':
-            source =  Path(os.path.join(os.path.expandvars("$USERPROFILE"),"AppData",mccode_config.configuration['MCCODE'],mccode_config.configuration['MCCODE_VERSION'],'webgl'))
+            source =  Path(os.path.join(os.path.expandvars("$USERPROFILE"),"AppData",mccode_config.configuration['MCCODE'],mccode_config.configuration['MCCODE_VERSION']+suffix,'webgl'))
     else:
-            source =  Path(os.path.join(os.path.expandvars("$HOME"),"." + mccode_config.configuration['MCCODE'],mccode_config.configuration['MCCODE_VERSION'],'webgl'))
+            source =  Path(os.path.join(os.path.expandvars("$HOME"),"." + mccode_config.configuration['MCCODE'],mccode_config.configuration['MCCODE_VERSION']+suffix,'webgl'))
 
     dest = Path(dirname)
     if dest.exists():
@@ -246,10 +249,13 @@ def main(instr=None, dirname=None, debug=None, n=None, timeout=None, **kwds):
             return None
     
     # 1st run setup: Check if the user has a "webgl" folder or not
+    suffix=""
+    if os.getenv('CONDA_DEFAULT_ENV'):
+            suffix="_" + os.path.basename(os.getenv('CONDA_DEFAULT_ENV'))
     if os.name == 'nt':
-            userdir =  os.path.join(os.path.expandvars("$USERPROFILE"),"AppData",mccode_config.configuration['MCCODE'],mccode_config.configuration['MCCODE_VERSION'],'webgl')
+            userdir =  os.path.join(os.path.expandvars("$USERPROFILE"),"AppData",mccode_config.configuration['MCCODE'],mccode_config.configuration['MCCODE_VERSION']+suffix,'webgl')
     else:
-            userdir =  os.path.join(os.path.expandvars("$HOME"),"." + mccode_config.configuration['MCCODE'],mccode_config.configuration['MCCODE_VERSION'],'webgl')
+            userdir =  os.path.join(os.path.expandvars("$HOME"),"." + mccode_config.configuration['MCCODE'],mccode_config.configuration['MCCODE_VERSION']+suffix,'webgl')
 
     if not os.path.isdir(userdir):
         try:
