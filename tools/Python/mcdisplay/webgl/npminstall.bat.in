@@ -4,8 +4,18 @@
 @cd %USERPROFILE%\AppData
 @if not exist "@FLAVOR@\" mkdir @FLAVOR@
 @cd @FLAVOR@
-@if not exist "@MCCODE_VERSION@\" mkdir @MCCODE_VERSION@
-@cd @MCCODE_VERSION@
+
+echo off
+IF "x%CONDA_DEFAULT_ENV%"=="x" (
+  set VERSIONDIR=@MCCODE_VERSION@
+) ELSE (
+  for /F "delims=" %%i in ("%CONDA_DEFAULT_ENV%") do set basename="%%~ni"
+  set VERSIONDIR=@MCCODE_VERSION@_%basename%
+)
+
+echo %VERSIONDIR%
+@if not exist "%VERSIONDIR%" mkdir %VERSIONDIR%
+@cd %VERSIONDIR%
 @if not exist "webgl\" mkdir webgl
 @cd webgl
 @copy /Y %TOOLDIR%\*.tsx .
