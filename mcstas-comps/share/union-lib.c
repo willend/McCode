@@ -5273,14 +5273,14 @@ int mesh_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct 
 
     int i;
     for (i = 0 ; i < shell_points1.num_elements ; i++){
-        if (r_within_mesh(shell_points1.elements[i],geometry2)){
+        if (geometry2->within_function(shell_points1.elements[i],geometry2)){
             free(shell_points1.elements);
             free(shell_points2.elements);
             return 1;
         }
     }
     for (i = 0 ; i < shell_points2.num_elements ; i++){
-        if (r_within_mesh(shell_points2.elements[i],geometry1)){
+        if (geometry1->within_function(shell_points2.elements[i],geometry1)){
             free(shell_points1.elements);
             free(shell_points2.elements);
             return 1;
@@ -5292,6 +5292,53 @@ int mesh_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct 
 
     return 0;
 
+};
+int mesh_within_box(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
+    // Function returns 1 if the cone is completely within the cylinder, 0 otherwise
+    // Brute force place holder
+    return mesh_A_within_B(geometry_child,geometry_parent); // 30 points on each end cap
+};
+
+int box_within_mesh(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
+    // Function returns 1 if the cone is completely within the cylinder, 0 otherwise
+    // Brute force place holder
+    return mesh_A_within_B(geometry_child,geometry_parent); // 30 points on each end cap
+};
+
+int mesh_within_sphere(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
+    // Function returns 1 if the cone is completely within the cylinder, 0 otherwise
+    // Brute force place holder
+    return mesh_A_within_B(geometry_child,geometry_parent); // 30 points on each end cap
+};
+int sphere_within_mesh(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
+    // Function returns 1 if the cone is completely within the cylinder, 0 otherwise
+    // Brute force place holder
+    return mesh_A_within_B(geometry_child,geometry_parent); // 30 points on each end cap
+};
+int cone_within_mesh(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
+    // Function returns 1 if the cone is completely within the cylinder, 0 otherwise
+    // Brute force place holder
+    return mesh_A_within_B(geometry_child,geometry_parent); // 30 points on each end cap
+};
+
+
+int mesh_within_cone(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
+    // Function returns 1 if the cone is completely within the cylinder, 0 otherwise
+    // Brute force place holder
+    return mesh_A_within_B(geometry_child,geometry_parent); // 30 points on each end cap
+};
+
+int mesh_within_cylinder(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
+    // Function returns 1 if the cone is completely within the cylinder, 0 otherwise
+    // Brute force place holder
+    return mesh_A_within_B(geometry_child,geometry_parent); // 30 points on each end cap
+};
+
+
+int cylinder_within_mesh(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
+    // Function returns 1 if the cone is completely within the cylinder, 0 otherwise
+    // Brute force place holder
+    return mesh_A_within_B(geometry_child,geometry_parent); // 30 points on each end cap
 };
 
 int mesh_within_mesh(struct geometry_struct *geometry_child,struct geometry_struct *geometry_parent) {
@@ -6075,6 +6122,30 @@ int box_overlaps_cone(struct geometry_struct *geometry_box,struct geometry_struc
   return cone_overlaps_box(geometry_cone,geometry_box);
 }
 
+int mesh_overlaps_box(struct geometry_struct *geometry1, struct geometry_struct *geometry2){
+   return mesh_overlaps_mesh(geometry1, geometry2);
+}
+int mesh_overlaps_cone(struct geometry_struct *geometry1, struct geometry_struct *geometry2){
+   return mesh_overlaps_mesh(geometry1, geometry2);
+}
+int mesh_overlaps_sphere(struct geometry_struct *geometry1,struct geometry_struct *geometry2) {
+   return mesh_overlaps_mesh(geometry1, geometry2);
+};
+int mesh_overlaps_cylinder(struct geometry_struct *geometry1,struct geometry_struct *geometry2) {
+   return mesh_overlaps_mesh(geometry1, geometry2);
+};
+int box_overlaps_mesh(struct geometry_struct *geometry1, struct geometry_struct *geometry2){
+   return mesh_overlaps_mesh(geometry1, geometry2);
+}
+int cone_overlaps_mesh(struct geometry_struct *geometry1, struct geometry_struct *geometry2){
+   return mesh_overlaps_mesh(geometry1, geometry2);
+}
+int sphere_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct *geometry2) {
+   return mesh_overlaps_mesh(geometry1, geometry2);
+};
+int cylinder_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct *geometry2) {
+   return mesh_overlaps_mesh(geometry1, geometry2);
+};
 // -------------    Within functions for two different geometries ---------------------------------
 
 double dist_from_point_to_plane(Coords point,Coords plane_p1, Coords plane_p2, Coords plane_p3) {
@@ -6430,12 +6501,12 @@ int intersect_function(double *t, double *nx, double *ny, double *nz, int *surfa
         case cone:
             output = sample_cone_intersect(t, nx, ny, nz, surface_index, num_solutions, r, v, geometry);
             break;
-//        #ifndef OPENACC
+        #ifndef OPENACC
         case mesh:
             output = sample_mesh_intersect(t, nx, ny, nz, surface_index, num_solutions, r, v, geometry);
             break;
 
-//        #endif
+        #endif
         default:
             printf("Intersection function: No matching geometry found!");
             break;
@@ -6945,6 +7016,30 @@ int inside_function(struct Volume_struct *parent_volume, struct Volume_struct *c
     else if (strcmp("box",parent_volume->geometry.shape) == 0 && strcmp("cone",child_volume->geometry.shape) == 0) {
         if (cone_within_box(&child_volume->geometry,&parent_volume->geometry)) return 1;
     }
+    else if (strcmp("mesh",parent_volume->geometry.shape) == 0 && strcmp("cylinder",child_volume->geometry.shape) == 0) {
+        if (cylinder_within_mesh(&child_volume->geometry,&parent_volume->geometry)) return 1;
+    }
+    else if (strcmp("mesh",parent_volume->geometry.shape) == 0 && strcmp("sphere",child_volume->geometry.shape) == 0) {
+        if (sphere_within_mesh(&child_volume->geometry,&parent_volume->geometry)) return 1;
+    }
+    else if (strcmp("cone",parent_volume->geometry.shape) == 0 && strcmp("mesh",child_volume->geometry.shape) == 0) {
+        if (mesh_within_cone(&child_volume->geometry,&parent_volume->geometry)) return 1;
+    }
+    else if (strcmp("mesh",parent_volume->geometry.shape) == 0 && strcmp("cone",child_volume->geometry.shape) == 0) {
+        if (cone_within_mesh(&child_volume->geometry,&parent_volume->geometry)) return 1;
+    }
+    else if (strcmp("cylinder",parent_volume->geometry.shape) == 0 && strcmp("mesh",child_volume->geometry.shape) == 0) {
+        if (cylinder_within_mesh(&child_volume->geometry,&parent_volume->geometry)) return 1;
+    }
+    else if (strcmp("sphere",parent_volume->geometry.shape) == 0 && strcmp("mesh",child_volume->geometry.shape) == 0) {
+        if (mesh_within_sphere(&child_volume->geometry,&parent_volume->geometry)) return 1;
+    }
+    else if (strcmp("mesh",parent_volume->geometry.shape) == 0 && strcmp("box",child_volume->geometry.shape) == 0) {
+        if (box_within_mesh(&child_volume->geometry,&parent_volume->geometry)) return 1;
+    }
+    else if (strcmp("box",parent_volume->geometry.shape) == 0 && strcmp("mesh",child_volume->geometry.shape) == 0) {
+        if (mesh_within_box(&child_volume->geometry,&parent_volume->geometry)) return 1;
+    }
     else {
         #ifndef OPENACC
         printf("Need within function for type: ");
@@ -7282,13 +7377,36 @@ void generate_overlap_lists(struct pointer_to_1d_int_list **true_overlap_lists, 
         else if (strcmp("box",Volumes[parent]->geometry.shape) == 0 && strcmp("cone",Volumes[child]->geometry.shape) == 0) {
             if (box_overlaps_cone(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
         }
+        else if (strcmp("mesh",Volumes[parent]->geometry.shape) == 0 && strcmp("sphere",Volumes[child]->geometry.shape) == 0) {
+            if (mesh_overlaps_sphere(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+        }
+        else if (strcmp("mesh",Volumes[parent]->geometry.shape) == 0 && strcmp("cylinder",Volumes[child]->geometry.shape) == 0) {
+            if (mesh_overlaps_cylinder(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+        }
+        else if (strcmp("mesh",Volumes[parent]->geometry.shape) == 0 && strcmp("box",Volumes[child]->geometry.shape) == 0) {
+            if (mesh_overlaps_box(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+        }
+        else if (strcmp("mesh",Volumes[parent]->geometry.shape) == 0 && strcmp("cone",Volumes[child]->geometry.shape) == 0) {
+            if (mesh_overlaps_cone(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+        }
+        else if (strcmp("sphere",Volumes[parent]->geometry.shape) == 0 && strcmp("mesh",Volumes[child]->geometry.shape) == 0) {
+            if (sphere_overlaps_mesh(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+        }
+        else if (strcmp("cylinder",Volumes[parent]->geometry.shape) == 0 && strcmp("mesh",Volumes[child]->geometry.shape) == 0) {
+            if (cylinder_overlaps_mesh(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+        }
+        else if (strcmp("box",Volumes[parent]->geometry.shape) == 0 && strcmp("mesh",Volumes[child]->geometry.shape) == 0) {
+            if (box_overlaps_mesh(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+        }
+        else if (strcmp("cone",Volumes[parent]->geometry.shape) == 0 && strcmp("mesh",Volumes[child]->geometry.shape) == 0) {
+            if (cone_overlaps_mesh(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+        }
         else {
             printf("Need overlap function for type: ");
             printf("%s",Volumes[parent]->geometry.shape);
             printf(" and type: ");
             printf("%s",Volumes[child]->geometry.shape);
             printf(".\n");
-            printf("It is not yet supported to mix mesh geometries with the basic shapes, but several mesh geometries are allowed.\n");
             exit(1);
         }
         }
