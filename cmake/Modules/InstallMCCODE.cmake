@@ -426,7 +426,7 @@ macro(installMCCODE)
       cmake/support/run-scripts/mccode_errmsg.bat.in
       work/support/${FLAVOR}_errmsg.bat
       @ONLY)
-    install(PROGRAMS ${WORK}/support/${FLAVOR}_errmsg. bat DESTINATION "${DEST_BINDIR}")
+    install(PROGRAMS ${WORK}/support/${FLAVOR}_errmsg.bat DESTINATION "${DEST_BINDIR}")
 
     # Binaries
     install (
