@@ -5,15 +5,15 @@
 @if not exist "@FLAVOR@\" mkdir @FLAVOR@
 @cd @FLAVOR@
 
-echo off
+@echo off
+@set VERSIONDIR=@MCCODE_VERSION@
 IF "x%CONDA_DEFAULT_ENV%"=="x" (
-  set VERSIONDIR=@MCCODE_VERSION@
+  
 ) ELSE (
-  for /F "delims=" %%i in ("%CONDA_DEFAULT_ENV%") do set basename="%%~ni"
-  set VERSIONDIR=@MCCODE_VERSION@_%basename%
+  for /F "delims=" %%i in ("%CONDA_DEFAULT_ENV%") do set basename=%%~ni
+  set VERSIONDIR=%VERSIONDIR%_%basename%
 )
 
-echo %VERSIONDIR%
 @if not exist "%VERSIONDIR%" mkdir %VERSIONDIR%
 @cd %VERSIONDIR%
 @if not exist "webgl\" mkdir webgl
