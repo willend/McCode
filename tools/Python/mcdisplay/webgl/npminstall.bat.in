@@ -6,13 +6,8 @@
 @cd @FLAVOR@
 
 @echo off
-@set VERSIONDIR=@MCCODE_VERSION@
-IF "x%CONDA_DEFAULT_ENV%"=="x" (
-  
-) ELSE (
-  for /F "delims=" %%i in ("%CONDA_DEFAULT_ENV%") do set basename=%%~ni
-  set VERSIONDIR=%VERSIONDIR%_%basename%
-)
+@REM if %1% is set it contains basename($CONDA_DEFAULT_ENV)
+@set VERSIONDIR=@MCCODE_VERSION@%1%
 
 @if not exist "%VERSIONDIR%" mkdir %VERSIONDIR%
 @cd %VERSIONDIR%

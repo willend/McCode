@@ -225,18 +225,19 @@ def main(instr=None, dirname=None, debug=None, n=None, timeout=None, **kwds):
     logging.basicConfig(level=logging.INFO)
 
     # Function to run npm commands and capture port
-    def run_npminstall():
-        toolpath=str(Path(__file__).absolute().parent)
-        print(toolpath)
-        if not os.name == 'nt':
-            npminst = Path(toolpath + "/npminstall")
-        else:
-            npminst = Path(toolpath + "/npminstall.bat")
+    def run_npminstall(envsuffix):
+        toolpath=Path(__file__).absolute().parent
+        npminst = str(toolpath / "npminstall")
+        errtool = mccode_config.configuration['MCCODE']+"_errmsg"
+        if os.name == 'nt':
+            npminst += ".bat"
+            errtool += ".bat"
 
-        warning="Warning:\n First launch of WEBGL display tool.\n Executing 'npminstall' for installation of required modules.\n Please do not abort execution...  Requires internet access and may take minutes!"
-        proc = subprocess.Popen([mccode_config.configuration['MCCODE']+"_errmsg", warning], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        warning="Warning: First launch of WEBGL display tool. Executing 'npminstall' for installation of required modules. Please do not abort execution...  Requires internet access and may take minutes!"
+        proc = subprocess.Popen([errtool, warning], stdout=subprocess.PIPE)
         try:
-            proc = subprocess.Popen(npminst, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            proc = subprocess.Popen([npminst, envsuffix], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             print("Installing npm / vite modules")
             for line in proc.stdout:
                  print(line.rstrip())
@@ -259,7 +260,7 @@ def main(instr=None, dirname=None, debug=None, n=None, timeout=None, **kwds):
 
     if not os.path.isdir(userdir):
         try:
-            run_npminstall()
+            run_npminstall(suffix)
         except Exception as e:
             print("Local WebGL Directory %s could not be created: %s " % (userdir, e.__str__()))
 
