@@ -65,11 +65,11 @@
 
 DEFINE COMPONENT Union_mesh_off
 
-SETTING PARAMETERS(string filename = 0
-  string material_string=0,
+SETTING PARAMETERS(string filename = 0,
+   string material_string=0,
    priority, 
    visualize=1, 
-   string all_surfaces=0,
+   string all_surfaces=0, 
    string cut_surface=0,
    int target_index=0, 
    target_x=0,
@@ -84,6 +84,7 @@ SETTING PARAMETERS(string filename = 0
    string mask_string=0,
    string mask_setting=0,
    number_of_activations=1,
+   int skip_convex_check = 0,
    string init="init")
 
 
@@ -402,9 +403,10 @@ struct pointer_to_1d_coords_list mesh_shell_points(struct geometry_struct *geome
 	int is_dublicate = 0;
 	Coords this_vert;
 	int i,j;
-	
-	printf("\n CREATE SHELL POINTS");
-	printf("\n n_verts (likely dublicated) = %i",n_facets*3);
+   //TODO: IT seems like these shell points are used as is, without translation
+   // FIX
+	// printf("\n CREATE SHELL POINTS");
+	// printf("\n n_verts (likely dublicated) = %i",n_facets*3);
 	for (i=0 ; i < n_facets ; i++){
 		
 		// v1
@@ -469,12 +471,21 @@ struct pointer_to_1d_coords_list mesh_shell_points(struct geometry_struct *geome
     
   // printf("\n test is there to high j? j = %i, number_of_points_in_array = %i , lenght of array = %i ",j,number_of_points_in_array,3*n_facets * sizeof(Coords));
   j = number_of_points_in_array - 1; // Last legal index, currently j is out of bounds.
-  printf("\n test= [%f,%f,%f]",mesh_shell_array.elements[j].x ,mesh_shell_array.elements[j].y,mesh_shell_array.elements[j].z);
+  // printf("\n test= [%f,%f,%f]",mesh_shell_array.elements[j].x ,mesh_shell_array.elements[j].y,mesh_shell_array.elements[j].z);
   
   mesh_shell_array.num_elements = number_of_points_in_array;
   //free(mesh_shell_array.elements);
-  printf("\n SHELL POINTS: DONE");
-  printf("\n SHELL POINTS: created %i shell points in mesh",mesh_shell_array.num_elements);
+  // printf("\n SHELL POINTS: DONE");
+  // printf("\n SHELL POINTS: created %i shell points in mesh",mesh_shell_array.num_elements);
+
+   
+   for (i=0; i<number_of_points_in_array; i++){
+      // Transpose and rotate the points such that they are in the right coordinate system
+      mesh_shell_array.elements[i] = rot_apply(geometry->rotation_matrix, mesh_shell_array.elements[i]);
+      mesh_shell_array.elements[i] = coords_add(mesh_shell_array.elements[i], geometry->center);
+      
+
+   }
     //printf("\n test last element = [%f,%f,%f]",mesh_shell_array.elements[mesh_shell_array.num_elements-1].x ,mesh_shell_array.elements[mesh_shell_array.num_elements-1].y,mesh_shell_array.elements[mesh_shell_array.num_elements-1].z);
   return mesh_shell_array;
 }
@@ -773,7 +784,7 @@ printf("\nNumber of edges is the unique index, %d", unique_index);
 printf("\nEuler Pointcare characteristic is %d",
        n_faces + n_verts - unique_index);
 
-if (mesh_is_not_closed(n_faces,n_verts,n_edges)){
+if (mesh_is_not_closed(n_faces,n_verts,n_edges) && !skip_convex_check){
    printf("\n\nERROR: Input mesh from %s, is not a closed shape."
           "\nUnion_mesh_off requires the user input to be a convex hull.\n\n",
           NAME_CURRENT_COMP);

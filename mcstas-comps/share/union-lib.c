@@ -2047,11 +2047,9 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     // Find intersections
     for (volume_index = 1;volume_index < number_of_volumes; volume_index++) {
         if (volume_index != N) {
-         printf("\n Just before calculating geometry output");
             geometry_output = Geometries[volume_index]->intersect_function(temp_intersection, double_dummy, double_dummy, double_dummy, int_dummy, 
 			                                                               &number_of_solutions, r1, direction, Geometries[volume_index]);
              // printf("No solutions for intersection (Volume %d) with %d \n",N,volume_index);
-          printf("\nRunning over the number of solutions");      
          for (iterate=0;iterate<number_of_solutions;iterate++) {
                     // print_1d_double_list(intersection_list,"intersection_list");
                     if (temp_intersection[iterate] > 0 && temp_intersection[iterate] < 1) {
@@ -2068,9 +2066,7 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
             
         }
     }
-   printf("\nAbout to free intersection");
     free(temp_intersection);
-   printf("\nFree intersection");
     // Now we have a list of intersection distances between r1 and r2 and all volumes.
     // This list needs to be sorted before we continue!
     
@@ -2468,7 +2464,8 @@ int mesh_A_within_B(struct geometry_struct *child, struct geometry_struct *paren
   printf("shell points mesh A within B \n");
   // resolution selects the number of points to be generated on the shell.
   struct pointer_to_1d_coords_list shell_points;
-  shell_points = child->shell_points(child, 1); // mesh shell points do not use max points
+  int resolution = 300;
+  shell_points = child->shell_points(child, resolution); // mesh shell points do not use max points
   // Shell_points.elements need to be freed before leaving this function
   //printf("\n GOT OUT TEST");
   int iterate;
