@@ -756,6 +756,9 @@ INITIALIZE
   Powder_storage.line_info_storage = &line_info;
   Powder_storage.vertical_angular_limit = d_phi;
   
+  //First initialise This_process with default values:
+  scattering_process_struct_init(&This_process);
+
   // Need to specify if this process is isotropic
   This_process.non_isotropic_rot_index = -1; // Yes (powder)
   //This_process.non_isotropic_rot_index =  1;  // No (single crystal)
