@@ -1471,8 +1471,9 @@ MCDETECTOR mcdetector_out_2D_ascii(MCDETECTOR detector)
 
         mcruninfo_out( "# ", outfile);
         mcdatainfo_out("# ", outfile,   detector);
-        fprintf(outfile, "# Data [%s/%s] %s:\n", detector.component, detector.filename, detector.zvar);
       }
+      /* Add # Data entry for any write to the file (e.g. via -USR2, see GitHub issue #2174 ) */
+      fprintf(outfile, "# Data [%s/%s] %s:\n", detector.component, detector.filename, detector.zvar);
       mcdetector_out_array_ascii(detector.m, detector.n*detector.p, detector.p1,
         outfile, detector.istransposed);
       if (detector.p2) {
