@@ -369,7 +369,6 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
         if test.didrun and not failed:
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
-            print(formatstr)
             logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " / " + str(test.targetval) + " = " + str(round(100.0*test.testval/test.targetval)) + " %]")
 
         # save test result to disk
