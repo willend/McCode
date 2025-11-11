@@ -111,11 +111,11 @@ jobs:
            then
              export MD5SUM="md5"
            fi
-           test -f ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE}
-           ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE} --version
+           test -f ${CONDA_PREFIX}/bin/${MCXTRACE_EXECUTABLE}
+           ${MCXTRACE_EXECUTABLE} --version
            mkdir run_RNG && cd run_RNG
-           cp ../install_mcxtrace/share/mcxtrace/resources/examples/Tests_RNG/Test_RNG_rand01/Test_RNG_rand01.instr .
-           ../install_mcxtrace/bin/${MXRUN_EXECUTABLE} Test_RNG_rand01.instr -s1000 Ncount=1000 -d RNGtest
+           cp ${CONDA_PREFIX}/share/mcxtrace/resources/examples/Tests_RNG/Test_RNG_rand01/Test_RNG_rand01.instr .
+           ${MXRUN_EXECUTABLE} Test_RNG_rand01.instr -s1000 Ncount=1000 -d RNGtest
            export SUM=`grep -v \# RNGtest/rngout.dat | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
@@ -144,12 +144,12 @@ jobs:
              export MCXTRACE_PYGEN_EXECUTABLE="mcxtrace-pygen.exe"
              export MXRUN_EXECUTABLE="mxrun.bat"
            fi
-           test -f ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE}
-           ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE} --version
+           test -f ${CONDA_PREFIX}/bin/${MCXTRACE_EXECUTABLE}
+           ${MCXTRACE_EXECUTABLE} --version
            mkdir run_JJ_SAXS && cd run_JJ_SAXS
-           cp ../install_mcxtrace/share/mcxtrace/resources/examples/SAXSLAB/JJ_SAXS/JJ_SAXS.instr .
-           ../install_mcxtrace/bin/${MXRUN_EXECUTABLE} JJ_SAXS.instr pin2_pos=0.2 pin3_pos=0.4 optic_L=0.1 sample_pos=0.2 detector_pos=2
-           ../install_mcxtrace/bin/${MCXTRACE_PYGEN_EXECUTABLE} JJ_SAXS.instr
+           cp ${CONDA_PREFIX}/share/mcxtrace/resources/examples/SAXSLAB/JJ_SAXS/JJ_SAXS.instr .
+           ${MXRUN_EXECUTABLE} JJ_SAXS.instr pin2_pos=0.2 pin3_pos=0.4 optic_L=0.1 sample_pos=0.2 detector_pos=2
+           ${MCXTRACE_PYGEN_EXECUTABLE} JJ_SAXS.instr
 
     - name: Launch JJ_SAXS instrument (MPI)
       id: JJ_SAXS-mpi
@@ -168,11 +168,11 @@ jobs:
              export MCXTRACE_EXECUTABLE="mcxtrace.exe"
              export MXRUN_EXECUTABLE="mxrun.bat"
            fi
-           test -f ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE}
-           ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE} --version
+           test -f ${CONDA_PREFIX}/bin/${MCXTRACE_EXECUTABLE}
+           ${MCXTRACE_EXECUTABLE} --version
            mkdir run_JJ_SAXS_mpi && cd run_JJ_SAXS_mpi
-           cp ../install_mcxtrace/share/mcxtrace/resources/examples/SAXSLAB/JJ_SAXS/JJ_SAXS.instr .
-           ../install_mcxtrace/bin/${MXRUN_EXECUTABLE} --verbose --mpi=2 JJ_SAXS.instr pin2_pos=0.2 pin3_pos=0.4 optic_L=0.1 sample_pos=0.2 detector_pos=2
+           cp ${CONDA_PREFIX}/share/mcxtrace/resources/examples/SAXSLAB/JJ_SAXS/JJ_SAXS.instr .
+           ${MXRUN_EXECUTABLE} --verbose --mpi=2 JJ_SAXS.instr pin2_pos=0.2 pin3_pos=0.4 optic_L=0.1 sample_pos=0.2 detector_pos=2
 
     - name: Launch MCPL test instrument
       id: mcpl-test
@@ -190,12 +190,12 @@ jobs:
              export MXRUN_EXECUTABLE="mxrun.bat"
            fi
            export PATH=${PATH}:${PWD}/install_mcxtrace/bin/:${PWD}/install_mcxtrace/mcxtrace/3.99.99/bin/
-           test -f ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE}
-           ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE} --version
+           test -f ${CONDA_PREFIX}/bin/${MCXTRACE_EXECUTABLE}
+           ${MCXTRACE_EXECUTABLE} --version
            mkdir run_Test_MCPL_input && cd run_Test_MCPL_input
-           cp ../install_mcxtrace/share/mcxtrace/resources/examples/Tests_MCPL_etc/Test_MCPL_input/Test_MCPL_input.instr .
-           cp ../install_mcxtrace/share/mcxtrace/resources/examples/Tests_MCPL_etc/Test_MCPL_input/voutput.mcpl.gz .
-           ../install_mcxtrace/bin/${MXRUN_EXECUTABLE} Test_MCPL_input.instr repeat=10 MCPLFILE=voutput.mcpl.gz
+           cp ${CONDA_PREFIX}/share/mcxtrace/resources/examples/Tests_MCPL_etc/Test_MCPL_input/Test_MCPL_input.instr .
+           cp ${CONDA_PREFIX}/share/mcxtrace/resources/examples/Tests_MCPL_etc/Test_MCPL_input/voutput.mcpl.gz .
+           ${MXRUN_EXECUTABLE} Test_MCPL_input.instr repeat=10 MCPLFILE=voutput.mcpl.gz
 
     - name: Launch MCPL test instrument (MPI)
       id: mcpl-test-mpi
@@ -214,12 +214,12 @@ jobs:
              export MXRUN_EXECUTABLE="mxrun.bat"
            fi
            export PATH=${PATH}:${PWD}/install_mcxtrace/bin/:${PWD}/install_mcxtrace/mcxtrace/3.99.99/bin/
-           test -f ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE}
-           ./install_mcxtrace/bin/${MCXTRACE_EXECUTABLE} --version
+           test -f ${CONDA_PREFIX}/bin/${MCXTRACE_EXECUTABLE}
+           ${MCXTRACE_EXECUTABLE} --version
            mkdir run_Test_MCPL_input_mpi && cd run_Test_MCPL_input_mpi
-           cp ../install_mcxtrace/share/mcxtrace/resources/examples/Tests_MCPL_etc/Test_MCPL_input/Test_MCPL_input.instr .
-           cp ../install_mcxtrace/share/mcxtrace/resources/examples/Tests_MCPL_etc/Test_MCPL_input/voutput.mcpl.gz .
-           ../install_mcxtrace/bin/${MXRUN_EXECUTABLE} --verbose --mpi=2 Test_MCPL_input.instr repeat=20 MCPLFILE=voutput.mcpl.gz
+           cp ${CONDA_PREFIX}/share/mcxtrace/resources/examples/Tests_MCPL_etc/Test_MCPL_input/Test_MCPL_input.instr .
+           cp ${CONDA_PREFIX}/share/mcxtrace/resources/examples/Tests_MCPL_etc/Test_MCPL_input/voutput.mcpl.gz .
+           ${MXRUN_EXECUTABLE} --verbose --mpi=2 Test_MCPL_input.instr repeat=20 MCPLFILE=voutput.mcpl.gz
 
     - name: Check for modified instruments
       id: instr-test
@@ -277,10 +277,10 @@ jobs:
                if [ "$RUNNER_OS" == macOS ]; then
                  export PERMISSIVE="--permissive"
                fi
-               ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               ${MXTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
                mxviewtest --nobrowse $PWD
              else
-               echo ..\\install\\bin\\mxtest --verbose --testdir=. $SCOPE --suffix=CHANGES --permissive > changedinstr.bat
+               echo mxtest --verbose --testdir=. $SCOPE --suffix=CHANGES --permissive > changedinstr.bat
              fi
            fi
 
@@ -308,33 +308,33 @@ jobs:
       shell: cmd
       working-directory: run_rng
       run: |
-        copy ..\install\share\mcxtrace\resources\examples\Tests_RNG\Test_RNG_rand01\Test_RNG_rand01.instr test.instr
-        ..\install\bin\mxrun --verbose test.instr -s1000 Ncount=1000 -d RNGtest
+        copy %CONDA_PREFIX%\share\mcxtrace\resources\examples\Tests_RNG\Test_RNG_rand01\Test_RNG_rand01.instr test.instr
+        %CONDA_PREFIX%\bin\mxrun --verbose test.instr -s1000 Ncount=1000 -d RNGtest
 
     - name: Prepare and run CRL instrument Windows MSVC
       if: runner.os == 'Windows' && matrix.cc != 'gcc.exe' # Windows MSVC only
       shell: cmd
       working-directory: run_std
       run: |
-        copy ..\install\share\mcxtrace\resources\examples\Tests_optics\Test_CRL\Test_CRL.instr test.instr
-        ..\install\bin\mxrun --verbose test.instr -s1000 -y
+        copy %CONDA_PREFIX%\share\mcxtrace\resources\examples\Tests_optics\Test_CRL\Test_CRL.instr test.instr
+        %CONDA_PREFIX%\bin\mxrun --verbose test.instr -s1000 -y
 
     - name: Prepare and run MCPL_input instrument Windows
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       working-directory: run_mcpl_input
       run: |
-        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
-        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl.gz .
-        ..\install\bin\mxrun --verbose test.instr -s1000 -y
+        copy %CONDA_PREFIX%\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
+        copy %CONDA_PREFIX%\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl.gz .
+        %CONDA_PREFIX%\bin\mxrun --verbose test.instr -s1000 -y
 
     - name: Prepare and run MCPL_output instrument Windows
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       working-directory: run_mcpl_output
       run: |
-        copy ..\install\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
-        ..\install\bin\mxrun --verbose test.instr -s1000 -y
+        copy %CONDA_PREFIX%\share\mcxtrace\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
+        %CONDA_PREFIX%\bin\mxrun --verbose test.instr -s1000 -y
 
     - name: Test RNG instrument output Windows
       if: runner.os == 'Windows' # Windows only
