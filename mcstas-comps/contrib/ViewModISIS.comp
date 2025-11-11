@@ -575,10 +575,8 @@ readHtable(FILE* TFile,const double Einit,const double Eend,
     Status Flag::
     Ftime=1 :: [time ] Reading Time : Data : Err [Exit on Total]
 
-
-    /*
     Double Read File to determine how many bins and
-    memery size
+    memory size
   */
   if (!TFile) return(0);
   Ea=0.0;
@@ -600,6 +598,7 @@ readHtable(FILE* TFile,const double Einit,const double Eend,
 	  DebugCnt++;
           if (!Ftime)
 	    {
+	      // find :: energy bin: <Number> to <Number> 
 	      if (energyBin(ss,Einit,Eend,&Ea,&Eb))
 		{
 		  if (eIndex==0)
@@ -675,7 +674,6 @@ readHtable(FILE* TFile,const double Einit,const double Eend,
 		  tIndex=0;
 		}
 	    }
-
 	  else           // In the time section
 	    {
 	      if (timeEnd(ss))     // Found "total"
@@ -698,7 +696,6 @@ readHtable(FILE* TFile,const double Einit,const double Eend,
 	    }
 	}
     }
-
   TS->EnergyBin[eIndex+1]=Eend;
   TS->Total=Tsum;
 
@@ -842,7 +839,6 @@ void getPoint(double* TV,double* EV,double* lim1, double* lim2, Source_ViewMod T
 
       fprintf(stderr,"TS == %g %g :: %d %d \n",TS.EInt[Epnt-1],TS.EInt[Epnt],iStart,iEnd);
       fprintf(stderr,"Points (%g) == ",R1);
-
       for(i=0;i<iEnd-iStart;i++)
 	fprintf(stderr," %g %g",*(TS.EInt+i+iStart),*(TS.EnergyBin+iStart+i));
       fprintf(stderr,"\n");
@@ -850,7 +846,6 @@ void getPoint(double* TV,double* EV,double* lim1, double* lim2, Source_ViewMod T
     }
   return;
 } /* getPoint */
-
 
 int
 cmdnumberI(char *mc,int* num,const int len)
@@ -982,6 +977,7 @@ openFile(char* FileName)
   /* If we reach here, the file was not found - raise fatal error */
   fprintf(stderr,"%s - Not found! \nPlease check your McStas installation and/or MCTABLES environment variable!\n",FileName);
   exit(1);
+  return efile;
 } /* openFile */
 
 double strArea(Source_ViewMod TS, double focus_xw, double focus_yh, double dist)
@@ -1069,7 +1065,6 @@ INITIALIZE
 %{
   /* READ IN THE ENERGY FILE */
   FILE* Tfile;
-  
 
   Nsim=mcget_ncount();  // Number of points requested.
 
@@ -1154,7 +1149,6 @@ TRACE
       fprintf(stderr,"TimeZero[%d]=> %g\n",Ncount,t);
     }
 #endif  
-
 %}
 
 MCDISPLAY
