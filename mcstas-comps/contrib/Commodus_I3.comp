@@ -8,27 +8,12 @@
 *  Component: Commodus_I3
 * 
 * 
-*  %I
-* 
-*  	 Modification of Commodus_I component to work with McStas 3.x
-*  	
-*  G. Skoro
-*  Date: July 2022
-*  Version: 1
-*  Origin: ISIS
-*  Tested with McStas 3.1 (Windows) 
-* 
-* 
-* ============================= ABOUT PREVIOUS Commodus_I COMPONENT =====================================================
-* 
-*  	 Modification of ViewModISISver1 written by G. Skoro in 2016 (and ViewModerator4 component written by S. Ansell in 2015)
-*  	
-*  G. Skoro
-*  Date: January 2018
-*  Version: 1
-*  Origin: ISIS
-*  Tested with McStas 2.0, 2.2 and 2.3 (Windows)
-* 
+* %I
+* Written by: G. Skoro, based on ViewModerator4 from S. Ansell
+* Date: July 2022
+* Origin: ISIS
+*
+* ISIS Moderators (Tested with McStas 3.1 (Windows))
 * 
 *  %D
 *  Produces a neutron distribution at the ISIS TS1 or TS2 corresponding moderator front face position.  

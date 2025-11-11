@@ -10,7 +10,7 @@
 * Date: June 2010
 * Origin: ISIS
 *
-* Multilayer Reflecting sample using matrix Formula.
+* Multilayer Reflecting sample using matrix Formula, v2 with 'nrepeats' for repeating multilayer structure.
 *
 * %D
 *
@@ -55,7 +55,7 @@ SETTING PARAMETERS (xwidth = 0.2, zlength = 0.2, nlayer=1,
   vector sldPar={0.0,2.0e-6,0.0e-6}, 
   vector dPar={20.0},
   vector sigmaPar={5.0,5.0}, 
-  frac_inc=0, ythick=0, mu_inc=5.62, int target_index=0, focus_xw=0, focus_yh=0, nrepeats=1)
+  frac_inc=0, ythick=0, mu_inc=5.62, int target_index=0, focus_xw=0, focus_yh=0, int nrepeats=1)
 
 DEPENDENCY " @GSLFLAGS@ "
 NOACC
