@@ -33,8 +33,8 @@
 * ymax:        [m] Upper y bound of detector opening
 * ny:          [1] Number of pixel rows
 * nchan:       [1] Number of TOF channels
-* TOFmin:   [mu-s] Beginning wavelength window
-* TOFmax:   [mu-s] End wavelength window
+* TOFmin:   [mu-s] Beginning TOF window
+* TOFmax:   [mu-s] End TO window
 * filename:  [str] Name of file in which to store the detector image
 * nowritefile: [1] If set, detector will skip writing to disk
 *
