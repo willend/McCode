@@ -22,6 +22,11 @@ jobs:
           - { os: ubuntu-24.04,  CC: clang,    CXX: clang++,    python: '3.12', mpi: 'openmpi'   }
           - { os: ubuntu-22.04,  CC: clang,    CXX: clang++,    python: '3.11', mpi: 'openmpi'  }
           - { os: ubuntu-22.04,  CC: gcc-12,   CXX: g++-12,     python: '3.11', mpi: 'openmpi'   }
+          - { os: macos-14,      CC: clang,    CXX: clang++,    python: "3.12", mpi: 'mpich'   }
+          - { os: macos-15,      CC: clang,    CXX: clang++,    python: "3.13", mpi: 'mpich'   }
+          - { os: windows-2022,   CC: cl.exe,   CXX: cl.exe,     python: "3.13", mpi: 'msmpi'   }
+          - { os: windows-2022,   CC: gcc.exe,  CXX: g++.exe,    python: "3.13", mpi: 'msmpi'   }
+          - { os: windows-2025,   CC: cl.exe,   CXX: cl.exe,     python: "3.13", mpi: 'msmpi'   }
           - { os: windows-11-arm, CC: cl.exe,   CXX: cl.exe,     python: "3.13", mpi: 'msmpi'   }
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}
