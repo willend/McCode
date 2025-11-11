@@ -46,7 +46,7 @@
 
 
 DEFINE COMPONENT TOF_PSDmonitor_toQ
-SETTING PARAMETERS (int ny=90, int nqbin=500, xmin, xmax, ymin, ymax, tmin=0.0, tmax=100000.0, qmin=0.005, qmax=0.5, L1=23.0, L2=3.0, detTheta=0.91, string filename=0, int nowritefile=0)
+SETTING PARAMETERS (int ny=90, int nqbin=500, xwidth=0.1, xmin=0, xmax=0, yheight=0.1, ymin=0, ymax=0, tmin=0.0, tmax=100000.0, qmin=0.005, qmax=0.5, L1=23.0, L2=3.0, detTheta=0.91, string filename=0, int nowritefile=0)
 
 
 DECLARE
