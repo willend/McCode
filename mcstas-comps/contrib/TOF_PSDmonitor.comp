@@ -8,19 +8,18 @@
 * %I
 * Written by: Robert Dalgliesh
 * Date: September 2021
-* Version: $Revision: 1.0 $
-* Origin: McStas 1.6
+* Origin: ISIS
 *
 * Position-sensitive TOF vs. (height) linear monitor.
 *
 * %D
-* Addapted from Kim Lefmann's TOF_cylPSDmonitor and PSD_monitors
+* Adapted from Kim Lefmann's TOF_cylPSDmonitor and PSD_monitors
 * An n pixel (vertical, linear) PSD monitor with Time of Flight detection. 
 * This component may also be used as a beam
 * detector.
 *
 * Example: TOF_PSDmonitor(xmin=-0.1, xmax=0.1, ymin=-0.1, ymax=0.1,
-            ny=90, nchan=100, TOFmin=0.0, TOFmax=20000.0, filename="Output.psd")
+*            ny=90, nchan=100, TOFmin=0.0, TOFmax=20000.0, filename="Output.psd")
 *
 * %P
 * INPUT PARAMETERS:
@@ -40,8 +39,6 @@
 *
 * %E
 *******************************************************************************/
-
-
 DEFINE COMPONENT TOF_PSDmonitor
 SETTING PARAMETERS (int ny=90, int nchan=100, xwidth=0.1, xmin=0, xmax=0, yheight=0.1, ymin=0, ymax=0, TOFmin=0, TOFmax=1e6, int nowritefile=0, string filename=0)
 
