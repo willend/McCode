@@ -43,15 +43,14 @@
 
 
 DEFINE COMPONENT TOF_PSDmonitor
-DEFINITION PARAMETERS ( filename)
 SETTING PARAMETERS (int ny=90, int nchan=100, xwidth=0.1, xmin=0, xmax=0, yheight=0.1, ymin=0, ymax=0, TOFmin=0, TOFmax=1e6, int nowritefile=0, string filename=0)
 
 
 DECLARE
   %{
-    DArray2d tofPSD_N[nchan][ny];
-    DArray2d tofPSD_p[nchan][ny];
-    DArray2d tofPSD_p2[nchan][ny];
+    DArray2d tofPSD_N;
+    DArray2d tofPSD_p;
+    DArray2d tofPSD_p2;
   %}
 INITIALIZE
   %{
