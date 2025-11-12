@@ -87,6 +87,7 @@ jobs:
            if [ "${{ matrix.mpi }}" == "openmpi" ]; then
                sed -i.bak 's+mpirun+mpirun\ -mca\ regx\ naive\ --verbose\ --mca\ btl_tcp_if_include\ lo0+g' ${CONDA_PREFIX}/share/mcstas/tools/Python/mccodelib/mccode_config.json
            fi
+           export TMPDIR=/tmp
 
     # Start of Unix tests
     - name: Launch RNG test instrument
@@ -97,6 +98,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen"
            export MCRUN_EXECUTABLE="mcrun"
@@ -135,6 +137,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen"
            export MCRUN_EXECUTABLE="mcrun"
@@ -159,6 +162,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen"
            export MCRUN_EXECUTABLE="mcrun"
@@ -183,6 +187,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
            if [ "$RUNNER_OS" == "Windows" ];
@@ -205,6 +210,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
            if [ "$RUNNER_OS" == "macOS" ]; then export TMPDIR=${HOME}/tmp; fi
@@ -228,6 +234,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
            if [ "$RUNNER_OS" == "Windows" ];
@@ -250,6 +257,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
            if [ "$RUNNER_OS" == "macOS" ]; then export TMPDIR=${HOME}/tmp; fi
@@ -275,6 +283,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            sudo apt-get update
            sudo apt-get -y install libnexus-dev
            export MCSTAS_EXECUTABLE="mcstas"
@@ -302,6 +311,7 @@ jobs:
            set -e
            set -u
            set -x
+           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
            export MCTEST_EXECUTABLE="mctest"
