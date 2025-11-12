@@ -88,11 +88,9 @@ jobs:
                sed -i.bak 's+mpirun+mpirun\ -mca\ regx\ naive\ --verbose\ --mca\ btl_tcp_if_include\ lo0+g' ${CONDA_PREFIX}/share/mcstas/tools/Python/mccodelib/mccode_config.json
            fi
 
-    # Start of Unix tests
+    # Start of tests
     - name: Launch RNG test instrument
       id: RNG-test
-      #if: runner.os != 'Windows'
-      # Status: Works on Unixes
       run: |
            set -e
            set -u
@@ -102,9 +100,15 @@ jobs:
            then
              export MD5SUM="md5"
            fi
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export SUFFIX=".bat"
+           else
+            export SUFFIX=""
+           fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest --instr=Test_RNG_rand01 --testdir=run_singletests
+           mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests
            export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
@@ -118,55 +122,71 @@ jobs:
 
     - name: Launch BNL_H8 instrument
       id: h8-test
-      if: runner.os != 'Windows'
-      # Status: Works on Unixes
       run: |
            set -e
            set -u
            set -x
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export SUFFIX=".bat"
+           else
+            export SUFFIX=""
+           fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest --instr=BNL_H8 --testdir=run_singletests
-           mctest --instr=BNL_H8 --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=BNL_H8 --testdir=run_singletests
+           mctest${SUFFIX} --instr=BNL_H8 --mpi=2 --testdir=run_singletests
 
     - name: Launch MCPL test instrument
       id: mcpl-test
-      if: runner.os != 'Windows'
-      # Status: Works on Unixes
       run: |
            set -e
            set -u
            set -x
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export SUFFIX=".bat"
+           else
+            export SUFFIX=""
+           fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest --instr=ESS_BEER_MCPL --testdir=run_singletests
-           mctest --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=ESS_BEER_MCPL --testdir=run_singletests
+           mctest${SUFFIX} --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
-      if: runner.os != 'Windows'
-      # Status: Works on Unixes
       run: |
            set -e
            set -u
            set -x
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export SUFFIX=".bat"
+           else
+            export SUFFIX=""
+           fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest --instr=NCrystal_example --testdir=run_singletests
-           mctest --instr=NCrystal_example --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=NCrystal_example --testdir=run_singletests
+           mctest${SUFFIX} --instr=NCrystal_example --mpi=2 --testdir=run_singletests
 
     - name: Launch NeXus test instrument
       id: nexus-test
-      if: runner.os != 'Windows'
-      # Status: Works on Unixes
       run: |
            set -e
            set -u
            set -x
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export SUFFIX=".bat"
+           else
+            export SUFFIX=""
+           fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest --instr=templateSANS_Mantid --testdir=run_singletests
-           mctest --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=templateSANS_Mantid --testdir=run_singletests
+           mctest${SUFFIX} --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests
 
     - name: Check for modified instruments
       id: instr-test
@@ -220,98 +240,15 @@ jobs:
              else
                export SCOPE=" "
              fi
+             mkdir run_mctest && cd run_mctest
              if [ "$RUNNER_OS" != "Windows" ]; then
-               mkdir run_mctest && cd run_mctest
-               if [ "$RUNNER_OS" == macOS ]; then
-                 export PERMISSIVE="--permissive"
-               fi
-               ${MCTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mctest --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
                mcviewtest --nobrowse $PWD
              else
-               echo mctest --verbose --testdir=. $SCOPE --suffix=CHANGES --permissive > changedinstr.bat
+               mctest.bat --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mcviewtest.bat --nobrowse $PWD
              fi
            fi
-
-    # END of Unix tests
-
-    # - name: Run modified instruments Win
-    #   id: instr-test-Win
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: |
-    #     call conda activate mcstas
-    #     echo %CONDA_PREFIX%
-    #     mcstas --version
-    #     if exist changedinstr.bat (
-    #       mkdir run_mctest
-    #       cd run_mctest
-    #       call ..\changedinstr.bat
-    #     )
-
-    # # Start of Windows tests
-    # - name: Prepare and run rng instrument Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: |
-    #        echo %CONDA_PREFIX%
-    #        mcstas --version
-    #        mctest --instr=Test_RNG_rand01 --testdir=run_singletests
-
-    # - name: Prepare and run BNL_H8 instrument Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: |
-    #        mcstas --version
-    #        mctest --instr=BNL_H8 --testdir=run_singletests
-    #        mctest --instr=BNL_H8 --mpi=2 --testdir=run_singletests
-
-    # - name: Prepare and run NCrystal instrument Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: |
-    #        mcstas --version
-    #        mctest --instr=NCrystal_example --testdir=run_singletests
-    #        mctest --instr=NCrystal_example --mpi=2 --testdir=run_singletests
-
-    # - name: Prepare and run MCPL_input instrument Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: |
-    #        mcstas --version
-    #        mctest --instr=ESS_BEER_MCPL --testdir=run_singletests
-    #        mctest --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
-
-    # - name: Prepare and run MCPL_input_once instrument Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: |
-    #        mcstas --version
-    #        mctest --instr=Test_MCPL_input_once --testdir=run_singletests
-    #        mctest --instr=Test_MCPL_input_once --mpi=2 --testdir=run_singletests
-
-    # - name: Prepare and run MCPL_output instrument Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: |
-    #        mcstas --version
-    #        mctest --instr=Test_MCPL_output --testdir=run_singletests
-    #        mctest --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests
-
-    # - name: Test RNG instrument output Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: bash
-    #   run:   |
-    #     export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \#  | dos2unix | md5sum | cut -f1 -d\ `
-    #     export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
-    #     if [ "${EXPECTED}" == "${SUM}" ];
-    #     then
-    #       echo RNG test success!
-    #       true
-    #     else
-    #       echo RNG test failure!
-    #       false
-    #     fi
-    # # END of Windows tests
 
     - name: 'Tar output files'
       id: tar-package
