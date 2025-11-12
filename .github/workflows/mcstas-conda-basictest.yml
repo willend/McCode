@@ -101,8 +101,8 @@ jobs:
            then
              export MD5SUM="md5"
            fi
-           test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
-           ${MCSTAS_EXECUTABLE} --version
+           test -f ${CONDA_PREFIX}/bin/mcstas
+           mcstas --version
            mctest --instr=Test_RNG_rand01 --testdir=run_RNG
            export SUM=`find run_RNG -name rngout.dat | grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
@@ -115,29 +115,29 @@ jobs:
               false
            fi
 
-    # - name: Launch BNL_H8 instrument
-    #   id: h8-test
-    #   if: runner.os != 'Windows'
-    #   # Status: Works on Unixes
-    #   run: |
-    #        set -e
-    #        set -u
-    #        set -x
-    #        test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
-    #        ${MCSTAS_EXECUTABLE} --version
-    #        mctest --instr=BNL_H8 --testdir=run_singletests
+    - name: Launch BNL_H8 instrument
+      id: h8-test
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
+      run: |
+           set -e
+           set -u
+           set -x
+           test -f ${CONDA_PREFIX}/bin/mcstas
+           mcstas --version
+           mctest --instr=BNL_H8 --testdir=run_singletests
 
-    # - name: Launch BNL_H8 instrument (MPI)
-    #   id: h8-test-mpi
-    #   if: runner.os != 'Windows'
-    #   # Status: Works on Unixes
-    #   run: |
-    #        set -e
-    #        set -u
-    #        set -x
-    #        test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
-    #        ${MCSTAS_EXECUTABLE} --version
-    #        mctest --instr=BNL_H8 --mpi=2 --testdir=run_singletests
+    - name: Launch BNL_H8 instrument (MPI)
+      id: h8-test-mpi
+      if: runner.os != 'Windows'
+      # Status: Works on Unixes
+      run: |
+           set -e
+           set -u
+           set -x
+           test -f ${CONDA_PREFIX}/bin/mcstas
+           mcstas --version
+           mctest --instr=BNL_H8 --mpi=2 --testdir=run_singletests
 
     # - name: Launch MCPL test instrument
     #   id: mcpl-test
@@ -147,8 +147,8 @@ jobs:
     #        set -e
     #        set -u
     #        set -x
-    #        test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
-    #        ${MCSTAS_EXECUTABLE} --version
+    #        test -f ${CONDA_PREFIX}/bin/mcstas
+    #        mcstas --version
     #        mctest --instr=ESS_BEER_MCPL --testdir=run_singletests
 
     # - name: Launch MCPL test instrument (mpi)
@@ -159,8 +159,8 @@ jobs:
     #        set -e
     #        set -u
     #        set -x
-    #        test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
-    #        ${MCSTAS_EXECUTABLE} --version
+    #        test -f ${CONDA_PREFIX}/bin/mcstas
+    #        mcstas --version
     #        mctest --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
 
 
@@ -173,8 +173,8 @@ jobs:
     #        set -e
     #        set -u
     #        set -x
-    #        test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
-    #        ${MCSTAS_EXECUTABLE} --version
+    #        test -f ${CONDA_PREFIX}/bin/mcstas
+    #        mcstas --version
     #        mctest --instr=NCrystal_example --testdir=run_singletests
 
     # - name: Launch NCrystal test instrument (mpi)
@@ -185,8 +185,8 @@ jobs:
     #        set -e
     #        set -u
     #        set -x
-    #        test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
-    #        ${MCSTAS_EXECUTABLE} --version
+    #        test -f ${CONDA_PREFIX}/bin/mcstas
+    #        mcstas --version
     #        mctest --instr=NCrystal_example --mpi=2 --testdir=run_singletests
 
     # - name: Launch NeXus test instrument
@@ -197,8 +197,8 @@ jobs:
     #        set -e
     #        set -u
     #        set -x
-    #        test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
-    #        ${MCSTAS_EXECUTABLE} --version
+    #        test -f ${CONDA_PREFIX}/bin/mcstas
+    #        mcstas --version
     #        mctest --instr=templateSANS_Mantid --testdir=run_singletests
     #        mctest --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests
 
