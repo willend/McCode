@@ -127,17 +127,6 @@ jobs:
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
            mctest --instr=BNL_H8 --testdir=run_singletests
-
-    - name: Launch BNL_H8 instrument (MPI)
-      id: h8-test-mpi
-      if: runner.os != 'Windows'
-      # Status: Works on Unixes
-      run: |
-           set -e
-           set -u
-           set -x
-           test -f ${CONDA_PREFIX}/bin/mcstas
-           mcstas --version
            mctest --instr=BNL_H8 --mpi=2 --testdir=run_singletests
 
     - name: Launch MCPL test instrument
@@ -151,20 +140,7 @@ jobs:
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
            mctest --instr=ESS_BEER_MCPL --testdir=run_singletests
-
-    - name: Launch MCPL test instrument (mpi)
-      id: mcpl-test-mpi
-      if: runner.os != 'Windows'
-      # Status: Works on Unixes
-      run: |
-           set -e
-           set -u
-           set -x
-           test -f ${CONDA_PREFIX}/bin/mcstas
-           mcstas --version
            mctest --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
-
-
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
@@ -177,17 +153,6 @@ jobs:
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
            mctest --instr=NCrystal_example --testdir=run_singletests
-
-    - name: Launch NCrystal test instrument (mpi)
-      id: ncrystal-test-mpi
-      if: runner.os != 'Windows'
-      # Status: Works on Unixes
-      run: |
-           set -e
-           set -u
-           set -x
-           test -f ${CONDA_PREFIX}/bin/mcstas
-           mcstas --version
            mctest --instr=NCrystal_example --mpi=2 --testdir=run_singletests
 
     - name: Launch NeXus test instrument
@@ -202,7 +167,6 @@ jobs:
            mcstas --version
            mctest --instr=templateSANS_Mantid --testdir=run_singletests
            mctest --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests
-
 
     - name: Check for modified instruments
       id: instr-test
