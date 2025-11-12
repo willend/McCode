@@ -251,6 +251,7 @@ jobs:
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       run: |
+           conda activate mcstas
            echo %CONDA_PREFIX%
            mcstas.exe --version
            mctest.bat --instr=Test_RNG_rand01 --testdir=run_singletests
