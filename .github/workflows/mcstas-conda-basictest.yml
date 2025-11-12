@@ -251,50 +251,50 @@ jobs:
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       run: |
-           mcstas --version
-           mctest --instr=Test_RNG_rand01 --testdir=run_singletests
+           echo %CONDA_PREFIX%
+           mcstas.exe --version
+           mctest.bat --instr=Test_RNG_rand01 --testdir=run_singletests
 
     # - name: Prepare and run BNL_H8 instrument Windows
     #   if: runner.os == 'Windows' # Windows only
     #   shell: cmd
-    #   working-directory: run_std
     #   run: |
-    #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\BNL\BNL_H8\BNL_H8.instr test.instr
-    #     %CONDA_PREFIX%\bin\mcrun --verbose test.instr -s1000 -y
+    #        mcstas --version
+    #        mctest --instr=BNL_H8 --testdir=run_singletests
+    #        mctest --instr=BNL_H8 --mpi=2 --testdir=run_singletests
 
     # - name: Prepare and run NCrystal instrument Windows
     #   if: runner.os == 'Windows' # Windows only
     #   shell: cmd
-    #   working-directory: run_ncrystal
     #   run: |
-    #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\NCrystal\NCrystal_example\NCrystal_example.instr test.instr
-    #     %CONDA_PREFIX%\bin\mcrun --verbose test.instr -s1000 -y
+    #        mcstas --version
+    #        mctest --instr=NCrystal_example --testdir=run_singletests
+    #        mctest --instr=NCrystal_example --mpi=2 --testdir=run_singletests
 
     # - name: Prepare and run MCPL_input instrument Windows
     #   if: runner.os == 'Windows' # Windows only
     #   shell: cmd
-    #   working-directory: run_mcpl_input
     #   run: |
-    #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\Test_MCPL_input.instr test.instr
-    #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input\voutput.mcpl.gz .
-    #     %CONDA_PREFIX%\bin\mcrun --verbose test.instr -s1000 -y
+    #        mcstas --version
+    #        mctest --instr=ESS_BEER_MCPL --testdir=run_singletests
+    #        mctest --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
 
     # - name: Prepare and run MCPL_input_once instrument Windows
     #   if: runner.os == 'Windows' # Windows only
     #   shell: cmd
-    #   working-directory: run_mcpl_input_once
     #   run: |
-    #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\Test_MCPL_input_once.instr test.instr
-    #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_input_once\voutput.mcpl.gz .
-    #     %CONDA_PREFIX%\bin\mcrun --verbose test.instr -s1000 -y
+    #        mcstas --version
+    #        mctest --instr=Test_MCPL_input_once --testdir=run_singletests
+    #        mctest --instr=Test_MCPL_input_once --mpi=2 --testdir=run_singletests
 
     # - name: Prepare and run MCPL_output instrument Windows
     #   if: runner.os == 'Windows' # Windows only
     #   shell: cmd
     #   working-directory: run_mcpl_output
     #   run: |
-    #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
-    #     %CONDA_PREFIX%\bin\mcrun --verbose test.instr -s1000 -y
+    #        mcstas --version
+    #        mctest --instr=Test_MCPL_output --testdir=run_singletests
+    #        mctest --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests
 
     - name: Test RNG instrument output Windows
       if: runner.os == 'Windows' # Windows only
