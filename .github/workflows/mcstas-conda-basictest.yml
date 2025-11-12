@@ -104,8 +104,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest --instr=Test_RNG_rand01 --testdir=run_RNG
-           export SUM=`find run_RNG -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
+           mctest --instr=Test_RNG_rand01 --testdir=run_singletests
+           export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
            then
@@ -281,19 +281,14 @@ jobs:
           call ..\changedinstr.bat
         )
 
-    # # Start of Windows tests
-    # - name: Prepare rundirs Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: mkdir run_rng run_std run_mcpl_output run_mcpl_input run_mcpl_input_once run_union run_ncrystal
+    # Start of Windows tests
 
-    # - name: Prepare and run rng instrument Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   working-directory: run_rng
-    #   run: |
-    #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\Tests_RNG\Test_RNG_rand01\Test_RNG_rand01.instr test.instr
-    #     %CONDA_PREFIX%\bin\mcrun --verbose test.instr -s1000 Ncount=1000 -d RNGtest
+    - name: Prepare and run rng instrument Windows
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      run: |
+           mcstas --version
+           mctest --instr=Test_RNG_rand01 --testdir=run_singletests
 
     # - name: Prepare and run BNL_H8 instrument Windows
     #   if: runner.os == 'Windows' # Windows only
@@ -337,22 +332,22 @@ jobs:
     #     copy %CONDA_PREFIX%\share\mcstas\resources\examples\Tests_MCPL_etc\Test_MCPL_output\Test_MCPL_output.instr test.instr
     #     %CONDA_PREFIX%\bin\mcrun --verbose test.instr -s1000 -y
 
-    # - name: Test RNG instrument output Windows
-    #   if: runner.os == 'Windows' # Windows only
-    #   working-directory: run_rng
-    #   shell: bash
-    #   run:   |
-    #     export SUM=`grep -v \# RNGtest/rngout.dat | dos2unix | md5sum | cut -f1 -d\ `
-    #     export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
-    #     if [ "${EXPECTED}" == "${SUM}" ];
-    #     then
-    #       echo RNG test success!
-    #       true
-    #     else
-    #       echo RNG test failure!
-    #       false
-    #     fi
-    # # END of Windows tests
+    - name: Test RNG instrument output Windows
+      if: runner.os == 'Windows' # Windows only
+      working-directory: run_rng
+      shell: bash
+      run:   |
+        export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \#  | dos2unix | md5sum | cut -f1 -d\ `
+        export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
+        if [ "${EXPECTED}" == "${SUM}" ];
+        then
+          echo RNG test success!
+          true
+        else
+          echo RNG test failure!
+          false
+        fi
+    # END of Windows tests
 
     - name: 'Tar output files'
       id: tar-package
