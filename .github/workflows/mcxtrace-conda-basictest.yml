@@ -120,6 +120,23 @@ jobs:
               false
            fi
 
+    - name: Launch JJ_SAXS instrument
+      id: JJ_SAXS
+      run: |
+           set -e
+           set -u
+           set -x
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export SUFFIX=".bat --permissive"
+           else
+            export SUFFIX=""
+           fi
+           test -f ${CONDA_PREFIX}/bin/mcxtrace
+           mcxtrace --version
+           mxtest${SUFFIX} --instr=JJ_SAXS --testdir=run_singletests
+           mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests
+
     - name: Launch ESRF_BM29 instrument
       id: ESRF_BM29
       run: |
