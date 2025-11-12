@@ -34,21 +34,34 @@ else
 		osascript -e "tell app \"System Events\" to display dialog \"Error: Failure during execution of micromamba installer... :-( \""
 	    else
 		MCCONDADIR=`dirname $(readlink -f ${BASEDIR}/Contents/Resources/miniconda3/bin)`
-		echo source $MCCONDADIR/bin/activate
-		source $MCCONDADIR/bin/activate
+		echo Attempting shell-hook activate of MCCONDADIR=${MCCONDADIR}
+		"$(${MCCONDADIR}/bin/conda shell.bash hook)" > /dev/null 2>&1
 		ret_code4=$?
+		if [ "$ret_code4" != "0" ];
+		then
+		    echo Sourcing $MCCONDADIR/bin/activate
+		    source $MCCONDADIR/bin/activate
+		    ret_code4=$?
+		fi
 		if [ "$ret_code4" != "0" ];
 		then
 		    osascript -e "tell app \"System Events\" to display dialog \"Error: Failure activating micromamba env... :-( \""
 		else
-		    @GUIPREFIX@doc -i
-		    ret_code7=$?
-		    if [ "$ret_code7" != "0" ];
+		    conda update conda -y
+		    ret_code5=$?
+		    if [ "$ret_code5" != "0" ];
 		    then
-			osascript -e "tell app \"System Events\" to display dialog \"Error during @GUIPREFIX@doc -i step... :-( \""
+			osascript -e "tell app \"System Events\" to display dialog \"Error: Failure occured during conda update conda -y... :-( \""
 		    else
-			osascript -e "tell app \"System Events\" to display dialog \"Your @FLAVOR@ should now contain the necessary dependencies! :-) \""
-			rm ${BASEDIR}/Contents/Resources/INJECTING
+			@GUIPREFIX@doc -i
+			ret_code7=$?
+			if [ "$ret_code7" != "0" ];
+			then
+			    osascript -e "tell app \"System Events\" to display dialog \"Error during @GUIPREFIX@doc -i step... :-( \""
+			else
+			    osascript -e "tell app \"System Events\" to display dialog \"Your @FLAVOR@ should now contain the necessary dependencies! :-) \""
+			    rm ${BASEDIR}/Contents/Resources/INJECTING
+			fi
 		    fi
 		fi
 	    fi
