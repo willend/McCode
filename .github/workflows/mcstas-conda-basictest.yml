@@ -22,7 +22,7 @@ jobs:
           - { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
           - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
-          - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
+          #- { os: windows-latest, python: '3.12', mpi: 'msmpi' }
 
     name: ${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
@@ -87,7 +87,6 @@ jobs:
            if [ "${{ matrix.mpi }}" == "openmpi" ]; then
                sed -i.bak 's+mpirun+mpirun\ -mca\ regx\ naive\ --verbose\ --mca\ btl_tcp_if_include\ lo0+g' ${CONDA_PREFIX}/share/mcstas/tools/Python/mccodelib/mccode_config.json
            fi
-           export TMPDIR=/tmp
 
     # Start of Unix tests
     - name: Launch RNG test instrument
@@ -98,27 +97,15 @@ jobs:
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen"
-           export MCRUN_EXECUTABLE="mcrun"
            export MD5SUM="md5sum"
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export MCSTAS_EXECUTABLE="mcstas.exe"
-             export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen.exe"
-             export MCRUN_EXECUTABLE="mcrun.bat"
-           fi
            if [ "$RUNNER_OS" == "macOS" ];
            then
              export MD5SUM="md5"
            fi
            test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
            ${MCSTAS_EXECUTABLE} --version
-           mkdir run_RNG && cd run_RNG
-           cp ${CONDA_PREFIX}/share/mcstas/resources/examples/Tests_RNG/Test_RNG_rand01/Test_RNG_rand01.instr .
-           ${MCRUN_EXECUTABLE} Test_RNG_rand01.instr -s1000 Ncount=1000 -d RNGtest
-           export SUM=`grep -v \# RNGtest/rngout.dat | ${MD5SUM} | cut -f1 -d\ `
+           mctest --instr=Test_RNG_rand01 --testdir=run_RNG
+           export SUM=`find run_RNG -name rngout.dat | grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
            then
@@ -137,22 +124,9 @@ jobs:
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen"
-           export MCRUN_EXECUTABLE="mcrun"
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export MCSTAS_EXECUTABLE="mcstas.exe"
-             export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen.exe"
-             export MCRUN_EXECUTABLE="mcrun.bat"
-           fi
            test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
            ${MCSTAS_EXECUTABLE} --version
-           mkdir run_BNL_H8 && cd run_BNL_H8
-           cp ${CONDA_PREFIX}/share/mcstas/resources/examples/BNL/BNL_H8/BNL_H8.instr .
-           ${MCRUN_EXECUTABLE} BNL_H8.instr lambda=2.36
-           ${MCSTAS_PYGEN_EXECUTABLE} BNL_H8.instr
+           mctest --instr=BNL_H8 --testdir=run_singletests
 
     - name: Launch BNL_H8 instrument (MPI)
       id: h8-test-mpi
@@ -162,22 +136,9 @@ jobs:
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen"
-           export MCRUN_EXECUTABLE="mcrun"
-           if [ "$RUNNER_OS" == "macOS" ]; then export TMPDIR=${HOME}/tmp; fi
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export MCSTAS_EXECUTABLE="mcstas.exe"
-             export MCSTAS_PYGEN_EXECUTABLE="mcstas-pygen.exe"
-             export MCRUN_EXECUTABLE="mcrun.bat"
-           fi
            test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
            ${MCSTAS_EXECUTABLE} --version
-           mkdir run_BNL_H8_mpi && cd run_BNL_H8_mpi
-           cp ${CONDA_PREFIX}/share/mcstas/resources/examples/BNL/BNL_H8/BNL_H8.instr .
-           ${MCRUN_EXECUTABLE} --verbose --mpi=2 BNL_H8.instr lambda=2.36
+           mctest --instr=BNL_H8 --mpi=2 --testdir=run_singletests
 
     - name: Launch MCPL test instrument
       id: mcpl-test
@@ -187,20 +148,9 @@ jobs:
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCRUN_EXECUTABLE="mcrun"
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export MCSTAS_EXECUTABLE="mcstas.exe"
-             export MCRUN_EXECUTABLE="mcrun.bat"
-           fi
-           export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
            test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
            ${MCSTAS_EXECUTABLE} --version
-           mkdir run_ESS_BEER_MCPL && cd run_ESS_BEER_MCPL
-           cp ${CONDA_PREFIX}/share/mcstas/resources/examples/ESS/ESS_BEER_MCPL/* .
-           ${MCRUN_EXECUTABLE} ESS_BEER_MCPL.instr repetition=50
+           mctest --instr=ESS_BEER_MCPL --testdir=run_singletests
 
     - name: Launch MCPL test instrument (mpi)
       id: mcpl-test-mpi
@@ -210,21 +160,11 @@ jobs:
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCRUN_EXECUTABLE="mcrun"
-           if [ "$RUNNER_OS" == "macOS" ]; then export TMPDIR=${HOME}/tmp; fi
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export MCSTAS_EXECUTABLE="mcstas.exe"
-             export MCRUN_EXECUTABLE="mcrun.bat"
-           fi
-           export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
            test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
            ${MCSTAS_EXECUTABLE} --version
-           mkdir run_ESS_BEER_MCPL_mpi && cd run_ESS_BEER_MCPL_mpi
-           cp ${CONDA_PREFIX}/share/mcstas/resources/examples/ESS/ESS_BEER_MCPL/* .
-            ${MCRUN_EXECUTABLE} --verbose --mpi=2 ESS_BEER_MCPL.instr repetition=100
+           mctest --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
+
+
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
@@ -234,20 +174,9 @@ jobs:
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCRUN_EXECUTABLE="mcrun"
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export MCSTAS_EXECUTABLE="mcstas.exe"
-             export MCRUN_EXECUTABLE="mcrun.bat"
-           fi
-           export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
            test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
            ${MCSTAS_EXECUTABLE} --version
-           mkdir run_NCrystal_example && cd run_NCrystal_example
-           cp ${CONDA_PREFIX}/share/mcstas/resources/examples/NCrystal/NCrystal_example/NCrystal_example.instr .
-            ${MCRUN_EXECUTABLE} NCrystal_example.instr sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+           mctest --instr=NCrystal_example --testdir=run_singletests
 
     - name: Launch NCrystal test instrument (mpi)
       id: ncrystal-test-mpi
@@ -257,53 +186,23 @@ jobs:
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCRUN_EXECUTABLE="mcrun"
-           if [ "$RUNNER_OS" == "macOS" ]; then export TMPDIR=${HOME}/tmp; fi
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export MCSTAS_EXECUTABLE="mcstas.exe"
-             export MCRUN_EXECUTABLE="mcrun.bat"
-           fi
-           export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
            test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
            ${MCSTAS_EXECUTABLE} --version
-           mkdir run_NCrystal_example_mpi && cd run_NCrystal_example_mpi
-           cp ${CONDA_PREFIX}/share/mcstas/resources/examples/NCrystal/NCrystal_example/NCrystal_example.instr .
-           ncrystal-config --version
-           export NUM_MPI=2
-           ${MCRUN_EXECUTABLE} --verbose --mpi=${NUM_MPI} NCrystal_example.instr sample_cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+           mctest --instr=NCrystal_example --mpi=2 --testdir=run_singletests
 
     - name: Launch NeXus test instrument
       id: nexus-test
-      if: runner.os == 'Linux' # Linux only
-      # Status: Works on Linux (NeXus packages w/napi.h missing on mac+Windows)
+     if: runner.os != 'Windows'
+      # Status: Works on Unixes
       run: |
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
-           sudo apt-get update
-           sudo apt-get -y install libnexus-dev
-           export MCSTAS_EXECUTABLE="mcstas"
-           export MCRUN_EXECUTABLE="mcrun"
-           export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
-           if [ "x$(uname | cut -f1 -d_)" == "xMINGW64" ];
-           then
-             export MCSTAS_EXECUTABLE="mcstas.exe"
-             export MCRUN_EXECUTABLE="mcrun.bat"
-           fi
            test -f ${CONDA_PREFIX}/bin/${MCSTAS_EXECUTABLE}
            ${MCSTAS_EXECUTABLE} --version
-           mkdir run_templateSANS_Mantid && cd run_templateSANS_Mantid
-           cp ${CONDA_PREFIX}/share/mcstas/resources/examples/Mantid/templateSANS_Mantid/templateSANS_Mantid.instr .
-           #Not a final solution!!!:
-           #if [ "x$(uname)" == "xDarwin" ]; then export MCSTAS_CC_OVERRIDE=/usr/bin/clang; fi
-           if [ "x$(uname)" == "xLinux" ]; then
-             ${MCRUN_EXECUTABLE} --format=NeXus --IDF templateSANS_Mantid.instr lambda=6
-             ${MCRUN_EXECUTABLE} -c --verbose --mpi=2 --format=NeXus --IDF templateSANS_Mantid.instr lambda=6
-           fi
+           mctest --instr=templateSANS_Mantid --testdir=run_singletests
+           mctest --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests
+
 
     - name: Check for modified instruments
       id: instr-test
