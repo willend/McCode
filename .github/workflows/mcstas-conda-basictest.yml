@@ -22,6 +22,7 @@ jobs:
           - { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
           - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
+          - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
 
     name: ${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
@@ -269,16 +270,16 @@ jobs:
 
     # END of Unix tests
 
-    # - name: Run modified instruments Win
-    #   id: instr-test-Win
-    #   if: runner.os == 'Windows' # Windows only
-    #   shell: cmd
-    #   run: |
-    #     if exist changedinstr.bat (
-    #       mkdir run_mctest
-    #       cd run_mctest
-    #       call ..\changedinstr.bat
-    #     )
+    - name: Run modified instruments Win
+      id: instr-test-Win
+      if: runner.os == 'Windows' # Windows only
+      shell: cmd
+      run: |
+        if exist changedinstr.bat (
+          mkdir run_mctest
+          cd run_mctest
+          call ..\changedinstr.bat
+        )
 
     # # Start of Windows tests
     # - name: Prepare rundirs Windows
