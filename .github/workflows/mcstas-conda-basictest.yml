@@ -239,20 +239,21 @@ jobs:
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       run: |
+        call conda activate mcstas
+        echo %CONDA_PREFIX%
+        mcstas --version
         if exist changedinstr.bat (
           mkdir run_mctest
           cd run_mctest
-          conda activate mcstas
           call ..\changedinstr.bat
         )
 
     # Start of Windows tests
-
     - name: Prepare and run rng instrument Windows
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       run: |
-           conda activate mcstas
+           echo %CONDA_PREFIX%
            mcstas --version
            mctest --instr=Test_RNG_rand01 --testdir=run_singletests
 
@@ -260,7 +261,6 @@ jobs:
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       run: |
-           conda activate mcstas
            mcstas --version
            mctest --instr=BNL_H8 --testdir=run_singletests
            mctest --instr=BNL_H8 --mpi=2 --testdir=run_singletests
@@ -269,7 +269,6 @@ jobs:
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       run: |
-           conda activate mcstas
            mcstas --version
            mctest --instr=NCrystal_example --testdir=run_singletests
            mctest --instr=NCrystal_example --mpi=2 --testdir=run_singletests
@@ -278,7 +277,6 @@ jobs:
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       run: |
-           conda activate mcstas
            mcstas --version
            mctest --instr=ESS_BEER_MCPL --testdir=run_singletests
            mctest --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
@@ -287,7 +285,6 @@ jobs:
       if: runner.os == 'Windows' # Windows only
       shell: cmd
       run: |
-           conda activate mcstas
            mcstas --version
            mctest --instr=Test_MCPL_input_once --testdir=run_singletests
            mctest --instr=Test_MCPL_input_once --mpi=2 --testdir=run_singletests
@@ -295,9 +292,7 @@ jobs:
     - name: Prepare and run MCPL_output instrument Windows
       if: runner.os == 'Windows' # Windows only
       shell: cmd
-      working-directory: run_mcpl_output
       run: |
-           conda activate mcstas
            mcstas --version
            mctest --instr=Test_MCPL_output --testdir=run_singletests
            mctest --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests
