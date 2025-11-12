@@ -137,6 +137,23 @@ jobs:
            mctest${SUFFIX} --instr=BNL_H8 --testdir=run_singletests
            mctest${SUFFIX} --instr=BNL_H8 --mpi=2 --testdir=run_singletests
 
+    - name: Launch ISIS_CRISP
+      id: ISIS_CRISP
+      run: |
+           set -e
+           set -u
+           set -x
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export SUFFIX=".bat"
+           else
+            export SUFFIX=""
+           fi
+           test -f ${CONDA_PREFIX}/bin/mcstas
+           mcstas --version
+           mctest${SUFFIX} --instr=ISIS_CRISP --testdir=run_singletests
+           mctest${SUFFIX} --instr=ISIS_CRISP --mpi=2 --testdir=run_singletests
+
     - name: Launch MCPL test instrument
       id: mcpl-test
       run: |
@@ -210,7 +227,7 @@ jobs:
            export RUNALL="NO"
            if [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             if [ "$NUMCHANGEDCOMPS" -lt "10" ];
+             if [ "$NUMCHANGEDCOMPS" -lt "20" ];
              then
                for comp in $CHANGEDCOMPS;
                do
@@ -230,7 +247,7 @@ jobs:
            echo $CHANGEDINSTR
            echo ----
            cd -
-           if [ "$NUMCHANGEDINSTR" -gt "10" ];
+           if [ "$NUMCHANGEDINSTR" -gt "20" ];
            then
              export RUNALL="YES"
            fi

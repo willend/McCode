@@ -120,8 +120,8 @@ jobs:
               false
            fi
 
-    - name: Launch JJ_SAXS instrument
-      id: JJ_SAXS
+    - name: Launch ESRF_BM29 instrument
+      id: ESRF_BM29
       run: |
            set -e
            set -u
@@ -134,8 +134,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcxtrace
            mcxtrace --version
-           mxtest${SUFFIX} --instr=JJ_SAXS --testdir=run_singletests
-           mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests
+           mxtest${SUFFIX} --instr=ESRF_BM29 --testdir=run_singletests
+           mxtest${SUFFIX} --instr=ESRF_BM29 --mpi=2 --testdir=run_singletests
 
     - name: Launch MCPL test instrument
       id: mcpl-test
@@ -191,7 +191,7 @@ jobs:
            export RUNALL="NO"
            if [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             if [ "$NUMCHANGEDCOMPS" -lt "10" ];
+             if [ "$NUMCHANGEDCOMPS" -lt "20" ];
              then
                for comp in $CHANGEDCOMPS;
                do
@@ -211,7 +211,7 @@ jobs:
            echo $CHANGEDINSTR
            echo ----
            cd -
-           if [ "$NUMCHANGEDINSTR" -gt "10" ];
+           if [ "$NUMCHANGEDINSTR" -gt "20" ];
            then
              export RUNALL="YES"
            fi
