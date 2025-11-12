@@ -203,71 +203,71 @@ jobs:
            mctest --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests
 
 
-    # - name: Check for modified instruments
-    #   id: instr-test
-    #   run: |
-    #        set -e
-    #        set -u
-    #        set -x
-    #        export TMPDIR=/tmp
-    #        export MCSTAS_EXECUTABLE="mcstas"
-    #        export MCRUN_EXECUTABLE="mcrun"
-    #        export MCTEST_EXECUTABLE="mctest"
-    #        export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
-    #        # Check if any instr files were modified during last commit
-    #        cd src
-    #        export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
-    #        export NUMCHANGEDCOMPS=`git diff --name-only HEAD HEAD~1|grep \.comp\$ | grep mcstas-comps | wc -l | xargs echo`
-    #        export COMPILIST=""
-    #        export RUNALL="NO"
-    #        if [ "$NUMCHANGEDCOMPS" != "0" ];
-    #        then
-    #          if [ "$NUMCHANGEDCOMPS" -lt "10" ];
-    #          then
-    #            for comp in $CHANGEDCOMPS;
-    #            do
-    #              echo Finding instruments matching component $comp
-    #              MATCH=`find mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | xargs -n1 basename | sed s/\.instr//g | xargs echo`
-    #              export COMPILIST=`echo $COMPILIST $MATCH`
-    #            done
-    #          else
-    #            export RUNALL="YES"
-    #          fi
-    #        fi
-    #        export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo`
-    #        export CHANGEDINSTR=`echo $CHANGEDINSTR $COMPILIST | sort | uniq | sed s/\ /,/g`
-    #        export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps | wc -l | xargs echo`
-    #        echo ----
-    #        echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:
-    #        echo $CHANGEDINSTR
-    #        echo ----
-    #        cd -
-    #        if [ "$NUMCHANGEDINSTR" -gt "10" ];
-    #        then
-    #          export RUNALL="YES"
-    #        fi
-    #        export PERMISSIVE=" "
-    #        if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
-    #        then
-    #          if [ "$RUNALL" == "NO" ];
-    #          then
-    #            export SCOPE="--instr=$CHANGEDINSTR"
-    #          else
-    #            export SCOPE=" "
-    #          fi
-    #          if [ "$RUNNER_OS" != "Windows" ]; then
-    #            mkdir run_mctest && cd run_mctest
-    #            if [ "$RUNNER_OS" == macOS ]; then
-    #              export PERMISSIVE="--permissive"
-    #            fi
-    #            ${MCTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
-    #            mcviewtest --nobrowse $PWD
-    #          else
-    #            echo mctest --verbose --testdir=. $SCOPE --suffix=CHANGES --permissive > changedinstr.bat
-    #          fi
-    #        fi
+    - name: Check for modified instruments
+      id: instr-test
+      run: |
+           set -e
+           set -u
+           set -x
+           export TMPDIR=/tmp
+           export MCSTAS_EXECUTABLE="mcstas"
+           export MCRUN_EXECUTABLE="mcrun"
+           export MCTEST_EXECUTABLE="mctest"
+           export PATH=${PATH}:${PWD}/install_mcstas/bin/:${PWD}/install_mcstas/mcstas/3.99.99/bin/
+           # Check if any instr files were modified during last commit
+           cd src
+           export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
+           export NUMCHANGEDCOMPS=`git diff --name-only HEAD HEAD~1|grep \.comp\$ | grep mcstas-comps | wc -l | xargs echo`
+           export COMPILIST=""
+           export RUNALL="NO"
+           if [ "$NUMCHANGEDCOMPS" != "0" ];
+           then
+             if [ "$NUMCHANGEDCOMPS" -lt "10" ];
+             then
+               for comp in $CHANGEDCOMPS;
+               do
+                 echo Finding instruments matching component $comp
+                 MATCH=`find mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | xargs -n1 basename | sed s/\.instr//g | xargs echo`
+                 export COMPILIST=`echo $COMPILIST $MATCH`
+               done
+             else
+               export RUNALL="YES"
+             fi
+           fi
+           export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo`
+           export CHANGEDINSTR=`echo $CHANGEDINSTR $COMPILIST | sort | uniq | sed s/\ /,/g`
+           export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcstas-comps | wc -l | xargs echo`
+           echo ----
+           echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:
+           echo $CHANGEDINSTR
+           echo ----
+           cd -
+           if [ "$NUMCHANGEDINSTR" -gt "10" ];
+           then
+             export RUNALL="YES"
+           fi
+           export PERMISSIVE=" "
+           if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
+           then
+             if [ "$RUNALL" == "NO" ];
+             then
+               export SCOPE="--instr=$CHANGEDINSTR"
+             else
+               export SCOPE=" "
+             fi
+             if [ "$RUNNER_OS" != "Windows" ]; then
+               mkdir run_mctest && cd run_mctest
+               if [ "$RUNNER_OS" == macOS ]; then
+                 export PERMISSIVE="--permissive"
+               fi
+               ${MCTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mcviewtest --nobrowse $PWD
+             else
+               echo mctest --verbose --testdir=. $SCOPE --suffix=CHANGES --permissive > changedinstr.bat
+             fi
+           fi
 
-    # # END of Unix tests
+    # END of Unix tests
 
     # - name: Run modified instruments Win
     #   id: instr-test-Win
