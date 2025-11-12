@@ -153,6 +153,10 @@ jobs:
            mcstas --version
            mctest${SUFFIX} --instr=ESS_BEER_MCPL --testdir=run_singletests
            mctest${SUFFIX} --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests
+           mctest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests
+           mctest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
@@ -194,7 +198,6 @@ jobs:
            set -e
            set -u
            set -x
-           export TMPDIR=/tmp
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
            export MCTEST_EXECUTABLE="mctest"
@@ -257,7 +260,7 @@ jobs:
            set -e
            set -u
            set -x
-           tar cvfz mcstas-${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_*
+           tar cvfz mcstas-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_*
 
     - name: 'Upload Artifact'
       id: tar-upload
