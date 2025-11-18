@@ -520,7 +520,7 @@ int (*scattering_function)(double*,double*,double*,union data_transfer_union,str
 //values:
 void scattering_process_struct_init( struct scattering_process_struct * sps )
 {
-  memset(sps,sizeof(struct scattering_process_struct),0);//catch all
+  memset(sps,0,sizeof(struct scattering_process_struct));//catch all
   sps->name[0] = '\0';
   sps->probability_for_scattering_function = NULL;
   sps->scattering_function = NULL;
