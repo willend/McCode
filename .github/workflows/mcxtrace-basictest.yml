@@ -405,13 +405,17 @@ jobs:
            export RUNALL="NO"
            if [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             if [ "$NUMCHANGEDCOMPS" -lt "10" ];
+             if [ "$NUMCHANGEDCOMPS" -lt "20" ];
              then
                for comp in $CHANGEDCOMPS;
                do
                  echo Finding instruments matching component $comp
-                 MATCH=`find mcxtrace-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | xargs -n1 basename | sed s/\.instr//g | xargs echo`
-                 export COMPILIST=`echo $COMPILIST $MATCH`
+                 NUMMATCH=`find mcxtrace-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
+                 if [ "$NUMMATCH" -gt "0" ];
+                 then
+                   MATCH=`find mcxtrace-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | xargs -n1 basename | sed s/\.instr//g | xargs echo`
+                   export COMPILIST=`echo $COMPILIST $MATCH`
+                 fi
                done
              else
                export RUNALL="YES"
@@ -425,7 +429,7 @@ jobs:
            echo $CHANGEDINSTR
            echo ----
            cd -
-           if [ "$NUMCHANGEDINSTR" -gt "10" ];
+           if [ "$NUMCHANGEDINSTR" -gt "20" ];
            then
              export RUNALL="YES"
            fi
