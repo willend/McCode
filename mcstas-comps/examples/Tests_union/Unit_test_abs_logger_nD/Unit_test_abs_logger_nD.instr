@@ -16,9 +16,9 @@
 * Test of the monitor_nD like absorption logger
 *
 * %Description
-* Test of the monitor_nD like absorption logger that investigates
-* the amount of absorbed intensity as with a monitor_nD that use the previous
-* keyword for geometry, leaving the ray positions where they were
+* Test of the monitor_nD like absorption logger that investigates the amount
+* of absorbed intensity as with a monitor_nD that use the previous keyword for
+* geometry, leaving the ray positions where they were.
 *
 * %Example: Detector: abs_logger_nD_I=1.58102e-09
 *
@@ -77,7 +77,7 @@ COMPONENT abs_logger_nD = Union_abs_logger_nD(
     filename="Union_abs_logger_nD.dat")
 AT (0,0,0) RELATIVE geometry_center
 
-COMPONENT master = Union_master()
+COMPONENT master = Union_master(verbal=0)
 AT(0,0,0) RELATIVE geometry_center
 
 COMPONENT transmission = PSD_monitor(
