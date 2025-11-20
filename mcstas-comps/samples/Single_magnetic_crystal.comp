@@ -111,16 +111,20 @@ SHARE
   /* used for reading data table from file */
   %include "read_table-lib"
   %include "interoff-lib"
+  %include "mccode-complex-lib"
 //  %include "columnfile"
 /* Declare structures and functions only once in each instrument. */
 #ifndef SINGLE_MAGNETIC_CRYSTAL_DECL
 #define SINGLE_MAGNETIC_CRYSTAL_DECL
-#include <complex.h>
+
     struct hkl_data
     {
       int h,k,l;                  /* Indices for this reflection */
       double F2;                  /* Value of structure factor */
-      complex double f[4];        /* Structure factors (scattering amplitudes for different spin flips spin up->up, down->down, up->down, down-up */
+      cdouble f0;                 /* Structure factors (scattering amplitudes for different spin flips spin up->up, down->down, up->down, down-up */
+      cdouble f1;
+      cdouble f2;
+      cdouble f3;
       double tau_x, tau_y, tau_z; /* Coordinates in reciprocal space */
       double tau;                 /* Length of (tau_x, tau_y, tau_z) */
       double u1x, u1y, u1z;       /* First axis of local coordinate system */
@@ -273,12 +277,12 @@ SHARE
       bs=sqrt(scalar_prod(info->bsx,info->bsy,info->bsz,info->bsx,info->bsy,info->bsz));
       cs=sqrt(scalar_prod(info->csx,info->csy,info->csz,info->csx,info->csy,info->csz));
 
-      complex double f=0;
+      cdouble f=cplx(0,0);
       if (info->tau_max==-1)
         info->tau_max=4*as;
       
       double q;
-      int h,k,l,m;
+      int h,k,l,m,jj;
     
       /* allocate hkl_data array initially make room for 2048 reflections. will be expanded (realloc'd) if needed.*/
       size=2048;
@@ -296,13 +300,15 @@ SHARE
             double qz= (h*info->asz+k*info->bsz+l*info->csz);
             q=sqrt(qx*qx+qy*qy+qz*qz);
             if (q<info->tau_min || q>info->tau_max) continue;
-            f=0;
-            complex double f_tau=0;
-            complex double f_[4]={0,0,0,0};
+            f=cplx(0.0,0.0);
+            cdouble f_tau=cplx(0,0);
+            cdouble f_0,f_1,f_2,f_3;
+	    f_0=f_1=f_2=f_3=cplx(0,0);
+
             for (m=0;m<atoms.rows;m++){
               /*Tabulated values are usually in fm. Divide by 10 to end up with x-sections in barns*/
               double b=Table_Index(atoms,m,5)/10;
-              f_tau = cexp(I*2*M_PI*(h*Table_Index(atoms,m,2) + k*Table_Index(atoms,m,3) + l*Table_Index(atoms,m,4)));
+              f_tau = cexp(cplx(k*Table_Index(atoms,m,3) + l*Table_Index(atoms,m,4), 2*M_PI*(h*Table_Index(atoms,m,2))));
               //printf("%g b=%g r=(%g %g %g) hkl=(%2d %2d %2d), exp(-i*2pi*(H.r)=(%g%+gj)\n",atoms.data[m][0],b,atoms.data[m][2],atoms.data[m][3],atoms.data[m][4],h,k,l,creal(f_tau),cimag(f_tau));
               if(atoms.columns>6){
                 /*the atom has a magnetic moment*/
@@ -360,33 +366,34 @@ SHARE
                   S_y=scalar_prod(S_orto_x,S_orto_y,S_orto_z,mm3x,mm3y,mm3z);
                   S_z=scalar_prod(S_orto_x,S_orto_y,S_orto_z,info->refx,info->refy,info->refz);
                 }
-		f_[0]+=f_tau*( b -M*S_z + (beta/2)*i_z );
-                f_[1]+=f_tau*( b +M*S_z - (beta/2)*i_z );
-                f_[2]+=f_tau*( -M*(S_x + I*S_y) + (beta/2)*(i_x + I*i_y) );
-                f_[3]+=f_tau*( -M*(S_x - I*S_y) + (beta/2)*(i_x - I*i_y) );
+		f_0=cadd(f_0,rmul( b -M*S_z + (beta/2)*i_z ,f_tau));
+		f_1=cadd(f_1,rmul( b +M*S_z - (beta/2)*i_z ,f_tau));
+		f_2=cadd(f_2,cmul( cadd(rmul(-M,cplx(S_x, S_y)) , rmul(beta/2,cplx(i_x,  i_y))) ,f_tau));
+		f_3=cadd(f_3,cmul( cadd(rmul(-M,cplx(S_x,-S_y)) , rmul(beta/2,cplx(i_x, -i_y))) ,f_tau));
               }else{
                 /*scattering is non-magnetic*/
-                f_[0]+=b*f_tau;
-                f_[1]+=b*f_tau;
-                f_[2]+=0;
-                f_[3]+=0;
-              }                
+                f_0=cadd(f_0,rmul(b,f_tau));
+                f_1=cadd(f_1,rmul(b,f_tau));
+                f_2=f_2; // +0;
+                f_3=f_3; // +0;
+              }
             }
-            if (cabs(f_[0])>FLT_EPSILON || cabs(f_[1])>FLT_EPSILON || cabs(f_[2])>FLT_EPSILON || cabs(f_[3])>FLT_EPSILON ){
+            if (cabs(f_0)>FLT_EPSILON || cabs(f_1)>FLT_EPSILON || cabs(f_2)>FLT_EPSILON || cabs(f_3)>FLT_EPSILON ){
               list[i].h=h;
               list[i].k=k;
               list[i].l=l;
-              for (m=0;m<4;m++){
-                list[i].f[m]=f_[m];
-              } 
+	      list[i].f0=f_0;
+	      list[i].f1=f_1;
+	      list[i].f2=f_2;
+	      list[i].f3=f_3;
               list[i].F2=cabs(f_tau)*cabs(f_tau);
               if(++i==size){
                 size=2*size;
                 list = (struct hkl_data*)realloc(list,size*sizeof(struct hkl_data));
               }
               printf("(hkl)=(%2d %2d %2d) ",h,k,l);
-              printf(" |f++|^2=%g |f--|^2=%g |f+-|^2=%g |f-+|^2=%g",cabs(f_[0])*cabs(f_[0]),cabs(f_[1])*cabs(f_[1]),cabs(f_[2])*cabs(f_[2]),cabs(f_[3])*cabs(f_[3]));
-              printf(" f++=%g%+gj, f--=%g%+gj, f+-=%g%+gj, f-+=%g%+gj\n",creal(f_[0]),cimag(f_[0]),creal(f_[1]),cimag(f_[1]),creal(f_[2]),cimag(f_[2]),creal(f_[3]),cimag(f_[3]) );
+              printf(" |f++|^2=%g |f--|^2=%g |f+-|^2=%g |f-+|^2=%g",cabs(f_0)*cabs(f_0),cabs(f_1)*cabs(f_1),cabs(f_2)*cabs(f_2),cabs(f_3)*cabs(f_3));
+              printf(" f++=%g%+gj, f--=%g%+gj, f+-=%g%+gj, f-+=%g%+gj\n",creal(f_0),cimag(f_0),creal(f_1),cimag(f_1),creal(f_2),cimag(f_2),creal(f_3),cimag(f_3) );
             }
           }
         }
@@ -710,12 +717,12 @@ TRACE
           T[j].refl = xsect_factor*det_L*exp(-alpha)/L[i].sig123; /* intensity of that Bragg */
           coh_refl += T[j].refl;                                  /* total scatterable intensity */
           /*some logic here to figure out cross-sections for NSF and SF scattering*/ 
-          complex double F;
+          cdouble F;
           double F2,spin_up,spin_down;
           /*fractions of spin-up and spin-down incoming neutrons*/
           spin_up=(1+scalar_prod(sx,sy,sz,mx,my,mz))/2;
           spin_down=(1-scalar_prod(sx,sy,sz,mx,my,mz))/2;
-          F2=spin_up*(cabs(L[i].f[0])*cabs(L[i].f[0])+cabs(L[i].f[2])*cabs(L[i].f[2])) + spin_down*(cabs(L[i].f[1])*cabs(L[i].f[1])+cabs(L[i].f[3])*cabs(L[i].f[3]));
+          F2=spin_up*(cabs(L[i].f0)*cabs(L[i].f0)+cabs(L[i].f2)*cabs(L[i].f2)) + spin_down*(cabs(L[i].f1)*cabs(L[i].f1)+cabs(L[i].f3)*cabs(L[i].f3));
           //F2=cabs(F)*cabs(F);
           T[j].xsect = T[j].refl*F2;
           coh_xsect += T[j].xsect;
@@ -825,8 +832,8 @@ TRACE
         /*from P-vec get fractions of up and down. New fractions of up and down will be weighted by up->up + down->up
           etc. Then we construct a new P-vector which obeys this*/
         double sigma_tot,polar;
-        sigma_tot=spin_up*(cabs(L[i].f[0])*cabs(L[i].f[0]) + cabs(L[i].f[2])*cabs(L[i].f[2])) + spin_down*(cabs(L[i].f[1])*cabs(L[i].f[1]) + cabs(L[i].f[3])*cabs(L[i].f[3]));
-        polar= ( spin_up*( cabs(L[i].f[0])*cabs(L[i].f[0])) + spin_down*(cabs(L[i].f[3])* cabs(L[i].f[3])) - spin_down*( cabs(L[i].f[1])*cabs(L[i].f[1])) - spin_up*( cabs(L[i].f[2])*cabs(L[i].f[2])) ) / sigma_tot;
+        sigma_tot=spin_up*(cabs(L[i].f0)*cabs(L[i].f0) + cabs(L[i].f2)*cabs(L[i].f2)) + spin_down*(cabs(L[i].f1)*cabs(L[i].f1) + cabs(L[i].f3)*cabs(L[i].f3));
+        polar= ( spin_up*( cabs(L[i].f0)*cabs(L[i].f0)) + spin_down*(cabs(L[i].f3)* cabs(L[i].f3)) - spin_down*( cabs(L[i].f1)*cabs(L[i].f1)) - spin_up*( cabs(L[i].f2)*cabs(L[i].f2)) ) / sigma_tot;
         if (polar<-1 || polar>1){ 
           fprintf(stderr,"Single_magnetic_crystal: inconsistent polarisation (%g %g %g %g)\n",spin_up,spin_down,sigma_tot,polar);
         }
