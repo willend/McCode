@@ -200,7 +200,7 @@ jobs:
            set -x
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             export SUFFIX=".bat"
+             export SUFFIX=".bat --permissive"
            else
             export SUFFIX=""
            fi
