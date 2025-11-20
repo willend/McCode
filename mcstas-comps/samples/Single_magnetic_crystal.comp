@@ -300,7 +300,7 @@ SHARE
             double qz= (h*info->asz+k*info->bsz+l*info->csz);
             q=sqrt(qx*qx+qy*qy+qz*qz);
             if (q<info->tau_min || q>info->tau_max) continue;
-            f=cplx(0.0,0.0);
+            f=cplx(0,0);
             cdouble f_tau=cplx(0,0);
             cdouble f_0,f_1,f_2,f_3;
 	    f_0=f_1=f_2=f_3=cplx(0,0);
@@ -308,7 +308,7 @@ SHARE
             for (m=0;m<atoms.rows;m++){
               /*Tabulated values are usually in fm. Divide by 10 to end up with x-sections in barns*/
               double b=Table_Index(atoms,m,5)/10;
-              f_tau = cexp(cplx(k*Table_Index(atoms,m,3) + l*Table_Index(atoms,m,4), 2*M_PI*(h*Table_Index(atoms,m,2))));
+              f_tau = cexp(cplx(0, 2*M_PI*(h*Table_Index(atoms,m,2) + k*Table_Index(atoms,m,3) + l*Table_Index(atoms,m,4))));
               //printf("%g b=%g r=(%g %g %g) hkl=(%2d %2d %2d), exp(-i*2pi*(H.r)=(%g%+gj)\n",atoms.data[m][0],b,atoms.data[m][2],atoms.data[m][3],atoms.data[m][4],h,k,l,creal(f_tau),cimag(f_tau));
               if(atoms.columns>6){
                 /*the atom has a magnetic moment*/
