@@ -60,11 +60,19 @@ SHARE
   
 	#include <gsl/gsl_sf_legendre.h>
 	#include <gsl/gsl_sf_bessel.h>
-	#include <complex.h>
+	%include "mccode-complex-lib"
 #ifndef SANSPDB
 #define SANSPDB
 	#define SANSPDBOrderOfHarmonics 21
 
+void** matrix2d_new( size_t esize, size_t idim, size_t jdim ) {
+  size_t const ptrs_size = sizeof(void*) * idim;
+  size_t const row_size = esize * jdim;
+  void **const rows = malloc( ptrs_size );
+  for ( size_t i = 0; i < idim; ++i )
+    rows[i] = malloc( row_size );
+  return rows;
+}
 	// Simple mathematical functions
 	int Sign(double x) {
 		int Sign;
@@ -80,14 +88,14 @@ SHARE
 		return Sign;
 	}
 	
-	void complex_print_matrix(double complex **Matrix, int N, int M)
+	void complex_print_matrix(cdouble **Matrix, int N, int M)
 	{
 	  int i,j;
 	  for (i = 0; i < N; ++i)
     {
       for (j = 0; j < M; ++j)
         {
-          double complex z = Matrix[i][j];
+          cdouble z = Matrix[i][j];
           fprintf(stderr,
                   "(%.12e,%.12e)%s",
                   creal(z),
@@ -97,10 +105,10 @@ SHARE
     }
 	}
 
-	double complex Polar(double R, double Concentration) {
-		double complex Polar;
+	cdouble Polar(double R, double Concentration) {
+		cdouble Polar;
 		
-		Polar = R * (cos(Concentration) + _Complex_I * sin(Concentration));
+		Polar = cplx(R * cos(Concentration) , R* sin(Concentration));
 
 		return Polar;
 	} 
@@ -381,7 +389,7 @@ INITIALIZE
 	    int    i,j,ResidueID;
 	    double qStep = (qMax - qMin) / (1.0 * NumberOfQBins);
 	    double q     =  qMin + qStep * (qbin + 0.5);
-	    double complex Matrix[SANSPDBOrderOfHarmonics+1][SANSPDBOrderOfHarmonics+1];
+	    cdouble** Matrix = matrix2d_new(sizeof(cdouble),SANSPDBOrderOfHarmonics+1,SANSPDBOrderOfHarmonics+1);
 	    // init Matrix = 0
 	    // ResetMatrix(Matrix, SANSPDBOrderOfHarmonics);
 	    for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i)
