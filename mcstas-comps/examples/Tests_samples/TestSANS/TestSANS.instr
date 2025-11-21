@@ -26,7 +26,7 @@
 *
 * %End
 *******************************************************************************/
-DEFINE INSTRUMENT TestSANS( DistSrcPin1=1.0, DistSrcPin2=10.0, DistPinSamp=1.0, DistSampDet=10.0, DetRadius=4.0, Lambda=4.5, DLambda=0.1 )
+DEFINE INSTRUMENT TestSANS( DistSrcPin1=1.0, DistSrcPin2=10.0, DistPinSamp=1.0, DistSampDet=10.0, DetRadius=4.0, Lambda=4.5, DLambda=0.1, SAMPLE=0 )
 
 
 DECLARE
@@ -63,17 +63,21 @@ COMPONENT SecondPinhole = Slit(
 	radius = 0.005)
   AT (0, 0, DistSrcPin2) RELATIVE Source
 
-/*COMPONENT Sample = SANSSpheres(
+COMPONENT SamplePos=Arm()
+  AT (0, 0, DistSampDet) RELATIVE SecondPinhole
+
+// Linted OK
+COMPONENT SampleSpheres = SANSSpheres(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
 	R = 100.0,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+WHEN (SAMPLE==0) AT (0,0,0) RELATIVE SamplePos
 
-
-/*COMPONENT Sample = SANSShells(
+// Linted OK
+COMPONENT SampleShells = SANSShells(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
@@ -81,108 +85,108 @@ AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
 	DetectorRadius = DetRadius,
 	R = 50.0,
 	Thickness = 20.0)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+WHEN (SAMPLE==1) AT (0,0,0) RELATIVE SamplePos
 
-
-/*COMPONENT Sample = SANSCylinders(
+// Linted OK
+COMPONENT SampleCyls = SANSCylinders(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+WHEN (SAMPLE==2) AT (0,0,0) RELATIVE SamplePos
 
-
-/*COMPONENT Sample = SANSEllipticCylinders(
+// Linted OK
+COMPONENT SampleElCyl = SANSEllipticCylinders(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+WHEN (SAMPLE==3) AT (0,0,0) RELATIVE SamplePos
 
-
+// Linted OK
 COMPONENT Sample = SANSLiposomes(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole
+WHEN (SAMPLE==4) AT (0,0,0) RELATIVE SamplePos
 
-
-/*COMPONENT Sample = SANSNanodiscs(
+// Linted OK
+COMPONENT SampleND = SANSNanodiscs(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+WHEN (SAMPLE==5) AT (0,0,0) RELATIVE SamplePos
 
-
-/*COMPONENT Sample = SANSNanodiscsWithTags(
+// Linted OK
+COMPONENT SampleNDWT = SANSNanodiscsWithTags(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+WHEN (SAMPLE==6) AT (0,0,0) RELATIVE SamplePos
+
+//Fucked
+/* COMPONENT SamplePDB = SANSPDB( */
+/* 	xwidth = 0.1, */
+/* 	yheight = 0.1, */
+/* 	zdepth = 0.1, */
+/* 	SampleToDetectorDistance = DistSampDet, */
+/* 	DetectorRadius = DetRadius, */
+/* 	//PDBFilepath = "1EV3.pdb" */
+/* 	//PDBFilepath = "6LYZ.pdb" */
+/* 	PDBFilepath = "3v03.pdb") */
+/*   AT (0,0,0) RELATIVE SamplePos */
 
 
-/*COMPONENT Sample = SANSPDB(
-	xwidth = 0.1,
-	yheight = 0.1,
-	zdepth = 0.1,
-	SampleToDetectorDistance = DistSampDet,
-	DetectorRadius = DetRadius,
-	//PDBFilepath = "1EV3.pdb"
-	//PDBFilepath = "6LYZ.pdb"
-	PDBFilepath = "3v03.pdb")
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+/* COMPONENT SampleCurve = SANSCurve( */
+/* 	FileWithCurve = "Curve.mcp", */
+/* 	xwidth = 0.1, */
+/* 	yheight = 0.1, */
+/* 	zdepth = 0.1, */
+/* 	SampleToDetectorDistance = DistSampDet, */
+/* 	DetectorRadius = DetRadius) */
+/* WHEN (SAMPLE==7) AT (0,0,0) RELATIVE SamplePos */
 
 
-/*COMPONENT Sample = SANSCurve(
-	FileWithCurve = "Curve.mcp",
-	xwidth = 0.1,
-	yheight = 0.1,
-	zdepth = 0.1,
-	SampleToDetectorDistance = DistSampDet,
-	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
-
-
-/*COMPONENT Sample = SANSNanodiscsFast(
-	xwidth = 0.1,
-	yheight = 0.1,
-	zdepth = 0.1,
-	SampleToDetectorDistance = DistSampDet,
-	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
-
-
-/*COMPONENT Sample = SANSNanodiscsWithTagsFast(
+COMPONENT SampleNDF = SANSNanodiscsFast(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+WHEN (SAMPLE==7) AT (0,0,0) RELATIVE SamplePos
 
 
-/*COMPONENT Sample = SANSPDBFast(
+COMPONENT SampleNDWTF = SANSNanodiscsWithTagsFast(
 	xwidth = 0.1,
 	yheight = 0.1,
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
-	DetectorRadius = DetRadius,
-	PDBFilepath = "6LYZ.pdb",
-    qMax = 0.9)
-AT (0, 0, DistSampDet) RELATIVE SecondPinhole*/
+	DetectorRadius = DetRadius)
+WHEN (SAMPLE==8) AT (0,0,0) RELATIVE SamplePos
+
+
+/* COMPONENT SamplePDBFast = SANSPDBFast( */
+/* 	xwidth = 0.1, */
+/* 	yheight = 0.1, */
+/* 	zdepth = 0.1, */
+/* 	SampleToDetectorDistance = DistSampDet, */
+/* 	DetectorRadius = DetRadius, */
+/* 	PDBFilepath = "3v03.pdb", */
+/*     qMax = 0.9) */
+/* WHEN (SAMPLE==10) AT (0,0,0) RELATIVE SamplePos */
 
 
 COMPONENT Beamstop = Beamstop(
 	radius = 0.1)
-AT (0, 0, DistSampDet - 0.000001) RELATIVE Sample
+AT (0, 0, DistSampDet - 0.000001) RELATIVE SamplePos
 
 
 COMPONENT Monitor = PSD_monitor(
