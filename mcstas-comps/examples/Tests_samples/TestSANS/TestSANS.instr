@@ -132,17 +132,16 @@ COMPONENT SampleNDWT = SANSNanodiscsWithTags(
 	DetectorRadius = DetRadius)
 WHEN (SAMPLE==6) AT (0,0,0) RELATIVE SamplePos
 
-//Fucked
-/* COMPONENT SamplePDB = SANSPDB( */
-/* 	xwidth = 0.1, */
-/* 	yheight = 0.1, */
-/* 	zdepth = 0.1, */
-/* 	SampleToDetectorDistance = DistSampDet, */
-/* 	DetectorRadius = DetRadius, */
-/* 	//PDBFilepath = "1EV3.pdb" */
-/* 	//PDBFilepath = "6LYZ.pdb" */
-/* 	PDBFilepath = "3v03.pdb") */
-/*   AT (0,0,0) RELATIVE SamplePos */
+COMPONENT SamplePDB = SANSPDB(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
+	SampleToDetectorDistance = DistSampDet,
+	DetectorRadius = DetRadius,
+	//PDBFilepath = "1EV3.pdb"
+	//PDBFilepath = "6LYZ.pdb"
+	PDBFilepath = "3v03.pdb")
+WHEN (SAMPLE==7) AT (0,0,0) RELATIVE SamplePos
 
 
 /* COMPONENT SampleCurve = SANSCurve( */
@@ -161,7 +160,7 @@ COMPONENT SampleNDF = SANSNanodiscsFast(
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-WHEN (SAMPLE==7) AT (0,0,0) RELATIVE SamplePos
+WHEN (SAMPLE==8) AT (0,0,0) RELATIVE SamplePos
 
 
 COMPONENT SampleNDWTF = SANSNanodiscsWithTagsFast(
@@ -170,18 +169,18 @@ COMPONENT SampleNDWTF = SANSNanodiscsWithTagsFast(
 	zdepth = 0.1,
 	SampleToDetectorDistance = DistSampDet,
 	DetectorRadius = DetRadius)
-WHEN (SAMPLE==8) AT (0,0,0) RELATIVE SamplePos
+WHEN (SAMPLE==9) AT (0,0,0) RELATIVE SamplePos
 
 
-/* COMPONENT SamplePDBFast = SANSPDBFast( */
-/* 	xwidth = 0.1, */
-/* 	yheight = 0.1, */
-/* 	zdepth = 0.1, */
-/* 	SampleToDetectorDistance = DistSampDet, */
-/* 	DetectorRadius = DetRadius, */
-/* 	PDBFilepath = "3v03.pdb", */
-/*     qMax = 0.9) */
-/* WHEN (SAMPLE==10) AT (0,0,0) RELATIVE SamplePos */
+COMPONENT SamplePDBFast = SANSPDBFast(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
+	SampleToDetectorDistance = DistSampDet,
+	DetectorRadius = DetRadius,
+	PDBFilepath = "3v03.pdb",
+        qMax = 0.9)
+WHEN (SAMPLE==10) AT (0,0,0) RELATIVE SamplePos
 
 
 COMPONENT Beamstop = Beamstop(

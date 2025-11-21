@@ -54,7 +54,6 @@ SETTING PARAMETERS (RhoSolvent = 9.4e-14, Concentration = 0.01, AbsorptionCrosss
 
 DEPENDENCY " @GSLFLAGS@ "
 NOACC
-/*X-ray PARAMETERS (x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p)*/
 
 SHARE
 %{
@@ -270,8 +269,8 @@ SHARE
             Residue[i].zv = Z / Weight;
 
             // Assign center of mass
-            Residue[i].x = XA / Aweight; 
-            Residue[i].y = YA / Aweight; 
+            Residue[i].x = XA / Aweight;
+            Residue[i].y = YA / Aweight;
             Residue[i].z = ZA / Aweight;
 
             // Other residue attributes
@@ -344,7 +343,7 @@ DECLARE
 
 	// Arrays for storing q and I(q)
 	DArray1d qArray;
-  DArray1d IArray;
+        DArray1d IArray;
 %}
 
 INITIALIZE

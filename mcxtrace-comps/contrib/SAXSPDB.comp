@@ -132,7 +132,7 @@ TRACE
 	if (Intersect) {
 
 		if (l0 < 0.0) {
-			fprintf(stderr, "SAXSPDBFast: %s: Photon already inside sample - absorbing...\n", NAME_CURRENT_COMP);
+			fprintf(stderr, "SAXSPDB %s: Photon already inside sample - absorbing...\n", NAME_CURRENT_COMP);
 			ABSORB;
                 }
 
