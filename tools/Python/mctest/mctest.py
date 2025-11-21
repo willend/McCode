@@ -358,7 +358,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
         else:
             metalog = LineLogger()
             resfile = join(testdir,test.instrname,"run_stdout_%d.txt" % (test.testnb))
-            cmd = r"grep %s_I= %s | head -1 | cut -f2- -d= | cut -f1 -d\ " %(test.detector, resfile)
+            cmd = r"grep %s_I= %s | head -1 | cut -f2 -d= | cut -f1 -d' '" %(test.detector, resfile)
             utils.run_subtool_to_completion(cmd, stdout_cb=metalog.logline)
             try:
                 test.testval=float(metalog.lst[0])
