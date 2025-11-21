@@ -94,7 +94,7 @@ jobs:
            export MXTEST_EXECUTABLE="mxtest"
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             export MXTEST_EXECUTABLE="mxtest.bat --permissive"
+             export MXTEST_EXECUTABLE="mxtest.bat"
            fi
            # Workaround for warning about "too long" tmpdir name on macOS/openmpi
            if [ "$RUNNER_OS" == "macOS" ];
