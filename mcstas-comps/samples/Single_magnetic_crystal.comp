@@ -121,7 +121,7 @@ SHARE
     {
       int h,k,l;                  /* Indices for this reflection */
       double F2;                  /* Value of structure factor */
-      complex double f[4];        /* Structure factors (scattering amplitudes for different spin flips spin up->up, down->down, up->down, down-up */
+      cdouble f[4];        /* Structure factors (scattering amplitudes for different spin flips spin up->up, down->down, up->down, down-up */
       double tau_x, tau_y, tau_z; /* Coordinates in reciprocal space */
       double tau;                 /* Length of (tau_x, tau_y, tau_z) */
       double u1x, u1y, u1z;       /* First axis of local coordinate system */
