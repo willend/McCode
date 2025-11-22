@@ -120,7 +120,7 @@ TRACE
 	double Slope;
 	double Offset;
 	int    i,j,ResidueID;
-	cdouble** Matrix=matrix2d_new(sizeof(cdouble),SANSPDBOrderOfHarmonics+1,SANSPDBOrderOfHarmonics+1);
+	cdouble** Matrix=(cdouble**)matrix2d_new(sizeof(cdouble),SANSPDBOrderOfHarmonics+1,SANSPDBOrderOfHarmonics+1);
 
 	// Computation
 	Intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
@@ -199,9 +199,9 @@ TRACE
 		        gsl_sf_legendre_sphPlm_array(SANSPDBOrderOfHarmonics, i, cos(Theta), &Legendre[i]);
 
 		        for(j = i; j <= SANSPDBOrderOfHarmonics; ++j) {
-		            Matrix[j][i] = cadd(Matrix[j][i],rmul(sqrt(4.0 * PI) * DeltaRhoProtein * Bessel[j] * Legendre[j] , cmul(cpow(cplx(0,1), j), Polar(1.0, -i * C))));
+			  Matrix[j][i] = cadd(Matrix[j][i],rmul(sqrt(4.0 * PI) * DeltaRhoProtein * Bessel[j] * Legendre[j] , cmul(cpow(cplx(0,1), cplx(j,0)), Polar(1.0, -i * C))));
 		        }
-		}
+		    }
 		    
 	  } // for ResidueID
 

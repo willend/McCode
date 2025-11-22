@@ -389,7 +389,7 @@ INITIALIZE
 	    int    i,j,ResidueID;
 	    double qStep = (qMax - qMin) / (1.0 * NumberOfQBins);
 	    double q     =  qMin + qStep * (qbin + 0.5);
-	    cdouble** Matrix = matrix2d_new(sizeof(cdouble),SANSPDBOrderOfHarmonics+1,SANSPDBOrderOfHarmonics+1);
+	    cdouble** Matrix = (cdouble**)matrix2d_new(sizeof(cdouble),SANSPDBOrderOfHarmonics+1,SANSPDBOrderOfHarmonics+1);
 	    // init Matrix = 0
 	    // ResetMatrix(Matrix, SANSPDBOrderOfHarmonics);
 	    for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i)
@@ -429,8 +429,8 @@ INITIALIZE
 		        for(j = 0; j <= SANSPDBOrderOfHarmonics; ++j) {
 			  if (j < i) Matrix[j][i] = cplx(0,0);
 		            else
-			      Matrix[j][i] = cadd(Matrix[j][i],rmul(sqrt(4.0 * PI) * DeltaRhoProtein * Bessel[j] * Legendre[j] , cmul(cpow(cplx(0,1), j), Polar(1.0, -i * C))));
-		}
+			      Matrix[j][i] = cadd(Matrix[j][i],rmul(sqrt(4.0 * PI) * DeltaRhoProtein * Bessel[j] * Legendre[j] , cmul(cpow(cplx(0,1), cplx(j,0)), Polar(1.0, -i * C))));
+			}
 		    }
 		    
 	    } // for ResidueID
