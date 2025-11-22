@@ -133,7 +133,7 @@ Description of initialize section:
 7) Error messages.
 */
 
-#include <complex.h>
+%include "mccode-complex-lib"
 /******************************************************
 1)
 Errors: 
