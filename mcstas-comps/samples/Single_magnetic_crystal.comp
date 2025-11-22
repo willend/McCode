@@ -375,7 +375,7 @@ SHARE
                 //f_[3]=f_[3]; // +0;
               }
             }
-            if (cabs(f_0)>FLT_EPSILON || cabs(f_1)>FLT_EPSILON || cabs(f_2)>FLT_EPSILON || cabs(f_3)>FLT_EPSILON ){
+            if (cabs(f_[0])>FLT_EPSILON || cabs(f_[1])>FLT_EPSILON || cabs(f_[2])>FLT_EPSILON || cabs(f_[3])>FLT_EPSILON ){
               list[i].h=h;
               list[i].k=k;
               list[i].l=l;
