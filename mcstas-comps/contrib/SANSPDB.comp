@@ -120,7 +120,7 @@ TRACE
 	double Slope;
 	double Offset;
 	int    i,j,ResidueID;
-	cdouble Matrix[SANSPDBOrderOfHarmonics+1][SANSPDBOrderOfHarmonics+1];
+	cdouble** Matrix=matrix2d_new(sizeof(cdouble),SANSPDBOrderOfHarmonics+1,SANSPDBOrderOfHarmonics+1);
 
 	// Computation
 	Intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
@@ -164,7 +164,7 @@ TRACE
 		// ResetMatrix(Matrix, SANSPDBOrderOfHarmonics);
 		for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i)
 		    for (j = 0; j <= SANSPDBOrderOfHarmonics; ++j)
-		        Matrix[i][j] = 0.0;
+		        Matrix[i][j] = cplx(0,0);
 
 		for (ResidueID = 0; ResidueID < Protein.NumberOfResidues; ++ResidueID) {
 	      // ExpandStructure(Matrix, &Protein, ResidueID, qDummy, RhoSolvent);		
@@ -199,7 +199,7 @@ TRACE
 		        gsl_sf_legendre_sphPlm_array(SANSPDBOrderOfHarmonics, i, cos(Theta), &Legendre[i]);
 
 		        for(j = i; j <= SANSPDBOrderOfHarmonics; ++j) {
-		            Matrix[j][i] += sqrt(4.0 * PI) * cpow(_Complex_I, j) * DeltaRhoProtein * Bessel[j] * Legendre[j] * Polar(1.0, -i * C);
+		            Matrix[j][i] = cadd(Matrix[j][i],rmul(sqrt(4.0 * PI) * DeltaRhoProtein * Bessel[j] * Legendre[j] , cmul(cpow(cplx(0,1), j), Polar(1.0, -i * C))));
 		        }
 		}
 		    
