@@ -53,7 +53,7 @@
 *
 * %End
 *******************************************************************************/
-DEFINE INSTRUMENT Test_SANS( DistanceFromSourceToFirstPinhole=1.0, DistanceFromSourceToSecondPinhole=10.0, DistanceFromSecondPinholeToSample=1.0, DistanceFromSampleToDetector=10.0, DetRadius=4.0, Lambda=4.5, DLambda=0.1, SAMPLE=0 )
+DEFINE INSTRUMENT Test_SANS( DistanceFromSourceToFirstPinhole=1.0, DistanceFromSourceToSecondPinhole=10.0, DistanceFromSecondPinholeToSample=1.0, DistanceFromSampleToDetector=10.0, RadiusOfDetector=4.0, Lambda=4.5, DLambda=0.1, SAMPLE=0, Ncount=0 )
 
 
 DECLARE
