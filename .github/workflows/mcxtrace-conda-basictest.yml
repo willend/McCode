@@ -264,6 +264,9 @@ jobs:
            set -e
            set -u
            set -x
+           # Clear out binaries from sim dir and tar up artifact
+           ./src/devel/bin/mccode-simdir-cleanfiles -d run_singletests
+           ./src/devel/bin/mccode-simdir-cleanfiles -d run_mxtest
            tar cvfz mcxtrace-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_*
 
     - name: 'Upload Artifact'
