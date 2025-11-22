@@ -44,7 +44,7 @@ SETTING PARAMETERS (zdepth=0.1, xwidth=0.01, radius, radius_o,R0=0,string coatin
 
 SHARE
 %{
-  #include <complex.h>
+  %include "mccode-complex-lib"
   %include "read_table-lib" 
   %include "reflectivity-lib"
   struct potholestruct {
