@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* McStas, neutron ray-tracing package
+* McStas, neutron ray-tracing package and McXtrace X-ray ray-tracing package
 *         Copyright 1997-2025, All rights reserved
 *         DTU Physics, Kongens Lyngby, Denmark
 *
