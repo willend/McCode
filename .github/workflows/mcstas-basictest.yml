@@ -21,6 +21,7 @@ jobs:
           - { os: ubuntu-24.04,   CC: gcc-13,   CXX: g++-13,     python: '3.12', mpi: 'openmpi' }
           - { os: ubuntu-24.04,   CC: clang,    CXX: clang++,    python: '3.12', mpi: 'openmpi' }
           - { os: windows-11-arm, CC: cl.exe,   CXX: cl.exe,     python: "3.13", mpi: 'msmpi'   }
+          - { os: windows, CC: gcc.exe,   CXX: g++.exe,     python: "3.13", mpi: 'msmpi'   }
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
@@ -516,10 +517,10 @@ jobs:
                if [ "$RUNNER_OS" == macOS ]; then
                  export PERMISSIVE="--permissive"
                fi
-               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               ../install_mcstas/bin/${MCTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE
                mcviewtest --nobrowse $PWD
              else
-               echo ..\\install\\bin\\mctest --verbose --testdir=. $SCOPE --suffix=CHANGES --permissive > changedinstr.bat
+               echo ..\\install\\bin\\mctest --verbose --testdir=. $SCOPE --suffix=${{ matrix.CC }}_CHANGES --permissive > changedinstr.bat
              fi
            fi
 
