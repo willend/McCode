@@ -1,7 +1,7 @@
 /*******************************************************************************
-*         McXtrace instrument definition URL=http://www.mcxtrace.org
+*         McStas instrument definition URL=http://www.mcstas.org
 *
-* Instrument: Test_SAXS
+* Instrument: Test_SANS
 *
 * %Identification
 * Written by: Martin Cramer Pedersen (mcpe@nbi.dk) and Søren Kynde (kynde@nbi.dk)
@@ -9,36 +9,36 @@
 * Origin: KU-Science
 * %INSTRUMENT_SITE: Tests_samples
 *
-* Toy model used for testing various sample components for solution-SAXS.
+* Toy model used for testing various sample components for solution-SANS.
 *
 * %Description
-* Toy model used for testing various sample components for solution-SAXS.
+* Toy model used for testing various sample components for solution-SANS.
 *
-* The following SAXS samples are handled:
-* SAXSSpheres               SAMPLE=0
-* SAXSShells                SAMPLE=1
-* SAXSCylinders             SAMPLE=2
-* SAXSEllipticCylinders     SAMPLE=3
-* SAXSLiposomes             SAMPLE=4
-* SAXSNanodiscs             SAMPLE=5
-* SAXSNanodiscsWithTags     SAMPLE=6
-* SAXSPDB                   SAMPLE=7 (very slow, rather use SAXSPDBFast)
-* SAXSCurve                 SAMPLE=8 (inactivated)
-* SAXSNanodiscsFast         SAMPLE=9
-* SAXSNanodiscsWithTagsFast SAMPLE=10
-* SAXSPDBFast               SAMPLE=11
+* The following SANS samples are handled:
+* SANSSpheres               SAMPLE=0
+* SANSShells                SAMPLE=1
+* SANSCylinders             SAMPLE=2
+* SANSEllipticCylinders     SAMPLE=3
+* SANSLiposomes             SAMPLE=4
+* SANSNanodiscs             SAMPLE=5
+* SANSNanodiscsWithTags     SAMPLE=6
+* SANSPDB                   SAMPLE=7 (very slow, rather use SANSPDBFast)
+* SANSCurve                 SAMPLE=8 (inactivated)
+* SANSNanodiscsFast         SAMPLE=9
+* SANSNanodiscsWithTagsFast SAMPLE=10
+* SANSPDBFast               SAMPLE=11
 *
-* %Example: SAMPLE=0 Detector: PSDMonitor_I=2.93715e-14
-* %Example: SAMPLE=1 Detector: PSDMonitor_I=2.7118e-14
-* %Example: SAMPLE=2 Detector: PSDMonitor_I=2.64954e-14
-* %Example: SAMPLE=3 Detector: PSDMonitor_I=9.77905e-15
-* %Example: SAMPLE=4 Detector: PSDMonitor_I=1.16433e-10
-* %Example: SAMPLE=5 Ncount=1e4 Detector: PSDMonitor_I=1.2001e-14
-* %Example: SAMPLE=6 Ncount=1e4 Detector: PSDMonitor_I=1.05945e-14
-* %Example: SAMPLE=7 Ncount=1e4 Detector: PSDMonitor_I=7.07865e-14
-* %Example: SAMPLE=9 Detector: PSDMonitor_I=1.11073e-14
-* %Example: SAMPLE=10 Detector: PSDMonitor_I=1.02884e-14
-* %Example: SAMPLE=11 Detector: PSDMonitor_I=5.47707e-15
+* %Example: SAMPLE=0 Detector: PSDMonitor_I=2.529e-09
+* %Example: SAMPLE=1 Detector: PSDMonitor_I=2.486e-10
+* %Example: SAMPLE=2 Detector: PSDMonitor_I=2.297e-10
+* %Example: SAMPLE=3 Detector: PSDMonitor_I=8.720e-11
+* %Example: SAMPLE=4 Detector: PSDMonitor_I=1.326e-05
+* %Example: SAMPLE=5 Ncount=1e4 Detector: PSDMonitor_I=2.714e-09
+* %Example: SAMPLE=6 Ncount=1e4 Detector: PSDMonitor_I=2.051e-09
+* %Example: SAMPLE=7 Ncount=1e4 Detector: PSDMonitor_I=1.687e-09
+* %Example: SAMPLE=9 Detector: PSDMonitor_I=2.071e-09
+* %Example: SAMPLE=10 Detector: PSDMonitor_I=2.079e-09
+* %Example: SAMPLE=11 Detector: PSDMonitor_I=1.642e-09
 *
 * %Parameters
 * DistanceFromSourceToFirstPinhole:  [m] Distance to first pinhole from source.
@@ -53,21 +53,13 @@
 *
 * %End
 *******************************************************************************/
+DEFINE INSTRUMENT Test_SANS( DistanceFromSourceToFirstPinhole=1.0, DistanceFromSourceToSecondPinhole=10.0, DistanceFromSecondPinholeToSample=1.0, DistanceFromSampleToDetector=10.0, RadiusOfDetector=4.0, Lambda=4.5, DLambda=0.1, SAMPLE=0, Ncount=0 )
 
-DEFINE INSTRUMENT Test_SAXS(
-	DistanceFromSourceToFirstPinhole = 0.05,
-	DistanceFromSourceToSecondPinhole = 0.7,
-	DistanceFromSecondPinholeToSample = 0.6,
-	DistanceFromSampleToDetector = 0.48,
-	RadiusOfDetector = 0.1,
-	Lambda = 1.54,
-	DLambda = 0.01,
-  SAMPLE=0, Ncount=0
-)
 
 DECLARE
 %{
 %}
+
 
 INITIALIZE
 %{
@@ -81,135 +73,133 @@ COMPONENT Origin = Progress_bar()
 AT (0, 0, 0) ABSOLUTE
 
 
-COMPONENT Source = Source_flat(
-	xwidth = 0.0005,
-	yheight = 0.0005,
-	dist = DistanceFromSourceToSecondPinhole, 
-	focus_yh = 0.0003, 
-	focus_xw = 0.0003,
-	lambda0 = Lambda, 
-	dlambda = DLambda * Lambda
-)
-AT (0, 0, 0) RELATIVE Origin
+COMPONENT Source = Source_simple(
+	radius = 0.02,
+	dist = DistanceFromSourceToSecondPinhole,
+	yheight = 0.01,
+	xwidth = 0.01,
+	lambda0 = Lambda,
+	dlambda = DLambda * Lambda)
+  AT (0, 0, 0) RELATIVE Origin
 
 
 COMPONENT FirstPinhole = Slit(
-	radius = 0.0002)
+	radius = 0.01)
 AT (0, 0, DistanceFromSourceToFirstPinhole) RELATIVE Source
 
 
 COMPONENT SecondPinhole = Slit(
-	radius = 0.00015)
+	radius = 0.005)
 AT (0, 0, DistanceFromSourceToSecondPinhole) RELATIVE Source
 
 COMPONENT SamplePos=Arm()
-  AT (0, 0, DistanceFromSourceToSecondPinhole) RELATIVE SecondPinhole
+  AT (0, 0, DistanceFromSampleToDetector) RELATIVE SecondPinhole
 
-COMPONENT Sample0 = SAXSSpheres(
-	xwidth = 0.01,
-	yheight = 0.01, 
-	zdepth = 0.01,
-	R = 50.0,
+COMPONENT Sample0 = SANSSpheres(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
+	R = 100.0,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector)
 WHEN (SAMPLE==0) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample1 = SAXSShells(
-	xwidth = 0.01,
-	yheight = 0.01, 
-	zdepth = 0.01,
+COMPONENT Sample1 = SANSShells(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector,
-	R = 50.0, 
+	R = 50.0,
 	Thickness = 20.0)
 WHEN (SAMPLE==1) AT (0,0,0) RELATIVE SamplePos
 
-Component Sample2 = SAXSCylinders(
-	xwidth = 0.01,
-	yheight = 0.01,
-	zdepth = 0.01,
+COMPONENT Sample2 = SANSCylinders(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector)
 WHEN (SAMPLE==2) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample3 = SAXSEllipticCylinders(
-	xwidth = 0.01,
-	yheight = 0.01,
-	zdepth = 0.01,
+COMPONENT Sample3 = SANSEllipticCylinders(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector)
 WHEN (SAMPLE==3) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample4 = SAXSLiposomes(
-	xwidth = 0.01,
-	yheight = 0.01,
-	zdepth = 0.01,
+COMPONENT Sample4 = SANSLiposomes(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector)
 WHEN (SAMPLE==4) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample5 = SAXSNanodiscs(
-	xwidth = 0.01,
-	yheight = 0.01,
-	zdepth = 0.01,
+COMPONENT Sample5 = SANSNanodiscs(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector)
 WHEN (SAMPLE==5) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample6 = SAXSNanodiscsWithTags(
-	xwidth = 0.01,
-	yheight = 0.01,
-	zdepth = 0.01,
+COMPONENT Sample6 = SANSNanodiscsWithTags(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector)
 WHEN (SAMPLE==6) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample7 = SAXSPDB(
-	xwidth = 0.01,
- 	yheight = 0.01,
- 	zdepth = 0.01,
- 	SampleToDetectorDistance = DistanceFromSampleToDetector,
- 	DetectorRadius = RadiusOfDetector,
- 	PDBFilepath = "3v03.pdb")
+COMPONENT Sample7 = SANSPDB(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
+	SampleToDetectorDistance = DistanceFromSampleToDetector,
+	DetectorRadius = RadiusOfDetector,
+	PDBFilepath = "3v03.pdb")
 WHEN (SAMPLE==7) AT (0,0,0) RELATIVE SamplePos
 
-//COMPONENT Sample8 = SAXSCurve(
+//COMPONENT Sample8 = SANSCurve(
 //	FileWithCurve = "Curve.mcp",
-//	xwidth = 0.01,
-//	yheight = 0.01,
-//	zdepth = 0.01,
+//	xwidth = 0.1,
+//	yheight = 0.1,
+//	zdepth = 0.1,
 //	SampleToDetectorDistance = DistanceFromSampleToDetector,
 //	DetectorRadius = RadiusOfDetector)
 //WHEN (SAMPLE==8) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample9 = SAXSNanodiscsFast(
-	xwidth = 0.01,
-	yheight = 0.01,
-	zdepth = 0.01,
+COMPONENT Sample9 = SANSNanodiscsFast(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector)
 WHEN (SAMPLE==9) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample10 = SAXSNanodiscsWithTagsFast(
-	xwidth = 0.01,
-	yheight = 0.01,
-	zdepth = 0.01,
+COMPONENT Sample10 = SANSNanodiscsWithTagsFast(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
 	SampleToDetectorDistance = DistanceFromSampleToDetector,
 	DetectorRadius = RadiusOfDetector)
 WHEN (SAMPLE==10) AT (0,0,0) RELATIVE SamplePos
 
-COMPONENT Sample11 = SAXSPDBFast(
- 	xwidth = 0.01,
- 	yheight = 0.01,
- 	zdepth = 0.01,
- 	SampleToDetectorDistance = DistanceFromSampleToDetector,
- 	DetectorRadius = RadiusOfDetector, 
- 	PDBFilepath = "6lyz.pdb", NumberOfQBins=2000,
-     qMax = 0.9)
+COMPONENT Sample11 = SANSPDBFast(
+	xwidth = 0.1,
+	yheight = 0.1,
+	zdepth = 0.1,
+	SampleToDetectorDistance = DistanceFromSampleToDetector,
+	DetectorRadius = RadiusOfDetector,
+	PDBFilepath = "3v03.pdb",
+        qMax = 0.9)
 WHEN (SAMPLE==11) AT (0,0,0) RELATIVE SamplePos
 
 COMPONENT Beamstop = Beamstop(
-	radius = 0.001)
+	radius = 0.1)
 AT (0, 0, DistanceFromSampleToDetector - 0.000001) RELATIVE SamplePos
 
 
@@ -219,16 +209,16 @@ COMPONENT PSDMonitor = PSD_monitor(
 	yheight = 2.0 * RadiusOfDetector / sqrt(2.0),
 	nx = 200,
 	ny = 200,
-	restore_xray = 1)
+	restore_neutron = 1)
 AT (0, 0, 0.000001) RELATIVE Beamstop
 
 
-COMPONENT QMonitor = SAXSQMonitor(
+COMPONENT QMonitor = SANSQMonitor(
 	RadiusDetector = RadiusOfDetector,
 	DistanceFromSample = DistanceFromSampleToDetector,
 	LambdaMin = Lambda,
 	Lambda0 = Lambda,
-	NumberOfBins = 2000)
+	NumberOfBins = 100)
 AT (0, 0, 0.000001000000001) RELATIVE Beamstop
 
 
