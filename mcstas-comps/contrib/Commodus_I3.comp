@@ -55,11 +55,7 @@ SETTING PARAMETERS (string Face,E0,E1,modXsize,modZsize,xw,yh,dist, int verbose=
 
 SHARE INHERIT ViewModISIS
 
-DECLARE INHERIT ViewModISIS EXTEND
-%{
-  //double focus_xw;
-  //doublw focua_yh;
-%}
+DECLARE INHERIT ViewModISIS
 
 INITIALIZE INHERIT ViewModISIS EXTEND
 %{
