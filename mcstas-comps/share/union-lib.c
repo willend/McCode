@@ -2040,13 +2040,18 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     int geometry_output;
     
 	// Todo: switch to nicer intersect function call
-	double double_dummy[2];
+	double *double_dummy = malloc(2*sizeof(double));
 	int int_dummy[2];
 	
 	
     // Find intersections
     for (volume_index = 1;volume_index < number_of_volumes; volume_index++) {
         if (volume_index != N) {
+         if (Geometries[volume_index]->eShape==mesh){
+            double_dummy = realloc(double_dummy, sizeof(double)*1000);
+            temp_intersection = realloc(temp_intersection, sizeof(double)*1000);
+            
+         }
             geometry_output = Geometries[volume_index]->intersect_function(temp_intersection, double_dummy, double_dummy, double_dummy, int_dummy, 
 			                                                               &number_of_solutions, r1, direction, Geometries[volume_index]);
              // printf("No solutions for intersection (Volume %d) with %d \n",N,volume_index);
