@@ -962,7 +962,7 @@ if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
                              &faces,
                              NAME_CURRENT_COMP);
 } else if (strcmp(dot, ".off") == 0 || strcmp(dot, ".OFF") == 0) {
-   printf("\n%s, Given file is in stl format. Union_mesh assumes three vertices per face.\n",
+   printf("\n%s, Given file is in off format. Union_mesh assumes three vertices per face.\n",
           NAME_CURRENT_COMP);
    read_off_file_vertices_and_faces(filename, 
                              &n_verts, 
@@ -971,6 +971,10 @@ if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
                              &verts,
                              &faces,
                              NAME_CURRENT_COMP);
+} else {
+   printf("\nERROR IN %s: File %s is read as neither an stl or an off file.",
+          NAME_CURRENT_COMP, filename);
+   exit(1);
 }
 // Loop over all vertices and multiply their positions with coordinate_scale
 for (int i = 0; i<n_verts; i++){
