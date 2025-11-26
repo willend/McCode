@@ -36,7 +36,7 @@
 *
 * %P
 * INPUT PARAMETERS:
-* filename: [str] Name of off file that contains the 3D geometry
+* filename: [str] Name of file that contains the 3D geometry. Can be either .OFF, .off, .STL, or .stl
 * material_string: [string]  material name of this volume, defined using Union_make_material
 * priority:   [1]  priotiry of the volume (can not be the same as another volume) A high priority is on top of low.
 * p_interact: [1]  probability to interact with this geometry [0-1]
