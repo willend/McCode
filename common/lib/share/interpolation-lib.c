@@ -329,7 +329,7 @@ struct interpolator_struct *interpolator_init(void) {
 #pragma acc routine
 long interpolator_offset(int dim, long *dimInfo, long *indices) {
   
-  long result;  // where the resultant offset will be stored 
+  long result=-1;  // where the resultant offset will be stored 
   int  i;       // loop counter 
   
   /* indices check */
