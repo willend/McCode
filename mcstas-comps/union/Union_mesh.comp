@@ -54,6 +54,7 @@
 * focus_xh:      [m]   vert. dimension of a rectangular area
 * focus_r:       [m]   focusing on circle with this radius
 * skip_convex_check: [1] when set to 1, skips the check for whether input .off file is convex.
+* coordinate_scale [1e-3] Multiplier that the vertex positions are multiplied by. Set to 1 for input coordinates in meters. Set to 1e-3 for input coordinates in mm.
 * init:          [string] name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
@@ -85,6 +86,7 @@ SETTING PARAMETERS(string filename = 0,
    string mask_setting=0,
    number_of_activations=1,
    int skip_convex_check = 0,
+   coordinate_scale = 1e-3,
    string init="init")
 
 
@@ -252,10 +254,6 @@ void read_stl(char* filename,
       (*faces)[i][0] = j;
       (*faces)[i][1] = j+1;
       (*faces)[i][2] = j+2;
-   }
-   for (int i=0; i<*n_verts; i++){
-      printf("\nVertice %d = %g, %g, %g\n", i,
-             (*verts)[i].x, (*verts)[i].y, (*verts)[i].z);
    }
    free(triangles);
    // Loop over vertices, and make sure we only use unique vertices
@@ -943,13 +941,10 @@ if (mask_string &&
 // We assume that the input file is using triangular faces, otherwise
 // the check for closed mesh using the Euler-Poincare characteristic
 // is wrong.
-printf("\nSTART read file: ");
 int n_verts, n_faces, n_edges;
 Coords* verts;
 int** faces;
 int unique_index = 0;
-   // Call stl read for testing purposes
-   printf("\nReading the stl sample file:\n");
 
 const char *dot = strrchr(filename, '.');
 if (!dot || dot == filename) {
@@ -957,6 +952,8 @@ if (!dot || dot == filename) {
    exit(1);
 }
 if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
+   printf("\n%s, Given file is in stl format. Union_mesh assumes three vertices per face.\n",
+          NAME_CURRENT_COMP);
    read_stl(filename, 
                              &n_verts, 
                              &n_faces, 
@@ -964,9 +961,10 @@ if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
                              &verts,
                              &faces,
                              NAME_CURRENT_COMP);
-   printf("\nFinished reading stl sample file\n");
 } else if (strcmp(dot, ".off") == 0 || strcmp(dot, ".OFF") == 0) {
-  read_off_file_vertices_and_faces(filename, 
+   printf("\n%s, Given file is in stl format. Union_mesh assumes three vertices per face.\n",
+          NAME_CURRENT_COMP);
+   read_off_file_vertices_and_faces(filename, 
                              &n_verts, 
                              &n_faces, 
                              &n_edges,
@@ -974,15 +972,18 @@ if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
                              &faces,
                              NAME_CURRENT_COMP);
 }
-printf("\nThe first vertice is = %g,%g,%g\n", 
-       verts[0].x,verts[0].y,verts[0].z);
-printf("\nThe first facet is = %d,%d,%d\n",
-       faces[0][0], faces[0][1], faces[0][2]);
+// Loop over all vertices and multiply their positions with coordinate_scale
+for (int i = 0; i<n_verts; i++){
+   verts[i].x *= coordinate_scale;
+   verts[i].y *= coordinate_scale;
+   verts[i].z *= coordinate_scale;
+}
+
+
+
 // Make lists that will be used to calculate the number of edges
-printf("\n Just before allocating for vert_pairs. n_faces=%d", n_faces);
 int** vert_pairs = (int **)malloc(sizeof(int *)*3*n_faces);
 int** unique_verts = (int **)malloc(sizeof(int *)*3*n_faces);
-printf("\n Allocated for vert pairs");
 for (int i=0; i<3*n_faces;i++){
    vert_pairs[i] = (int *)malloc(sizeof(int)*2);
    unique_verts[i] = (int *)malloc(sizeof(int)*2);
@@ -990,32 +991,23 @@ for (int i=0; i<3*n_faces;i++){
 
 generate_vertex_vertex_pair_list(faces, vert_pairs, n_faces);
 
-printf("\nFinal vert_pair is = %d,%d\n", 
-       vert_pairs[3*n_faces-1][0],
-       vert_pairs[3*n_faces-1][1]);
-
 find_unique_vertex_vertex_pairs(&unique_index, unique_verts,
                                 vert_pairs, &n_faces);
 
 n_edges = unique_index; // The number of edges is the number of unique 
-// vertex vertex pairs.
-printf("\nNumber of edges is the unique index, %d", unique_index);
-printf("\nEuler Pointcare characteristic is %d",
-       n_faces + n_verts - unique_index);
-
+                        // vertex vertex pairs.
 if (mesh_is_not_closed(n_faces,n_verts,n_edges) && !skip_convex_check){
-   printf("\n\nERROR: Input mesh from %s, is not a closed shape."
+   printf("\nNumber of edges is the unique index, %d", unique_index);
+   printf("\nEuler Pointcare characteristic is %d",
+          n_faces + n_verts - unique_index);
+
+   printf("\n\nERROR: Input mesh from %s, is not a closed shape according to Euler Pointcare."
           "\nNumber of faces = %d, Number of vertices = %d, Number of Edges = %d"
-          "\nUnion_mesh_off requires the user input to be a convex hull.\n\n",
+          "\nUnion_mesh_off requires the user input to be a convex hull.\n"
+          "If you are sure that it is, set skip_convex_check to 1\n\n",
           NAME_CURRENT_COMP,n_faces, n_verts,n_edges);
    exit(1);
 } 
-printf("\n");
-
-// We could load in the .off file with the off library in mcstas,
-// But everything is already present in Union with the old mesh component
-// So we stick to that for now.
-// off_init(filename, 0, 0, 0, 0, &offdata);
 
 // Calculate bounding box
 double max_dist = 0;
