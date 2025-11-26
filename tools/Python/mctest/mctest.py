@@ -719,7 +719,10 @@ def main(args):
         suffix = '_' + isuffix
 
     if args.suffix:
-        suffix = suffix + '_' + args.suffix[0]
+        if (len(suffix)<30):
+            suffix = suffix + '_' + args.suffix[0]
+        else:
+            suffix = '_' + args.suffix[0]
 
     suffix=suffix + "_" + platform.system()
     logging.info("ncount is: %s" % ncount)
