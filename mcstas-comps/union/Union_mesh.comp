@@ -97,6 +97,7 @@ SHARE
 %{
 %include "read_table-lib"
 %include "interoff-lib"
+
 #ifndef Union
 #error "The Union_init component must be included before this Union_mesh component"
 #endif
@@ -110,7 +111,7 @@ SHARE
 	#define MAX_VERT_DIST 1e-30 // Maximum distance between vertex points, before they are the same point.
 #endif
 
-// define struct to import triangles from stl binary file.
+// define struct to import triangles from stl file.
 #pragma pack(push, 1) // Disable padding
 typedef struct {
     float normal[3];
@@ -120,7 +121,7 @@ typedef struct {
     uint16_t attribute_byte_count;
 } Triangle;
 #pragma pack(pop)
-void read_stl_binary(char* filename,
+void read_stl(char* filename,
                      int* n_verts,
                      int* n_faces,
                      int* n_edges,
@@ -128,33 +129,108 @@ void read_stl_binary(char* filename,
                      int*** faces,
                      char* comp_name){
    unsigned char buffer[1000];
-   FILE *file = fopen("Sample_files/d20.STL", "rb");
+   Triangle *triangles;
+   FILE *file = fopen(filename, "r");
    if (!file) {
         perror("ERROR: Failed to open file");
         exit(1);
    }  
-   // Read header
-   char header[80];
-   fread(header, sizeof(char), 80, file);
+   // Check if the file is binary or ASCII
+   int file_is_ascii = 0;
+   char word[6]; // "solid" + null terminator
+   if (fscanf(file, "%5s", word) == 1) {
+       file_is_ascii = strcmp(word, "solid") == 0;
+   }
+   fclose(file);
 
-   // Read number of triangles
-   fread(n_faces, sizeof(uint32_t), 1, file);
-   printf("Number of triangles: %u\n", *n_faces);
+   if (file_is_ascii){
+      
+      FILE *file = fopen(filename, "r");
+      char line[256];
+      int capacity = 100; // initial allocation
+      int count = 0;
 
-   // Allocate memory for triangles
-   Triangle *triangles = malloc(*n_faces * sizeof(Triangle));
-   if (!triangles) {
-       perror("ERROR: Memory allocation failed");
-       fclose(file);
-       exit(1);
+      // Allocate memory for triangles
+      triangles = (Triangle *)malloc(capacity * sizeof(Triangle));  
+   
+      Triangle current;
+
+      int vertex_index = 0;
+      while (fgets(line, sizeof(line), file)) {
+         
+         char *trimmed = line;
+         while (*trimmed == ' ' || *trimmed == '\t') {
+             trimmed++;
+         }
+         
+         // If line is empty after trimming, skip it
+         if (*trimmed == '\0') {
+            continue;
+         }
+
+          if (strncmp(trimmed, "facet normal", 12) == 0) {  
+             memset(&current, 0, sizeof(Triangle)); 
+
+              sscanf(trimmed, "facet normal %f %f %f",
+                     &current.normal[0], &current.normal[1], &current.normal[2]);
+          } else if (strncmp(trimmed, "vertex", 6) == 0) {
+              float x, y, z;
+              sscanf(trimmed, "vertex %f %f %f", &x, &y, &z);
+              if (vertex_index == 0) {
+                  current.vertex1[0] = x; current.vertex1[1] = y; current.vertex1[2] = z;
+              } else if (vertex_index == 1) {
+                  current.vertex2[0] = x; current.vertex2[1] = y; current.vertex2[2] = z;
+              } else if (vertex_index == 2) {
+                  current.vertex3[0] = x; current.vertex3[1] = y; current.vertex3[2] = z;
+              }
+              vertex_index++;
+              if (vertex_index == 3) {
+                  vertex_index = 0;
+              }
+          } else if (strncmp(trimmed, "endfacet", 8) == 0) {
+               current.attribute_byte_count = 0; // ASCII STL always 0
+              if (count >= capacity) {
+                  capacity *= 2;
+                  triangles = realloc(triangles, capacity * sizeof(Triangle));
+                  if (!triangles) {
+                      perror("ERROR: Memory reallocation failed");
+                      fclose(file);
+                      exit(1);
+                  }
+               }
+               triangles[count++] = current;
+           }
+      }
+      *n_faces = count;
+      fclose(file);  
+      
+   } else {
+       FILE *file = fopen(filename, "rb");
+       // Read header
+       char header[80];
+       fread(header, sizeof(char), 80, file);
+
+       // Read number of triangles
+       fread(n_faces, sizeof(uint32_t), 1, file);
+       // Allocate memory for triangles
+       triangles = (Triangle *)malloc(*n_faces * sizeof(Triangle));  
+   
+
+
+       if (!triangles) {
+           perror("ERROR: Memory allocation failed");
+           fclose(file);
+           exit(1);
+       }
+
+       // Read triangles
+       for (int i = 0; i < *n_faces; i++) {
+           fread(&triangles[i], sizeof(Triangle), 1, file);
+       }
+      
+      fclose(file);  
    }
 
-   // Read triangles
-   for (int i = 0; i < *n_faces; i++) {
-       fread(&triangles[i], sizeof(Triangle), 1, file);
-   }
-
-   fclose(file);  
    *n_verts = 3* *n_faces;
    *verts = (Coords *)malloc(sizeof(Coords)* *n_verts);
    *faces = (int **)malloc(sizeof(int *)* *n_faces);
@@ -213,21 +289,12 @@ void read_stl_binary(char* filename,
       // first vertex
 
       vert_index_in_faces = floor(i/3);
-      printf("\nmapping =%d to %d\n", j, map_old_to_unique[j]);
       (*faces)[vert_index_in_faces][i%3] = map_old_to_unique[j] ;
    }
    *n_verts = unique_counter;
    *verts = (Coords *)realloc(*verts, sizeof(Coords)*unique_counter);
    for (int i =0; i<unique_counter;i++){
       (*verts)[i] = unique_vertices[i];
-   }
-   // As a test, print out all faces and their vertex numbers
-   for (int i=0; i<*n_faces; i++){
-      printf("\nVertices in face %d = %d,%d,%d",i, 
-             (*faces)[i][0],
-             (*faces)[i][1],
-             (*faces)[i][2]
-             );
    }
 }
 
@@ -890,7 +957,7 @@ if (!dot || dot == filename) {
    exit(1);
 }
 if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
-   read_stl_binary(filename, 
+   read_stl(filename, 
                              &n_verts, 
                              &n_faces, 
                              &n_edges,
@@ -912,8 +979,10 @@ printf("\nThe first vertice is = %g,%g,%g\n",
 printf("\nThe first facet is = %d,%d,%d\n",
        faces[0][0], faces[0][1], faces[0][2]);
 // Make lists that will be used to calculate the number of edges
+printf("\n Just before allocating for vert_pairs. n_faces=%d", n_faces);
 int** vert_pairs = (int **)malloc(sizeof(int *)*3*n_faces);
 int** unique_verts = (int **)malloc(sizeof(int *)*3*n_faces);
+printf("\n Allocated for vert pairs");
 for (int i=0; i<3*n_faces;i++){
    vert_pairs[i] = (int *)malloc(sizeof(int)*2);
    unique_verts[i] = (int *)malloc(sizeof(int)*2);
