@@ -608,7 +608,7 @@ INITIALIZE
   PHSpectrum0  = (double *) malloc(PHSpectrum_n * sizeof(double)); //
   PHSpectrum   = (double *) malloc(PHSpectrum_n * sizeof(double)); //
   PHSpectrum2  = (double *) malloc(PHSpectrum_n * sizeof(double)); //
-  if(!PhSpectrum || !PhSpectrum0 || !PhSpectrum2) {
+  if(!PHSpectrum || !PHSpectrum0 || !PHSpectrum2) {
     fprintf(stderr, "PSD_Detector %s: malloc() failure PhSpectrum arrays. Exit!\n", NAME_CURRENT_COMP);
     exit(-1);
   }
