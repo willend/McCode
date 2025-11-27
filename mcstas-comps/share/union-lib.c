@@ -3901,6 +3901,7 @@ int sample_mesh_intersect(double *t,
     // Sort t:
     
     if (*num_solutions == 0){
+        free(t_intersect);
         return 0;
     }
    // printf("\nMore than 0 solutions!");
