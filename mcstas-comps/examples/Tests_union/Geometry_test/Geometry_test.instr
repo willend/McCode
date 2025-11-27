@@ -16,7 +16,7 @@
 * Test of all Union geometry components in one file
 *
 * %Description
-* Use of all basic geometries, sphere, cylinder, cone and box
+* Use of all basic geometries, mesh(as a torus), sphere, cylinder, cone and box
 *
 * %Example: dummy=1 Detector: detector_scat_I=40.2053
 *
