@@ -484,15 +484,15 @@ void mcdisplay_mesh_function(struct lines_to_draw *lines_to_draw_output,int inde
     int print2 = 0;
     int print3 = 0;
 
-    Coords list_startpoints[n_facets*3];
-    Coords list_endpoints[n_facets*3];
+    Coords *list_startpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
+    Coords *list_endpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
 
 	int counter=0;
     // For every triangle it should ad three lines    
     for (iterate=0 ; iterate<n_facets ; iterate++) {
         point1 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v1_x+iterate),*(v1_y+iterate),*(v1_z+iterate))),center);
         point2 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v2_x+iterate),*(v2_y+iterate),*(v2_z+iterate))),center);
-	    point3 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v3_x+iterate),*(v3_y+iterate),*(v3_z+iterate))),center);
+	point3 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v3_x+iterate),*(v3_y+iterate),*(v3_z+iterate))),center);
 
 	    print1 = 1;
     	print2 = 1;
@@ -573,6 +573,8 @@ void mcdisplay_mesh_function(struct lines_to_draw *lines_to_draw_output,int inde
 	}
 	
     }
+    free(list_startpoints);
+    free(list_endpoints);
 };
 
 
