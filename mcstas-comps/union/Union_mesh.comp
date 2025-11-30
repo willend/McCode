@@ -459,122 +459,121 @@ Coords get_coords_from_string(char* line){
 }
 
 void mcdisplay_mesh_function(struct lines_to_draw *lines_to_draw_output,int index, struct geometry_struct **Geometries,int number_of_volumes) {
-    // Function to call in mcdisplay section of the sample component for this volume
+  // Function to call in mcdisplay section of the sample component for this volume
 
-    printf("\nTEST 0");
-   int n_facets = Geometries[index]->geometry_parameters.p_mesh_storage->n_facets;
-	double *v1_x = Geometries[index]->geometry_parameters.p_mesh_storage->v1_x;
-	double *v1_y = Geometries[index]->geometry_parameters.p_mesh_storage->v1_y;
-	double *v1_z = Geometries[index]->geometry_parameters.p_mesh_storage->v1_z;
-	double *v2_x = Geometries[index]->geometry_parameters.p_mesh_storage->v2_x;
-	double *v2_y = Geometries[index]->geometry_parameters.p_mesh_storage->v2_y;
-	double *v2_z = Geometries[index]->geometry_parameters.p_mesh_storage->v2_z;
-	double *v3_x = Geometries[index]->geometry_parameters.p_mesh_storage->v3_x;
-	double *v3_y = Geometries[index]->geometry_parameters.p_mesh_storage->v3_y;
-   double *v3_z = Geometries[index]->geometry_parameters.p_mesh_storage->v3_z;
-   
-    Coords center = Geometries[index]->center;
+  int n_facets = Geometries[index]->geometry_parameters.p_mesh_storage->n_facets;
+  double *v1_x = Geometries[index]->geometry_parameters.p_mesh_storage->v1_x;
+  double *v1_y = Geometries[index]->geometry_parameters.p_mesh_storage->v1_y;
+  double *v1_z = Geometries[index]->geometry_parameters.p_mesh_storage->v1_z;
+  double *v2_x = Geometries[index]->geometry_parameters.p_mesh_storage->v2_x;
+  double *v2_y = Geometries[index]->geometry_parameters.p_mesh_storage->v2_y;
+  double *v2_z = Geometries[index]->geometry_parameters.p_mesh_storage->v2_z;
+  double *v3_x = Geometries[index]->geometry_parameters.p_mesh_storage->v3_x;
+  double *v3_y = Geometries[index]->geometry_parameters.p_mesh_storage->v3_y;
+  double *v3_z = Geometries[index]->geometry_parameters.p_mesh_storage->v3_z;
 
-    struct lines_to_draw lines_to_draw_temp;
-    lines_to_draw_temp.number_of_lines = 0;
+  Coords center = Geometries[index]->center;
+
+  struct lines_to_draw lines_to_draw_temp;
+  lines_to_draw_temp.number_of_lines = 0;
+
+  Coords point1,point2,point3;
+  int iterate, i,j;
+  int print1 = 0;
+  int print2 = 0;
+  int print3 = 0;
+
+  Coords *list_startpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
+  Coords *list_endpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
+
+  int counter=0;
+  // For every triangle it should add three lines
+  for (iterate=0 ; iterate<n_facets ; iterate++) {
+    point1 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v1_x+iterate),*(v1_y+iterate),*(v1_z+iterate))),center);
+    point2 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v2_x+iterate),*(v2_y+iterate),*(v2_z+iterate))),center);
+    point3 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v3_x+iterate),*(v3_y+iterate),*(v3_z+iterate))),center);
+
+    print1 = 1;
+    print2 = 1;
+    print3 = 1;
     
-    Coords point1,point2,point3;
-    int iterate, i,j;
-    int print1 = 0;
-    int print2 = 0;
-    int print3 = 0;
-
-    Coords *list_startpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
-    Coords *list_endpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
-
-	int counter=0;
-    // For every triangle it should ad three lines    
-    for (iterate=0 ; iterate<n_facets ; iterate++) {
-        point1 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v1_x+iterate),*(v1_y+iterate),*(v1_z+iterate))),center);
-        point2 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v2_x+iterate),*(v2_y+iterate),*(v2_z+iterate))),center);
-	point3 = coords_add(rot_apply(Geometries[index]->rotation_matrix,coords_set(*(v3_x+iterate),*(v3_y+iterate),*(v3_z+iterate))),center);
-
-	    print1 = 1;
-    	print2 = 1;
-    	print3 = 1;
-	
-	// Make sure it does not print a line if it is already printed.... (might take a while?)
-	for (i = 0 ; i < counter ; i++){
-		if (print1 == 1 && coord_comp(point1 , list_startpoints[i])){
-			for (j = 0 ; j < counter  ; j++){
-				if (coord_comp(point2 , list_startpoints[i])){
-					print1 = 0;
-				}
-			}
-		}
-		if (print2 == 1 && coord_comp(point2 , list_startpoints[i])){
-			for (j = 0 ; j < counter  ; j++){
-				if (coord_comp(point1 , list_startpoints[i])){
-					print1 = 0;
-				}
-			}
-		}
-		if (print2 == 1 && coord_comp(point2 , list_startpoints[i]) ){
-			for (j = 0 ; j < counter  ; j++){
-				if (coord_comp(point3 , list_startpoints[i])){
-					print2 = 0;
-				}
-			}
-		}
-		if (print3 == 1 && coord_comp(point3 , list_startpoints[i]) ){
-			for (j = 0 ; j < counter  ; j++){
-				if (coord_comp(point2 , list_startpoints[i])){
-					print2 = 0;
-				}
-			}
-		}
-		if (print1 == 1 && coord_comp(point1 , list_startpoints[i]) ){
-			for (j = 0 ; j < counter ; j++){
-				if (coord_comp(point1 , list_startpoints[i])){
-					print3 = 0;
-				}
-			}
-		}
-		if (print3 == 1 && coord_comp(point3 , list_startpoints[i])){
-			for (j = 0 ; j < counter  ; j++){
-				if (coord_comp(point1 , list_startpoints[i])){
-					print3 = 0;
-				}
-			}
-		}
-
+    // Make sure it does not print a line if it is already printed.... (might take a while?)
+    for (i = 0 ; i < counter ; i++){
+      if (print1 == 1 && coord_comp(point1 , list_startpoints[i])){
+	for (j = 0 ; j < counter  ; j++){
+	  if (coord_comp(point2 , list_startpoints[i])){
+	    print1 = 0;
+	  }
 	}
-	
-	
-	// Create lines	
-	// Line 1
-	if (print1 == 1){
-		lines_to_draw_temp = draw_line_with_highest_priority(point1,point2,index,Geometries,number_of_volumes,100);
-		merge_lines_to_draw(lines_to_draw_output,&lines_to_draw_temp);
-		list_startpoints[counter] = point1;
-		list_endpoints[counter] = point2;
-		counter++;
+      }
+      if (print2 == 1 && coord_comp(point2 , list_startpoints[i])){
+	for (j = 0 ; j < counter  ; j++){
+	  if (coord_comp(point1 , list_startpoints[i])){
+	    print1 = 0;
+	  }
 	}
-	// Line 2
-	if (print2 == 1){
-		lines_to_draw_temp = draw_line_with_highest_priority(point2,point3,index,Geometries,number_of_volumes,100);
-		merge_lines_to_draw(lines_to_draw_output,&lines_to_draw_temp);
-		list_startpoints[counter] = point2;
-		list_endpoints[counter] = point3;
-		counter++;
+      }
+      if (print2 == 1 && coord_comp(point2 , list_startpoints[i]) ){
+	for (j = 0 ; j < counter  ; j++){
+	  if (coord_comp(point3 , list_startpoints[i])){
+	    print2 = 0;
+	  }
 	}
-	// Line 3
-	if (print3 == 1){
-		lines_to_draw_temp = draw_line_with_highest_priority(point3,point1,index,Geometries,number_of_volumes,100);
-	 	merge_lines_to_draw(lines_to_draw_output,&lines_to_draw_temp);
-		list_startpoints[counter] = point3;
-		list_endpoints[counter] = point1;
-		counter++;
+      }
+      if (print3 == 1 && coord_comp(point3 , list_startpoints[i]) ){
+	for (j = 0 ; j < counter  ; j++){
+	  if (coord_comp(point2 , list_startpoints[i])){
+	    print2 = 0;
+	  }
 	}
-	
+      }
+      if (print1 == 1 && coord_comp(point1 , list_startpoints[i]) ){
+	for (j = 0 ; j < counter ; j++){
+	  if (coord_comp(point1 , list_startpoints[i])){
+	    print3 = 0;
+	  }
+	}
+      }
+      if (print3 == 1 && coord_comp(point3 , list_startpoints[i])){
+	for (j = 0 ; j < counter  ; j++){
+	  if (coord_comp(point1 , list_startpoints[i])){
+	    print3 = 0;
+	  }
+	}
+      }
+
     }
-    free(list_startpoints);
-    free(list_endpoints);
+
+
+    // Create lines
+    // Line 1
+    if (print1 == 1){
+      lines_to_draw_temp = draw_line_with_highest_priority(point1,point2,index,Geometries,number_of_volumes,100);
+      merge_lines_to_draw(lines_to_draw_output,&lines_to_draw_temp);
+      list_startpoints[counter] = point1;
+      list_endpoints[counter] = point2;
+      counter++;
+    }
+    // Line 2
+    if (print2 == 1){
+      lines_to_draw_temp = draw_line_with_highest_priority(point2,point3,index,Geometries,number_of_volumes,100);
+      merge_lines_to_draw(lines_to_draw_output,&lines_to_draw_temp);
+      list_startpoints[counter] = point2;
+      list_endpoints[counter] = point3;
+      counter++;
+    }
+    // Line 3
+    if (print3 == 1){
+      lines_to_draw_temp = draw_line_with_highest_priority(point3,point1,index,Geometries,number_of_volumes,100);
+      merge_lines_to_draw(lines_to_draw_output,&lines_to_draw_temp);
+      list_startpoints[counter] = point3;
+      list_endpoints[counter] = point1;
+      counter++;
+    }
+
+  }
+  free(list_startpoints);
+  free(list_endpoints);
 };
 
 
