@@ -176,6 +176,10 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
     # copy instr files and record info
     logging.info("Finding instruments in: %s" % str(pathlib.Path(branchdir,"examples").resolve()))
     instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(branchdir,"examples").resolve()), recursive=True, instrfilter=instrfilter)
+    logging.info("Adding instruments from subfolders in: %s" % str(pathlib.Path(".").resolve()))
+    localinst, _ = utils.get_instr_comp_files(str(pathlib.Path(".").resolve()), recursive=True, instrfilter=instrfilter)
+    if localinst is not None:
+        instrs+=localinst
     instrs.sort()
 
     # limt runs if required
