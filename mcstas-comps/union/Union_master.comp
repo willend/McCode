@@ -1254,7 +1254,7 @@ TRACE
     }
     
     // Checking if there are intersections with children of current volume, which means there is an intersection before current_volume, and thus can be skipped. But only if they have not been overwritten. In case current_volume is 0, there is no need to do this regardless.
-    if (current_volume != 0 && intersection_time_table.calculated[current_volume] == 0) {
+    if (current_volume != 0 && intersection_time_table.calculated[current_volume] == 0 && !Volumes[current_volume]->skip_hierarchical_optimization) {
         #ifdef Union_trace_verbal_setting
           printf("Checking if children of current_volume = %d have intersections. \n",current_volume);
         #endif
