@@ -51,17 +51,24 @@
 *  %E
 *******************************************************************************/
 DEFINE COMPONENT Commodus_I3
-SETTING PARAMETERS (string Face,E0,E1,modXsize,modZsize,xw,yh,dist, int verbose=0, beamcurrent=1)
+SETTING PARAMETERS (string Face="TS1_S04_Merlin.mcstas",E0, E1, modPosition=0,
+  dist=1.7, int verbose=0, beamcurrent=1,
+  modXsize=0.12,modZsize=0.12,xw=0.094,yh=0.094)
 
 SHARE INHERIT ViewModISIS
 
-DECLARE INHERIT ViewModISIS
+DECLARE INHERIT ViewModISIS EXTEND
+%{
+  double xwidth;
+  double yheight;
+  double focus_xw; 
+  double focus_yh;
+%}
 
 INITIALIZE INHERIT ViewModISIS EXTEND
 %{
-  
   /* Redo solid angle correction */
-   angleArea= strArea(TS, xw, yh, dist);
+  angleArea= strArea(TS, xw, yh, dist);
 %}
 
 TRACE INHERIT ViewModISIS
