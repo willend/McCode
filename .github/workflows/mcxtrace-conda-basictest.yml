@@ -249,10 +249,10 @@ jobs:
              fi
              mkdir run_mxtest && cd run_mxtest
              if [ "$RUNNER_OS" != "Windows" ]; then
-               mxtest --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
                mxviewtest --nobrowse $PWD
              else
-               mxtest.bat --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mxtest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
                mxviewtest.bat --nobrowse $PWD
              fi
            fi

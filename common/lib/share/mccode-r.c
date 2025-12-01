@@ -374,7 +374,7 @@ int mc_MPI_Sum(double *sbuf, long count)
     int    i=0;
     rbuf = calloc(count, sizeof(double));
     if (!rbuf)
-      exit(-fprintf(stderr, "Error: Out of memory %li (mc_MPI_Sum)\n", count*sizeof(double)));
+      exit(-fprintf(stderr, "Error: Out of memory %zi (mc_MPI_Sum)\n", count*sizeof(double)));
     while (offset < count) {
       if (!length || offset+length > count-1) length=count-offset;
       else length=MPI_REDUCE_BLOCKSIZE;
