@@ -132,7 +132,7 @@ void read_stl(char* filename,
                      char* comp_name){
    unsigned char buffer[1000];
    Triangle *triangles;
-   FILE *file = fopen(filename, "r");
+   FILE *file = Open_File(filename, "r", NULL);
    if (!file) {
         perror("ERROR: Failed to open file");
         exit(1);
@@ -147,7 +147,7 @@ void read_stl(char* filename,
 
    if (file_is_ascii){
       
-      FILE *file = fopen(filename, "r");
+      FILE *file = Open_File(filename, "r", NULL);
       char line[256];
       int capacity = 100; // initial allocation
       int count = 0;
@@ -207,7 +207,7 @@ void read_stl(char* filename,
       fclose(file);  
       
    } else {
-       FILE *file = fopen(filename, "rb");
+       FILE *file = Open_File(filename, "r", NULL);
        // Read header
        char header[80];
        fread(header, sizeof(char), 80, file);
@@ -310,7 +310,7 @@ void read_off_file_vertices_and_faces(char* filename,
                                   int*** faces,
                                   char* comp_name){
    FILE *fp;
-   fp = fopen(filename,"r");
+   fp = Open_File(filename, "r", NULL);
    // TODO: Make tests to verify the contents of FILE
    int n_lines = 0;
    char buffer[250];
@@ -335,7 +335,7 @@ void read_off_file_vertices_and_faces(char* filename,
    
    // Using the Euler-Poincare characteristic, we check if the mesh is closed
    // To do this, we count the number of edges (unique vertice pairs)
-   fp = fopen(filename,"r");
+   fp = Open_File(filename, "r", NULL);
    n_lines = 0;
    double x,y,z;
    int vert_index = 0;
