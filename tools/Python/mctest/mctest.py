@@ -225,6 +225,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
                 formatstr = "%-" + "%ds: TESTS (%d)" % (maxnamelen, numtests)
                 logging.debug(formatstr % instrname)
         except:
+            print("\nWARNING: Skipped " + instrname + " test - did " + instrdir + " exist already??\n")
             pass
 
 
