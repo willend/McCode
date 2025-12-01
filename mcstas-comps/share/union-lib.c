@@ -539,6 +539,7 @@ struct surface_process_struct **p_surface_array;
 struct Volume_struct
 {
 char name[256]; // User defined volume name
+int skip_hierarchical_optimization;
 struct geometry_struct geometry;        // Geometry properties (including intersect functions, generated lists)
 struct physics_struct *p_physics;       // Physical properties (list of scattering processes, absorption)
 struct loggers_struct loggers;          // Loggers assosiated with this volume
@@ -669,6 +670,10 @@ struct global_master_element_struct *elements;
 };
 
 
+void volume_struct_init(struct Volume_struct *vol){
+  memset(vol, 0, sizeof(struct Volume_struct));
+  vol->skip_hierarchical_optimization = 0;
+}
 // -------------    Physics functions   ---------------------------------------------------------
 
 //#include "Test_physics.c"
