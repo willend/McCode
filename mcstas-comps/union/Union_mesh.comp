@@ -761,7 +761,8 @@ struct surface_stack_struct cut_surface_stack;
 
 INITIALIZE
 %{
-
+volume_struct_init(&mesh_vol);
+mesh_vol.skip_hierarchical_optimization = skip_convex_check;
 // Initializes the focusing system for this volume including input sanitation.
 focus_initialize(&mesh_vol.geometry, 
       POS_A_COMP_INDEX(INDEX_CURRENT_COMP+target_index),
