@@ -18,14 +18,14 @@
 * %Description
 * Use of all basic geometries, mesh(as a torus), sphere, cylinder, cone and box
 *
-* %Example: dummy=1 Detector: detector_scat_I=40.2053
+* %Example: meshfile="torus.STL" Detector: detector_scat_I=40.2053
 *
 * %Parameters
 *
 * %End
 *******************************************************************************/
 
-DEFINE INSTRUMENT Geometry_test(dummy=1)
+DEFINE INSTRUMENT Geometry_test(string meshfile="torus.STL")
 
 DECLARE
 %{
@@ -102,7 +102,7 @@ AT (0.02,-0.03,0) RELATIVE sample_pos
 ROTATED (0,0,20) RELATIVE sample_pos
 
 COMPONENT sample_torus  = Union_mesh(
-   filename ="./torus.STL",
+   filename = meshfile,
    material_string="Al",
    coordinate_scale =0.025,
    priority=346,
