@@ -172,10 +172,14 @@ def extract_testvals(datafolder, monitorname):
 
 def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=None):
     ''' this main test function tests the given mccode branch/version '''
-
+    global runLocal
     # copy instr files and record info
-    logging.info("Finding instruments in: %s" % str(pathlib.Path(branchdir,"examples").resolve()))
-    instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(branchdir,"examples").resolve()), recursive=True, instrfilter=instrfilter)
+    if not runLocal:
+        logging.info("Finding instruments in: %s" % str(pathlib.Path(branchdir,"examples").resolve()))
+        instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(branchdir,"examples").resolve()), recursive=True, instrfilter=instrfilter)
+    else:
+        logging.info("Adding instruments from subfolders in: %s" % str(pathlib.Path(".").resolve()))
+        instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(runLocal).resolve()), recursive=True, instrfilter=instrfilter)
     instrs.sort()
 
     # limt runs if required
@@ -221,6 +225,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
                 formatstr = "%-" + "%ds: TESTS (%d)" % (maxnamelen, numtests)
                 logging.debug(formatstr % instrname)
         except:
+            print("\nWARNING: Skipped " + instrname + " test - did " + instrdir + " exist already??\n")
             pass
 
 
@@ -477,6 +482,7 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, suffix):
 
     logging.info("Testing: %s" % version)
     logging.info("")
+
     results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter)
     
     reportfile = os.path.join(labeldir, "testresults_%s.json" % (mccode_config.configuration["MCCODE"]+"-"+version+suffix))
@@ -643,6 +649,7 @@ suffix = None
 nexus = None
 lint = None
 permissive = None
+runLocal = None
 
 def main(args):
     # mutually excusive main branches
@@ -705,7 +712,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, mpi, skipnontest, openacc, nexus, lint, permissive
+    global ncount, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal
     if args.ncount:
         ncount = args.ncount[0]
     elif args.n:
@@ -713,6 +720,9 @@ def main(args):
     else:
         ncount = "1e6"
     suffix = '_' + ncount
+
+    if args.local:
+        runLocal = args.local
 
     if instrfilter:
         isuffix=instrfilter.replace(',', '_')
@@ -725,6 +735,9 @@ def main(args):
             suffix = '_' + args.suffix[0]
 
     suffix=suffix + "_" + platform.system()
+    if runLocal:
+        suffix = suffix + '_LOCAL'
+
     logging.info("ncount is: %s" % ncount)
     if args.mpi:
         mpi = args.mpi[0]
@@ -780,6 +793,7 @@ if __name__ == '__main__':
     parser.add_argument('--nexus', action='store_true', help='Compile for / use NeXus output format everywhere')
     parser.add_argument('--lint', action='store_true', help='Just run the c-linter')
     parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional.')
+    parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR')
     args = parser.parse_args()
 
     try:
