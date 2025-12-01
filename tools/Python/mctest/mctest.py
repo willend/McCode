@@ -179,7 +179,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=
         instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(branchdir,"examples").resolve()), recursive=True, instrfilter=instrfilter)
     else:
         logging.info("Adding instruments from subfolders in: %s" % str(pathlib.Path(".").resolve()))
-        instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(".").resolve()), recursive=True, instrfilter=instrfilter)
+        instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(runLocal).resolve()), recursive=True, instrfilter=instrfilter)
     instrs.sort()
 
     # limt runs if required
@@ -466,7 +466,6 @@ def create_datetime_testdir(testroot):
 
 def run_default_test(testdir, mccoderoot, limit, instrfilter, suffix):
     ''' tests the default mccode version '''
-    print("run_default_test")
 
     # get default/system version number
     logger = LineLogger()
@@ -722,7 +721,7 @@ def main(args):
     suffix = '_' + ncount
 
     if args.local:
-        runLocal = True
+        runLocal = args.local
 
     if instrfilter:
         isuffix=instrfilter.replace(',', '_')
@@ -735,6 +734,9 @@ def main(args):
             suffix = '_' + args.suffix[0]
 
     suffix=suffix + "_" + platform.system()
+    if runLocal:
+        suffix = suffix + '_LOCAL'
+
     logging.info("ncount is: %s" % ncount)
     if args.mpi:
         mpi = args.mpi[0]
@@ -790,7 +792,7 @@ if __name__ == '__main__':
     parser.add_argument('--nexus', action='store_true', help='Compile for / use NeXus output format everywhere')
     parser.add_argument('--lint', action='store_true', help='Just run the c-linter')
     parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional.')
-    parser.add_argument('--local', action='store_true', help='Instruments to test are found in subfolders of current dir only, NOT picked up from MCCODE installation')
+    parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR')
     args = parser.parse_args()
 
     try:
