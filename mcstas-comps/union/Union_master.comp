@@ -1254,7 +1254,7 @@ TRACE
     }
     
     // Checking if there are intersections with children of current volume, which means there is an intersection before current_volume, and thus can be skipped. But only if they have not been overwritten. In case current_volume is 0, there is no need to do this regardless.
-    if (current_volume != 0 && intersection_time_table.calculated[current_volume] == 0 && !Volumes[current_volume]->skip_hierarchical_optimization) {
+    if (current_volume != 0 && intersection_time_table.calculated[current_volume] == 0 ) {
         #ifdef Union_trace_verbal_setting
           printf("Checking if children of current_volume = %d have intersections. \n",current_volume);
         #endif
@@ -1265,7 +1265,7 @@ TRACE
               printf("Checking if child %d of current_volume = %d have intersections. \n",*check,current_volume);
             #endif
             // Only check the first of the two results in the intersection table, as they are ordered, and the second is of no interest
-            if (intersection_time_table.calculated[*check] == 1 && intersection_time_table.intersection_times[*check][0] > time_propagated_without_scattering) {
+            if (intersection_time_table.calculated[*check] == 1 && intersection_time_table.intersection_times[*check][0] > time_propagated_without_scattering && !Volumes[current_volume]->skip_hierarchical_optimization) {
                 // If this child is masked, its mask status need to be 1 in order to be taken into account
                 if (Volumes[*check]->geometry.is_masked_volume == 0) {
                   #ifdef Union_trace_verbal_setting
