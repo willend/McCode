@@ -402,6 +402,7 @@ int is_mask_volume; // 1 if volume itself is a mask (masking the ones in it's ma
 int mask_index;
 int is_masked_volume; // 1 if this volume is being masked by another volume, the volumes that mask it is in masked_by_list
 int mask_mode; // ALL/ANY 1/2. In ALL mode, only parts covered by all masks is simulated, in ANY mode, area covered by just one mask is simulated
+int skip_hierarchy_optimization;
 double geometry_p_interact; // fraction of rays that interact with this volume for each scattering (between 0 and 1, 0 for disable)
 union geometry_parameter_union geometry_parameters; // relevant parameters for this shape
 union geometry_parameter_union (*copy_geometry_parameters)(union geometry_parameter_union*);
@@ -539,7 +540,6 @@ struct surface_process_struct **p_surface_array;
 struct Volume_struct
 {
 char name[256]; // User defined volume name
-int skip_hierarchical_optimization;
 struct geometry_struct geometry;        // Geometry properties (including intersect functions, generated lists)
 struct physics_struct *p_physics;       // Physical properties (list of scattering processes, absorption)
 struct loggers_struct loggers;          // Loggers assosiated with this volume
@@ -670,9 +670,9 @@ struct global_master_element_struct *elements;
 };
 
 
-void volume_struct_init(struct Volume_struct *vol){
-  memset(vol, 0, sizeof(struct Volume_struct));
-  vol->skip_hierarchical_optimization = 0;
+void geometry_struct_init(struct geometry_struct *geometry){
+  memset(geometry, 0, sizeof(struct geometry_struct));
+  geometry->skip_hierarchy_optimization = 0;
 }
 // -------------    Physics functions   ---------------------------------------------------------
 
