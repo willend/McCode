@@ -568,7 +568,7 @@ void mcdisplay_mesh_function(struct lines_to_draw *lines_to_draw_output,int inde
 };
 
 
-struct pointer_to_1d_coords_list mesh_shell_points(struct geometry_struct *geometry,int max_number_of_points) {
+struct pointer_to_1d_coords_list allocate_shell_points(struct geometry_struct *geometry,int max_number_of_points) {
   // Function that returns a number (less than max) of points on the geometry surface
   // Run trhough all points in list of faces, and remove dublicates
   // There are three points in a face and very often these will be dublicated a few times. This removes dublicates to boost performance down stream...
@@ -1080,7 +1080,7 @@ mesh_vol.geometry.within_function = &r_within_mesh;
 mesh_vol.geometry.geometry_parameters.p_mesh_storage = &mesh_data;
 mesh_vol.geometry.intersect_function = &sample_mesh_intersect;
 mesh_vol.geometry.mcdisplay_function = &mcdisplay_mesh_function;
-mesh_vol.geometry.shell_points = &mesh_shell_points;
+mesh_vol.geometry.shell_points = &allocate_shell_points;
 mesh_vol.geometry.initialize_from_main_function = &initialize_mesh_geometry_from_main_component;
 mesh_vol.geometry.process_rot_allocated = 0;
 mesh_vol.geometry.copy_geometry_parameters = &allocate_mesh_storage_copy; 
