@@ -25,9 +25,12 @@
 *
 * There is a dedicated manual available for the Union_components
 *
-* The mesh component loads a 3D off file as the geometry. The mesh geometry
-* can not yet be overlapped with the basic geometries (sphere, cylinder, box, cone),
-* but can be overlapped with other mesh geometries.
+* The mesh component loads a 3D off or stl files as the geometry. 
+* The mesh geometry that is loaded must be a watertight mesh.
+* In order to check this, the component implements a simple Euler Pointcare value,
+* To check if the given geometry is watertight. This check is sometimes too rigid,
+* so a user can set the skip_convex_check parameter in order to not have this 
+* check performed.
 *
 * It is allowed to overlap components, but it is not allowed to have two
 *  parallel planes that coincides. This will crash the code on run time.
