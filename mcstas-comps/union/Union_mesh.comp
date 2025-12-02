@@ -245,15 +245,9 @@ void read_stl(char* filename,
    for (int i = 0; i < *n_faces; i++) {
       (*faces)[i] = (int *)malloc(sizeof(int)*3);
       j = i*3;
-      (*verts)[j].x = (double)triangles[i].vertex1[0];
-      (*verts)[j].y = (double)triangles[i].vertex1[1];
-      (*verts)[j].z = (double)triangles[i].vertex1[2];
-      (*verts)[j+1].x = (double)triangles[i].vertex2[0];
-      (*verts)[j+1].y = (double)triangles[i].vertex2[1];
-      (*verts)[j+1].z = (double)triangles[i].vertex2[2];
-      (*verts)[j+2].x = (double)triangles[i].vertex3[0];
-      (*verts)[j+2].y = (double)triangles[i].vertex3[1];
-      (*verts)[j+2].z = (double)triangles[i].vertex3[2];
+      (*verts)[j] = coords_set((double)triangles[i].vertex1[0], (double)triangles[i].vertex1[1], (double)triangles[i].vertex1[2]);
+      (*verts)[j+1] = coords_set((double)triangles[i].vertex2[0], (double)triangles[i].vertex2[1], (double)triangles[i].vertex2[2]);
+      (*verts)[j+2] = coords_set((double)triangles[i].vertex3[0], (double)triangles[i].vertex3[1], (double)triangles[i].vertex3[2]);
       (*faces)[i][0] = j;
       (*faces)[i][1] = j+1;
       (*faces)[i][2] = j+2;
@@ -297,6 +291,8 @@ void read_stl(char* filename,
    for (int i =0; i<unique_counter;i++){
       (*verts)[i] = unique_vertices[i];
    }
+   free(map_old_to_unique);
+   free(unique_vertices);
 }
 
     
@@ -319,7 +315,6 @@ void read_off_file_vertices_and_faces(char* filename,
    char buffer[250];
    while (fgets(buffer, sizeof(buffer), fp)) {
       if (!strncmp(buffer, "#",1)){
-         printf("\nFound comment");
          continue;
       }
       if (n_lines == 1){
@@ -330,9 +325,6 @@ void read_off_file_vertices_and_faces(char* filename,
       ++n_lines;
    }
    fclose(fp);  
-   printf("\nN vertices = %d", *n_verts);
-   printf("\nN faces = %d", *n_faces);
-   printf("\nN Edges = %d", *n_edges);
    *verts = (Coords *)malloc(sizeof(Coords)* *n_verts);
    *faces = (int **)malloc(sizeof(int *)* *n_faces);
    
@@ -347,7 +339,6 @@ void read_off_file_vertices_and_faces(char* filename,
    while (fgets(buffer, sizeof(buffer), fp)) {
       // Skip any comments and the first two lines
       if (!strncmp(buffer, "#",1)){
-         printf("\nFound comment");
          continue;
       } else if (n_lines<2){
          ++n_lines;
@@ -447,9 +438,6 @@ void find_unique_vertex_vertex_pairs(int* unique_index, int** unique_verts,
    }  
 }
 
-void find_coords(){
-   printf("Not working");
-}
 int coord_comp(Coords A,Coords B) {
     if (A.x==B.x && A.y==B.y && A.z==B.z){
         return 1;
@@ -603,29 +591,22 @@ struct pointer_to_1d_coords_list mesh_shell_points(struct geometry_struct *geome
 	int is_dublicate = 0;
 	Coords this_vert;
 	int i,j;
-   //TODO: IT seems like these shell points are used as is, without translation
-   // FIX
-	// printf("\n CREATE SHELL POINTS");
-	// printf("\n n_verts (likely dublicated) = %i",n_facets*3);
 	for (i=0 ; i < n_facets ; i++){
 		
 		// v1
 		is_dublicate = 0;
 		this_vert = coords_set(*(v1_x+i),*(v1_y+i),*(v1_z+i));
-		//printf("\n this point [%f,%f,%f] ",this_vert.x,this_vert.y,this_vert.z);
 		
 		// test if dublicate
 		for (j = 0; j < number_of_points_in_array ; j++ ){
 			if (this_vert.x == mesh_shell_array.elements[j].x && this_vert.y == mesh_shell_array.elements[j].y && this_vert.z == mesh_shell_array.elements[j].z){
 				is_dublicate = 1;
-				//printf("\n point [%f,%f,%f] is a dublicate of [%f,%f,%f]",this_vert.x,this_vert.y,this_vert.z,mesh_shell_array.elements[j].x,mesh_shell_array.elements[j].y,mesh_shell_array.elements[j].z);
 				j = number_of_points_in_array;
 			}
 		}
 		if (is_dublicate == 0){
 			mesh_shell_array.elements[number_of_points_in_array] = this_vert;
 			number_of_points_in_array += 1;
-			//printf("\n Added a point [%f,%f,%f] ",this_vert.x,this_vert.y,this_vert.z);
 		}
 	
 	
@@ -634,18 +615,15 @@ struct pointer_to_1d_coords_list mesh_shell_points(struct geometry_struct *geome
 		is_dublicate = 0;
 		this_vert = coords_set(*(v2_x+i),*(v2_y+i),*(v2_z+i));
 		
-		// test if dublicate
 		for (j = 0; j < number_of_points_in_array ; j++){
 			if (this_vert.x == mesh_shell_array.elements[j].x && this_vert.y == mesh_shell_array.elements[j].y && this_vert.z == mesh_shell_array.elements[j].z){
 				is_dublicate = 1;
-				//printf("\n point [%f,%f,%f] is a dublicate of [%f,%f,%f]",this_vert.x,this_vert.y,this_vert.z,mesh_shell_array.elements[j].x,mesh_shell_array.elements[j].y,mesh_shell_array.elements[j].z);
 				j = number_of_points_in_array;
 			}
 		}
 		if (is_dublicate == 0){
 			mesh_shell_array.elements[number_of_points_in_array] = this_vert;
 			number_of_points_in_array += 1;
-			//printf("\n Added a point [%f,%f,%f] ",this_vert.x,this_vert.y,this_vert.z);
 		}
 	
 	
@@ -658,25 +636,18 @@ struct pointer_to_1d_coords_list mesh_shell_points(struct geometry_struct *geome
 		for (j = 0; j < number_of_points_in_array ; j++ ){
 			if (this_vert.x == mesh_shell_array.elements[j].x && this_vert.y == mesh_shell_array.elements[j].y && this_vert.z == mesh_shell_array.elements[j].z){
 				is_dublicate = 1;
-				//printf("\n point [%f,%f,%f] is a dublicate of [%f,%f,%f]",this_vert.x,this_vert.y,this_vert.z,mesh_shell_array.elements[j].x,mesh_shell_array.elements[j].y,mesh_shell_array.elements[j].z);
 				j = number_of_points_in_array;
 			}
 		}
 		if (is_dublicate == 0){
 			mesh_shell_array.elements[number_of_points_in_array] = this_vert;
 			number_of_points_in_array += 1;
-			//printf("\n Added a point [%f,%f,%f] ",this_vert.x,this_vert.y,this_vert.z);
 		}
 	}
     
-  // printf("\n test is there to high j? j = %i, number_of_points_in_array = %i , lenght of array = %i ",j,number_of_points_in_array,3*n_facets * sizeof(Coords));
   j = number_of_points_in_array - 1; // Last legal index, currently j is out of bounds.
-  // printf("\n test= [%f,%f,%f]",mesh_shell_array.elements[j].x ,mesh_shell_array.elements[j].y,mesh_shell_array.elements[j].z);
   
   mesh_shell_array.num_elements = number_of_points_in_array;
-  //free(mesh_shell_array.elements);
-  // printf("\n SHELL POINTS: DONE");
-  // printf("\n SHELL POINTS: created %i shell points in mesh",mesh_shell_array.num_elements);
 
    
    for (i=0; i<number_of_points_in_array; i++){
@@ -684,7 +655,6 @@ struct pointer_to_1d_coords_list mesh_shell_points(struct geometry_struct *geome
       mesh_shell_array.elements[i] = coords_add(mesh_shell_array.elements[i], geometry->center);
       mesh_shell_array.elements[i] = rot_apply(geometry->rotation_matrix, mesh_shell_array.elements[i]);
    }
-    //printf("\n test last element = [%f,%f,%f]",mesh_shell_array.elements[mesh_shell_array.num_elements-1].x ,mesh_shell_array.elements[mesh_shell_array.num_elements-1].y,mesh_shell_array.elements[mesh_shell_array.num_elements-1].z);
   return mesh_shell_array;
 }
 
@@ -706,7 +676,6 @@ void initialize_mesh_geometry_from_main_component(struct geometry_struct *mesh) 
     mesh->geometry_parameters.p_mesh_storage->direction_vector.x = mesh_vector.x;
     mesh->geometry_parameters.p_mesh_storage->direction_vector.y = mesh_vector.y;
     mesh->geometry_parameters.p_mesh_storage->direction_vector.z = mesh_vector.z;
-    // if (verbal == 1) printf("Cords vector1 = (%f,%f,%f)\n",mesh_vector.x,mesh_vector.y,
     
     mesh->geometry_parameters.p_mesh_storage->Bounding_Box_Center = rot_apply(mesh->rotation_matrix, mesh->geometry_parameters.p_mesh_storage->Bounding_Box_Center);
     
