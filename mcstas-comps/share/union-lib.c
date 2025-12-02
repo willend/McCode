@@ -2471,7 +2471,6 @@ int mesh_A_within_B(struct geometry_struct *child, struct geometry_struct *paren
   // If all points on the shell of geometry A is within B, so are all lines between them.
   // This is modified so resolution is not set manually, but all mesh shell points are taken
   
-  printf("shell points mesh A within B \n");
   // resolution selects the number of points to be generated on the shell.
   struct pointer_to_1d_coords_list shell_points;
   int resolution = 300;
