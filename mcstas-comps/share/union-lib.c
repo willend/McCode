@@ -3651,14 +3651,6 @@ int sample_mesh_intersect(double *t,
                           int *num_solutions,double *r,double *v,
                           struct geometry_struct *geometry) {
     
-   
-    /*
-    double radius_top = geometry->geometry_parameters.p_mesh_storage->mesh_radius_top;
-    double radius_bottom = geometry->geometry_parameters.p_mesh_storage->mesh_radius_bottom;
-    double height = geometry->geometry_parameters.p_mesh_storage->height;
-    */
-
-
     int n_facets = geometry->geometry_parameters.p_mesh_storage->n_facets;
     double *normal_x = geometry->geometry_parameters.p_mesh_storage->normal_x;
     double *normal_y = geometry->geometry_parameters.p_mesh_storage->normal_y;
@@ -3674,30 +3666,16 @@ int sample_mesh_intersect(double *t,
     double *v3_z = geometry->geometry_parameters.p_mesh_storage->v3_z;
     Coords Bounding_Box_Center = geometry->geometry_parameters.p_mesh_storage->Bounding_Box_Center;
     double Bounding_Box_Radius = geometry->geometry_parameters.p_mesh_storage->Bounding_Box_Radius;
-    
-    
     int i;
-    
-    
-    // printf("\nEntered sample_mesh_intersect function"); 
-    
     Coords center = geometry->center;
-
     Coords direction = coords_set(0,1,0);
-
-
-
-
-    // Declare variables for the function
     double x_new,y_new,z_new;
-    
     // Coordinate transformation
     x_new = r[0] - geometry->center.x;
     y_new = r[1] - geometry->center.y;
     z_new = r[2] - geometry->center.z;
     
     double x_bb,y_bb,z_bb;
-    
     x_bb = r[0] - Bounding_Box_Center.x - geometry->center.x;
     y_bb = r[1] - Bounding_Box_Center.y - geometry->center.y;
     z_bb = r[2] - Bounding_Box_Center.z - geometry->center.z;
@@ -3713,26 +3691,15 @@ int sample_mesh_intersect(double *t,
     
     bounding_box_rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,bounding_box_coordinates);
     
-    
     Coords velocity = coords_set(v[0],v[1],v[2]);
     Coords rotated_velocity;
     
     // Rotate the position of the neutron around the center of the mesh
     rotated_velocity = rot_apply(geometry->transpose_rotation_matrix,velocity);
     
-    // printf("Is testing for intersections!\n");
-
     int output;
     double tmpres[2];
-    // printf("\nneutron coords = %g, %g, %g"
-           // "\nneutrov v = %g, %g, %g", bounding_box_rotated_coordinates.x
-           // ,bounding_box_rotated_coordinates.y
-           // ,bounding_box_rotated_coordinates.z
-           // ,rotated_velocity.x
-           // ,rotated_velocity.y
-           // ,rotated_velocity.z);
-    // Test intersection with bounding sphere // if ((output = sphere_intersect(&t[0],&t[1],x_new,y_new,z_new,v[0],v[1],v[2],radius)) == 0) {
-    //if ((output = sphere_intersect(&tmpres[0],&tmpres[1],x_bb,y_bb,z_bb,rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,Bounding_Box_Radius)) == 0) {
+    // Test intersection with bounding sphere 
     if ((output = sphere_intersect(&tmpres[0],&tmpres[1],
                                    bounding_box_rotated_coordinates.x,
                                    bounding_box_rotated_coordinates.y,
@@ -3746,8 +3713,6 @@ int sample_mesh_intersect(double *t,
         *num_solutions = 0;
         return 0;
     }
-   // printf("\nneutron intersects mesh bounding box");
-    
     // Check intersections with every single facet:
     int iter =0;
     int counter=0;
@@ -3758,168 +3723,68 @@ int sample_mesh_intersect(double *t,
     double *t_intersect=malloc(n_facets*sizeof(double));
     int *facet_index = malloc(n_facets*sizeof(int));
     *num_solutions = 0;
-   // printf("\nJust before facet iteration");
     for (iter = 0 ; iter < n_facets ; iter++){
-    /*////printf("\n\n facet v1 = [%f,%f,%f]",v1_x[iter],v1_y[iter],v1_z[iter]);
-    ////printf("\n facet v2 = [%f,%f,%f]",v2_x[iter],v2_y[iter],v2_z[iter]);
-    ////printf("\n facet v3 = [%f,%f,%f]",v3_x[iter],v3_y[iter],v3_z[iter]);*/
         // Intersection with face plane (Möller–Trumbore)
         edge1 = coords_set(*(v2_x+iter)-*(v1_x+iter),*(v2_y+iter)-*(v1_y+iter),*(v2_z+iter)-*(v1_z+iter));
-            ////printf("\n edge 1 = [%f,%f,%f]",edge1.x,edge1.y,edge1.z);
         edge2 = coords_set(*(v3_x+iter)-*(v1_x+iter),*(v3_y+iter)-*(v1_y+iter),*(v3_z+iter)-*(v1_z+iter));
-        //h = vec_prod(rotated_velocity,edge2);
+        //h = vec_prod(rotated_velocity,edge2); 
         vec_prod(h.x,h.y,h.z,rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,edge2.x,edge2.y,edge2.z);
-        ////printf("\n h = [%f,%f,%f]",h.x,h.y,h.z);
-        ////printf("\n rotated_velocity = [%f,%f,%f]",rotated_velocity.x,rotated_velocity.y,rotated_velocity.z);
-        ////printf("\n edge2 = [%f,%f,%f]",edge2.x,edge2.y,edge2.z);
-        //h = coord_set(rotated_velocity.y*edge2.z-rotated_velocity.z*edge2.y, rotated_velocity.z*edge2.x-rotated_velocity.x*edge2.z, rotated_velocity.x*edge2.y-rotated_velocity.y*edge2.x);
-        //a = Dot(h,edge1);
         a = Dot(edge1,h);
-        ////printf("\n a=%f",a);
         //if (a > -UNION_EPSILON && a < UNION_EPSILON){
             ////printf("\n UNION_EPSILON fail");
-        //} else{
+        //}
             f = 1.0/a;
             s = coords_sub(rotated_coordinates, coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
             u = f * (Dot(s,h));
             if (u < 0.0 || u > 1.0){
-                ////printf("\n Nope 1");
             }else{
                 //q = vec_prod(s,edge1);
                 vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
                 V = f * Dot(rotated_velocity,q);
                 if (V < 0.0 || u + V > 1.0){
-                    ////printf("\n Nope 2");
                 } else {
                     // At this stage we can compute t to find out where the intersection point is on the line.
                     //tmp = Dot(q,edge2)
-                    ////printf("\nt inside loop = %f",f* Dot(q,edge2));
                     if (f* Dot(q,edge2) > 0){
                         
                         t_intersect[counter] = f* Dot(q,edge2);
                         facet_index[counter] = iter;
                         //printf("\nIntersects at time: t= %f\n",t_intersect[counter] );
                         counter++;
-                        
-                        //intersect_pos = coords_set(rotated_coordinates.x+t_intersect[counter]*rotated_velocity.x,rotated_coordinates.y+t_intersect[counter]*rotated_velocity.y,rotated_coordinates.z+t_intersect[counter]*rotated_velocity.z);
-                        //////printf("\n intersects at [%f,%f,%f]",intersect_pos.x,intersect_pos.y,intersect_pos.z);
                     }
-                    
-                    
-                    
                 }
             }
-        //}
     }
-    // printf("\nFacet iteration over");
-    // find two smallest non-zero intersections:
-    /*
-    double t_min = -1.0;
-    double t_second_min= -1.0;
-    for (iter = 0 ; iter < counter; iter++){
-        // test
-        if (t_min == -1 && t_intersect[iter] > 0.0){
-            t_min = t_intersect[iter];
-
-        } else{
-            if (t_intersect[iter] > 0.0 && t_intersect[iter] < t_min) {
-                t_second_min = t_min;
-                t_min = t_intersect[iter];
-     
-            }
-            if (t_intersect[iter] > 0.0 && t_intersect[iter] > t_min) {
-                if (t_intersect[iter] < t_second_min || t_second_min == -1.0){
-                    t_second_min = t_intersect[iter];
-                }
-            }
-        }
-     
-     
-    }
-    
-    //printf("\n number of intersections: %i\n",counter);
-    
-    
-    
-    
-    if (t_second_min > 0) {
-        if (counter % 2 == 0){
-            t[0] = t_second_min;
-            t[1] = t_min;
-            *num_solutions = 2;
-            //printf("\n t[0] = %f   t[1] = %f \n",t_min,t_second_min);
-        } else{
-            t[0] = -1;
-            t[1] = t_min;
-            *num_solutions = 1;
-            //printf("\n t[0] = %f   t[1] = %f \n",t_min,t_second_min);
-        }
-            ////printf("\n t[0] = %f   t[1] = %f \n",t[0],t[1]);
-     
-            //printf("\n num_solutions: %i\n",*num_solutions);
-            return 1;
-    }else if (t_min>0) {
-            t[0] = t_min;
-            t[1] = -1;
-            *num_solutions = 1;
-            //printf("\n num_solutions: %i\n",*num_solutions);
-            return 1;
-    } else {
-            t[0] = -1;
-            t[1] = -1;
-            *num_solutions = 0;
-            //printf("\n num_solutions: %i\n",*num_solutions);
-            return 0;
-    }
-    return 0;
-    */
-
-
-    //for (iter=0;iter<99;iter++){
-    //    printf("\n t[%i] = %f",iter,t[iter]);
-    //    t[iter] = -1;
-    //}
     
     // Return all t
-   // printf("\nLooping over solutions");
     int counter2=0;
     double x_intersect, y_intersect, z_intersect;
     *num_solutions =0;
     for (iter=0; iter < counter ; iter++){
         if (t_intersect[iter] > 0.0){
-            t[counter2] = t_intersect[iter];
-            x_intersect = t[counter2]*v[0] + x_new;
+          t[counter2] = t_intersect[iter];
+          x_intersect = t[counter2]*v[0] + x_new;
 		      y_intersect = t[counter2]*v[1] + y_new;
 		      z_intersect = t[counter2]*v[2] + z_new;
-            coordinates = coords_set(x_intersect,y_intersect,z_intersect);
+          coordinates = coords_set(x_intersect,y_intersect,z_intersect);
 		      NORM(coordinates.x, coordinates.y, coordinates.z);
 		      nx[counter2] = normal_x[facet_index[iter]];
 		      ny[counter2] = normal_x[facet_index[iter]];
 		      nz[counter2] = normal_x[facet_index[iter]];				
 		      surface_index[counter2] = 0;
-            // printf("\nsurface_index = %d", counter2);
 		      counter2++;
-            *num_solutions = counter2;
-		      
+          *num_solutions = counter2;
         }
     }
-   // printf("All solutions have been looped over");
     // Sort t:
-    
     if (*num_solutions == 0){
         free(t_intersect);
+        free(facet_index);
         return 0;
     }
-   // printf("\nMore than 0 solutions!");
     qsort(t,*num_solutions,sizeof (double), Sample_compare_doubles);
-   // printf("\nqsort is over now");
-    if (*num_solutions > 2){
-        //printf("\n T(0) = %f T(1) = %f  T(2) = %f T(3) = %f T(4) = %f",t[0],t[1],t[2],t[3],t[4]);
-        //printf("\n TEST");
-    }
-   // printf("\nOnly need to free t_intersect");
+    free(facet_index);
     free(t_intersect);
-   // printf("\nt_intersect is a free man!");
     return 1;
     
 };
