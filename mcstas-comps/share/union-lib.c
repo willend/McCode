@@ -3756,6 +3756,7 @@ int sample_mesh_intersect(double *t,
     double this_facet_t;
     double a,f,u,V;
     double *t_intersect=malloc(n_facets*sizeof(double));
+    int *facet_index = malloc(n_facets*sizeof(int));
     *num_solutions = 0;
    // printf("\nJust before facet iteration");
     for (iter = 0 ; iter < n_facets ; iter++){
@@ -3796,6 +3797,7 @@ int sample_mesh_intersect(double *t,
                     if (f* Dot(q,edge2) > 0){
                         
                         t_intersect[counter] = f* Dot(q,edge2);
+                        facet_index[counter] = iter;
                         //printf("\nIntersects at time: t= %f\n",t_intersect[counter] );
                         counter++;
                         
@@ -3891,9 +3893,9 @@ int sample_mesh_intersect(double *t,
 		      z_intersect = t[counter2]*v[2] + z_new;
             coordinates = coords_set(x_intersect,y_intersect,z_intersect);
 		      NORM(coordinates.x, coordinates.y, coordinates.z);
-		      nx[counter2] = coordinates.x;
-		      ny[counter2] = coordinates.y;
-		      nz[counter2] = coordinates.z;				
+		      nx[counter2] = normal_x[facet_index[iter]];
+		      ny[counter2] = normal_x[facet_index[iter]];
+		      nz[counter2] = normal_x[facet_index[iter]];				
 		      surface_index[counter2] = 0;
             // printf("\nsurface_index = %d", counter2);
 		      counter2++;
