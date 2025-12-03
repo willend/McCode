@@ -1035,6 +1035,7 @@ mesh_data.Bounding_Box_Radius = radius;
 
 
 Coords vert1, vert2, vert3;
+Coords edge1, edge2;
 // Allocate space vertices in mesh data
 // TODO: Change data format to be in a less verbose data structure, or a more effective one.
 mesh_data.v1_x = (double *)malloc(n_faces*sizeof(double));
@@ -1064,10 +1065,11 @@ for (int i=0; i<n_faces; i++){
 	mesh_data.v3_x[i] = vert3.x;
 	mesh_data.v3_y[i] = vert3.y;
 	mesh_data.v3_z[i] = vert3.z;
-   
-   mesh_data.normal_x[i] = 1;
-   mesh_data.normal_y[i] = 1;
-   mesh_data.normal_z[i] = 1;
+   edge1 = coords_sub(vert1,vert2);
+   edge2 = coords_sub(vert3,vert1);
+   vec_prod(mesh_data.normal_x[i], mesh_data.normal_y[i], mesh_data.normal_z[i], 
+                     edge1.x, edge1.y, edge1.z,
+                     edge2.x, edge2.y, edge2.z);
 }
 mesh_data.n_facets = n_faces;
 mesh_data.counter = n_verts; 
