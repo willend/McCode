@@ -711,8 +711,6 @@ off_struct offdata; // off struct isnt currently in use
 // loggers struct and absorption loggers struct.
 struct Volume_struct mesh_vol;
 
-// TODO mesh storage currently allocates crazy amounts of data.
-// Make it dynvamically allocated instead
 // Mesh storage contains the number of facets, and for each facet
 // the three vertexes coordinates. Not in an optimal way.
 // However, the Bounding box center and radius is also stored here.
@@ -950,9 +948,7 @@ if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
 }
 // Loop over all vertices and multiply their positions with coordinate_scale
 for (int i = 0; i<n_verts; i++){//TODO: Dont use x y z as this doesnt align with particle struct.
-   verts[i].x *= coordinate_scale;
-   verts[i].y *= coordinate_scale;
-   verts[i].z *= coordinate_scale;
+   verts[i] = coords_scale(verts[i], coordinate_scale);
 }
 
 
