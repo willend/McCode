@@ -3398,6 +3398,8 @@ This function was created by Martin Olsen at NBI on september 20, 2018.
 };
 
 int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
+  //TODO: Make a single intersection algorithm that all the three mesh intersections
+  // Can use
 // Unpack parameters
 
     Coords center = geometry->center;
@@ -3443,18 +3445,13 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
     double a,f,u,V;
     //////printf("\n RWITHIN TEST 1ste");
     for (iter = 0 ; iter < n_facets ; iter++){
-    /*//////printf("\n\n facet v1 = [%f,%f,%f]",v1_x[iter],v1_y[iter],v1_z[iter]);
-    //////printf("\n facet v2 = [%f,%f,%f]",v2_x[iter],v2_y[iter],v2_z[iter]);
-    //////printf("\n facet v3 = [%f,%f,%f]",v3_x[iter],v3_y[iter],v3_z[iter]);*/
         // Intersection with face plane (Möller–Trumbore)
         edge1 = coords_set(*(v2_x+iter)-*(v1_x+iter),*(v2_y+iter)-*(v1_y+iter),*(v2_z+iter)-*(v1_z+iter));
-            //////printf("\n edge 1 = [%f,%f,%f]",edge1.x,edge1.y,edge1.z);
         edge2 = coords_set(*(v3_x+iter)-*(v1_x+iter),*(v3_y+iter)-*(v1_y+iter),*(v3_z+iter)-*(v1_z+iter));
         
         vec_prod(h.x,h.y,h.z,test_vector.x,test_vector.y,test_vector.z,edge2.x,edge2.y,edge2.z);
         
         a = Dot(edge1,h);
-        //////printf("\n a=%f",a);
         if (a > -UNION_EPSILON && a < UNION_EPSILON){
             //////printf("\n UNION_EPSILON fail");
         } else{
@@ -3462,13 +3459,11 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
             s = coords_sub(rotated_coordinates, coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
             u = f * (Dot(s,h));
             if (u < 0.0 || u > 1.0){
-                //////printf("\n Nope 1");
             }else{
                 //q = vec_prod(s,edge1);
                 vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
                 V = f * Dot(test_vector,q);
                 if (V < 0.0 || u + V > 1.0){
-                    //////printf("\n Nope 2");
                 } else {
                     // At this stage we can compute t to find out where the intersection point is on the line.
                     if (f* Dot(q,edge2) > 0){
@@ -3491,7 +3486,6 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
     int C1 = counter;
     
     int maxC; int sameNr =0;
-    ////printf("\n first iter: (%i , %i)",counter,neg_counter);
     if (counter % 2 == neg_counter % 2){
         maxC = counter;
         sameNr = 1;
@@ -3505,20 +3499,14 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
      test_vector = coords_set(0,0,1);
     iter =0;
     counter=0;
-    //////printf("\n RWITHIN TEST 1ste");
     for (iter = 0 ; iter < n_facets ; iter++){
-    ///////printf("\n\n facet v1 = [%f,%f,%f]",v1_x[iter],v1_y[iter],v1_z[iter]);
-    //////printf("\n facet v2 = [%f,%f,%f]",v2_x[iter],v2_y[iter],v2_z[iter]);
-    //////printf("\n facet v3 = [%f,%f,%f]",v3_x[iter],v3_y[iter],v3_z[iter]);
         // Intersection with face plane (Möller–Trumbore)
         edge1 = coords_set(*(v2_x+iter)-*(v1_x+iter),*(v2_y+iter)-*(v1_y+iter),*(v2_z+iter)-*(v1_z+iter));
-            //////printf("\n edge 1 = [%f,%f,%f]",edge1.x,edge1.y,edge1.z);
         edge2 = coords_set(*(v3_x+iter)-*(v1_x+iter),*(v3_y+iter)-*(v1_y+iter),*(v3_z+iter)-*(v1_z+iter));
         
         vec_prod(h.x,h.y,h.z,test_vector.x,test_vector.y,test_vector.z,edge2.x,edge2.y,edge2.z);
         
         a = Dot(edge1,h);
-        //////printf("\n a=%f",a);
         if (a > -UNION_EPSILON && a < UNION_EPSILON){
             //////printf("\n UNION_EPSILON fail");
         } else{
@@ -3526,13 +3514,11 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
             s = coords_sub(rotated_coordinates , coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
             u = f * (Dot(s,h));
             if (u < 0.0 || u > 1.0){
-                //////printf("\n Nope 1");
             }else{
                 //q = vec_prod(s,edge1);
                 vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
                 V = f * Dot(test_vector,q);
                 if (V < 0.0 || u + V > 1.0){
-                    //////printf("\n Nope 2");
                 } else {
                     // At this stage we can compute t to find out where the intersection point is on the line.
 
@@ -3568,20 +3554,14 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
      test_vector = coords_set(1,0,0);
     iter =0;
     counter=0;
-    //////printf("\n RWITHIN TEST 1ste");
     for (iter = 0 ; iter < n_facets ; iter++){
-    ///////printf("\n\n facet v1 = [%f,%f,%f]",v1_x[iter],v1_y[iter],v1_z[iter]);
-    //////printf("\n facet v2 = [%f,%f,%f]",v2_x[iter],v2_y[iter],v2_z[iter]);
-    //////printf("\n facet v3 = [%f,%f,%f]",v3_x[iter],v3_y[iter],v3_z[iter]);
         // Intersection with face plane (Möller–Trumbore)
         edge1 = coords_set(*(v2_x+iter)-*(v1_x+iter),*(v2_y+iter)-*(v1_y+iter),*(v2_z+iter)-*(v1_z+iter));
-            //////printf("\n edge 1 = [%f,%f,%f]",edge1.x,edge1.y,edge1.z);
         edge2 = coords_set(*(v3_x+iter)-*(v1_x+iter),*(v3_y+iter)-*(v1_y+iter),*(v3_z+iter)-*(v1_z+iter));
         
         vec_prod(h.x,h.y,h.z,test_vector.x,test_vector.y,test_vector.z,edge2.x,edge2.y,edge2.z);
         
         a = Dot(edge1,h);
-        //////printf("\n a=%f",a);
         if (a > -UNION_EPSILON && a < UNION_EPSILON){
             //////printf("\n UNION_EPSILON fail");
         } else{
@@ -3595,7 +3575,6 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
                 vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
                 V = f * Dot(test_vector,q);
                 if (V < 0.0 || u + V > 1.0){
-                    //////printf("\n Nope 2");
                 } else {
                     // At this stage we can compute t to find out where the intersection point is on the line.
 
@@ -3623,20 +3602,11 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
     if (counter % 2 == neg_counter % 2){
         maxC = counter;
     } else {
-        //printf("\n not the same intersection numbers (3. iteration) (%i , %i)",counter,neg_counter);
-        //printf("\n this point is a bitch: [%f %f %f]",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z);
         return 0;
-        
     }
-    ////printf("\n test point: [%f %f %f]",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z);
-
-////printf("\n maxC: %i",maxC);
-
     if ( maxC % 2 == 0) {
-        ////printf("\n Even number of intersections,  %i",counter);
         return 0;
     }else{
-        ////printf("\n Odd number of intersections, INSIDE! %i",counter);
         return 1;
         
     }
