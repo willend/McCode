@@ -6797,7 +6797,7 @@ int within_which_volume_debug(Coords pos, struct pointer_to_1d_int_list input_li
             }
             if (ListB_length==0) done = 1;
             else {
-                ListA = temp_pointer;
+                temp_pointer = ListA;
                 ListA = ListB;
                 ListB = temp_pointer;
                 ListA_length=ListB_length;
