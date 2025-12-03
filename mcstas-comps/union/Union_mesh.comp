@@ -32,6 +32,10 @@
 * so a user can set the skip_convex_check parameter in order to not have this 
 * check performed.
 *
+*
+* If you load an off file, we currently only support rank 3 polygons, i.e 
+* triangular meshes.
+*
 * It is allowed to overlap components, but it is not allowed to have two
 *  parallel planes that coincides. This will crash the code on run time.
 *
@@ -368,6 +372,7 @@ void read_off_file_vertices_and_faces(char* filename,
             printf("\nERROR: Facets use more than 3 vertices."
                    "\n Please correct your .off file used for Component %s",
                    comp_name);
+            exit(1);
          }
          ++face_index;
       }  
