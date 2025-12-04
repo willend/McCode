@@ -96,10 +96,10 @@ COMPONENT sample_box = Union_box(
 AT (-0.01,0,0) RELATIVE sample_pos
 ROTATED (34,17,0) RELATIVE sample_pos
 
-COMPONENT sample_cone = Union_cone(
- radius_top=0.031, radius_bottom=0.005, yheight=0.04, priority=22, material_string="Cu")
-AT (0.02,-0.03,0) RELATIVE sample_pos
-ROTATED (0,0,20) RELATIVE sample_pos
+/* COMPONENT sample_cone = Union_cone( */
+/*  radius_top=0.031, radius_bottom=0.005, yheight=0.04, priority=22, material_string="Cu") */
+/* AT (0.02,-0.03,0) RELATIVE sample_pos */
+/* ROTATED (0,0,20) RELATIVE sample_pos */
 
 COMPONENT sample_torus  = Union_mesh(
    filename = meshfile,
