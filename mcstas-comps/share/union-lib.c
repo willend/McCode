@@ -9159,7 +9159,7 @@ void focus_initialize(struct geometry_struct *geometry, Coords POS_A_TARGET, Coo
     exit(EXIT_FAILURE);
   }
   
-  struct  focus_data;
+  struct focus_data_struct focus_data;
 
   // Initialize focus_data_struct
   focus_data.Aim = coords_set(0,0,0);
