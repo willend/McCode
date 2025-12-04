@@ -1484,6 +1484,8 @@ int cogen_section(struct instr_def *instr, char *section, char *section_lower,
   if (!strcmp(section, "INITIALISE"))
   {
     cout("  DEBUG_INSTR();");
+    cout("  // Initialise rng");
+    cout("  srandom(_hash(mcseed-1));");
     cout("");
     /* default values for instrument parameters are set in mcreadparams */
     cout("  /* code_main/parseoptions/readparams "
