@@ -34,7 +34,9 @@ int mccode_main(int argc, char *argv[])
   // init global _particle.randstate for random number use
   // during init(), finally() and display(). NOTE: during trace, a local
   // "_particle" variable is present and thus used instead.
-  srandom(_hash(mcseed-1));
+  //
+  // PW: srandom deferred until init() since we did not read seed input from commandline
+  //srandom(_hash(mcseed-1));
 
 #ifdef USE_MPI
   /* *** print number of nodes *********************************************** */
