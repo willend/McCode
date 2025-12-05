@@ -3934,7 +3934,6 @@ int sample_mesh_intersect(double *t,
     double a,f,u,V;
     double *t_intersect=malloc(n_facets*sizeof(double));
     int *facet_index = malloc(n_facets*sizeof(int));
-=======
     if (!t_intersect || !facet_index) {
       fprintf(stderr,"Failure allocating list in Union function sample_mesh_intersect - Exit!\n");
       exit(EXIT_FAILURE);
