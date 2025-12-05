@@ -2296,7 +2296,10 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     direction[2] = r2[2] - r1[2];
     int geometry_output;
     
-	
+    // Todo: switch to nicer intersect function call
+    double *double_dummy = malloc(2*sizeof(double));
+    int int_dummy[2];
+
 	
     // Find intersections
     for (volume_index = 1;volume_index < number_of_volumes; volume_index++) {
