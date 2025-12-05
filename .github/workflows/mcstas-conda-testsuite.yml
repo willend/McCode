@@ -94,7 +94,7 @@ jobs:
            export MCTEST_EXECUTABLE="mctest"
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             export MCTEST_EXECUTABLE="mctest.bat --permissive"
+             export MCTEST_EXECUTABLE="mctest.bat"
            fi
            # Workaround for warning about "too long" tmpdir name on macOS/openmpi
            if [ "$RUNNER_OS" == "macOS" ];
@@ -113,7 +113,7 @@ jobs:
            set -u
            set -x
            # Clear out binaries from sim dir and tar up artifact
-           ./src/devel/bin/mccode-simdir-cleanfiles -d run_test-suite
+           ls | grep run_ | xargs -n1 ./src/devel/bin/mccode-simdir-cleanfiles -d 
            tar cvfz mcstas-${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}_output.tgz run_test-suite
 
     - name: 'Upload Artifact'

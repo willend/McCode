@@ -81,7 +81,7 @@ jobs:
            set -x
            cd McCode
            # Check if this is a clear-cut release-tag build:
-           export REV=`git tag --points-at HEAD`
+           export REV=`git tag --points-at HEAD | cut -b2-`
            # Otherwise, pick latest and add _nightly
            if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
            echo Building on $RUNNER_OS with version set to $REV
@@ -97,7 +97,7 @@ jobs:
            set -x
            cd McCode
            # Check if this is a clear-cut release-tag build:
-           export REV=`git tag --points-at HEAD`
+           export REV=`git tag --points-at HEAD | cut -b2-`
            # Otherwise, pick latest and add _nightly
            if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
            echo Building on $RUNNER_OS with version set to $REV
@@ -112,7 +112,7 @@ jobs:
            set -x
            cd McCode
            # Check if this is a clear-cut release-tag build:
-           export REV=`git tag --points-at HEAD`
+           export REV=`git tag --points-at HEAD | cut -b2-`
            # Otherwise, pick latest and add _nightly
            if [ "$REV" == "" ]; then export REV=`git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags origin 'v*.*.*' | tail -1 | cut -f3 -d/ | cut -f2 -dv`_nightly; fi
            echo Cross-compiling for MinGW Windows on $RUNNER_OS with version set to $REV
