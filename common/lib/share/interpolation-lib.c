@@ -633,8 +633,10 @@ double *interpolator_interpolate(struct interpolator_struct *interpolator,
     int axis;
     long *indices = malloc((int)interpolator->space_dimensionality*sizeof(double));
     if (!indices) {
+      #ifndef OPENACC
       fprintf(stderr,"interpolation-lib: indices malloc() error in interpolator_interpolate\n");
       exit(-1);
+      #endif
     }
     for (axis=0; axis < interpolator->space_dimensionality; axis++) {
       indices[axis] = round((space[axis]-interpolator->min[axis])/interpolator->step[axis]);
