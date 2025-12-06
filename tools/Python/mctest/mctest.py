@@ -670,7 +670,7 @@ def main(args):
     mccoderoot = args.mccoderoot    # use non-default mccode system install location
     limit = args.limit              # only test the first [limit] instruments (useful for debugging purposes)
     instrfilter = args.instr        # test only matching instrs
-    compfilter = args.comp[0]       # test only instrs including comp
+    compfilter = args.comp          # test only instrs including comp
     suffix=""
 
     # set modifications first
@@ -732,6 +732,7 @@ def main(args):
         suffix = '_' + isuffix
 
     if compfilter:
+        compfilter=str(compfilter[0])
         suffix = suffix + '_' + compfilter
 
     if args.suffix:
