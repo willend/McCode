@@ -170,16 +170,18 @@ def extract_testvals(datafolder, monitorname):
                 return (I, I_err, N)
                 break
 
-def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, version=None):
+def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilter=None, version=None):
     ''' this main test function tests the given mccode branch/version '''
     global runLocal
     # copy instr files and record info
     if not runLocal:
         logging.info("Finding instruments in: %s" % str(pathlib.Path(branchdir,"examples").resolve()))
-        instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(branchdir,"examples").resolve()), recursive=True, instrfilter=instrfilter)
+        instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(branchdir,"examples").resolve()), recursive=True, instrfilter=instrfilter, withcomp=compfilter)
     else:
         logging.info("Adding instruments from subfolders in: %s" % str(pathlib.Path(".").resolve()))
-        instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(runLocal).resolve()), recursive=True, instrfilter=instrfilter)
+        instrs, _ = utils.get_instr_comp_files(str(pathlib.Path(runLocal).resolve()), recursive=True, instrfilter=instrfilter, withcomp=compfilter)
+    if compfilter is not None:
+        logging.info("(Instrument list filtered by those using component %s )" % compfilter)
     instrs.sort()
 
     # limt runs if required
@@ -465,7 +467,7 @@ def create_datetime_testdir(testroot):
 # Program functions for every main test mode
 #
 
-def run_default_test(testdir, mccoderoot, limit, instrfilter, suffix):
+def run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix):
     ''' tests the default mccode version '''
 
     # get default/system version number
@@ -483,7 +485,7 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, suffix):
     logging.info("Testing: %s" % version)
     logging.info("")
 
-    results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter)
+    results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter)
     
     reportfile = os.path.join(labeldir, "testresults_%s.json" % (mccode_config.configuration["MCCODE"]+"-"+version+suffix))
     open(os.path.join(reportfile), "w").write(json.dumps(results, indent=2))
@@ -501,7 +503,7 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, suffix):
     else:
         print("SUCCESS")
 
-def run_version_test(testdir, mccoderoot, limit, instrfilter, version, suffix):
+def run_version_test(testdir, mccoderoot, limit, instrfilter, compfilter, version, suffix):
     ''' as run_default_test, but activates/deactivates and ses a specific mccode version if it exists '''
 
     # verify that version exists
@@ -517,7 +519,7 @@ def run_version_test(testdir, mccoderoot, limit, instrfilter, version, suffix):
         logging.info("Testing: %s" % version)
         logging.info("")
 
-        results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, version)
+        results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter, version)
     finally:
         deactivate_mccode_version(oldpath)
 
@@ -528,7 +530,7 @@ def run_version_test(testdir, mccoderoot, limit, instrfilter, version, suffix):
     logging.debug("Test results written to: %s" % reportfile)
 
 
-def run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, suffix):
+def run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, compfilter, suffix):
     '''
     Test a suite of configs, each a mccode_config_LABEL.py file, that is copied to the dist dir
     prior to starting the test. This action modifies the C-flags and the compiler used during
@@ -586,7 +588,7 @@ def run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, suffi
 
                 # craete the proper test dir
                 labeldir = create_label_dir(testdir, label)
-                results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, label0)
+                results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter, label0)
 
                 # write local test result
                 reportfile = os.path.join(labeldir, "testresults_%s.json" % (os.path.basename(labeldir)))
@@ -668,6 +670,7 @@ def main(args):
     mccoderoot = args.mccoderoot    # use non-default mccode system install location
     limit = args.limit              # only test the first [limit] instruments (useful for debugging purposes)
     instrfilter = args.instr        # test only matching instrs
+    compfilter = args.comp          # test only instrs including comp
     suffix=""
 
     # set modifications first
@@ -728,6 +731,10 @@ def main(args):
         isuffix=instrfilter.replace(',', '_')
         suffix = '_' + isuffix
 
+    if compfilter:
+        compfilter=str(compfilter[0])
+        suffix = suffix + '_' + compfilter
+
     if args.suffix:
         if (len(suffix)<30):
             suffix = suffix + '_' + args.suffix[0]
@@ -764,11 +771,11 @@ def main(args):
         quit()
     default = not version and not configs and not vinfo
     if default:
-        run_default_test(testdir, mccoderoot, limit, instrfilter, suffix)
+        run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix)
     elif version:
-        run_version_test(testdir, mccoderoot, limit, instrfilter, version, suffix)
+        run_version_test(testdir, mccoderoot, limit, instrfilter, compfilter, version, suffix)
     elif configs:
-        run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, suffix)
+        run_config_test(testdir, mccoderoot, limit, configfilter, compfilter, instrfilter, suffix)
     elif vinfo:
         show_installed_versions(mccoderoot)
 
@@ -782,6 +789,7 @@ if __name__ == '__main__':
     parser.add_argument('--openacc', action='store_true', help='openacc flag sent to %s' % (mccode_config.configuration["MCRUN"]))
     parser.add_argument('--config', nargs="?", help='test this specific config only - label name or absolute path')
     parser.add_argument('--instr', nargs="?", help='test only intruments matching this filter (py regex). Comma-separated list allowed for multiple filters.')
+    parser.add_argument('--comp', nargs=1, help='test only intruments utilising COMP. Useful for testing the instrument suite after component changes.')
     parser.add_argument('--mccoderoot', nargs='?', help='manually select root search folder for mccode installations')
     parser.add_argument('--testroot', nargs='?', help='output test results in a datetime folder in this root')
     parser.add_argument('--testdir', nargs='?', help='output test results directly in this dir (overrides testroot)')
