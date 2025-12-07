@@ -530,78 +530,6 @@ def run_version_test(testdir, mccoderoot, limit, instrfilter, compfilter, versio
     logging.debug("Test results written to: %s" % reportfile)
 
 
-def run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, compfilter, suffix):
-    '''
-    Test a suite of configs, each a mccode_config_LABEL.py file, that is copied to the dist dir
-    prior to starting the test. This action modifies the C-flags and the compiler used during
-    the test. The original mccode_config.py file is restored after each test.
-    '''
-
-    def activate_config(version, mccoderoot, configfile):
-        ''' activate a confige given by configfile, returns bckfile for use with deactivate_config '''
-        libdir = join(mccoderoot, version, "tools", "Python", "mccodelib")
-        os.rename(join(libdir, "mccode_config.py"), join(libdir, "mccode_config.py_BAK"))
-        open(join(libdir, "mccode_config.py"), "w").write(open(configfile).read())
-        return join(libdir, "mccode_config.py_BAK")
-    
-    def deactivate_config(bckfile):
-        ''' use to restore changes made by activate_config '''
-        restoreto = join(os.path.dirname(bckfile), "mccode_config.py")
-        os.rename(bckfile, restoreto)
-    
-    def extract_config_mccode_version(configfile):
-        for l in open(configfile).read().splitlines():
-            m = re.match(r"\s*\"MCCODE_VERSION\": (.+),", l)
-            if m:
-                return m.group(1).strip("\""), os.path.basename(os.path.dirname(configfile))
-    
-    def get_config_files(configfltr):
-        ''' look in "__file__/../mccodelib/MCCODE-test" location or config files'''
-        lookin = join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test")
-        print("getting config files...")
-        print(configfltr + " vs " + os.path.join(lookin,configfltr,'mccode_config.json'))
-        if configfltr is not None and os.path.isfile(os.path.join(lookin,configfltr,'mccode_config.json')):
-            print("returning " + os.path.join(lookin,configfltr,'mccode_config.json'))
-            return [ os.path.join(lookin,configfltr,'mccode_config.json') ]
-        for (_, _, files) in os.walk(lookin):
-            print("Looking")
-            if configfltr is not None:
-                return [join(lookin, f) for f in files if re.search(r"^%s/mccode_config.json$" % configfltr, f)]
-            else:
-                return [join(lookin, f) for f in files if re.search(r"^mccode_config.json$", f)]
-
-    # get test directory datetime string
-    datetime = utils.get_datetimestr()
-
-    # test labels loop
-    for f in get_config_files(configfilter):
-        [version,label] = extract_config_mccode_version(f)
-
-        oldpath = activate_mccode_version(version, mccoderoot)
-        try:
-            #bckfile = activate_config(version, mccoderoot, f)
-            try:
-                logging.info("")
-                label0=label
-                label=label+suffix+"_"+ncount
-                logging.info("Testing label: %s" % label)
-
-                # craete the proper test dir
-                labeldir = create_label_dir(testdir, label)
-                results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter, label0)
-
-                # write local test result
-                reportfile = os.path.join(labeldir, "testresults_%s.json" % (os.path.basename(labeldir)))
-                open(os.path.join(reportfile), "w").write(json.dumps(results, indent=2))
-            
-                logging.debug("")
-                logging.debug("Test results written to: %s" % reportfile)
-            finally:
-                pass
-        finally:
-            deactivate_mccode_version(oldpath)
-
-
 def show_installed_versions(mccoderoot):
     ''' utility function, prints identified mccode versions to console '''
 
@@ -656,7 +584,6 @@ runLocal = None
 def main(args):
     # mutually excusive main branches
     default = None                  # test system mccode version as-is
-    version = args.testversion      # test a specific mccode version (also) present on the system
     configs = False
     configfilter = args.config      # test only config matching this label
     if configfilter:
@@ -769,20 +696,15 @@ def main(args):
     if version and configs or version and vinfo or configs and vinfo:
         print("WARNING: version, --configs and --versions are mutually exclusive, exiting")
         quit()
-    default = not version and not configs and not vinfo
+    default = not configs and not vinfo
     if default:
         run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix)
-    elif version:
-        run_version_test(testdir, mccoderoot, limit, instrfilter, compfilter, version, suffix)
-    elif configs:
-        run_config_test(testdir, mccoderoot, limit, configfilter, compfilter, instrfilter, suffix)
     elif vinfo:
         show_installed_versions(mccoderoot)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('testversion', nargs="?", help='mccode version to test')
     parser.add_argument('--ncount', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('-n', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--mpi', nargs=1, help='mpi nodecount sent to %s' % (mccode_config.configuration["MCRUN"]) )
@@ -793,8 +715,8 @@ if __name__ == '__main__':
     parser.add_argument('--mccoderoot', nargs='?', help='manually select root search folder for mccode installations')
     parser.add_argument('--testroot', nargs='?', help='output test results in a datetime folder in this root')
     parser.add_argument('--testdir', nargs='?', help='output test results directly in this dir (overrides testroot)')
-    parser.add_argument('--limit', nargs=1, help='test only the first [LIMIT] instrs in every version')
-    parser.add_argument('--versions', action='store_true', help='display local versions info')
+    parser.add_argument('--limit', nargs=1, help='test only the first [LIMIT] instrs')
+    parser.add_argument('--versions', action='store_true', help='display local versions info') 
     parser.add_argument('--verbose', action='store_true', help='output a test/notest instrument status header before each test')
     parser.add_argument('--skipnontest', action='store_true', help='Skip compilation of instruments without a test')
     parser.add_argument('--suffix', nargs=1, help='Add suffix to test directory name, e.g. 3.x-dev_suffix')
