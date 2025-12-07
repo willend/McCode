@@ -692,10 +692,6 @@ def main(args):
     if args.permissive:
         permissive = True
         logging.info("Permissive mode, tool will not report failure on failed instruments")
-    # decide and run main branch
-    if version and configs or version and vinfo or configs and vinfo:
-        print("WARNING: version, --configs and --versions are mutually exclusive, exiting")
-        quit()
     default = not configs and not vinfo
     if default:
         run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix)
