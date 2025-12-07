@@ -392,10 +392,8 @@ int readHtable(FILE* TFile,const double Einit,const double Eend, Source *TS)
     Status Flag::
     Ftime=1 :: [time ] Reading Time : Data : Err [Exit on Total]
 
-
-    /*
     Double Read File to determine how many bins and
-    memery size
+    memory size
   */
   if (!TFile) return(0);
   Ea=0.0;

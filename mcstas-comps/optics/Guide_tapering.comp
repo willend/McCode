@@ -235,7 +235,7 @@ w1c = (double*)malloc(sizeof(double)*segno);
      }
   } else if (!strncmp(fu,"file",4)) {
      pos = strtok(fu,"=");
-     while (pos=strtok(0,"="))
+     while ((pos=strtok(0,"=")))
      {
         strcpy(file_name,pos);
      }
