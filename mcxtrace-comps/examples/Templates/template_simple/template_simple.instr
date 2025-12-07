@@ -20,7 +20,7 @@
 *
 * %L
 * <put here any reference/HTML link>
-* 
+*
 * %End
 *******************************************************************************/
 DEFINE INSTRUMENT template_simple(parameter1=1)

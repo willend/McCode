@@ -19,7 +19,7 @@
 *
 * %L
 * <reference/HTML link>
-* 
+*
 * %E
 *******************************************************************************/
 DEFINE INSTRUMENT template_simple(Par1=1)
