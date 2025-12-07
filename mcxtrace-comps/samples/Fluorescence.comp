@@ -117,6 +117,7 @@
 * flag_rayleigh:  [1] When 0, the Rayleigh scattering is ignored.
 * flag_lorentzian:[1] When 1, the line shapes are assumed to be Lorentzian, else Gaussian.
 * flag_kissel:    [1] When 1 (slower), handle M-lines XRF from Kissel for Z>=52 Te (else only K and L-lines).
+* flag_low_z:     [1] When 1, enhances low concentration atoms, else uses cross-sections weighting.
 * order:          [1] Limit multiple fluorescence up to given order. Last iteration is absorption only.
 *
 * CALCULATED PARAMETERS:
@@ -151,7 +152,7 @@ SETTING PARAMETERS(
   target_x = 0, target_y = 0, target_z = 0, focus_r = 0,
   focus_xw=0, focus_yh=0, focus_aw=0, focus_ah=0, int target_index=0,
   int flag_compton=1, int flag_rayleigh=1, int flag_lorentzian=0,
-  int flag_kissel=0,
+  int flag_kissel=0,  int flag_low_z=0,
   int order=1)
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
@@ -189,6 +190,7 @@ SHARE %{
   
   /* XRMC_CrossSections: Compute interaction cross sections in [barn/atom]
    * When kissel=1, M-lines are computed, but computation is 10x slower.
+   * Computes xs[FLUORESCENCE,RAYLEIGH,COMPTON] that must have been allocated.
    * Return total cross section, given Z and E0:
    *   total_xs = XRMC_CrossSections(Z, E0, xs[3], flag_kissel);
    */
@@ -406,6 +408,9 @@ DECLARE %{
   DArray1d cum_xs_fluo;
   DArray1d cum_xs_Compton;
   DArray1d cum_xs_Rayleigh;
+  DArray1d xs_fluo;
+  DArray1d xs_Compton;
+  DArray1d xs_Rayleigh;
   int  shape;
   off_struct offdata;
   int  n_fluo;
@@ -427,6 +432,9 @@ DECLARE %{
   DArray1d reuse_cum_xs_fluo;
   DArray1d reuse_cum_xs_Compton;
   DArray1d reuse_cum_xs_Rayleigh;
+  DArray1d reuse_xs_fluo;
+  DArray1d reuse_xs_Compton;
+  DArray1d reuse_xs_Rayleigh;
 %}
 
 INITIALIZE %{
@@ -508,6 +516,9 @@ INITIALIZE %{
   cum_xs_fluo              = create_darr1d(compound->nElements+1);
   cum_xs_Compton           = create_darr1d(compound->nElements+1);
   cum_xs_Rayleigh          = create_darr1d(compound->nElements+1);
+  xs_fluo                  = create_darr1d(compound->nElements+1);
+  xs_Compton               = create_darr1d(compound->nElements+1);
+  xs_Rayleigh              = create_darr1d(compound->nElements+1);
   cum_massFractions[0]     = 0;
   
   /* print material information, and check for elements */
@@ -567,6 +578,9 @@ INITIALIZE %{
   reuse_cum_xs_fluo              = create_darr1d(compound->nElements+1);
   reuse_cum_xs_Compton           = create_darr1d(compound->nElements+1);
   reuse_cum_xs_Rayleigh          = create_darr1d(compound->nElements+1);
+  reuse_xs_fluo                  = create_darr1d(compound->nElements+1);
+  reuse_xs_Compton               = create_darr1d(compound->nElements+1);
+  reuse_xs_Rayleigh              = create_darr1d(compound->nElements+1);
   reuse_cum_xs_fluo[0]=reuse_cum_xs_Compton[0]=reuse_cum_xs_Rayleigh[0]=0;
 %}
 
@@ -751,9 +765,15 @@ do { /* while (intersect) Loop over multiple scattering events */
 
         // get Fluorescence xs
         XRMC_CrossSections(Z, E, xs_Z, flag_kissel); // [barn/atom]
-        cum_xs_fluo[i_Z+1]     = cum_xs_fluo[i_Z]    +frac*xs_Z[FLUORESCENCE];
-        cum_xs_Compton[i_Z+1]  = cum_xs_Compton[i_Z] +frac*xs_Z[COMPTON];
-        cum_xs_Rayleigh[i_Z+1] = cum_xs_Rayleigh[i_Z]+frac*xs_Z[RAYLEIGH];
+
+        // local XS for atom (Z)
+        xs_fluo[i_Z+1]     = frac*xs_Z[FLUORESCENCE];
+        xs_Compton[i_Z+1]  = frac*xs_Z[COMPTON];
+        xs_Rayleigh[i_Z+1] = frac*xs_Z[RAYLEIGH];
+        // selection on cumulated distribution xs*frac
+        cum_xs_fluo[i_Z+1]     = cum_xs_fluo[i_Z]    +xs_fluo[i_Z+1];
+        cum_xs_Compton[i_Z+1]  = cum_xs_Compton[i_Z] +xs_Compton[i_Z+1];
+        cum_xs_Rayleigh[i_Z+1] = cum_xs_Rayleigh[i_Z]+xs_Rayleigh[i_Z+1];
         for (i=0; i<3; i++) { xs[i] += frac*xs_Z[i]; }
       } // for Z in compound
       for (i=0; i<3; i++) sigma_barn += xs[i]; // total XS
@@ -764,6 +784,9 @@ do { /* while (intersect) Loop over multiple scattering events */
           reuse_cum_xs_fluo[i_Z]     = cum_xs_fluo[i_Z];
           reuse_cum_xs_Compton[i_Z]  = cum_xs_Compton[i_Z];
           reuse_cum_xs_Rayleigh[i_Z] = cum_xs_Rayleigh[i_Z];
+          reuse_xs_fluo[i_Z]         = xs_fluo[i_Z];
+          reuse_xs_Compton[i_Z]      = xs_Compton[i_Z];
+          reuse_xs_Rayleigh[i_Z]     = xs_Rayleigh[i_Z];
         }
         reuse_sigma_barn = sigma_barn;
       }
@@ -771,12 +794,15 @@ do { /* while (intersect) Loop over multiple scattering events */
     } else {
       // reuse cached values (SPLIT), event_counter=0
       for (i_Z=0; i_Z< compound->nElements+1; i_Z++) {
-        cum_xs_fluo[i_Z]     = reuse_cum_xs_fluo[i_Z];
-        cum_xs_Compton[i_Z]  = reuse_cum_xs_Compton[i_Z];
-        cum_xs_Rayleigh[i_Z] = reuse_cum_xs_Rayleigh[i_Z];
-        xs[FLUORESCENCE]      += reuse_cum_xs_fluo[i_Z];
-        xs[COMPTON]           += reuse_cum_xs_Compton[i_Z];
-        xs[RAYLEIGH]          += reuse_cum_xs_Rayleigh[i_Z];
+        cum_xs_fluo[i_Z]      = reuse_cum_xs_fluo[i_Z];
+        cum_xs_Compton[i_Z]   = reuse_cum_xs_Compton[i_Z];
+        cum_xs_Rayleigh[i_Z]  = reuse_cum_xs_Rayleigh[i_Z];
+        xs[FLUORESCENCE]     += reuse_cum_xs_fluo[i_Z];
+        xs[COMPTON]          += reuse_cum_xs_Compton[i_Z];
+        xs[RAYLEIGH]         += reuse_cum_xs_Rayleigh[i_Z];
+        xs_fluo[i_Z]          = reuse_xs_fluo[i_Z];
+        xs_Compton[i_Z]       = reuse_xs_Compton[i_Z];
+        xs_Rayleigh[i_Z]      = reuse_xs_Rayleigh[i_Z];
       }
       sigma_barn = reuse_sigma_barn;
     }
@@ -840,21 +866,39 @@ do { /* while (intersect) Loop over multiple scattering events */
     type = XRMC_SelectInteraction(xs, COMPTON+1, rand01()); // up to COMPTON
     
     /* choose Z (element) on associated XS, taking into account mass-fractions */
-    switch (type) {
-      case FLUORESCENCE:
-        i_Z = XRMC_SelectFromDistribution(cum_xs_fluo,     compound->nElements+1, rand01());
-        break;
-      case RAYLEIGH:
-        if (!flag_rayleigh) ABSORB;
-        i_Z = XRMC_SelectFromDistribution(cum_xs_Rayleigh, compound->nElements+1, rand01());
-        break;
-      case COMPTON:
-        if (!flag_compton) ABSORB;
-        i_Z = XRMC_SelectFromDistribution(cum_xs_Compton,  compound->nElements+1, rand01());
-        break;
-      default:
-        // printf("%s: WARNING: process %i unknown. Absorb.\n", NAME_CURRENT_COMP, type);
-        ABSORB;
+    if (flag_low_z) {
+      i_Z = (int)floor(compound->nElements * rand01());
+      switch (type) {
+        case FLUORESCENCE:
+          p *= xs_fluo[i_Z+1]/xs[type];
+          break;
+        case RAYLEIGH:
+          p *= xs_Rayleigh[i_Z+1]/xs[type];
+          break;
+        case COMPTON:
+          p *= xs_Compton[i_Z+1]/xs[type];
+          break;
+        default:
+          // printf("%s: WARNING: process %i unknown. Absorb.\n", NAME_CURRENT_COMP, type);
+          ABSORB;
+      }
+    } else {
+      switch (type) {
+        case FLUORESCENCE:
+          i_Z = XRMC_SelectFromDistribution(cum_xs_fluo,     compound->nElements+1, rand01());
+          break;
+        case RAYLEIGH:
+          if (!flag_rayleigh) ABSORB;
+          i_Z = XRMC_SelectFromDistribution(cum_xs_Rayleigh, compound->nElements+1, rand01());
+          break;
+        case COMPTON:
+          if (!flag_compton) ABSORB;
+          i_Z = XRMC_SelectFromDistribution(cum_xs_Compton,  compound->nElements+1, rand01());
+          break;
+        default:
+          // printf("%s: WARNING: process %i unknown. Absorb.\n", NAME_CURRENT_COMP, type);
+          ABSORB;
+      }
     }
     Z   = compound->Elements[i_Z];
     
