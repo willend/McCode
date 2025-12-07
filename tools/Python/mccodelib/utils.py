@@ -6,6 +6,7 @@ import os
 from os.path import splitext, join
 import subprocess
 from datetime import datetime
+from pathlib import Path
 
 '''
 Component parser used by initial versions of mcgui. (More recent implementations exist.)
@@ -687,11 +688,12 @@ def get_instr_site(instr_file):
         
     return site
 
-def get_instr_comp_files(mydir, recursive=True, instrfilter=None, compfilter=None):
+def get_instr_comp_files(mydir, recursive=True, instrfilter=None, withcomp=None, compfilter=None):
     ''' returns list of filename with path of all .instr and .comp recursively from dir "mydir"
 
     181211: added recursive, defaults to True to preserve backwards compatibility
     191114: added instrfilter and compfilter, which filters results based on filename (before the dot)
+    061225: added withcomp, for filtering instruments using a certain comp
     '''
     instrreg = None
     compreg = None
@@ -711,9 +713,17 @@ def get_instr_comp_files(mydir, recursive=True, instrfilter=None, compfilter=Non
                     for filter in filters:
                         instrreg = re.compile(filter)
                         if instrreg.search(join(dirpath,f), re.IGNORECASE):
-                            files_instr.append(join(dirpath, f))
+                            if withcomp is not None:
+                                if withcomp in Path(join(dirpath, f)).read_text(encoding="utf8"):
+                                    files_instr.append(join(dirpath, f))
+                            else:
+                                files_instr.append(join(dirpath, f))
                 else:
-                    files_instr.append(join(dirpath, f))
+                    if withcomp is not None:
+                        if withcomp in Path(join(dirpath, f)).read_text(encoding="utf8"):
+                            files_instr.append(join(dirpath, f))
+                    else:
+                        files_instr.append(join(dirpath, f))
 
             # get comp files
             if os.path.splitext(f)[1] == '.comp':
