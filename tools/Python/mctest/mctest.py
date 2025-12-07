@@ -530,48 +530,6 @@ def run_version_test(testdir, mccoderoot, limit, instrfilter, compfilter, versio
     logging.debug("Test results written to: %s" % reportfile)
 
 
-def show_installed_versions(mccoderoot):
-    ''' utility function, prints identified mccode versions to console '''
-
-    def print_to_console(str):
-        ''' used with popen wrapper '''
-        logging.info(str)
-
-    logging.info("Test environment mode, using output of 'mcstas --vesion'")
-    logging.info("")
-
-    dirnames = []
-    branchnames = []
-    for (_, dirnames, _) in os.walk(mccoderoot):
-        break
-    for d in dirnames:
-        for (_, _, files) in os.walk(join(mccoderoot, d)):
-            break
-        if "environment" in files:
-            branchnames.append(d)
-
-    for v in branchnames:
-        # test environment
-        branchdir = join(mccoderoot, v)
-    
-        os.environ["MCSTAS"] = branchdir
-        oldpath = os.environ["PATH"]
-        os.environ["PATH"] = "%s/miniconda3/bin:%s/bin:%s" % (branchdir, branchdir, oldpath)
-    
-        # run the mcstas --version command
-        cmd = "mcstas --version"
-        utils.run_subtool_to_completion(cmd, stdout_cb=print_to_console, stderr_cb=print_to_console)
-        logging.info("")
-    
-        # TODO: should we test the existence of m[xc]run?
-    
-        # restore environment
-        del os.environ["MCSTAS"]
-        os.environ["PATH"] = oldpath
-
-    logging.info("Selectable version names are: %s" % ", ".join(branchnames))
-    logging.info("")
-
 ncount = None
 mpi = None
 openacc = None
@@ -584,11 +542,6 @@ runLocal = None
 def main(args):
     # mutually excusive main branches
     default = None                  # test system mccode version as-is
-    configs = False
-    configfilter = args.config      # test only config matching this label
-    if configfilter:
-        configs = True
-    vinfo = args.versions           # display mccode versions installed on the system
 
     # modifying options
     verbose = args.verbose          # display more info during runs
@@ -692,11 +645,8 @@ def main(args):
     if args.permissive:
         permissive = True
         logging.info("Permissive mode, tool will not report failure on failed instruments")
-    default = not configs and not vinfo
-    if default:
-        run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix)
-    elif vinfo:
-        show_installed_versions(mccoderoot)
+
+    run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix)
 
 
 if __name__ == '__main__':
@@ -705,14 +655,12 @@ if __name__ == '__main__':
     parser.add_argument('-n', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--mpi', nargs=1, help='mpi nodecount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--openacc', action='store_true', help='openacc flag sent to %s' % (mccode_config.configuration["MCRUN"]))
-    parser.add_argument('--config', nargs="?", help='test this specific config only - label name or absolute path')
     parser.add_argument('--instr', nargs="?", help='test only intruments matching this filter (py regex). Comma-separated list allowed for multiple filters.')
     parser.add_argument('--comp', nargs=1, help='test only intruments utilising COMP. Useful for testing the instrument suite after component changes.')
     parser.add_argument('--mccoderoot', nargs='?', help='manually select root search folder for mccode installations')
     parser.add_argument('--testroot', nargs='?', help='output test results in a datetime folder in this root')
     parser.add_argument('--testdir', nargs='?', help='output test results directly in this dir (overrides testroot)')
     parser.add_argument('--limit', nargs=1, help='test only the first [LIMIT] instrs')
-    parser.add_argument('--versions', action='store_true', help='display local versions info') 
     parser.add_argument('--verbose', action='store_true', help='output a test/notest instrument status header before each test')
     parser.add_argument('--skipnontest', action='store_true', help='Skip compilation of instruments without a test')
     parser.add_argument('--suffix', nargs=1, help='Add suffix to test directory name, e.g. 3.x-dev_suffix')
