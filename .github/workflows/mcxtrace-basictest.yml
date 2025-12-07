@@ -397,6 +397,7 @@ jobs:
            export MCXTRACE_EXECUTABLE="mcxtrace"
            export MXRUN_EXECUTABLE="mxrun"
            export MXTEST_EXECUTABLE="mxtest"
+           export PERMISSIVE=" "
            export PATH=${PATH}:${PWD}/install_mcxtrace/bin/:${PWD}/install_mcxtrace/mcxtrace/3.99.99/bin/
            # Check if any instr files were modified during last commit
            cd src
