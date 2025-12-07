@@ -414,7 +414,7 @@ jobs:
                    if [ "$RUNNER_OS" != "Windows" ]; then
                      mxtest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE
                  else
-                     echo ..\\install\\bin\\mxtest --verbose --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES --permissive >> ..\\changedinstr.bat
+                     echo .\\install\\bin\\mxtest --verbose --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES --permissive >> ..\\changedinstr.bat
                  fi
              else
                    echo No matching tests found
@@ -447,7 +447,7 @@ jobs:
                mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE
                mcviewtest --nobrowse $PWD
              else
-               echo ..\\install\\bin\\mxtest --verbose --testdir=run_mxtest $SCOPE --suffix=${{ matrix.CC }}_CHANGES --permissive >> ..\\changedinstr.bat
+               echo .\\install\\bin\\mxtest --verbose --testdir=run_mxtest $SCOPE --suffix=${{ matrix.CC }}_CHANGES --permissive >> ..\\changedinstr.bat
              fi
            fi
 
