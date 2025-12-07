@@ -134,6 +134,12 @@ double polInterp(double* X,double* Y,int Psize,double Aim)
   double out,errOut;         /* out put variables */
   double *C = malloc(Psize*sizeof(double));
   double *D = malloc(Psize*sizeof(double));
+  if (!C || !D) {
+    #ifndef OPENACC
+    fprintf(stderr,"Error in ISIS_moderator: memory allocation failure. Exit!\n");
+    exit(-1);
+    #endif
+  }
   double testDiff,diff;
 
   double w,den,ho,hp;           /* intermediate variables */
@@ -233,6 +239,10 @@ cmdnumberD(char *mc,double* num)
 	(mc[i]=='\t' || mc[i]==' '  || mc[i]==',');i++);
   if(i==len || !mc[i]) return 0;
   ss=malloc(sizeof(char)*(len+1));
+  if(!ss) {
+    fprintf(stderr,"Error in ISIS_moderator: memory allocation failure. Exit!\n");
+    exit(-1);
+  }
 
   for(;i<len && mc[i]!='\n' && mc[i]
 	&& mc[i]!='\t' && mc[i]!=' ' && mc[i]!=',';i++)
