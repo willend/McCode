@@ -397,35 +397,33 @@ jobs:
            export MCXTRACE_EXECUTABLE="mcxtrace"
            export MXRUN_EXECUTABLE="mxrun"
            export MXTEST_EXECUTABLE="mxtest"
+           export PERMISSIVE=" "
            export PATH=${PATH}:${PWD}/install_mcxtrace/bin/:${PWD}/install_mcxtrace/mcxtrace/3.99.99/bin/
            # Check if any instr files were modified during last commit
            cd src
            export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
            export NUMCHANGEDCOMPS=`git diff --name-only HEAD HEAD~1|grep \.comp\$ | grep mcxtrace-comps | wc -l | xargs echo`
-           export COMPILIST=""
-           export RUNALL="NO"
            if [ "$NUMCHANGEDCOMPS" != "0" ];
            then
-             if [ "$NUMCHANGEDCOMPS" -lt "20" ];
-             then
                for comp in $CHANGEDCOMPS;
                do
-                 echo Finding instruments matching component $comp
+                 echo Finding tests including component $comp
                  NUMMATCH=`find mcxtrace-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
                  if [ "$NUMMATCH" -gt "0" ];
                  then
-                   MATCH=`find mcxtrace-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | xargs -n1 basename | sed s/\.instr//g | xargs echo`
-                   export COMPILIST=`echo $COMPILIST $MATCH`
+                   if [ "$RUNNER_OS" != "Windows" ]; then
+                     mxtest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE
                  else
-                   export COMPILIST=`echo $COMPILIST template_simple`
+                     echo .\\install\\bin\\mxtest --verbose --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES --permissive >> ..\\changedinstr.bat
                  fi
-               done
              else
-               export RUNALL="YES"
+                   echo No matching tests found
              fi
+               done
            fi
+           export RUNALL="NO"
            export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo`
-           export CHANGEDINSTR=`echo $CHANGEDINSTR $COMPILIST | xargs -n1 echo | sort | uniq | xargs echo | sed s/\ /,/g`
+           export CHANGEDINSTR=`echo $CHANGEDINSTR | xargs -n1 echo | sort | uniq | xargs echo | sed s/\ /,/g`
            export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcxtrace-comps | wc -l | xargs echo`
            echo ----
            echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:
@@ -436,8 +434,7 @@ jobs:
            then
              export RUNALL="YES"
            fi
-           export PERMISSIVE=" "
-           if [ "$NUMCHANGEDINSTR" != "0" ] || [ "$NUMCHANGEDCOMPS" != "0" ];
+           if [ "$NUMCHANGEDINSTR" != "0" ];
            then
              if [ "$RUNALL" == "NO" ];
              then
@@ -445,15 +442,12 @@ jobs:
              else
                export SCOPE=" "
              fi
+             mkdir run_mxtest && cd run_mxtest
              if [ "$RUNNER_OS" != "Windows" ]; then
-               mkdir run_mxtest && cd run_mxtest
-               if [ "$RUNNER_OS" == macOS ]; then
-                 export PERMISSIVE="--permissive"
-               fi
-               ../install_mcxtrace/bin/${MXTEST_EXECUTABLE} --testdir $PWD $SCOPE --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE
+               mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE
                mxviewtest --nobrowse $PWD
              else
-               echo ..\\install\\bin\\mxtest --verbose --testdir=. $SCOPE --suffix=${{ matrix.CC }}_CHANGES --permissive > changedinstr.bat
+               echo .\\install\\bin\\mxtest --verbose --testdir=run_mxtest $SCOPE --suffix=${{ matrix.CC }}_CHANGES --permissive >> ..\\changedinstr.bat
              fi
            fi
 
@@ -465,9 +459,7 @@ jobs:
       shell: cmd
       run: |
         if exist changedinstr.bat (
-          mkdir run_mxtest
-          cd run_mxtest
-          call ..\changedinstr.bat
+          call .\changedinstr.bat
         )
 
     # Start of Windows tests
