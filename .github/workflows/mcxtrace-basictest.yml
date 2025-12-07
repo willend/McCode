@@ -445,7 +445,7 @@ jobs:
              mkdir run_mxtest && cd run_mxtest
              if [ "$RUNNER_OS" != "Windows" ]; then
                mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE
-               mcviewtest --nobrowse $PWD
+               mxviewtest --nobrowse $PWD
              else
                echo .\\install\\bin\\mxtest --verbose --testdir=run_mxtest $SCOPE --suffix=${{ matrix.CC }}_CHANGES --permissive >> ..\\changedinstr.bat
              fi
