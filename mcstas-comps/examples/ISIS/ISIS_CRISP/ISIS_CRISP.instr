@@ -30,11 +30,12 @@
 
 *
 * %Parameters
-* glen: [m]  Length of the elliptical guides
-* flen: [m]  Focal-length of elliptical guides
-* w1: [m]    Entry-width of elliptical guides
-* vm: [m]    m-value of material for left and right vertical guide mirrors
-* FRAC: [1]  Fraction of statistics used to model incoherent scattering from sample
+* glen:       [m] Length of the elliptical guides
+* flen:       [m] Focal-length of elliptical guides
+* w1:         [m] Entry-width of elliptical guides
+* vm:         [m] m-value of material for left and right vertical guide mirrors
+* FRAC:       [1] Fraction of statistics used to model incoherent scattering from sample
+* sampleconf: [1] Choose between three different sample configurations, see Multilayer_sample for details
 *
 * %Link
 * <a href="http://www.isis.stfc.ac.uk/instruments/crisp/">Website of the CRISP instrument</a>
