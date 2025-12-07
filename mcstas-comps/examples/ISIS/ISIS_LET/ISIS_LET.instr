@@ -9,26 +9,30 @@
 *
 * LET instrument on ISIS TS2
 *
-* %D
-* This is a simulation of LET.  Moderator needs updating.  
+* Instrument: ISIS_LET
 *
-* %Example: Ei=3.7 Detector: sample_PSDmon_I=31264.8
+* %D
+* This is a simulation of LET on ISIS TS2.
+*
+* %Example: Ei=3.7 res=HF Detector: sample_PSDmon_I=31264.8
+* %Example: Ei=3.7 res=I Detector: sample_PSDmon_I=17839.7
+* %Example: Ei=3.7 res=HR Detector: sample_PSDmon_I=8835.3
 *
 * %P
-* Ei: 			[meV] 		Centre energy for moderator
-* dE: 			[] 			Multiplier for energy spread:  Emin = Ei/dE, Emax = Ei*dE
+* Ei: 		[meV] 		Centre energy for moderator
+* dE: 		[] 		Multiplier for energy spread:  Emin = Ei/dE, Emax = Ei*dE
 * Ch3_speed:	[Hz]		Chopper 3 frequency
 * Ch5_speed:	[Hz]		Chopper 5 frequency
 * Ch2_phase:	[mus]		Chopper 2 phase setting
 * pha_offset:	[mus]		Offset in time for moderator focus
-* res:			[string] 	"HF" - High Flux, "HR" - High Resolution, "I" - Intermediate
-* snout:		[string]	"in" or "out"
+* res:		[string] 	"HF" - High Flux, "HR" - High Resolution, "I" - Intermediate
+* snout:	[string]	"in" or "out"
 *
 * %L
 * %E
 *******************************************************************************/
 
-DEFINE INSTRUMENT LET(Ei = 3.7, dE=1.1, Ch3_speed=100, Ch5_speed=200,  Ch2_phase=95000, 
+DEFINE INSTRUMENT ISIS_LET(Ei = 3.7, dE=1.1, Ch3_speed=100, Ch5_speed=200,  Ch2_phase=95000, 
 					  pha_offset=80e-6, string res="HF", string snout = "out")
 
 DECLARE
