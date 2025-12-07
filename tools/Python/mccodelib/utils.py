@@ -714,13 +714,13 @@ def get_instr_comp_files(mydir, recursive=True, instrfilter=None, withcomp=None,
                         instrreg = re.compile(filter)
                         if instrreg.search(join(dirpath,f), re.IGNORECASE):
                             if withcomp is not None:
-                                if withcomp in Path(join(dirpath, f)).read_text():
+                                if withcomp in Path(join(dirpath, f)).read_text(encoding="utf8"):
                                     files_instr.append(join(dirpath, f))
                             else:
                                 files_instr.append(join(dirpath, f))
                 else:
                     if withcomp is not None:
-                        if withcomp in Path(join(dirpath, f)).read_text():
+                        if withcomp in Path(join(dirpath, f)).read_text(read_text(encoding="utf8")):
                             files_instr.append(join(dirpath, f))
                     else:
                         files_instr.append(join(dirpath, f))
