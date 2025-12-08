@@ -481,6 +481,11 @@ void mcdisplay_mesh_function(struct lines_to_draw *lines_to_draw_output,int inde
 
   Coords *list_startpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
   Coords *list_endpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
+  // Check for failed allocation
+  if (list_startpoints == NULL || list_endpoints == NULL){
+    free(list_startpoints);
+    free(list_endpoints);
+  }
 
   int counter=0;
   // For every triangle it should add three lines
@@ -961,9 +966,23 @@ for (int i = 0; i<n_verts; i++){//TODO: Dont use x y z as this doesnt align with
 // Make lists that will be used to calculate the number of edges
 int** vert_pairs = (int **)malloc(sizeof(int *)*3*n_faces);
 int** unique_verts = (int **)malloc(sizeof(int *)*3*n_faces);
+// Check for failing mallocs
+if ( vert_pairs == NULL || unique_verts == NULL) {
+   free(vert_pairs);
+   free(unique_verts);
+   printf("ERROR: malloc failed on vert pairs or unique verts");
+   exit(1);
+}
 for (int i=0; i<3*n_faces;i++){
    vert_pairs[i] = (int *)malloc(sizeof(int)*2);
    unique_verts[i] = (int *)malloc(sizeof(int)*2);
+   if (vert_pairs[i]==NULL || unique_verts[i] == NULL){
+      // Should probably be a loop over all vert pairs
+      free(vert_pairs[i]);
+      free(unique_verts[i]);
+      printf("\nERROR: malloc failed on specific vert pairs or unique verts");
+      exit(1);
+   }
 }
 
 generate_vertex_vertex_pair_list(faces, vert_pairs, n_faces);
