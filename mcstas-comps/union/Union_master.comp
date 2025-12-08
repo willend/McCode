@@ -1445,7 +1445,7 @@ TRACE
                 printf("name of material: %s \n",Volumes[current_volume]->name);
                 printf("length to boundery  = %f\n",length_to_boundary);
                 printf("absorption cross section  = %f\n",Volumes[current_volume]->p_physics->my_a);
-                printf("chance to get through this length of absorber: %f \%\n", 100*exp(-Volumes[current_volume]->p_physics->my_a*length_to_boundary));
+                printf("chance to get through this length of absorber: %f %%\n", 100*exp(-Volumes[current_volume]->p_physics->my_a*length_to_boundary));
               #endif
             }
           } else {
@@ -1468,8 +1468,6 @@ TRACE
 				Coords scattering_displacement = coords_scalar_mult(direction, forced_length_to_scattering);
 				Coords forced_ray_scattering_point = coords_add(ray_position, scattering_displacement);
 				ray_position_geometry = coords_sub(forced_ray_scattering_point, Volumes[current_volume]->geometry.center);  // ray_position relative to geometry center
-				
-
 				
 				// Calculate the aim for non isotropic processes
 				this_focus_data = &Volumes[current_volume]->geometry.focus_data_array.elements[0];				
@@ -2316,7 +2314,7 @@ TRACE
                 printf("Entering refraction system \n");
                 printf("r = (%f,%f,%f) v = (%f,%f,%f) \n", x, y, z, vx, vy, vz);
 				printf("n = (%f,%f,%f)\n", nx, ny, nz);				
-				dot_product_before = nx*vx + ny*vy + nz*vz;
+				double dot_product_before = nx*vx + ny*vy + nz*vz;
 				printf("normal dot v  = %lf \n", dot_product_before);
 				printf("min_volume = %d, min_solution = %d\n", min_volume, min_solution);
               #endif
