@@ -4074,6 +4074,8 @@ int box_within_box(struct geometry_struct *geometry_child,struct geometry_struct
 };
 
 int existence_of_intersection(Coords point1, Coords point2, struct geometry_struct *geometry) {
+	// Checks if a line segment between point1 and point2 intersects the given geometry
+	
     Coords vector_between = coords_sub(point2,point1);
     double start_point[3],vector_between_v[3];
     double temp_solution[2];
@@ -4085,10 +4087,11 @@ int existence_of_intersection(Coords point1, Coords point2, struct geometry_stru
 	// todo: Switch to nicer intersect call
 	double dummy_double[2];
 	int dummy_int[2];
-   printf("\nChecking the existence of intersections");	
+	
+    //printf("\nChecking the existence of intersections");	
     geometry->intersect_function(temp_solution, dummy_double, dummy_double, dummy_double, dummy_int, &number_of_solutions, start_point, vector_between_v, geometry);
     if (number_of_solutions > 0) {
-      printf("\nMore than 1 solution has been found");
+      //printf("\nMore than 1 solution has been found");
         if (temp_solution[0] > 0 && temp_solution[0] < 1) return 1;
         if (number_of_solutions == 2) {
             if (temp_solution[1] > 0 && temp_solution[1] < 1) return 1;
