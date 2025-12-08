@@ -33,7 +33,7 @@
 * yheight:     [m] height of detector opening
 * ymin:        [m] Lower y bound of detector opening
 * ymax:        [m] Upper y bound of detector opening
-* ny:          [1] Number of y bins (for discretisation of 
+* ny:          [1] Number of y bins (for discretisation of vertical detector dimension into "bins")
 * filename:  [str] Name of file in which to store the detector image
 * nowritefile: [1] If set, detector will skip writing to disk
 * tmin:     [mu-s] Beginning TOF window
