@@ -457,12 +457,26 @@ void manual_linking_function_logger_processes(char *input_string, struct physics
 double*** allocate3Ddouble_3DS(int count_x, int count_y, int count_z, double *storage) {
    //double *storage = malloc(count_x * count_y * count_z * sizeof(double));
    storage = malloc(count_x * count_y * count_z * sizeof(double));
+   if (storage == NULL){
+    free(storage);
+    printf("\nERROR: storage array not allocated in Union_logger_3D_space\n");
+   }
    double *alloc = storage;
    double ***x;
    int i,j;
    x = malloc(count_x * sizeof(*x));
+   if ( x == NULL){
+      free(x);
+      printf("\nERROR: x array not allocated in Union_logger_3D_space\n");
+      exit(1);
+    }
    for (i = 0; i < count_x; i++) {
      x[i] = malloc(count_y * sizeof(**x));
+     if ( x[i] == NULL){
+      free(x[i]);
+      printf("\nERROR: x[i] array not allocated in Union_logger_3D_space\n");
+      exit(1);
+    }
      for (j = 0; j < count_y; j++) {
        x[i][j] = alloc;
        alloc += count_z;

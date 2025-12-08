@@ -436,6 +436,12 @@ double** allocate2Ddouble_2DS(int count_x, int count_y) {
 
     // create array or pointers to first elem in each 2D row
     double **ptr_array = malloc(sizeof(double*) * count_x);
+    if (data == NULL || ptr_array == NULL){
+      free(data);
+      free(ptr_array);
+      printf("\nERROR: ptr array or data not allocated in Union_logger_2D_space\n");
+      exit(1);
+    }
     for (i = 0; i < count_x; i++) {
         ptr_array[i] = data + (i*count_y);
     }
