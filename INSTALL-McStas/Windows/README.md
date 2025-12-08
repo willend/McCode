@@ -5,7 +5,7 @@
   1. **Recommended:**
     * Install [Visual Studio including c/c++ support](https://learn.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-170#download-and-install-the-tools). Any
       recent version of Visual Studio itself should work. Use the
-      "Visual Studio Installer" and [modify settings](install-screenshot1.png) to selecect at minumum "Desktop development with c++" specifying to [include VS2019 build tools and CLI support](install-screenshot2.png). (It is OK to include build tools such as VS2022 or VS2026, but VS2019 **must** be present also. 
+      "Visual Studio Installer" and [modify settings (click for screenshot)](install-screenshot1.png) to selecect at minumum "Desktop development with c++" specifying to [include all of: MSVC v142 (2019), MSVC v143 (2022) plus CLI support (click for screenshot)](install-screenshot2.png). (It should be OK to include later build tools such as VS2026, but VS2019 and VS2022 **must** be present also. 
     * Use the [mcstas-conda](mcstas-conda.bat) batch script to install the latest mcstas from `conda-forge` 
     * Once install has completed, please use the `mcstas-shell` shortcut on the desktop - issue terminal command `mcgui` to start the McStas GUI. 
     * Option 1 *may* function `arm64` Windows, but will require installation of Visual Studio including both arm64 and x64_64 build tools for c++.
