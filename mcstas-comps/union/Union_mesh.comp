@@ -161,6 +161,11 @@ void read_stl(char* filename,
 
       // Allocate memory for triangles
       triangles = (Triangle *)malloc(capacity * sizeof(Triangle));  
+      if (triangles == NULL){
+         free(triangles);
+         printf("\nERROR: malloc failed for triangles");
+         exit(1);
+      }
    
       Triangle current;
 
@@ -200,12 +205,15 @@ void read_stl(char* filename,
                current.attribute_byte_count = 0; // ASCII STL always 0
               if (count >= capacity) {
                   capacity *= 2;
-                  triangles = realloc(triangles, capacity * sizeof(Triangle));
-                  if (!triangles) {
+                  void * tmp = realloc(triangles, capacity * sizeof(Triangle));
+                  if (tmp) {
+                     free(triangles);
+                     free(tmp);
                       perror("ERROR: Memory reallocation failed");
                       fclose(file);
                       exit(1);
                   }
+                  triangles = tmp;
                }
                triangles[count++] = current;
            }
@@ -957,7 +965,7 @@ if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
    exit(1);
 }
 // Loop over all vertices and multiply their positions with coordinate_scale
-for (int i = 0; i<n_verts; i++){//TODO: Dont use x y z as this doesnt align with particle struct.
+for (int i = 0; i<n_verts; i++){
    verts[i] = coords_scale(verts[i], coordinate_scale);
 }
 
