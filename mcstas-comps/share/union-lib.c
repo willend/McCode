@@ -2299,15 +2299,28 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     // Todo: switch to nicer intersect function call
     double *double_dummy = malloc(2*sizeof(double));
     int int_dummy[2];
-
+    // We need a storing pointer for the reallocs, to ensure that on realloc fail
+    // All is handled correctly
+    double *tmp;
 	
     // Find intersections
     for (volume_index = 1;volume_index < number_of_volumes; volume_index++) {
         if (volume_index != N) {
          if (Geometries[volume_index]->eShape==mesh){
-            double_dummy = realloc(double_dummy, sizeof(double)*1000);
-            temp_intersection = realloc(temp_intersection, sizeof(double)*1000);
-            
+            tmp = realloc(double_dummy, sizeof(double)*1000);
+            if ( tmp==NULL ) { 
+              free(tmp); 
+              printf("\nERROR: Realloc failed on double dummy");
+              exit(1);
+            } else {
+              double_dummy = tmp;
+              tmp = realloc(temp_intersection, sizeof(double)*1000);
+              if ( tmp == NULL){
+                free(tmp);
+                printf("\nERROR: Realloc failed on temp intersection");
+                exit(1);
+              } else{ temp_intersection = tmp;}
+            }
          }
             geometry_output = Geometries[volume_index]->intersect_function(temp_intersection, double_dummy, double_dummy, double_dummy, int_dummy, 
 			                                                               &number_of_solutions, r1, direction, Geometries[volume_index]);
@@ -2318,6 +2331,7 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
                 }
         }
     }
+    free(double_dummy);
     free(temp_intersection);
     // Now we have a list of intersection distances between r1 and r2 and all volumes.
     // This list needs to be sorted before we continue!
