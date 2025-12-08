@@ -461,7 +461,7 @@ def create_label_dir(testdir, label):
 
 def create_datetime_testdir(testroot):
     datetime = utils.get_datetimestr()
-    return create_label_dir(testroot, datetime)
+    return create_label_dir(testroot + "_" + datetime, "")
 
 #
 # Program functions for every main test mode
