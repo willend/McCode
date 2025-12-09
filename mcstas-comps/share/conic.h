@@ -1086,6 +1086,8 @@ ConicSurf makeParaboloid(double f, Point p, double zstart,
 
     // PW Initializer added from linter hints...
     s.doubleReflections=0;
+    s.f2=0;
+    s.c=0;
 
     return s;
 }
@@ -1142,6 +1144,8 @@ FlatSurf makeFlatparbola(
 
     // PW Initializer added from linter hints...
     s.doubleReflections=0;
+    s.f2=0;
+    s.c=0;
 
     return s;
 }
