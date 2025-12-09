@@ -934,6 +934,9 @@ ConicSurf makeHyperboloid(double f1, double f2, Point p,
     s.max_ga_z0 = -1;
     #endif
 
+    // PW Initializer added from linter hints...
+    s.doubleReflections=0;
+
     return s;
 }
 
@@ -980,6 +983,9 @@ ConicSurf makeEllipsoid(double f1, double f2, Point p,
     s.max_ga = -1;
     s.max_ga_z0 = -1;
     #endif
+
+    // PW Initializer added from linter hints...
+    s.doubleReflections=0;
 
     return s;
 }
@@ -1033,6 +1039,9 @@ FlatSurf makeFlatEllipse(double f1, double f2, Point p, double zstart, double ze
     s.max_ga_z0 = -1;
     #endif
 
+    // PW Initializer added from linter hints...
+    s.doubleReflections=0;
+
     return s;
 }
 
@@ -1074,6 +1083,9 @@ ConicSurf makeParaboloid(double f, Point p, double zstart,
     s.max_ga = -1;
     s.max_ga_z0 = -1;
     #endif
+
+    // PW Initializer added from linter hints...
+    s.doubleReflections=0;
 
     return s;
 }
@@ -1127,6 +1139,9 @@ FlatSurf makeFlatparbola(
     s.max_ga = -1;
     s.max_ga_z0 = -1;
     #endif
+
+    // PW Initializer added from linter hints...
+    s.doubleReflections=0;
 
     return s;
 }
