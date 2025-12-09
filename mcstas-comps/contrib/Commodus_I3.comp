@@ -1,0 +1,115 @@
+/*******************************************************************************
+* 
+*  McStas, neutron ray-tracing package
+*          Copyright (C) 1997-2008, All rights reserved
+*          Risoe National Laboratory, Roskilde, Denmark
+*          Institut Laue Langevin, Grenoble, France
+* 
+*  Component: Commodus_I3
+* 
+* 
+*  %I
+* Written by: G. Skoro, based on ViewModerator4 from S. Ansell
+*  Date: July 2022
+*  Origin: ISIS
+*
+* ISIS Moderators (Tested with McStas 3.1 (Windows))
+* 
+*  %D
+*  Produces a neutron distribution at the ISIS TS1 or TS2 corresponding moderator front face position.  
+*  The Face argument determines which TS1 or TS2 beamline is to be sampled by using corresponding file.
+*  Neutrons are created having a range of energies determined by the E0 and E1 arguments.
+*  Trajectories are produced such that they pass through the moderator face (defined by 
+*  modXsize and modZsize) and a focusing rectangle (defined by xw, yh and dist). 
+*  		--- HOW TO USE ---
+* 
+*       Example:   Commodus_I3(Face="TS1verBase2016_LH8020_newVM-var_South04_Merlin.mcstas", E0 = E_min, E1 = E_max,
+*       modXsize = 0.12, modZsize = 0.12, xw = 0.094, yh = 0.094, dist = 1.6)
+* 
+*  	MERLIN simulation; TS1 baseline model. 
+* 	In this example,  xw and yh are chosen to be identical to the shutter opening dimension.
+* 	dist = 1.6 is the real distance to the shutter front face:
+*       (This is TimeOffset value (=160 [cm]) from TS1verBase2016_LH8020_newVM-var_South04_Merlin.mcstas file.)
+* 
+*  N.B. Absolute normalization: The result of the Mc-Stas simulation will show neutron intensity for beam current of 1 uA.
+* 
+* 
+*  %P
+*  INPUT PARAMETERS:
+* 
+*  Face:     [string]  TS1 (or TS2) instrument McStas filename
+*  E0:          [meV] Lower edge of energy distribution
+*  E1:          [meV] Upper edge of energy distribution
+*  modXsize:      [m]   Moderator width
+*  modZsize:      [m]   Moderator height
+*  xw:            [m]   Width of focusing rectangle 
+*  yh:            [m]   Height of focusing rectangle
+*  dist:          [m]   Distance from moderator surface to the focusing rectangle
+*  verbose:     [int]     Flag to output debugging information
+*  beamcurrent: [uA]      ISIS beam current
+*  
+*  %E
+*******************************************************************************/
+DEFINE COMPONENT Commodus_I3
+SETTING PARAMETERS (string Face="TS1_S04_Merlin.mcstas",E0, E1, modPosition=0,
+  dist=1.7, int verbose=0, beamcurrent=1,
+  modXsize=0.12,modZsize=0.12,xw=0.094,yh=0.094)
+
+SHARE INHERIT ViewModISIS
+
+DECLARE INHERIT ViewModISIS EXTEND
+%{
+  double xwidth;
+  double yheight;
+  double focus_xw; 
+  double focus_yh;
+%}
+
+INITIALIZE
+%{
+  xwidth=modXsize;
+  yheight=modZsize;
+  focus_xw=xw;
+  focus_yh=yh;
+
+  /* READ IN THE ENERGY FILE */
+  FILE* Tfile;
+
+  Nsim=mcget_ncount();  // Number of points requested.
+
+  Tfile=openFile(Face);	              // Get open file
+  rtE0=convertEnergy(E0);
+  rtE1=convertEnergy(E1);
+  orderEnergy(&rtE0,&rtE1);
+
+  readHtable(Tfile,rtE0,rtE1, &TS, modPosition, xwidth, yheight, verbose);
+  fclose(Tfile);
+  // Below pragma was needed with PGI 19.x, compilation fails with NVC 20.7 
+  //#pragma acc declare create( TS )
+  /**********************************************************************/
+
+  Tnpts=0;
+  Ncount=0;
+
+  fprintf(stderr,"Face == %s \n",Face);
+  fprintf(stderr,"Number of Energy Points == %d\n",TS.nEnergy);
+  if (dist<0)
+    {
+      dist=TS.rdumMid;
+      fprintf(stderr,"Setting distance to moderator surface == %g\n",
+	      dist);
+    }
+  /* Do solid angle correction */
+  angleArea= strArea(TS, focus_xw, focus_yh, dist);
+  // Below pragma was needed with PGI 19.x, compilation fails with NVC 20.7 
+  //#pragma acc update host( TS )
+  fprintf(stderr,"Totals:: %g %d %d \n",TS.Total,TS.nEnergy,TS.nTime);
+
+
+%}
+
+TRACE INHERIT ViewModISIS
+
+MCDISPLAY INHERIT ViewModISIS
+
+END
