@@ -1,0 +1,125 @@
+/*******************************************************************************
+*
+* McStas, the neutron ray-tracing package: PSD_monitor.comp
+*         Copyright 1997-2001 Risoe National Laboratory, Roskilde, Denmark
+*
+* Component: TOF_PSDmonitor
+*
+* %I
+* Written by: Robert Dalgliesh
+* Date: September 2021
+* Origin: ISIS
+*
+* Position-sensitive TOF vs. (height) linear monitor.
+*
+* %D
+* Adapted from Kim Lefmann's TOF_cylPSDmonitor and PSD_monitors
+* An n pixel (vertical, linear) PSD monitor with Time of Flight detection. 
+* This component may also be used as a beam
+* detector.
+*
+* Example: TOF_PSDmonitor(xmin=-0.1, xmax=0.1, ymin=-0.1, ymax=0.1,
+*            ny=90, nchan=100, TOFmin=0.0, TOFmax=20000.0, filename="Output.psd")
+*
+* %P
+* INPUT PARAMETERS:
+*
+* xwidth:      [m] width of detector opening
+* xmin:        [m] Lower x bound of detector opening
+* xmax:        [m] Upper x bound of detector opening
+* yheight:     [m] height of detector opening
+* ymin:        [m] Lower y bound of detector opening
+* ymax:        [m] Upper y bound of detector opening
+* ny:          [1] Number of pixel rows
+* nchan:       [1] Number of TOF channels
+* TOFmin:   [mu-s] Beginning TOF window
+* TOFmax:   [mu-s] End TO window
+* filename:  [str] Name of file in which to store the detector image
+* nowritefile: [1] If set, detector will skip writing to disk
+*
+* %E
+*******************************************************************************/
+DEFINE COMPONENT TOF_PSDmonitor
+SETTING PARAMETERS (int ny=90, int nchan=100, xwidth=0.1, xmin=0, xmax=0, yheight=0.1, ymin=0, ymax=0, TOFmin=0, TOFmax=1e6, int nowritefile=0, string filename=0)
+
+
+DECLARE
+  %{
+    DArray2d tofPSD_N;
+    DArray2d tofPSD_p;
+    DArray2d tofPSD_p2;
+  %}
+INITIALIZE
+  %{
+    if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
+    if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+
+    if ((xmin >= xmax) || (ymin >= ymax)){
+      printf("PSD_monitor: %s: Null detection area !\n"
+             "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+	     NAME_CURRENT_COMP);
+      exit(0);
+    }
+    tofPSD_N = create_darr2d(nchan, ny);
+    tofPSD_p = create_darr2d(nchan, ny);
+    tofPSD_p2 = create_darr2d(nchan, ny);
+    // Use instance name for monitor output if no input was given
+    if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  %}
+TRACE
+  %{
+    int i,j;
+
+    PROP_Z0;
+    if (x>xmin && x<xmax && y>ymin && y<ymax)
+    {
+      i = floor((1e6*t-TOFmin)*nchan/(TOFmax-TOFmin));
+      if (i<0 || i >= (nchan-1))
+      {
+        j = floor((y - ymin)*ny/(ymax - ymin));
+        tofPSD_N[nchan-1][j]++;
+        tofPSD_p[nchan-1][j] += p;
+        tofPSD_p2[nchan-1][j] += p*p;
+      }
+      else
+      {
+        j = floor((y - ymin)*ny/(ymax - ymin));
+        tofPSD_N[i][j]++;
+        tofPSD_p[i][j] += p;
+        tofPSD_p2[i][j] += p*p;
+      } 
+      SCATTER;
+    }
+  %}
+SAVE
+  %{
+  if (!nowritefile) {
+    DETECTOR_OUT_2D(
+        "Time-of-flight PSD monitor",
+        "Time-of-flight [\\gms]",
+        "Y position [mm]",
+        TOFmin, TOFmax, ymin*1000.0, ymax*1000.0,
+        nchan, ny,
+        &tofPSD_N[0][0],&tofPSD_p[0][0],&tofPSD_p2[0][0],
+        filename);
+  }
+  %}
+
+FINALLY %{
+  destroy_darr2d(tofPSD_N);
+  destroy_darr2d(tofPSD_p);
+  destroy_darr2d(tofPSD_p2);
+%}
+
+MCDISPLAY
+%{
+  magnify("xy");
+  multiline(5, (double)xmin, (double)ymin, 0.0,
+               (double)xmax, (double)ymin, 0.0,
+               (double)xmax, (double)ymax, 0.0,
+               (double)xmin, (double)ymax, 0.0,
+               (double)xmin, (double)ymin, 0.0);
+%}
+
+END
+
