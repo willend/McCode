@@ -74,6 +74,10 @@ SHARE %{
     tcoltmp=malloc(100000*sizeof(double));
     Ecoltmp=malloc(100000*sizeof(double));
     line=malloc(200*sizeof(char));
+    if (!Icoltmp || !tcoltmp || !Ecoltmp || !line) {
+      fprintf(stderr,"SNS_source: malloc() failure in sns_source_load. Exit!\n");
+      exit(-1);
+    }
     /* open file */
     printf("%s\n",fname);
     fp=fopen(fname,"r");
@@ -131,7 +135,7 @@ SHARE %{
     totalvals=idx2+1;
     printf("total vals: %d\n",totalvals);
     /* reformat data into an Ecol, a tcol, and an I matrix*/
-    idx1=0;idx2=0;idx3=0;
+    idx1=0;idx2=0;idx3=0;idx3max=0;
     Ecol[idx2]=Ecoltmp[idx1];
     tcol[idx3]=tcoltmp[idx1];
     Imat[idx3][idx2]=Icoltmp[idx1];
@@ -520,6 +524,7 @@ INITIALIZE
   double llim, hlim,ltlim,htlim,junk;
   double **Imat;
   int idx1,idx2;
+  double *tmp;
 
   double tyval[500];
   double txval[500];
@@ -531,12 +536,26 @@ INITIALIZE
   Ecol=malloc(200*sizeof(double));
   tPvec=malloc(500*sizeof(double));
   Ptmat=malloc(200*sizeof(double *));
+  Imat=malloc(200*sizeof(double*));
+  if (!Pvec || !inxvec || !inyvec || !tcol || !Ecol || !tPvec || !Ptmat || !Imat) {
+    fprintf(stderr,"SNS_Source: malloc() failure in INIT. Exit!\n");
+    exit(-1);
+  }
   for(idx1=0;idx1<200;idx1++){
     Ptmat[idx1]=malloc(200*sizeof(double));
+    tmp=Ptmat[idx1];
+    if(!tmp) {
+      fprintf(stderr,"SNS_Source: malloc() failure in INIT: Ptmat[%i]  Exit!\n",idx1);
+      exit(-1);
+    }
   }
-  Imat=malloc(200*sizeof(double*));
   for(idx1=0;idx1<200;idx1++){
     Imat[idx1]=malloc(500*sizeof(double));
+    tmp=Imat[idx1];
+    if(!tmp) {
+      fprintf(stderr,"SNS_Source: malloc() failure in INIT. Itmat[%i]  Exit!!\n",idx1);
+      exit(-1);
+    }
   }
   ltlim=0.1;
   htlim=1.8e3;
