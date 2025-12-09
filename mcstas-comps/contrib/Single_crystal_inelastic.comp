@@ -457,6 +457,13 @@ SHARE
     int *id = (int*)malloc(size*sizeof(int));
     double en, Qx, Qy, Qz, Qm, *vl;
     vl = (double*)malloc(size*sizeof(double));
+
+    if (!list || !id || !vl) {
+      fprintf(stderr,
+              "Single_crystal_inelastic: Error allocating reflection / id lists or vl array\n");
+      return(0);
+    }
+
     double h, k, l, Emax=0, Qmax=0, Emul, Qmul;
     for (i=0; i<size; i++)
     {
@@ -492,6 +499,11 @@ SHARE
     free(vl);
     FILE *tf;
     tf=fopen("sorted.out","w");
+    if (!tf) {
+      fprintf(stderr,
+              "Single_crystal_inelastic: Could not open 'sorted.out' in write mode!\n");
+      exit(-1);
+    }
     for(i=0; i<size; i++) fprintf(tf,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",i,list[id[i]].chki,list[id[i]].qmod,list[id[i]].h,list[id[i]].k,list[id[i]].l,list[id[i]].en,list[id[i]].SQW);
     fclose(tf);
 
@@ -502,6 +514,13 @@ SHARE
     SwQi=(int**)malloc(size*sizeof(int*)); 
     SwQt = (int*)malloc(size*sizeof(int));
     nQ = (int*)malloc(size*sizeof(int));
+
+    if (!Sw || !SwQi || !SwQt || !nQ) {
+      fprintf(stderr,
+              "Single_crystal_inelastic: Error allocating Sw/SwQi/SwQt or nQ array\n");
+      return(0);
+    }
+
     int ecount=0, maxecount=0;
     double oldQ=0;
     for(i=0; i<size; i++) Sw[i]=0.;
@@ -528,10 +547,20 @@ SHARE
     }
     printf("\n");
     double *SwCDF = (double*)malloc(isw*sizeof(double));
+    if (!SwCDF) {
+      fprintf(stderr,
+              "Single_crystal_inelastic: Error allocating SwCDF array\n");
+      return(0);
+    }
     SwCDF[0] = Sw[0]; for (i=1; i<isw; i++) { SwCDF[i] = SwCDF[i-1]+Sw[i]; }
     info->SwCDF = SwCDF; 
     info->nSw = isw;
-    FILE *cdf = fopen("mcdisp_sqw.cdf","w"); 
+    FILE *cdf = fopen("mcdisp_sqw.cdf","w");
+    if (!cdf) {
+      fprintf(stderr,
+              "Single_crystal_inelastic: Could not open 'mcdisp_sqw.cdf' in write mode!\n");
+      exit(-1);
+    }
     int j;
     for (i=0; i<isw; i++) { fprintf(cdf,"%f %f\n",list[SwQi[i][0]].chki,SwCDF[i]); for(j=0; j<nQ[i]; j++) fprintf(cdf,"\t%f (%f %f %f, %f) %f\n",
                   list[SwQi[i][j]].qmod,list[SwQi[i][j]].h,list[SwQi[i][j]].k,list[SwQi[i][j]].l,list[SwQi[i][j]].en,list[SwQi[i][j]].SQW); }
@@ -540,6 +569,11 @@ SHARE
     info->nQ = nQ;
     double *SqwCDF; SqwCDF = (double*)malloc(maxecount*sizeof(double)); info->SqwCDF = SqwCDF;
     int *iSqwCDF; iSqwCDF=  (int*)malloc(maxecount*sizeof(int)); info->iSqwCDF = iSqwCDF;
+    if (!SqwCDF || !iSqwCDF) {
+      fprintf(stderr,
+              "Single_crystal_inelastic: Error allocating SqwCDF or iSqwCDF array\n");
+      return(0);
+    }
     info->maxecount = maxecount;
 
     Table_Free(&sTable);

@@ -296,7 +296,7 @@ _class_particle make_class_particle(double x, double y, double z,
     double vx, double vy, double vz, double t,
     double sx, double sy, double sz, int silicon, double w) {
 
-    _class_particle pa;
+    _class_particle pa=mcgenstate();
 
     pa.x = x;
     pa.y = y;
@@ -311,6 +311,7 @@ _class_particle make_class_particle(double x, double y, double z,
     pa.sz = sz;
 
     pa.p = w;
+    pa.t = t;
 
     return pa;
 }
@@ -735,26 +736,30 @@ Will write data and free data array.
 */
 void finishDetector(Detector d) {
     int x,y;
-    if (d.filename != "") {
+    if (strcmp(d.filename,"")) {
         FILE *file;
         file = fopen(d.filename,"w");
+	if (file) {
+	  double intensity = (*d.num_count);
+	  fprintf(file, "#I=%e I_ERR=%e xmin=%f xmax=%f ymin=%f ymax=%f ncols=%i nrows=%i\n",
+		  intensity, sqrt(intensity/d.num_particles), d.xmin, d.xmax, d.ymin, d.ymax, d.ncols, d.nrows); //FIXME: check I_ERR sqrt(I/num_particles)
 
-        double intensity = (*d.num_count);
-        fprintf(file, "#I=%e I_ERR=%e xmin=%f xmax=%f ymin=%f ymax=%f ncols=%i nrows=%i\n",
-            intensity, sqrt(intensity/d.num_particles), d.xmin, d.xmax, d.ymin, d.ymax, d.ncols, d.nrows); //FIXME: check I_ERR sqrt(I/num_particles)
-
-        //Write data
-        for (x=0; x < d.ncols; x++) {
+	  //Write data
+	  for (x=0; x < d.ncols; x++) {
             for (y=0; y < d.nrows; y++)
-                fprintf(file, "%e ", d.data[x][y]);
+	      fprintf(file, "%e ", d.data[x][y]);
             fprintf(file, "\n");
-        }
-        fclose(file);
+	  }
+	  fclose(file);
+	} else {
+	  fprintf(stderr,"Warning from conic.h: Could not open file %s in write mode. No data written!\n",d.filename);
+	}
     }
     for (x=0; x < d.ncols; x++)
         free(d.data[x]);
     free(d.data);
     free(d.num_count);
+    return;
 }
 
 /** @} */ //end of detectorgroup
@@ -1028,6 +1033,9 @@ FlatSurf makeFlatEllipse(double f1, double f2, Point p, double zstart, double ze
     s.max_ga_z0 = -1;
     #endif
 
+    // PW Initializer added from linter hints...
+    s.doubleReflections=0;
+
     return s;
 }
 
@@ -1069,6 +1077,10 @@ ConicSurf makeParaboloid(double f, Point p, double zstart,
     s.max_ga = -1;
     s.max_ga_z0 = -1;
     #endif
+
+    // PW Initializer added from linter hints...
+    s.f2=0;
+    s.c=0;
 
     return s;
 }
@@ -1122,6 +1134,11 @@ FlatSurf makeFlatparbola(
     s.max_ga = -1;
     s.max_ga_z0 = -1;
     #endif
+
+    // PW Initializer added from linter hints...
+    s.doubleReflections=0;
+    s.f2=0;
+    s.c=0;
 
     return s;
 }
@@ -1264,6 +1281,10 @@ double getGrazeAngleConic(_class_particle p, ConicSurf s) {
     double vn = dotVec(get_class_particleVel(p),n);
     return fabs(acos(vn/v)) - M_PI/2;
     */
+
+    /* Even though this function does absolutely nothing, better 
+       add return value... Negative to indicate something went wrong */
+    return -1;
 }
 
 /*! \brief Function for returning normal vector of ConicSurf at Point p

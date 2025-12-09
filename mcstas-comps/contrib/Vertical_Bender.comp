@@ -496,6 +496,7 @@ TRACE
 MCDISPLAY
 %{
   double y1, y2, z1, z2;
+  y1=y2=z1=z2=0;
   const int n = 90;
   double yplot[90], zplot[90];
   int ns = 0;

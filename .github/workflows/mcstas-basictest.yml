@@ -470,24 +470,26 @@ jobs:
            cd src
            export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
            export NUMCHANGEDCOMPS=`git diff --name-only HEAD HEAD~1|grep \.comp\$ | grep mcstas-comps | wc -l | xargs echo`
+           cd -
            if [ "$NUMCHANGEDCOMPS" != "0" ];
            then
                for comp in $CHANGEDCOMPS;
                do
                  echo Finding tests including component $comp
-                 NUMMATCH=`find mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
+                 NUMMATCH=`find src/mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
                  if [ "$NUMMATCH" -gt "0" ];
                  then
                    if [ "$RUNNER_OS" != "Windows" ]; then
-                     mctest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE
+                     mctest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES $PERMISSIVE --verbose
                  else
-                     echo .\\install\\bin\\mctest --verbose --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES --permissive >> ..\\changedinstr.bat
+                     echo .\\install\\bin\\mctest --verbose --testdir run_${comp} --comp=${comp} --suffix=${{ matrix.CC }}_CHANGES --permissive --verbose >> changedinstr.bat
                  fi
              else
                    echo No matching tests found
              fi
                done
            fi
+           cd src
            export RUNALL="NO"
            export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcstas-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo`
            export CHANGEDINSTR=`echo $CHANGEDINSTR | xargs -n1 echo | sort | uniq | xargs echo | sed s/\ /,/g`
