@@ -42,6 +42,10 @@ DECLARE
 INITIALIZE
 %{
   radii=malloc(nshells*sizeof(double));
+  if (!radii) {
+    fprintf(stderr, "Error allocating array of raddi in %s. Exit!\n",NAME_INSTRUMENT);
+    exit(-1);
+  }
 
   double dr=(rmax-rmin)/(nshells-1);
 
