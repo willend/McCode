@@ -130,11 +130,7 @@ SHARE
    * RETURNS: rotated nx,ny,nz coordinates
    */
 #pragma acc routine seq
-  void Lens_roughness(double *nx, double *ny, double *nz, double tilt
-#ifdef OPENACC
-    , _class_particle* _particle
-#endif
-    )
+  void Lens_roughness(double *nx, double *ny, double *nz, double tilt, _class_particle* _particle)
   {
     double nt_x, nt_y, nt_z;  /* transverse vector */
     double n1_x, n1_y, n1_z;  /* normal vector (tmp) */
@@ -357,11 +353,7 @@ do {
     }
   }
   /* tilt normal vector for roughness, in cone theta_RMS */
-  if (RMS>0) Lens_roughness(&nx, &ny, &nz, theta_RMS
-#ifdef OPENACC
-			    , _particle
-#endif
-			    );
+  if (RMS>0) Lens_roughness(&nx, &ny, &nz, theta_RMS, _particle);
 
   /* compute incoming angles w.r.t surface */
   NORM(nx,ny,nz);
@@ -554,11 +546,7 @@ do {
     }
   }
   /* tilt normal vector for roughness, in cone theta_RMS */
-  if (RMS>0) Lens_roughness(&nx, &ny, &nz, theta_RMS
-#ifdef OPENACC
-			    , _particle
-#endif
-			    );
+  if (RMS>0) Lens_roughness(&nx, &ny, &nz, theta_RMS, _particle);
 
   /* compute incoming angles w.r.t surface */
   NORM(nx,ny,nz);
