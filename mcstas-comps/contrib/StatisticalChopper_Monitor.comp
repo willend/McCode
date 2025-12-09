@@ -114,74 +114,78 @@ SAVE
     double *p0=malloc(correlation_m*detector.n*detector.p*sizeof(double)); /* Arrays to store correlation monitor */
     double *p1=malloc(correlation_m*detector.n*detector.p*sizeof(double));
     double *p2=malloc(correlation_m*detector.n*detector.p*sizeof(double));
+    if(p0 && p1 && p2) {
 
-    /* initialize arrays to zero */
-    for (i=0;i<correlation_m*detector.n*detector.p;i++) p0[i]=p1[i]=p2[i]=0;
+      /* initialize arrays to zero */
+      for (i=0;i<correlation_m*detector.n*detector.p;i++) p0[i]=p1[i]=p2[i]=0;
 
-    /* indices in loops for detector */
-    /* p1[i][j] = p1[index] with index= (!detector.istransposed ? i*n*p + j : i+j*m); */
+      /* indices in loops for detector */
+      /* p1[i][j] = p1[index] with index= (!detector.istransposed ? i*n*p + j : i+j*m); */
 
-    /* compute scattering function S: Von Jan and Scherm, Eq (18) */
-    for (i=0;i<correlation_m;i++){
-      for (k=0;k<detector.n*detector.p;k++){
-        long index_new= !detector.istransposed ? i*detector.n*detector.p + k : i+k*correlation_m; /* [i][k] index in correlation */
-        for (j=0;j<f*nslit;j++){
-          long i2       = ( j*(detector.m-1)/(f*nslit-1) + i*(detector.m-1)/(correlation_m-1) ) % detector.m; /* time index in raw detector */
-          long index_old= !detector.istransposed ? i2*detector.n*detector.p + k : i2+k*detector.m;            /* full [i][k] index in raw detector */
+      /* compute scattering function S: Von Jan and Scherm, Eq (18) */
+      for (i=0;i<correlation_m;i++){
+	for (k=0;k<detector.n*detector.p;k++){
+	  long index_new= !detector.istransposed ? i*detector.n*detector.p + k : i+k*correlation_m; /* [i][k] index in correlation */
+	  for (j=0;j<f*nslit;j++){
+	    long i2       = ( j*(detector.m-1)/(f*nslit-1) + i*(detector.m-1)/(correlation_m-1) ) % detector.m; /* time index in raw detector */
+	    long index_old= !detector.istransposed ? i2*detector.n*detector.p + k : i2+k*detector.m;            /* full [i][k] index in raw detector */
 
-          p1[index_new]+=(Sequence[j % nslit]-c) * detector.p1[ index_old ];
-        }
-        p1[index_new] /=  m*f*(1-c);
-        p1[index_new] += -detector.min/m;
-        p0[index_new]  =  detector.events/correlation_m;
-        S_sum += p1[index_new];
+	    p1[index_new]+=(Sequence[j % nslit]-c) * detector.p1[ index_old ];
+	  }
+	  p1[index_new] /=  m*f*(1-c);
+	  p1[index_new] += -detector.min/m;
+	  p0[index_new]  =  detector.events/correlation_m;
+	  S_sum += p1[index_new];
+	}
       }
-    }
 
-    /* Normalization of p1 compared to detector.p1: must have same integrated intensity */
-    /* normalizations:
-      coeff_ZS=(S_sum/detector.intensity)*f;
-      coeff_ZS=(S_sum/(m*detector.intensity-detector.min/nu))*(m*f*(1-m/nslit)+m);
-    */
-    double coeff_ZS=(S_sum/(m*detector.intensity-detector.min/nu))*(m*f*(1.0-(double)m/nslit)+m);
-    for (i=0;i<correlation_m*detector.n*detector.p;i++) {
-      p1[i] /= coeff_ZS;
-    }
-
-    /* Calculation of delta(S)^2: Von Jan and Scherm, Eq (19) */
-    for (i=0;i<correlation_m;i++){
-      for (k=0;k<detector.n*detector.p;k++){
-        long index_new= !detector.istransposed ? i*detector.n*detector.p + k : i+k*correlation_m; /* [i][k] index in correlation */
-        for (j=0;j<f*nslit;j++){
-          long i2       = ( j*(detector.m-1)/(f*nslit-1) + i*(detector.m-1)/(correlation_m-1) ) % detector.m; /* time index in raw detector */
-          long index_old= !detector.istransposed ? i2*detector.n*detector.p + k : i2+k*detector.m;            /* full [i][k] index in raw detector */
-          p2[index_new]+= (Sequence[j % nslit]-c)*(Sequence[j % nslit]-c)
-                        *  detector.p1[index_old]*detector.p1[index_old];
-        }
+      /* Normalization of p1 compared to detector.p1: must have same integrated intensity */
+      /* normalizations:
+	 coeff_ZS=(S_sum/detector.intensity)*f;
+	 coeff_ZS=(S_sum/(m*detector.intensity-detector.min/nu))*(m*f*(1-m/nslit)+m);
+      */
+      double coeff_ZS=(S_sum/(m*detector.intensity-detector.min/nu))*(m*f*(1.0-(double)m/nslit)+m);
+      for (i=0;i<correlation_m*detector.n*detector.p;i++) {
+	p1[i] /= coeff_ZS;
       }
-    }
-    /* Transformation from sigma to p2 before output */
-    for (i=0;i<correlation_m*detector.n*detector.p;i++){
-      p2[i] /= (double)(m*m*f*f*(1-c)*(1-c));
-      if (p2[i] > 0) p2[i] = (p0[i] > 1 ? ((p0[i]-1)*p2[i]*p2[i] + p1[i]*p1[i]/p0[i])/p0[i]
-                                        : p1[i]);
-    }
 
-    char file[CHAR_BUF_LENGTH];
-    sprintf(file, "%s_corr", filename ? filename : NAME_CURRENT_COMP);
+      /* Calculation of delta(S)^2: Von Jan and Scherm, Eq (19) */
+      for (i=0;i<correlation_m;i++){
+	for (k=0;k<detector.n*detector.p;k++){
+	  long index_new= !detector.istransposed ? i*detector.n*detector.p + k : i+k*correlation_m; /* [i][k] index in correlation */
+	  for (j=0;j<f*nslit;j++){
+	    long i2       = ( j*(detector.m-1)/(f*nslit-1) + i*(detector.m-1)/(correlation_m-1) ) % detector.m; /* time index in raw detector */
+	    long index_old= !detector.istransposed ? i2*detector.n*detector.p + k : i2+k*detector.m;            /* full [i][k] index in raw detector */
+	    p2[index_new]+= (Sequence[j % nslit]-c)*(Sequence[j % nslit]-c)
+	      *  detector.p1[index_old]*detector.p1[index_old];
+	  }
+	}
+      }
+      /* Transformation from sigma to p2 before output */
+      for (i=0;i<correlation_m*detector.n*detector.p;i++){
+	p2[i] /= (double)(m*m*f*f*(1-c)*(1-c));
+	if (p2[i] > 0) p2[i] = (p0[i] > 1 ? ((p0[i]-1)*p2[i]*p2[i] + p1[i]*p1[i]/p0[i])/p0[i]
+				: p1[i]);
+      }
 
-    if (detector.rank == 1)
-      DETECTOR_OUT_1D("Correlation monitor",
-        detector.xlabel,detector.ylabel,
-        detector.xvar,detector.xmin,detector.xmax,correlation_m,
-        p0,p1,p2,file);
-    else if (detector.rank == 2)
-      DETECTOR_OUT_2D("Correlation monitor",
-        detector.xlabel,detector.ylabel,
-        detector.xmin,detector.xmax,detector.ymin,detector.ymax,
-        correlation_m,detector.n,
-        p0,p1,p2,file);
-    free(p0);free(p1);free(p2);
+      char file[CHAR_BUF_LENGTH];
+      sprintf(file, "%s_corr", filename ? filename : NAME_CURRENT_COMP);
+
+      if (detector.rank == 1)
+	DETECTOR_OUT_1D("Correlation monitor",
+			detector.xlabel,detector.ylabel,
+			detector.xvar,detector.xmin,detector.xmax,correlation_m,
+			p0,p1,p2,file);
+      else if (detector.rank == 2)
+	DETECTOR_OUT_2D("Correlation monitor",
+			detector.xlabel,detector.ylabel,
+			detector.xmin,detector.xmax,detector.ymin,detector.ymax,
+			correlation_m,detector.n,
+			p0,p1,p2,file);
+      free(p0);free(p1);free(p2);
+    } else {
+      fprintf(stderr,"WARNING: StatisticalChopper_monitor %s: Could not allocate arrays for monitor output. Skipped writing...\n")
+    }
   }
 
 %}
