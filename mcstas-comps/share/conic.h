@@ -296,7 +296,7 @@ _class_particle make_class_particle(double x, double y, double z,
     double vx, double vy, double vz, double t,
     double sx, double sy, double sz, int silicon, double w) {
 
-    _class_particle pa;
+    _class_particle pa=mcgenstate();
 
     pa.x = x;
     pa.y = y;
@@ -311,6 +311,7 @@ _class_particle make_class_particle(double x, double y, double z,
     pa.sz = sz;
 
     pa.p = w;
+    pa.t = t;
 
     return pa;
 }
@@ -735,7 +736,7 @@ Will write data and free data array.
 */
 void finishDetector(Detector d) {
     int x,y;
-    if (d.filename != "") {
+    if (strcmp(d.filename,"")) {
         FILE *file;
         file = fopen(d.filename,"w");
 	if (file) {
