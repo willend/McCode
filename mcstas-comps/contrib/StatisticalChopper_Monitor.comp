@@ -184,7 +184,7 @@ SAVE
 			p0,p1,p2,file);
       free(p0);free(p1);free(p2);
     } else {
-      fprintf(stderr,"WARNING: StatisticalChopper_monitor %s: Could not allocate arrays for monitor output. Skipped writing...\n")
+      fprintf(stderr,"WARNING: StatisticalChopper_monitor %s: Could not allocate arrays for monitor output. Skipped writing...\n",NAME_CURRENT_COMP);
     }
   }
 
