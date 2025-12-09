@@ -2361,7 +2361,7 @@ if (!filep) {
   }
   fclose(filep);
  } else {
-  fprintf("Texture_process %s WARNING: Failed to open file 'rejectioStatistics.txt' in write mode. No data saved!\n", NAME_CURRENT_COMP);
+  fprintf(stderr,"Texture_process %s WARNING: Failed to open file 'rejectioStatistics.txt' in write mode. No data saved!\n", NAME_CURRENT_COMP);
  }
 // deallocate allocated memory, etc.
 free_texture(hkl_info);
