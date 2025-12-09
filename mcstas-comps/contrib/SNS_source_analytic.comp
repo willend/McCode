@@ -389,7 +389,7 @@ double sample_t_from_f_sp (double para[4], double tmin, double tmax, double rand
   tp = tmax;
   fp = 1.0;
   n = 0;
-
+  t = 0;
   diff = 1.0;
   while(fabs(diff)>eps) {
     n++;
@@ -706,7 +706,7 @@ double sample_t_from_f_lp (double para[4], double E, double tmin, double tmax, d
   tp = tmax;
   fp = 1.0;
   n = 0;
-
+  t = 0;
   diff = 1.0;
   while(fabs(diff)>eps) {
     n++;
@@ -804,7 +804,8 @@ INITIALIZE
 
   fp = fopen(filename,"r");
   if (fp==NULL){
-    printf("Error opening file\n");
+    fprintf(stderr,"Error opening file\n");
+    exit(-1);
   }
   else {
     printf("%s\n","File opened...");
