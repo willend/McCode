@@ -311,7 +311,10 @@ struct legendre * initLegendre(int lmax)
   nlm = (lmax+1)*(lmax+1);
 
   lgdr = (struct legendre *)malloc(sizeof(struct legendre));
-
+  if (!lgdr) {
+    fprintf(stderr,"Texture_process: Failed struct malloc() in initLegendre. Exit!\n");
+    exit(-1);
+  }  
   lgdr->lmax = lmax;
   lgdr->index = (int **)malloc((lmax+1)*sizeof(int *));
   lgdr->l = (int *)malloc(nlm*sizeof(int));
@@ -319,7 +322,11 @@ struct legendre * initLegendre(int lmax)
   lgdr->nplm = (int *)malloc(nlm*sizeof(int));
   lgdr->x = (double **)malloc(nlm*sizeof(double *));
   lgdr->Plm = (double **)malloc(nlm*sizeof(double *));
-  i = -1;
+  if (!lgdr->index || !lgdr->l || !lgdr->m || !lgdr->nplm || !lgdr->x || !lgdr->Plm) {
+    fprintf(stderr,"Texture_process: Failed malloc() in initLegendre. Exit!\n");
+    exit(-1);
+  }
+  i = -1;m
   for(l=0;l<=lmax;l++) {
     lgdr->index[l] = (int *)malloc((2*l+1)*sizeof(int));	
     for(m=-l;m<=l;m++) {
