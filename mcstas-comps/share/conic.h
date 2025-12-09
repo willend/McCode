@@ -1269,6 +1269,10 @@ double getGrazeAngleConic(_class_particle p, ConicSurf s) {
     double vn = dotVec(get_class_particleVel(p),n);
     return fabs(acos(vn/v)) - M_PI/2;
     */
+
+    /* Even though this function does absolutely nothing, better 
+       add return value... Negative to indicate something went wrong */
+    return -1;
 }
 
 /*! \brief Function for returning normal vector of ConicSurf at Point p
