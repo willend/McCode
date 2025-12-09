@@ -86,7 +86,11 @@ see
 double * get_r_at_z0(int number, double z_0, double r_0, double z_extract, double LStart, double LEnd, double lStart, double lEnd) {
     int n = number;
     double *r_zExtracts = malloc(n*sizeof(double_t)); /* n is an array of 10 integers */
-	r_zExtracts[0] = r_0;
+    if (!r_zExtracts) {
+      fprintf(stderr,"NMO comp function get_r_at_z0: malloc() failed. Exit! \n");
+      exit(-1);
+    }
+    r_zExtracts[0] = r_0;
     //helper variables as in conic_finite_mirror.h and explained in swissneutronics_überlegungen
     double k1;
     double k2;
@@ -147,6 +151,10 @@ INITIALIZE
         //read the data from the file into an array and point rfron_inner to it
         nummirror = rsTable.rows;
         rfront_inner = malloc(sizeof(double)*nummirror);
+	if (!rfront_inner) {
+	  fprintf(stderr,"Component %s: malloc() failed in INIT. Exit! \n", NAME_CURRENT_COMP);
+	  exit(-1);
+	}
         for (int i = 0; i < nummirror; i++){
 
             rfront_inner[i] = Table_Index(rsTable, i, 1);//reads the value of the second col where i sits in the first col
