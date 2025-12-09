@@ -402,10 +402,14 @@ double total_hkl_XS(double k, double kct, double kphi, struct hkl_data_texture *
     //printf("Exiting...");
     fflush(stdout);
     filep = fopen("negativeXS.txt","a");
-    fprintf(filep,"%d %d %d %.6e %.6e %.6e %.6e %.6e %.6e %.6e\n",
-            L->h,L->k,L->l,L->Gx,L->Gy,L->Gz,k,kct,kphi,XS);
-    fclose(filep);
-    //exit(1);
+    if(filep) {
+      fprintf(filep,"%d %d %d %.6e %.6e %.6e %.6e %.6e %.6e %.6e\n",
+	      L->h,L->k,L->l,L->Gx,L->Gy,L->Gz,k,kct,kphi,XS);
+      fclose(filep);
+    } else {
+      fprintf(stderr,"Texture_process/routine total_hkl_XS: failed fopen in add mode for file 'negativeXS.txt'. Exit!\n");
+      exit(-1);
+    }
   }
 
   // this is not the cross section. A different name (reflectivity??) would be appropriate
