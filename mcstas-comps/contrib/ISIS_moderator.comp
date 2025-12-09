@@ -701,6 +701,10 @@ int cmdnumberI(char *mc,int* num,const int len)
 	    (mc[i]=='\t' || mc[i]==' '  || mc[i]==',');i++);
       if(i==len || !mc[i]) return 0;
       ss=malloc(sizeof(char)*(len+1));
+      if (!ss) {
+	fprintf(stderr,"ISIS_moderator: malloc() failure in cmdnumberI\n");
+	exit(-1);
+      }
       /*  char *ss=new char[len+1]; */
       for(;i<len && mc[i]!='\n' && mc[i]
 	    && mc[i]!='\t' && mc[i]!=' ' && mc[i]!=',';i++)
