@@ -1,0 +1,79 @@
+/*******************************************************************************
+*
+* Component: NMO
+*
+* %I
+* Written by: Christoph Herb, TUM
+* Version: 0.1
+* Origin: TUM
+* Date: 2022-2023
+*
+* NMO (nested mirror optic) modules 
+*
+* %D
+* Simulates NMO (nested mirror optic) modules as concevied by Böni et al., see
+* Christoph Herb et al., Nucl. Instrum. Meth. A 1040, 1671564 (1-18) 2022.
+*
+* The component relies on an updated version of conic.h from MIT.
+*
+* NMO.comp contains no actual code, uses INHERIT of all sections from FlatEllipse_finite_mirror
+*
+* %P
+* sourceDist: [m]   Distance used for calculating the spacing of the mirrors
+* LStart:     [m]   Left focal point
+* LEnd:       [m]   Right focal point
+* lStart:     [m]   z-Value of the mirror start
+* lEnd:       [m]   z-Value of the mirror end
+* r_0: [m] distance to the mirror at lStart
+* nummirror:  [1]   number of mirrors
+* mf: [ ] mvalue of the inner side of the coating, m>10 results in perfect reflections
+* mb: [ ] mvalue of the outer side of the coating, m>10 results in perfect reflections
+* mirror_width: [m] width of the individual mirrors
+* mirror_sidelength: [m] side length of the individual mirrors
+* doubleReflections: [1] binary value determining whether the mirror backside is reflective
+* rfront_inner_file: [str] file of distances to the optical axis of the individual mirrors
+* R0: [1]                      Low-angle reflectivity
+* Qc: [AA-1]                   critical scattering vector
+* W: [AA-1]                    width of supermirror cutoff
+* alpha: [AA]                  Slope of reflectivity
+* %L
+* Christoph Herb et al., Nucl. Instrum. Meth. A 1040, 1671564 (1-18) 2022.
+* %E
+*
+*******************************************************************************/
+
+DEFINE COMPONENT NMO
+SETTING PARAMETERS (
+    sourceDist = 0,
+    LStart=0.6,
+    LEnd = 0.6,
+    lStart = 0.,
+    lEnd = 0.,
+    r_0 = 0.02076,
+    int nummirror= 9,
+    mf = 4,
+    mb = 0,
+    R0 = 0.99,
+    Qc = 0.021,
+    W = 0.003,
+    alpha = 6.07,
+    mirror_width = 0.003,
+    mirror_sidelength = 1,
+    doubleReflections = 0,
+    string rfront_inner_file = "NULL"
+)
+
+
+SHARE INERHIT FlatEllipse_finite_mirror
+
+DECLARE INHERIT FlatEllipse_finite_mirror
+
+INITIALIZE INHERIT FlatEllipse_finite_mirror
+
+TRACE INHERIT FlatEllipse_finite_mirror
+
+FINALLY INHERIT FlatEllipse_finite_mirror
+
+MCDISPLAY INHERIT FlatEllipse_finite_mirror
+
+END
