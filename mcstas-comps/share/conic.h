@@ -934,9 +934,6 @@ ConicSurf makeHyperboloid(double f1, double f2, Point p,
     s.max_ga_z0 = -1;
     #endif
 
-    // PW Initializer added from linter hints...
-    s.doubleReflections=0;
-
     return s;
 }
 
@@ -983,9 +980,6 @@ ConicSurf makeEllipsoid(double f1, double f2, Point p,
     s.max_ga = -1;
     s.max_ga_z0 = -1;
     #endif
-
-    // PW Initializer added from linter hints...
-    s.doubleReflections=0;
 
     return s;
 }
@@ -1085,7 +1079,6 @@ ConicSurf makeParaboloid(double f, Point p, double zstart,
     #endif
 
     // PW Initializer added from linter hints...
-    s.doubleReflections=0;
     s.f2=0;
     s.c=0;
 
