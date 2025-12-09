@@ -738,23 +738,27 @@ void finishDetector(Detector d) {
     if (d.filename != "") {
         FILE *file;
         file = fopen(d.filename,"w");
+	if (file) {
+	  double intensity = (*d.num_count);
+	  fprintf(file, "#I=%e I_ERR=%e xmin=%f xmax=%f ymin=%f ymax=%f ncols=%i nrows=%i\n",
+		  intensity, sqrt(intensity/d.num_particles), d.xmin, d.xmax, d.ymin, d.ymax, d.ncols, d.nrows); //FIXME: check I_ERR sqrt(I/num_particles)
 
-        double intensity = (*d.num_count);
-        fprintf(file, "#I=%e I_ERR=%e xmin=%f xmax=%f ymin=%f ymax=%f ncols=%i nrows=%i\n",
-            intensity, sqrt(intensity/d.num_particles), d.xmin, d.xmax, d.ymin, d.ymax, d.ncols, d.nrows); //FIXME: check I_ERR sqrt(I/num_particles)
-
-        //Write data
-        for (x=0; x < d.ncols; x++) {
+	  //Write data
+	  for (x=0; x < d.ncols; x++) {
             for (y=0; y < d.nrows; y++)
-                fprintf(file, "%e ", d.data[x][y]);
+	      fprintf(file, "%e ", d.data[x][y]);
             fprintf(file, "\n");
-        }
-        fclose(file);
+	  }
+	  fclose(file);
+	} else {
+	  fprintf(stderr,"Warning from conic.h: Could not open file %s in write mode. No data written!\n",d.filename);
+	}
     }
     for (x=0; x < d.ncols; x++)
         free(d.data[x]);
     free(d.data);
     free(d.num_count);
+    return;
 }
 
 /** @} */ //end of detectorgroup
