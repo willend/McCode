@@ -397,6 +397,12 @@ double** allocate2Ddouble(int count_x, int count_y) {
 
     // create array or pointers to first elem in each 2D row
     double **ptr_array = malloc(sizeof(double*) * count_x);
+    if (data == NULL || ptr_array == NULL){
+      free(data);
+      free(ptr_array);
+      printf("\nERROR: ptr array or data not allocated in Union_logger_2DQ\n");
+      exit(1);
+    }
     for (i = 0; i < count_x; i++) {
         ptr_array[i] = data + (i*count_y);
     }
@@ -509,7 +515,7 @@ INITIALIZE
       printf("ERROR, Union logger 2DQ named \"%s\" has an invalid Q_direction_1 string, it should be \"x\",\"y\" or \"z\".\n",NAME_CURRENT_COMP);
       exit(1);
   }
-  char temp_string[2];
+  char temp_string[2] = "UN"; // UN stands for unset. Courtesy of linter play
   if (strcmp(Q_direction_2,"x") == 0 || strcmp(Q_direction_2,"X") == 0) {
       this_storage.dim_2_choice = 0;
       sprintf(this_storage.Detector_2D.string_axis_2,"Q_x [A^-1]");

@@ -161,6 +161,11 @@ void read_stl(char* filename,
 
       // Allocate memory for triangles
       triangles = (Triangle *)malloc(capacity * sizeof(Triangle));  
+      if (triangles == NULL){
+         free(triangles);
+         printf("\nERROR: malloc failed for triangles");
+         exit(1);
+      }
    
       Triangle current;
 
@@ -200,12 +205,15 @@ void read_stl(char* filename,
                current.attribute_byte_count = 0; // ASCII STL always 0
               if (count >= capacity) {
                   capacity *= 2;
-                  triangles = realloc(triangles, capacity * sizeof(Triangle));
-                  if (!triangles) {
+                  void * tmp = realloc(triangles, capacity * sizeof(Triangle));
+                  if (tmp) {
+                     free(triangles);
+                     free(tmp);
                       perror("ERROR: Memory reallocation failed");
                       fclose(file);
                       exit(1);
                   }
+                  triangles = tmp;
                }
                triangles[count++] = current;
            }
@@ -481,6 +489,11 @@ void mcdisplay_mesh_function(struct lines_to_draw *lines_to_draw_output,int inde
 
   Coords *list_startpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
   Coords *list_endpoints = (Coords*)calloc(n_facets*3,sizeof(Coords));
+  // Check for failed allocation
+  if (list_startpoints == NULL || list_endpoints == NULL){
+    free(list_startpoints);
+    free(list_endpoints);
+  }
 
   int counter=0;
   // For every triangle it should add three lines
@@ -916,8 +929,12 @@ if (mask_string &&
 // We assume that the input file is using triangular faces, otherwise
 // the check for closed mesh using the Euler-Poincare characteristic
 // is wrong.
-int n_verts, n_faces, n_edges;
+int n_verts = 0;
+int n_faces = 0;
+int n_edges = 0;
 Coords* verts;
+Coords tmp_vert = coords_set(0,0,0);
+verts = &tmp_vert; // This tmp vert is just for linter play...
 int** faces;
 int unique_index = 0;
 
@@ -952,7 +969,7 @@ if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
    exit(1);
 }
 // Loop over all vertices and multiply their positions with coordinate_scale
-for (int i = 0; i<n_verts; i++){//TODO: Dont use x y z as this doesnt align with particle struct.
+for (int i = 0; i<n_verts; i++){
    verts[i] = coords_scale(verts[i], coordinate_scale);
 }
 
@@ -961,9 +978,23 @@ for (int i = 0; i<n_verts; i++){//TODO: Dont use x y z as this doesnt align with
 // Make lists that will be used to calculate the number of edges
 int** vert_pairs = (int **)malloc(sizeof(int *)*3*n_faces);
 int** unique_verts = (int **)malloc(sizeof(int *)*3*n_faces);
+// Check for failing mallocs
+if ( vert_pairs == NULL || unique_verts == NULL) {
+   free(vert_pairs);
+   free(unique_verts);
+   printf("ERROR: malloc failed on vert pairs or unique verts");
+   exit(1);
+}
 for (int i=0; i<3*n_faces;i++){
    vert_pairs[i] = (int *)malloc(sizeof(int)*2);
    unique_verts[i] = (int *)malloc(sizeof(int)*2);
+   if (vert_pairs[i]==NULL || unique_verts[i] == NULL){
+      // Should probably be a loop over all vert pairs
+      free(vert_pairs[i]);
+      free(unique_verts[i]);
+      printf("\nERROR: malloc failed on specific vert pairs or unique verts");
+      exit(1);
+   }
 }
 
 generate_vertex_vertex_pair_list(faces, vert_pairs, n_faces);
@@ -989,6 +1020,10 @@ if (mesh_is_not_closed(n_faces,n_verts,n_edges) && !skip_convex_check){
 // Calculate bounding box
 double max_dist = 0;
 double dist = 0;
+if (n_verts <= 0 ){
+   printf("\nERROR: Number of vertices read is 0\n");
+   exit(1);
+}
 Coords B_sphere_x = verts[0];
 Coords B_sphere_y = B_sphere_x;
 
