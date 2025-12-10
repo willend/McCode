@@ -3890,8 +3890,23 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
     
     return 0;
     };
+	
 
+// Type for holding intersection and normal	
+typedef struct {
+    double t;
+    double nx, ny, nz;
+    int surface_index;
+} Intersection;
 
+// Function to sort intersection structs according to time
+int compare_intersections(const void *a, const void *b) {
+	const Intersection *ia = a;
+	const Intersection *ib = b;
+	if (ia->t < ib->t) return -1;
+	if (ia->t > ib->t) return 1;
+	return 0;
+}
 
 int sample_mesh_intersect(double *t,
                           double *nx, double *ny, double*nz,
@@ -3983,58 +3998,64 @@ int sample_mesh_intersect(double *t,
         //if (a > -UNION_EPSILON && a < UNION_EPSILON){
             ////printf("\n UNION_EPSILON fail");
         //}
-            f = 1.0/a;
-            s = coords_sub(rotated_coordinates, coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
-            u = f * (Dot(s,h));
-            if (u < 0.0 || u > 1.0){
-            }else{
-                //q = vec_prod(s,edge1);
-                vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
-                V = f * Dot(rotated_velocity,q);
-                if (V < 0.0 || u + V > 1.0){
-                } else {
-                    // At this stage we can compute t to find out where the intersection point is on the line.
-                    //tmp = Dot(q,edge2)
-                    if (f* Dot(q,edge2) > 0){
-                        
-                        t_intersect[counter] = f* Dot(q,edge2);
-                        facet_index[counter] = iter;
-                        //printf("\nIntersects at time: t= %f\n",t_intersect[counter] );
-                        counter++;
-                    }
-                }
+        f = 1.0/a;
+        s = coords_sub(rotated_coordinates, coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
+        u = f * (Dot(s,h));
+        if (u < 0.0 || u > 1.0){
+        } else {
+            //q = vec_prod(s,edge1);
+            vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
+            V = f * Dot(rotated_velocity,q);
+            if (V < 0.0 || u + V > 1.0){
+            } else {
+                // At this stage we can compute t to find out where the intersection point is on the line.    
+                t_intersect[counter] = f* Dot(q,edge2);
+                facet_index[counter] = iter;
+                //printf("\nIntersects at time: t= %f\n",t_intersect[counter] );
+                counter++;
             }
-    }
-    
-    // Return all t
-    int counter2=0;
-    double x_intersect, y_intersect, z_intersect;
-    *num_solutions =0;
-    for (iter=0; iter < counter ; iter++){
-        if (t_intersect[iter] > 0.0){
-          t[counter2] = t_intersect[iter];
-          x_intersect = t[counter2]*v[0] + x_new;
-		      y_intersect = t[counter2]*v[1] + y_new;
-		      z_intersect = t[counter2]*v[2] + z_new;
-          coordinates = coords_set(x_intersect,y_intersect,z_intersect);
-		      NORM(coordinates.x, coordinates.y, coordinates.z);
-		      nx[counter2] = normal_x[facet_index[iter]];
-		      ny[counter2] = normal_x[facet_index[iter]];
-		      nz[counter2] = normal_x[facet_index[iter]];				
-		      surface_index[counter2] = 0;
-		      counter2++;
-          *num_solutions = counter2;
         }
     }
-    // Sort t:
+	
+	*num_solutions = counter;
+	
+	// Early exit if there are not solutions
     if (*num_solutions == 0){
         free(t_intersect);
         free(facet_index);
         return 0;
     }
-    qsort(t,*num_solutions,sizeof (double), Sample_compare_doubles);
+	
+	// Move times and normal's into structs to be sorted
+    Intersection *hits = malloc(*num_solutions * sizeof(Intersection));
+    if (!hits) {
+      fprintf(stderr,"Failure allocating Intersection list struct in Union function sample_mesh_intersect - Exit!\n");
+      exit(EXIT_FAILURE);
+    }
+	    
+    for (iter=0; iter < *num_solutions; iter++){
+	    hits[iter].t  = t_intersect[iter];;
+	    hits[iter].nx = normal_x[facet_index[iter]];
+	    hits[iter].ny = normal_y[facet_index[iter]];
+	    hits[iter].nz = normal_z[facet_index[iter]];				
+	    surface_index[iter] = 0;
+    }
+
+    // Sort structs according to time
+    qsort(hits, *num_solutions, sizeof(Intersection), compare_intersections);
+	
+	// Place the solutions into the pointers given in the function parameters for return
+	for (int i = 0; i < *num_solutions; i++) {
+	    t[i]  = hits[i].t;
+	    nx[i] = hits[i].nx;
+	    ny[i] = hits[i].ny;
+	    nz[i] = hits[i].nz;
+	    surface_index[i] = hits[i].surface_index;
+	}
+	
     free(facet_index);
     free(t_intersect);
+	free(hits);
     return 1;
 };
 
