@@ -318,28 +318,15 @@ if (mask_string && strlen(mask_string) && strcmp(mask_string, "NULL") && strcmp(
 }
 
 this_sphere_volume.geometry.number_of_faces = 1;
-printf("Reached malloc\n");
 this_sphere_volume.geometry.surface_stack_for_each_face = malloc(this_sphere_volume.geometry.number_of_faces*sizeof(struct surface_stack_struct*));
-printf("malloced\n");
 
-printf("Reached assign to face\n");
 // This could be inserted into the fill_surface_stack function
 this_sphere_volume.geometry.surface_stack_for_each_face[0] = &surface_stack;
-
-printf("assigned to face\n");
-
-printf("Reached assign cut\n");
 this_sphere_volume.geometry.internal_cut_surface_stack = &cut_surface_stack; // This surface is used if the volume is cut by overlapping of higher priority volume
-printf("assigned cut\n");
 
-
-printf("Reached grab\n");
 struct pointer_to_global_surface_list *global_surface_list = COMP_GETPAR3(Union_init, init, global_surface_list);
-printf("Reached fill surface\n");
 fill_surface_stack(surface, global_surface_list, NAME_CURRENT_COMP, &surface_stack);
-printf("Reached fill cut_surface\n");
 fill_surface_stack(cut_surface, global_surface_list, NAME_CURRENT_COMP, &cut_surface_stack);
-printf("did all surface initialize\n");
 
 sprintf(this_sphere_volume.name,"%s",NAME_CURRENT_COMP);
 sprintf(this_sphere_volume.geometry.shape,"sphere");
@@ -371,10 +358,8 @@ this_sphere_volume.abs_loggers.num_elements = 0;
 sprintf(global_geometry_element.name,"%s",NAME_CURRENT_COMP);
 global_geometry_element.activation_counter = number_of_activations;
 global_geometry_element.component_index = INDEX_CURRENT_COMP;
-global_geometry_element.Volume = &this_sphere_volume; // Would be nicer if this m was a pointer, now we have the (small) data two places
+global_geometry_element.Volume = &this_sphere_volume;
 add_element_to_geometry_list(global_geometry_list, global_geometry_element);
-
-
 
 // TEST Union sphere has been initialized, test shell point function by writing to file.
 /*
