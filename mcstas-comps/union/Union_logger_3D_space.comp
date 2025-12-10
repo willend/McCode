@@ -642,7 +642,7 @@ INITIALIZE
       exit(1);
   }
   
-  char temp_string[2];
+  char temp_string[2] = "UN"; // UN stands for unset, courtesy of linter play
   if (strcmp(D_direction_2,"x") == 0 || strcmp(D_direction_2,"X") == 0) {
       this_storage.dim_2_choice = 0;
       sprintf(this_storage.Detector_3D.string_axis_2,"x [m]");
