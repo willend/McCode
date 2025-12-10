@@ -672,30 +672,30 @@ double (*mcestimate_error_p)
 /* SECTION: file i/o handling ================================================ */
 
 #ifndef HAVE_STRCASESTR
-// from msysgit: https://code.google.com/p/msysgit/source/browse/compat/strcasestr.c
 char *strcasestr(const char *haystack, const char *needle)
 {
-  int nlen = strlen(needle);
-  int hlen = strlen(haystack) - nlen + 1;
-  int i;
+  if (!needle || !*needle) return (char *)haystack; // Handle empty needle
+  if (!haystack) return NULL;
 
-  for (i = 0; i < hlen; i++) {
-    int j;
-    for (j = 0; j < nlen; j++) {
-            unsigned char c1 = haystack[i+j];
-            unsigned char c2 = needle[j];
-            if (toupper(c1) != toupper(c2))
-                    goto next;
+  size_t len_haystack = strlen(haystack);
+  size_t len_needle = strlen(needle);
+  
+  for (size_t i = 0; i <= len_haystack - len_needle; i++) {
+    int match = 1;
+    for (size_t j = 0; j < len_needle; j++) {
+      if (tolower((unsigned char)haystack[i+j]) != tolower((unsigned char)needle[j])) {
+	match = 0;
+	break;
+      }
     }
-    return (char *) haystack + i;
-  next:
-    ;
+    if (match) {
+      return (char *)(haystack + i); // Found! Return pointer to start
+    }
   }
-  return NULL;
+  return NULL; // Not found
 }
-
-
 #endif
+
 #ifndef HAVE_STRCASECMP
 int strcasecmp( const char *s1, const char *s2 )
 {
