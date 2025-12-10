@@ -4038,7 +4038,7 @@ int sample_mesh_intersect(double *t,
 	    hits[iter].nx = normal_x[facet_index[iter]];
 	    hits[iter].ny = normal_y[facet_index[iter]];
 	    hits[iter].nz = normal_z[facet_index[iter]];				
-	    surface_index[iter] = 0;
+	    hits[iter].surface_index = 0;
     }
 
     // Sort structs according to time
