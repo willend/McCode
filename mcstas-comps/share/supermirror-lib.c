@@ -268,8 +268,10 @@ int to_lower_case(char *in, char **out)
 			int i; 
 			if (out) {
 				*out=(char*)calloc(n+1,sizeof(char));
-				for(i=0; i<n; i++) (*out)[i]= in[i]>='A'&&in[i]<='Z' ? in[i]|0x60 : in[i]; //convert to lower case
-				if (i < CHAR_BUF_LENGTH) (*out)[i] = 0; //zero terminate the out string. 
+				if (*out) {
+				  for(i=0; i<n; i++) (*out)[i]= in[i]>='A'&&in[i]<='Z' ? in[i]|0x60 : in[i]; //convert to lower case
+				  if (i < CHAR_BUF_LENGTH) (*out)[i] = 0; //zero terminate the out string.
+				}
 			}
 			else {
 				for(i=0; i<n; i++) in[i]= in[i]>='A'&&in[i]<='Z' ? in[i]|0x60 : in[i]; //convert to lower case
@@ -451,7 +453,8 @@ void sm_print_state(char*subheader, SimState*state, Supermirror*sm, double ws_ta
 
 	int supermirror_flat_i_prefix = 0; 
 	char supermirror_flat_s_prefix[CHAR_BUF_LENGTH]; 
-
+	sprintf(supermirror_flat_s_prefix,"Sub_%s",subheader);
+		
 	int i;
 
 	printf("%s sm_print_state: %s\n", supermirror_flat_s_prefix, subheader);
@@ -617,9 +620,9 @@ void sm_print_state(char*subheader, SimState*state, Supermirror*sm, double ws_ta
 			printf("%s T_ir_at_ir_order_0[+/-] = indetermined\n", supermirror_flat_s_prefix);
 		}
 		else {
-			printf("%s T_ir_all[+/-] = (% 5f,% 5f %)\n", supermirror_flat_s_prefix,
+			printf("%s T_ir_all[+/-] = (% 5f,% 5f)\n", supermirror_flat_s_prefix,
 				state->T_ir_all[0], state->T_ir_all[1]);
-			printf("%s T_ir_at_ir_order_0[+/-] = (% 5f,% 5f %)\n", supermirror_flat_s_prefix,
+			printf("%s T_ir_at_ir_order_0[+/-] = (% 5f,% 5f)\n", supermirror_flat_s_prefix,
 				state->T_ir_at_ir_order_0[1], state->T_ir_at_ir_order_0[1]);
 		}
 	supermirror_flat_dec_prefix(&supermirror_flat_i_prefix, supermirror_flat_s_prefix);
@@ -808,8 +811,8 @@ int set_supermirror_flat_geometry (
 		MPI_MASTER(printf(	"set_supermirror_flat_geometry: ERROR tilt_y_axis_location=\"%s\" must be one of the following\n"
 					"                               \"TopFrontEdge\",\"TopMirrorCentre\",\"TopBackEdge\"\n"
 					"                               \"FrontSubstrateCentre\",\"SubstrateCentre\",\"BackSubstrateCentre\"\n" 
-					"                               \"BottomFrontEdge\",\"BottomMirrorCentre\",\"BottomBackEdge\" (case-insensitive)\n"
-					);)
+					"                               \"BottomFrontEdge\",\"BottomMirrorCentre\",\"BottomBackEdge\" (case-insensitive)\n",
+					lc);)
 		if (lc != 0) {
 			free(lc);
 			lc = 0;
@@ -3374,7 +3377,9 @@ int InitialiseStdSupermirrorFlat(
 	}
 	if (lc == 0) {
 		lc = (char*)calloc(14, sizeof(char));
-		strcpy(lc,"bothnotcoated");
+		if (lc) {
+		  strcpy(lc,"bothnotcoated");
+		}
 	}
 	if (strcmp(lc,"bothcoated") == 0) {
 		strcpy(top_mirror_spin_plus_material, mirror_spin_plus_material_name); top_mirror_spin_plus_m = mirror_spin_plus_m;
