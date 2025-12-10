@@ -299,9 +299,9 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 	Coords *fn,*fp, nn;
 	fn = calloc(nf_in, sizeof(Coords));
 	fp = calloc(nf_in, sizeof(Coords));
-	if(fn && fp) {
-	  //loop through nf_in
-	  for (i = 0; i < nf_in; i++) {
+
+	//loop through nf_in
+	for (i = 0; i < nf_in; i++) {
 		//fn_in[i] must have non-zero length
 		if (coords_len(fn_in[i]) < DBL_EPSILON) {
 			//error, skip this one
@@ -335,23 +335,22 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 				++nf;
 			}
 		}
-	  }
+	}
 	
-	  if (nf < 4) {
+	if (nf < 4) {
 		return 0;
-	  }
+	}
 	
-	  a->nf = nf;
-	  a->fn = calloc(nf, sizeof(Coords));
-	  a->fp = calloc(nf, sizeof(Coords));
-	  for (i = 0; i < nf; i++) {
+	a->nf = nf;
+	a->fn = calloc(nf, sizeof(Coords));
+	a->fp = calloc(nf, sizeof(Coords));
+	for (i = 0; i < nf; i++) {
 		a->fn[i] = fn[i];
 		a->fp[i] = fp[i];
-	  }
-	
-	  free(fn);
-	  free(fp);
 	}
+	
+	free(fn);
+	free(fp);
 	//note: do not zero nf, useful below.
 	
 	////////////////////////
@@ -367,12 +366,6 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 	vp = calloc(nv, sizeof(Coords));
 	nfvi = calloc(nf, sizeof(int));
 	ifvi = calloc(nf, sizeof(int*));
-
-	if(!vp || !nfvi || !ifvi) {
-	  fprintf(stderr, "polyhedron.c / form_polyhedron - calloc error. Exit!\n");
-	  exit(-1);
-	}
-	
 	for (i = 0; i < nf; i++) {
 		ifvi[i] = calloc(nv, sizeof(int));
 	}
@@ -450,8 +443,7 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 					if (m >= 3 && keep) {
 						//Now start checking
 						eliminate_list = (int *)calloc(m, sizeof(int)); //initialise with 0 = not eliminate assocated vertex reference
-						if(eliminate_list) {
-						  for (l = 0; l < m-2; l++) { //loop through vertices other than the last two since each check involves 3 different vertices
+						for (l = 0; l < m-2; l++) { //loop through vertices other than the last two since each check involves 3 different vertices
 							if (eliminate_list[m-1]) {
 								//association with new vertext eliminated. Skip to check next plane.
 								keep = 0;
@@ -486,9 +478,9 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 									eliminate_list[n] = 1;
 								}
 							}
-						  }
-						  //update list of vertex numbers associated with planes 
-						  if (keep) {
+						}
+						//update list of vertex numbers associated with planes 
+						if (keep) {
 							for (l = 0, n = 0; l < m; l++) {
 								if (eliminate_list[l]) {
 									continue;
@@ -497,9 +489,8 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 								++n;
 							}
 							nfvi[ii] = n;
-						  }
-						  free(eliminate_list);
 						}
+						free(eliminate_list);
 					}
 				}
 			}
@@ -545,40 +536,39 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 			//The order of the vertices will go along the edge of the polyhedron face
 			PolyhedronIndexValuePair *iA; 
 			iA = calloc(nfvi[i], sizeof(PolyhedronIndexValuePair));
-			if (iA) {
-			  k = ifvi[i][0];
-			  iA[0].index = k;
-			  iA[0].value = -2; //ensure the starting point stays the first point. 
-			  p0 = a->vp[k];
-			  k = ifvi[i][1];
-			  dp01 = coords_sub(a->vp[k], p0); //reference line is between the first & second point
-			  l1 = coords_len(dp01);
-			  iA[1].index = k;
-			  iA[1].value = 1; //angle between the line from first to second point and the reference line is 0, i.e. cosA = 1  
-			  
-			  for (j = 2; j < nfvi[i]; j++) {
-			    k = ifvi[i][j];
-			    iA[j].index = k;
-			    
-			    dp0n = coords_sub(a->vp[k], p0);
-			    l2 = coords_len(dp0n);
+			
+			k = ifvi[i][0];
+			iA[0].index = k;
+			iA[0].value = -2; //ensure the starting point stays the first point. 
+			p0 = a->vp[k];
+			k = ifvi[i][1];
+			dp01 = coords_sub(a->vp[k], p0); //reference line is between the first & second point
+			l1 = coords_len(dp01);
+			iA[1].index = k;
+			iA[1].value = 1; //angle between the line from first to second point and the reference line is 0, i.e. cosA = 1  
+			
+			for (j = 2; j < nfvi[i]; j++) {
+				k = ifvi[i][j];
+				iA[j].index = k;
+				
+				dp0n = coords_sub(a->vp[k], p0);
+				l2 = coords_len(dp0n);
 				iA[j].value = coords_sp(dp01, dp0n)/l1/l2;
-			  }
-			  
-			  //sort the sequence according to iA[j].value, 
-			  //the order of iA[j] is rearranged as a result
-			  //the resulting ordered index are in iA[j].index
-			  qsort(iA, nfvi[i], sizeof(iA[0]), polyhedron_qsort_compare_func);
-			  
-			  //store the face vertext indices in the correct order in the array of face vertex indices
-			  a->afvi[i].ifvi = calloc(nfvi[i],sizeof(int));
-			  
-			  for (j = 0; j < nfvi[i]; j++) {
-			    a->afvi[i].ifvi[j] = iA[j].index;
-			  }
-			  
-			  free(iA);
 			}
+	
+			//sort the sequence according to iA[j].value, 
+			//the order of iA[j] is rearranged as a result
+			//the resulting ordered index are in iA[j].index
+			qsort(iA, nfvi[i], sizeof(iA[0]), polyhedron_qsort_compare_func);
+			
+			//store the face vertext indices in the correct order in the array of face vertex indices
+			a->afvi[i].ifvi = calloc(nfvi[i],sizeof(int));
+			
+			for (j = 0; j < nfvi[i]; j++) {
+				a->afvi[i].ifvi[j] = iA[j].index;
+			}
+			
+			free(iA);
 		}
 	}
 	

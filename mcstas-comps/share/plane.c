@@ -66,15 +66,13 @@ int line_plane_intersect(Coords line_p, Coords line_v, Coords plane_normal, Coor
 		(*d_intersect_point).x = 0; 
 		(*d_intersect_point).y = 0; 
 		(*d_intersect_point).z = 0; 
-		*dt = 0;
-		return 0;
+		*dt = 0; 
 	}
 	else {
 		(*d_intersect_point).x = line_v.x * (-n_dot_dp) / n_dot_v; 
 		(*d_intersect_point).y = line_v.y * (-n_dot_dp) / n_dot_v; 
 		(*d_intersect_point).z = line_v.z * (-n_dot_dp) / n_dot_v; 
-		*dt = -n_dot_dp / n_dot_v;
-		return 1;
+		*dt = -n_dot_dp / n_dot_v; 
 	}
 }
 
