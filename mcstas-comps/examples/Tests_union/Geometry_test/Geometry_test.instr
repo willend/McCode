@@ -86,10 +86,12 @@ COMPONENT cryostat_wall_vacuum = Union_cylinder(
 AT (0,0,0) RELATIVE sample_pos
 ROTATED (0,0,0) RELATIVE sample_pos
 
+/*
 COMPONENT sample_sphere = Union_sphere(
  radius=0.031,priority=20,material_string="Cu")
 AT (0.01,0,0) RELATIVE sample_pos
 ROTATED (0,0,0) RELATIVE sample_pos
+*/
 
 COMPONENT sample_box = Union_box(
  xwidth=0.021, yheight=0.018, zdepth=0.1, priority=21, material_string="Vanadium")
