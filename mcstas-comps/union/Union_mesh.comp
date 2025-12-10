@@ -932,7 +932,9 @@ if (mask_string &&
 int n_verts = 0;
 int n_faces = 0;
 int n_edges = 0;
-Coords* verts = coords_set(0,0,0);
+Coords* verts;
+Coords tmp_vert = coords_set(0,0,0);
+verts = &tmp_vert; // This tmp vert is just for linter play...
 int** faces;
 int unique_index = 0;
 
