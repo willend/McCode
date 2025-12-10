@@ -4033,9 +4033,9 @@ int sample_mesh_intersect(double *t,
 	// Place the solutions into the pointers given in the function parameters for return
 	for (int i = 0; i < *num_solutions; i++) {
 	    t[i]  = hits[i].t;
-	    nx[i] = - hits[i].nx;
-	    ny[i] = - hits[i].ny;
-	    nz[i] = - hits[i].nz;
+	    nx[i] = hits[i].nx;
+	    ny[i] = hits[i].ny;
+	    nz[i] = hits[i].nz;
 	    surface_index[i] = hits[i].surface_index;
 	}
 	
