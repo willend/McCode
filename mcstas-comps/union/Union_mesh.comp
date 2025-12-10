@@ -929,8 +929,10 @@ if (mask_string &&
 // We assume that the input file is using triangular faces, otherwise
 // the check for closed mesh using the Euler-Poincare characteristic
 // is wrong.
-int n_verts, n_faces, n_edges;
-Coords* verts;
+int n_verts = 0;
+int n_faces = 0;
+int n_edges = 0;
+Coords* verts = coords_set(0,0,0);
 int** faces;
 int unique_index = 0;
 
@@ -1016,6 +1018,10 @@ if (mesh_is_not_closed(n_faces,n_verts,n_edges) && !skip_convex_check){
 // Calculate bounding box
 double max_dist = 0;
 double dist = 0;
+if (n_verts <= 0 ){
+   printf("\nERROR: Number of vertices read is 0\n");
+   exit(1);
+}
 Coords B_sphere_x = verts[0];
 Coords B_sphere_y = B_sphere_x;
 
