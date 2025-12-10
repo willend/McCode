@@ -248,7 +248,7 @@ void read_stl(char* filename,
       
       fclose(file);
 #else
-      fprintf(stderr,"Union_mesh %s ERROR:\nBinary STL is not yet supported when compiling with MSVC.\n", NAME_CURRENT_COMP);
+      fprintf(stderr,"Union_mesh ERROR:\n  Binary STL is not yet supported when compiling with MSVC.\n  Please convert file to e.g. ascii OFF via meshlab.\n.");
 #endif
    }
 
