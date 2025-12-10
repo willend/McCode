@@ -1445,7 +1445,7 @@ TRACE
                 printf("name of material: %s \n",Volumes[current_volume]->name);
                 printf("length to boundery  = %f\n",length_to_boundary);
                 printf("absorption cross section  = %f\n",Volumes[current_volume]->p_physics->my_a);
-                printf("chance to get through this length of absorber: %f \%\n", 100*exp(-Volumes[current_volume]->p_physics->my_a*length_to_boundary));
+                printf("chance to get through this length of absorber: %f %%\n", 100*exp(-Volumes[current_volume]->p_physics->my_a*length_to_boundary));
               #endif
             }
           } else {
