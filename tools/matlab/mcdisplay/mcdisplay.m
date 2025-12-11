@@ -334,9 +334,9 @@ function [X,Y,Z] = mcdisplay_get_token(output, token)
     this_line = output{index};
     this_line = strrep(this_line, 'MCDISPLAY: ','[x,y,z]=');
     eval([ this_line ';' ]);  % executes multiline(..), return a set of points (local coords)
-    X = [ X x ];
-    Y = [ Y y ];
-    Z = [ Z z ];
+    X = [ X NaN x ];
+    Y = [ Y NaN y ];
+    Z = [ Z NaN z ];
   end
 end
 
