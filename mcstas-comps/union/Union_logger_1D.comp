@@ -452,7 +452,7 @@ INITIALIZE
   sprintf(this_storage.Detector_1D.Filename,"%s",filename);
   
   // detect variable type and set axis accordingly
-  int variable_identifier; // 1 time, 2 |q|, ...
+  int variable_identifier = 0; // 1 time, 2 |q|, ... set to 0 as placeholder to make linter play nice
   if (strcmp(variable,"time") == 0) {
     variable_identifier = 1;
     sprintf(this_storage.Detector_1D.string_axis,"time [s]");

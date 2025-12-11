@@ -19,21 +19,23 @@
 * %Example: Ei=3.7 res=HR Detector: sample_PSDmon_I=8835.3
 *
 * %P
-* Ei: 		[meV] 		Centre energy for moderator
-* dE: 		[] 		Multiplier for energy spread:  Emin = Ei/dE, Emax = Ei*dE
-* Ch3_speed:	[Hz]		Chopper 3 frequency
-* Ch5_speed:	[Hz]		Chopper 5 frequency
-* Ch2_phase:	[mus]		Chopper 2 phase setting
-* pha_offset:	[mus]		Offset in time for moderator focus
-* res:		[string] 	"HF" - High Flux, "HR" - High Resolution, "I" - Intermediate
-* snout:	[string]	"in" or "out"
+* Ei: 		    [meV]	Centre energy for moderator
+* dE: 		    [] 		Multiplier for energy spread:  Emin = Ei/dE, Emax = Ei*dE
+* Ch3_speed:	    [Hz]	Chopper 3 frequency
+* Ch5_speed:	    [Hz]	Chopper 5 frequency
+* Ch2_phase:	    [mus]	Chopper 2 phase setting
+* pha_offset:	    [mus]	Offset in time for moderator focus
+* res:		    [string] 	"HF" - High Flux, "HR" - High Resolution, "I" - Intermediate
+* snout:	    [string]	"in" or "out"
+* monitors_on:      [1]         Flag to enable/disable TOF monitors in primary optics
+* movable_monitors: [1]         Flag to enable/disable PSDs and Div monitors in primary optics
 *
 * %L
 * %E
 *******************************************************************************/
 
 DEFINE INSTRUMENT ISIS_LET(Ei = 3.7, dE=1.1, Ch3_speed=100, Ch5_speed=200,  Ch2_phase=95000, 
-					  pha_offset=80e-6, string res="HF", string snout = "out")
+			   pha_offset=80e-6, string res="HF", string snout = "out", int monitors_on=0, int movable_monitors=0)
 
 DECLARE
 %{
@@ -41,7 +43,6 @@ double SE2K, v_foc, emin, emax, lam_min, lam_max, jitter=7e-7;
 double Ch1_speed, Ch2_speed=10, Ch2_offset=14500, Ch4_speed, Ch5_slit, snout_length;
 double L_Ch1=7.833, L_Ch2=8.200, L_Ch3=11.749, L_Ch4=15.664, L_Ch5=23.499;
 double L_sample=25, L2=3.5, Ch1_5_halfgap=0.005, smidge = 0.001;
-int    monitors_on=0, movable_monitors=0;
 %}
 
 INITIALIZE 

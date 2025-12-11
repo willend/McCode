@@ -376,6 +376,11 @@ SAVE
   sectnIef= (double*)malloc(sizeof(double)*Nqc*20);
   sectnWtf= (double*)malloc(sizeof(double)*Nqc*20);
 
+  if (!calibNf || !calibIf || !calibIef || !calibWtf || !sectnNf || !sectnIf || !sectnIef || !sectnWtf) {
+    fprintf(stderr, "TOFSANSdet %s: Memory allocation error in SAVE. Fatal exit!\n", NAME_CURRENT_COMP);
+    exit(-1);
+  }
+
   storez /= storen;
 
   i = Nxc/2;                                     /* calculate center values on beam stop */
