@@ -10,9 +10,11 @@ __date__ = "2022-11-11"
 
 import sys
 from pathlib import Path
+import subprocess
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 from mccodelib.instrgeom import Vector3d, DrawLine, DrawMultiline, DrawCircle
+from mccodelib import mccode_config
 
 
 def vector_to_tuple(v: Vector3d):
@@ -140,7 +142,18 @@ def instrument_to_assembly(inst):
 
 def main(instr=None, dirname=None, **kwds):
     from logging import basicConfig, INFO
+    import time
     basicConfig(level=INFO)
+
+    try:
+        # Try initial import or inform to install cadquery
+        from cadquery.occ_impl.geom import Matrix
+    except:
+        message="To use this display tool, please install the 'cadquery' Python package"
+        subprocess.Popen('%s %s' % (mccode_config.configuration['MCCODE']+"_errmsg", message), shell=True)
+        print(mccode_config.configuration['MCCODE']+": "+ message)
+        time.sleep(3)
+        quit()
 
     # output directory
     if dirname is None:
@@ -158,7 +171,12 @@ def main(instr=None, dirname=None, **kwds):
     
     # Do the conversion to a CadQuery assembly, then save it to the desired location
     assembly = instrument_to_assembly(instrument)
-    assembly.save(str(root.joinpath(f"{Path(instr).stem}.{kwds.get('format','step')}")))
+    output = str(root.joinpath(f"{Path(instr).stem}.{kwds.get('format','step')}"))
+    assembly.save(output)
+
+    # Use mccode_config / the OS to open the resulting file...
+    if Path(output).is_file():
+        subprocess.Popen('%s %s' % (mccode_config.configuration['BROWSER'], output), shell=True)
 
 def output_format(astring):
     f = astring.lower()
