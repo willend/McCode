@@ -223,7 +223,7 @@ void read_stl(char* filename,
       
    } else {
 #ifndef _MSC_EXTENSIONS
-       FILE *file = Open_File(filename, "r", NULL);
+       FILE *file = Open_File(filename, "rb", NULL);
        // Read header
        char header[80];
        fread(header, sizeof(char), 80, file);
