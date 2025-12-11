@@ -69,16 +69,16 @@ set(WORK "${PROJECT_BINARY_DIR}/work")
 
 
 # Configure fallback script
-configure_file("${CMAKE_SOURCE_DIR}/mcdisplay.in" "${WORK}/${P}display" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcdisplay.in" "${WORK}/${P}display" @ONLY)
 
 # Configure doc
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcdisplay-matlab.md.in" "${WORK}/${P}display-matlab.md" @ONLY)
 
 if(WINDOWS)
-  set(BINS "${PROJECT_SOURCE_DIR}/mcdisplay.m")
+  set(BINS "${CMAKE_CURRENT_SOURCE_DIR}/mcdisplay.m")
 else()
   set(BINS "${WORK}/${P}display")
-  set(BINS "${PROJECT_SOURCE_DIR}/mcdisplay.m")
+  set(BINS "${CMAKE_CURRENT_SOURCE_DIR}/mcdisplay.m")
 endif()
 
 
@@ -110,10 +110,6 @@ if(NOT WINDOWS)
     COMMAND "${CMAKE_COMMAND}" -E remove "${WORK}/${P}display-matlab"
     COMMAND "${CMAKE_COMMAND}" -E create_symlink
     "${TOOLS_LIB}/mcdisplay" "${WORK}/${P}display"
-    )
-
-  add_custom_target(
-    "CREATE_SYMLINK" ALL DEPENDS "${WORK}/${P}display"
     )
 
   install(
