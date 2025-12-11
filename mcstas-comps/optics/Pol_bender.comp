@@ -477,6 +477,7 @@ TRACE
 MCDISPLAY
 %{
   double x1, x2, z1, z2;
+  x1=x2=z1=z2=0;
   const int n = 90;
   double *xplot=malloc(n*sizeof(double));
   double *zplot=malloc(n*sizeof(double));

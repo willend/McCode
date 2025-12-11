@@ -1,0 +1,158 @@
+/*******************************************************************************
+*
+* McStas, the neutron ray-tracing package: PSD_monitor.comp
+*         Copyright 1997-2001 Risoe National Laboratory, Roskilde, Denmark
+*
+* Component: TOF_PSDmonitor_toQ
+*
+* %I
+* Written by: Robert Dalgliesh
+* Date: September 2021
+* Origin: ISIS
+*
+* Position-sensitive, linear Q monitor.
+*
+* %D
+* One-dimensional Q-monitor. Calculates Q from "measured" time-of-flight, 
+* i.e. not from particle velocity parameters.
+*
+* Adapted from Kim Lefmann's TOF_cylPSDmonitor and PSD_monitors
+* An n pixel Q-monitor based on measured Time of Flight detection. 
+* This component may also be used as a beam
+* detector.
+*
+* Example: TOF_PSDmonitor_toQ(xmin=-0.1, xmax=0.1, ymin=-0.1, ymax=0.1,
+*           ny=90, nqbin=100, TOFmin=0.0, TOFmax=20000.0, filename="Output.psd")
+*
+* %P
+* INPUT PARAMETERS:
+*
+* xwidth:      [m] width of detector opening
+* xmin:        [m] Lower x bound of detector opening
+* xmax:        [m] Upper x bound of detector opening
+* yheight:     [m] height of detector opening
+* ymin:        [m] Lower y bound of detector opening
+* ymax:        [m] Upper y bound of detector opening
+* ny:          [1] Number of y bins (for discretisation of vertical detector dimension into "bins")
+* filename:  [str] Name of file in which to store the detector image
+* nowritefile: [1] If set, detector will skip writing to disk
+* tmin:     [mu-s] Beginning TOF window
+* tmax:     [mu-s] End TO window
+* qmin:    [AA^-1] Start of q window
+* qmax:	   [AA^-1] End of q window
+* nqbin:       [1] number of q bins
+* L1:	       [m] distance from source to sample (m)
+* L2:	       [m] distance from sample to detector (m)
+* detTheta:  [deg] Nominal detector theta
+*
+* %E
+*******************************************************************************/
+DEFINE COMPONENT TOF_PSDmonitor_toQ
+SETTING PARAMETERS (int ny=90, int nqbin=500, xwidth=0.1, xmin=0, xmax=0, yheight=0.1, ymin=0, ymax=0, tmin=0.0, tmax=100000.0, qmin=0.005, qmax=0.5, L1=23.0, L2=3.0, detTheta=0.91, string filename=0, int nowritefile=0)
+
+
+DECLARE
+  %{
+    DArray1d Q_N;
+    DArray1d Q_p;
+    DArray1d Q_p2;
+  %}
+INITIALIZE
+  %{
+    
+    if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
+    if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+
+    if ((xmin >= xmax) || (ymin >= ymax)){
+      printf("PSD_monitor: %s: Null detection area !\n"
+             "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+	     NAME_CURRENT_COMP);
+      exit(0);
+    }
+    Q_N = create_darr1d(nqbin);
+    Q_p = create_darr1d(nqbin);
+    Q_p2 = create_darr1d(nqbin);
+    // Use instance name for monitor output if no input was given
+    if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  %}
+TRACE
+  %{
+    int i,j;
+    double dy,theta,dist,vel,L;
+    double Q;
+
+    PROP_Z0;
+    if (x>xmin && x<xmax && y>ymin && y<ymax)
+    {
+      // which pixel have we hit?
+      i = floor((y - ymin)*ny/(ymax - ymin));
+      // find the centre of the pixel we've hit
+      dy=(i*(ymax-ymin)/ny)-ny*(ymax-ymin)/(2.0*ny);
+      // calculate theta
+      theta=atan(dy/L2);
+
+      // instead of calculating L from velocity use TOF to calculate wavelength
+      // we'll also assume that we are using event mode so there are essentially no 
+      // wavelength bins to worry about
+      dist=L1+sqrt(dy*dy+L2*L2);
+      //only count the neutrons if they arrive in the required time window
+      // might do something more with this later
+      if (t*1e6 > tmin && t*1e6 < tmax)
+      { 
+        vel=dist/t;
+        L=3956.03397606/vel;
+        //L = (2*PI/V2K)/sqrt(vx*vx + vy*vy + vz*vz);
+        Q = 4*PI*sin((theta+(detTheta*PI/180.0)))/L;
+        //printf("Q= %g, Qmin= %g, Qmax= %g \n",Q,qmin,qmax);
+        //printf("theta= %g\n",theta*180.0/PI);
+
+        i = floor((Q-qmin)*nqbin/(qmax-qmin));
+        if(i >= 0 && i < nqbin)
+        {
+          Q_N[i]++;
+          Q_p[i] += p;
+          Q_p2[i] += p*p;
+          SCATTER;
+        }
+      }
+   
+    }
+  %}
+SAVE
+  %{
+  if (!nowritefile) {
+      DETECTOR_OUT_1D(
+        "Q monitor",
+        "Q [AA^-1]",
+        "Intensity",
+        "Q", qmin, qmax, nqbin,
+        &Q_N[0],&Q_p[0],&Q_p2[0],
+        filename);
+  }
+  %}
+
+FINALLY %{
+  destroy_darr1d(Q_N);
+  destroy_darr1d(Q_p);
+  destroy_darr1d(Q_p2);
+%}
+
+MCDISPLAY
+%{
+  magnify("xy");
+  multiline(5, (double)xmin, (double)ymin, 0.0,
+               (double)xmax, (double)ymin, 0.0,
+               (double)xmax, (double)ymax, 0.0,
+               (double)xmin, (double)ymax, 0.0,
+               (double)xmin, (double)ymin, 0.0);
+  double dy=(ymax-ymin)/(ny);
+  int j;
+  double ytmp=ymin;
+  for(j=0; j<ny; j++) {
+    multiline(2, xmin, ytmp, 0.0, xmax, ytmp, 0.0);
+    ytmp+=dy;
+  }
+%}
+
+END
+

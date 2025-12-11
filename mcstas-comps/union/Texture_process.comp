@@ -7,8 +7,7 @@
 *
 * %I
 * Written by: Victor Laliena
-* Date: 27.10.18 (last version, 09.07.19)
-* Version: $Revision: 0.1 $
+* Date: 2018-2019
 * Origin: University of Zaragoza
 *
 * Component for simulating textured powder in Union components
@@ -251,7 +250,7 @@ double plgndr(int l, int m, double x)
     printf("Bad arguments in routine plgndr\n");
     printf("m: %d l: %d x: %f\n",m,l,x);
     printf("Exiting...\n");
-    exit(1);
+    exit(-1);
   }
   //Compute Pmm
   pmm=1.0;
@@ -305,13 +304,16 @@ struct legendre * initLegendre(int lmax)
     printf("initLegendre: negative lmax = %d\n",lmax);
     printf("Exiting...\n");
     fflush(stdout);
-    exit(1);
+    exit(-1);
   }
 
   nlm = (lmax+1)*(lmax+1);
 
   lgdr = (struct legendre *)malloc(sizeof(struct legendre));
-
+  if (!lgdr) {
+    fprintf(stderr,"Texture_process: Failed struct malloc() in initLegendre. Exit!\n");
+    exit(-1);
+  }  
   lgdr->lmax = lmax;
   lgdr->index = (int **)malloc((lmax+1)*sizeof(int *));
   lgdr->l = (int *)malloc(nlm*sizeof(int));
@@ -319,6 +321,10 @@ struct legendre * initLegendre(int lmax)
   lgdr->nplm = (int *)malloc(nlm*sizeof(int));
   lgdr->x = (double **)malloc(nlm*sizeof(double *));
   lgdr->Plm = (double **)malloc(nlm*sizeof(double *));
+  if (!lgdr->index || !lgdr->l || !lgdr->m || !lgdr->nplm || !lgdr->x || !lgdr->Plm) {
+    fprintf(stderr,"Texture_process: Failed malloc() in initLegendre. Exit!\n");
+    exit(-1);
+  }
   i = -1;
   for(l=0;l<=lmax;l++) {
     lgdr->index[l] = (int *)malloc((2*l+1)*sizeof(int));	
@@ -395,10 +401,14 @@ double total_hkl_XS(double k, double kct, double kphi, struct hkl_data_texture *
     //printf("Exiting...");
     fflush(stdout);
     filep = fopen("negativeXS.txt","a");
-    fprintf(filep,"%d %d %d %.6e %.6e %.6e %.6e %.6e %.6e %.6e\n",
-            L->h,L->k,L->l,L->Gx,L->Gy,L->Gz,k,kct,kphi,XS);
-    fclose(filep);
-    //exit(1);
+    if(filep) {
+      fprintf(filep,"%d %d %d %.6e %.6e %.6e %.6e %.6e %.6e %.6e\n",
+	      L->h,L->k,L->l,L->Gx,L->Gy,L->Gz,k,kct,kphi,XS);
+      fclose(filep);
+    } else {
+      fprintf(stderr,"Texture_process/routine total_hkl_XS: failed fopen in add mode for file 'negativeXS.txt'. Exit!\n");
+      exit(-1);
+    }
   }
 
   // this is not the cross section. A different name (reflectivity??) would be appropriate
@@ -438,9 +448,14 @@ double total_hkl_XS_interp(double k, double kct, double kphi, struct hkl_data_te
     printf("total_hkl_XS: negative XS: %.6e\n",XS);
     fflush(stdout);
     filep = fopen("negativeXS.txt","a");
-    fprintf(filep,"%d %d %d %.6e %.6e %.6e %.6e %.6e %.6e %.6e\n",
-            L->h,L->k,L->l,L->Gx,L->Gy,L->Gz,k,kct,kphi,XS);
-    fclose(filep);
+    if(filep) {
+      fprintf(filep,"%d %d %d %.6e %.6e %.6e %.6e %.6e %.6e %.6e\n",
+	      L->h,L->k,L->l,L->Gx,L->Gy,L->Gz,k,kct,kphi,XS);
+      fclose(filep);
+    } else {
+      fprintf(stderr,"Texture_process/total_hkl_XS_interp: failed fopen in add mode for file 'negativeXS.txt'. Exit!\n");
+      exit(-1);
+    }
   }
 
   // this is not the cross section. A different name (reflectivity??)
@@ -564,7 +579,7 @@ int computeV(struct fourier_coef *fc, struct legendre *lgdr, struct hkl_data_tex
     printf("computeV: negative lmax = %d\n",lmax);
     printf("Exiting...\n");
     fflush(stdout);
-    exit(1);
+    exit(-1);
   }
 
   Gct = L->Gct;
@@ -884,6 +899,10 @@ int sampleKprime_hkl(double *kf, double *ki, struct hkl_data_texture *L, struct 
   printf("find distribution probability in file sampleKprime_hkl_fail.txt\n");
   //sprintf(fn,"probPhiQ_%d%d%d.txt",L->h,L->k,L->l);
   filep = fopen("sampleKprime_hkl_fail.txt","w");
+  if(!filep) {
+    fprintf(stderr,"Texture_process/sampleKprime_hkl: failed fopen write mode for file 'sampleKprime_hkl_fail.txt'. Exit!\n");
+    exit(-1);
+  }
   //filep = fopen(fn,"a");
   fprintf(filep,"#Plane hkl: %d %d %d\n",L->h,L->k,L->l);
   fprintf(filep,"#Incoming neutron:\n");
@@ -906,7 +925,7 @@ int sampleKprime_hkl(double *kf, double *ki, struct hkl_data_texture *L, struct 
   fclose(filep);
   printf("Exiting\n");
   fflush(stdout);
-  exit(1);
+  exit(-1);
 }
 
 double probPhiq(double ctq, double phiq, struct hkl_data_texture *L, struct legendre *lgdr)
@@ -1299,6 +1318,10 @@ int read_hkl_data_texture(char *SC_file, struct hkl_info_struct_texture *info)
 
   // print crystal info
   filep = fopen("crystal.txt","w");
+  if(!filep) {
+    fprintf(stderr,"Texture_process: failed fopen write mode for file 'crystal.txt'. Exit!\n");
+    exit(-1);
+  }
   fprintf(filep,"Direct lattice:\n");
   fprintf(filep,"a: %f %f %f\n",info->m_ax,info->m_ay,info->m_az);
   fprintf(filep,"b: %f %f %f\n",info->m_bx,info->m_by,info->m_bz);
@@ -1389,7 +1412,7 @@ void readFourierCoef(char *filename, struct fourier_coef *c)
      printf("%s\n",filename);
      printf("not found. Exiting...\n");
      fflush(stdout);
-     exit(1);
+     exit(-1);
   }
 
   str[0]=0;
@@ -1420,7 +1443,7 @@ void readFourierCoef(char *filename, struct fourier_coef *c)
     printf("with no spaces or other characters) is exactly");
     printf(" present just above the data\n");
     printf("Exiting...\n");
-    exit(1);
+    exit(-1);
   }
 
   np = 0;
@@ -1433,7 +1456,7 @@ void readFourierCoef(char *filename, struct fourier_coef *c)
     printf("different than expected\n");
     printf("lmax: %d  np: %d  nlines: %d\n",lmax,np,nlines);
     printf("Exiting...\n");
-    exit(1);
+    exit(-1);
   }
 
   printf("readFourierCoef: lmax: %d  np: %d  nlines: %d\n",lmax,np,nlines);
@@ -1490,6 +1513,13 @@ void readFourierCoef(char *filename, struct fourier_coef *c)
 
   // check reality of ODF
   filep = fopen("coef_original.txt","w");
+  if(!filep) { 
+     printf("readFourierCoef: fourier coefficient file\n");
+     printf("%s\n",filename);
+     printf("not found. Exiting...\n");
+     fflush(stdout);
+     exit(-1);
+  } 
   rmax = 0;
   for(l=0;l<=lmax;l++) {
     for(m=-l;m<=l;m++) {
@@ -1552,6 +1582,10 @@ void readFourierCoef(char *filename, struct fourier_coef *c)
     // print new coefficients
     rmax = 0;
     filep = fopen("coef_modified.txt","w");
+    if(!filep) {
+      fprintf(stderr,"Texture_process: failed fopen write mode for file 'coef_modified.txt'. Exit!\n");
+      exit(-1);
+    }
     for(l=0;l<=lmax;l++) {
       for(m=-l;m<=l;m++) {
         for(n=-l;n<=l;n++) {
@@ -1636,7 +1670,7 @@ double interp(double x, int n, double *xp, double *yp)
     printf("x[n-1] = %.16e\n",xp[n-1]);
     printf("Exiting...\n");
     fflush(stdout);
-    exit(1);
+    exit(-1);
   }
   i1 = 0;
   i2 = n-1;
@@ -1652,7 +1686,7 @@ double interp(double x, int n, double *xp, double *yp)
     printf("x[1] = %.16e\n",xp[1]);
     printf("Exiting...\n");
     fflush(stdout);
-    exit(1);
+    exit(-1);
   }
   return yp[i1]+((x-xp[i1])/(xp[i2]-xp[i1]))*(yp[i2]-yp[i1]);
 }
@@ -1671,7 +1705,7 @@ double interp2D(double x, double y, int nx, int ny, double *xp, double *yp, doub
     } else {
       printf("interp2D: bad i: %d, nx: %d x: %.16e y: %.16e\n",i,nx,x,y);
       fflush(stdout);
-      exit(1);
+      exit(-1);
     }
   } else if(i>0 && x<xp[i]) {
     i = i-1;
@@ -1683,7 +1717,7 @@ double interp2D(double x, double y, int nx, int ny, double *xp, double *yp, doub
     } else {  
       printf("interp2D: bad j: %d, ny: %d x: %.16e y: %.16e\n",j,ny,x,y);
       fflush(stdout);
-      exit(1);
+      exit(-1);
     }
   } else if(j>0 && y<yp[j]) {
     j = j-1;
@@ -1701,7 +1735,7 @@ double interp2D(double x, double y, int nx, int ny, double *xp, double *yp, doub
     printf("interp2D: bad t: %.6e, u: %.6e x: %f y: %f i: %d nx: %d\n",t,u,x,y,i,nx);
     printf("%f %f %f\n",x,xp[i],xp[i+1]);
     fflush(stdout);
-    //exit(1);
+    //exit(-1);
   }
   if(u<0 || u>1) { 
     printf("interp2D: bad u: %.6e, t: %.6e x: %f y: %f j: %d ny: %d\n",u,t,x,y,j,ny);
@@ -1711,7 +1745,7 @@ double interp2D(double x, double y, int nx, int ny, double *xp, double *yp, doub
     printf("\n");
     for(j=0;j<ny;j++) { printf("%f\n",yp[j]); }
     fflush(stdout);
-    exit(1);
+    exit(-1);
   }
 
   return (1-t)*(1-u)*f1 + t*(1-u)*f2 + t*u*f3 + (1-t)*u*f4;
@@ -1808,12 +1842,16 @@ int initData(char *coef_fn, char *crystal_fn, struct hkl_info_struct_texture *in
         printf("Exiting...\n");
         fclose(filep);
         fflush(stdout);
-	exit(1);
+	exit(-1);
       }
       Li->lv = (int *)malloc((Li->numV)*sizeof(int));
       Li->mv = (int *)malloc((Li->numV)*sizeof(int));
       Li->RV = (double *)malloc((Li->numV)*sizeof(double));
       Li->phiV = (double *)malloc((Li->numV)*sizeof(double));
+      if (!Li->lv || !Li->mv || !Li->RV || !Li->phiV) {
+	fprintf(stderr,"Texture_process / initData: Failed malloc(s). Exit!\n");
+	exit(-1);
+      }
       for(j=0;j<Li->numV;j++) {
         fscanf(filep,"%d %d %d %d %d %d %lf %lf",
               &lm,&hm,&km,&jj,(Li->lv)+j,(Li->mv)+j,(Li->RV)+j,(Li->phiV)+j);
@@ -1826,7 +1864,7 @@ int initData(char *coef_fn, char *crystal_fn, struct hkl_info_struct_texture *in
           printf("Exiting...\n");
           fclose(filep);
           fflush(stdout);
-	  exit(1);
+	  exit(-1);
         }
       }
     }
@@ -2146,7 +2184,7 @@ int Texture_physics_scattering(double *k_final, double *k_initial, double *weigh
        printf("%d %.6e %.6e\n",i,cumProb_hkl[i],r);
     }
     fflush(stdout);
-    exit(1);
+    exit(-1);
   }
   
   // sampling kprime
@@ -2225,7 +2263,7 @@ INITIALIZE
   if ( initData(fcoef_fn, crystal_fn, &hkl_info_texture, maxNeutronSaved) ) {
     printf("Texture_process: %s: Error in initData: Aborting.\n", NAME_CURRENT_COMP);
     fflush(stdout);
-    exit(1);
+    exit(-1);
   }
 
   // precomputed factors
@@ -2316,11 +2354,15 @@ struct hkl_info_struct_texture *hkl_info
 printf("numReused: %.6e\n",hkl_info->numReused); 
 // print rejection statistics
 FILE *filep = fopen("rejectioStatistics.txt","w");
-struct hkl_data_texture *L = hkl_info->list;
-for(i=0;i<hkl_info->num_hkl;i++) {
-  fprintf(filep,"%d %d %d %.6e %.6e\n",L[i].h,L[i].k,L[i].l,L[i].numReject,L[i].numScatt);
-}
-fclose(filep);
+if (!filep) {
+  struct hkl_data_texture *L = hkl_info->list;
+  for(i=0;i<hkl_info->num_hkl;i++) {
+    fprintf(filep,"%d %d %d %.6e %.6e\n",L[i].h,L[i].k,L[i].l,L[i].numReject,L[i].numScatt);
+  }
+  fclose(filep);
+ } else {
+  fprintf(stderr,"Texture_process %s WARNING: Failed to open file 'rejectioStatistics.txt' in write mode. No data saved!\n", NAME_CURRENT_COMP);
+ }
 // deallocate allocated memory, etc.
 free_texture(hkl_info);
 %}

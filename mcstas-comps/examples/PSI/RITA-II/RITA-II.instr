@@ -266,10 +266,10 @@ double det_width = 0.275;
 double det_height =0.5;
 double PSF = 0.0074/2.35;// FWHM=0.0074m, measured by C. Bahl NIMB 246, 452.
 /* Electronic Window positions in the PSD */
-int XwinMin[9];
-int YwinMin[9];
-int XwinMax[9];
-int YwinMax[9];
+int XwinMin[10];
+int YwinMin[10];
+int XwinMax[10];
+int YwinMax[10];
 #pragma acc declare create (XwinMin,YwinMin,XwinMax,YwinMax)
 
 

@@ -222,6 +222,7 @@ void read_stl(char* filename,
       fclose(file);  
       
    } else {
+#ifndef _MSC_EXTENSIONS
        FILE *file = Open_File(filename, "r", NULL);
        // Read header
        char header[80];
@@ -245,7 +246,10 @@ void read_stl(char* filename,
            fread(&triangles[i], sizeof(Triangle), 1, file);
        }
       
-      fclose(file);  
+      fclose(file);
+#else
+      fprintf(stderr,"Union_mesh ERROR:\n  Binary STL is not yet supported when compiling with MSVC.\n  Please convert file to e.g. ascii OFF via meshlab.\n.");
+#endif
    }
 
    *n_verts = 3* *n_faces;

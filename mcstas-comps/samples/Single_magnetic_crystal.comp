@@ -284,7 +284,11 @@ SHARE
       /* allocate hkl_data array initially make room for 2048 reflections. will be expanded (realloc'd) if needed.*/
       size=2048;
       list = (struct hkl_data*)malloc(size*sizeof(struct hkl_data));
-
+      if (!list) {
+        fprintf(stderr,
+                "Single_magnetic_crystal: Error allocating reflection list\n");
+        return(-1);
+      }
       printf("q=[%g %g]\n",info->tau_min,info->tau_max);
       printf("as,bs,cs=(%g %g %g)\n",as,bs,cs);
       i=0;
@@ -300,6 +304,11 @@ SHARE
             f=cplx(0,0);
             cdouble f_tau=cplx(0,0);
             cdouble* f_ = malloc(4*sizeof(cdouble));
+            if (!f_) {
+              fprintf(stderr,
+                      "Single_magnetic_crystal: Error allocating cdouble f_[4]\n");
+              return(-1);
+            }
 	    f_[0]=f_[1]=f_[2]=f_[3]=cplx(0,0);
 
             for (m=0;m<atoms.rows;m++){
@@ -386,6 +395,11 @@ SHARE
               if(++i==size){
                 size=2*size;
                 list = (struct hkl_data*)realloc(list,size*sizeof(struct hkl_data));
+                if (!list) {
+                  fprintf(stderr,
+                          "Single_crystal: Error re-allocating reflection list\n");
+                  return(-1);
+                }
               }
               printf("(hkl)=(%2d %2d %2d) ",h,k,l);
               printf(" |f++|^2=%g |f--|^2=%g |f+-|^2=%g |f-+|^2=%g",cabs(f_[0])*cabs(f_[0]),cabs(f_[1])*cabs(f_[1]),cabs(f_[2])*cabs(f_[2]),cabs(f_[3])*cabs(f_[3]));

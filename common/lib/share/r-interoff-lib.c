@@ -336,6 +336,7 @@ int r_off_clip_3D_mod(r_intersection* t, Coords a, Coords b,
     pol.npol  = faceArray[i];                //nb vertex of polygon
     pol.p     = popol;
     pol.normal= coords_set(0,0,1);
+    pol.D     = 1;
     unsigned long indVertP1=faceArray[++i];  //polygon's first vertex index in vtxTable
     int j=1;
     /*check whether vertex is left or right of plane*/
@@ -758,7 +759,7 @@ long r_off_init(  char *offfile, double xwidth, double yheight, double zdepth,
   face_W_Array = malloc(polySize*sizeof(double));
 
 
-  if (!normalArray || !faceArray || !DArray) return(0);
+  if (!normalArray || !faceArray || !DArray || !face_m_Array || !face_alpha_Array || !face_W_Array) return(0);
 
   // fill faces
   faceSize=0;
@@ -812,6 +813,10 @@ long r_off_init(  char *offfile, double xwidth, double yheight, double zdepth,
   {
     int    nbVertex=faceArray[i];//nb of vertices of this polygon
     double *vertices=malloc(3*nbVertex*sizeof(double));
+    if (!vertices) {
+      fprintf(stderr,"Error allocating vertex array sized %i\n",nbVertex);
+      exit(-1);
+    }
     int j;
 
     for (j=0; j<nbVertex; ++j)
@@ -825,6 +830,7 @@ long r_off_init(  char *offfile, double xwidth, double yheight, double zdepth,
     r_polygon p;
     p.p   =vertices;
     p.npol=nbVertex;
+    p.D=1;
     r_off_normal(&(p.normal),p);
 
     normalArray[indNormal]=p.normal;
@@ -1238,7 +1244,60 @@ int r_off_x_intersect(double *l0,double *l3,
 *******************************************************************************/
 void r_off_display(r_off_struct data)
 {
-#ifndef OPENACC
+    if(mcdotrace==2){
+    // Estimate size of the JSON string
+    const int VERTEX_OVERHEAD = 30;
+    const int FACE_OVERHEAD_BASE = 20;
+    const int FACE_INDEX_OVERHEAD = 15;
+    int estimated_size = 256; // Base size
+    estimated_size += data.vtxSize * VERTEX_OVERHEAD;
+
+    for (int i = 0; i < data.faceSize;) {
+        int num_indices = data.faceArray[i];
+        estimated_size += FACE_OVERHEAD_BASE + num_indices * FACE_INDEX_OVERHEAD;
+        i += num_indices + 1;
+    }
+
+    char *json_string = malloc(estimated_size);
+    if (json_string == NULL) {
+        fprintf(stderr, "Memory allocation failed.\n");
+        return;
+    }
+
+    char *ptr = json_string;
+    ptr += sprintf(ptr, "{ \"vertices\": [");
+
+    for (int i = 0; i < data.vtxSize; i++) {
+        ptr += sprintf(ptr, "[%g, %g, %g]", data.vtxArray[i].x, data.vtxArray[i].y, data.vtxArray[i].z);
+        if (i < data.vtxSize - 1) {
+            ptr += sprintf(ptr, ", ");
+        }
+    }
+
+    ptr += sprintf(ptr, "], \"faces\": [");
+
+    for (int i = 0; i < data.faceSize;) {
+        int num = data.faceArray[i];
+        ptr += sprintf(ptr, "{ \"face\": [");
+        for (int j = 1; j <= num; j++) {
+            ptr += sprintf(ptr, "%lu", data.faceArray[i + j]);
+            if (j < num) {
+                ptr += sprintf(ptr, ", ");
+            }
+        }
+        ptr += sprintf(ptr, "]}");
+        i += num + 1;
+        if(i<data.faceSize){
+          ptr += sprintf(ptr, ", ");
+        }
+    }
+
+    ptr += sprintf(ptr, "]}");
+    mcdis_polyhedron(json_string);
+
+    free(json_string);
+    }
+    else {
   unsigned int i;
   double ratio=(double)(N_VERTEX_DISPLAYED)/(double)data.faceSize;
   unsigned int pixel=0;
@@ -1251,7 +1310,7 @@ void r_off_display(r_off_struct data)
     z0 = data.vtxArray[data.faceArray[i+1]].z;
     double x1=x0,y1=y0,z1=z0;
     double cmx=0,cmy=0,cmz=0;
-    
+
     int drawthis = rand01() < ratio;
     // First pass, calculate center of mass location...
     for (j=1; j<=nbVertex; j++) {
@@ -1262,15 +1321,17 @@ void r_off_display(r_off_struct data)
     cmx /= nbVertex;
     cmy /= nbVertex;
     cmz /= nbVertex;
-    
-    char pixelinfo[1024];    
-    sprintf(pixelinfo, "%lu,%lu,%lu,%i,%g,%g,%g,%g,%g,%g", data.mantidoffset+pixel, data.mantidoffset, data.mantidoffset+data.polySize-1, nbVertex, cmx, cmy, cmz, x1-cmx, y1-cmy, z1-cmz);
+
+        char pixelinfo[1024];
+	char pixelinfotmp[1024];
+        sprintf(pixelinfo, "%li,%li,%li,%i,%g,%g,%g,%g,%g,%g", data.mantidoffset+pixel, data.mantidoffset, data.mantidoffset+data.polySize-1, nbVertex, cmx, cmy, cmz, x1-cmx, y1-cmy, z1-cmz);
     for (j=2; j<=nbVertex; j++) {
       double x2,y2,z2;
       x2 = data.vtxArray[data.faceArray[i+j]].x;
       y2 = data.vtxArray[data.faceArray[i+j]].y;
       z2 = data.vtxArray[data.faceArray[i+j]].z;
-      sprintf(pixelinfo, "%s,%g,%g,%g", pixelinfo, x2-cmx, y2-cmy, z2-cmz); 
+          sprintf(pixelinfotmp, "%s,%g,%g,%g", pixelinfo, x2-cmx, y2-cmy, z2-cmz);
+	  sprintf(pixelinfo,"%s",pixelinfotmp);
       if (ratio > 1 || drawthis) {
 	mcdis_line(x1,y1,z1,x2,y2,z2);
       }
@@ -1285,7 +1346,7 @@ void r_off_display(r_off_struct data)
     }
     i += nbVertex;
   }
-#endif
+    }
 } /* r_off_display */
 
 /* end of r-interoff-lib.c */

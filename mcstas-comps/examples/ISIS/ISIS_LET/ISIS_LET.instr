@@ -1,0 +1,327 @@
+/*******************************************************************************
+* Instrument: ISIS_LET
+*
+* %I
+* Written by: Ross Stewart
+* Date: September 2025
+* Origin: ISIS
+* %INSTRUMENT_SITE: ISIS
+*
+* LET instrument on ISIS TS2
+*
+* Instrument: ISIS_LET
+*
+* %D
+* This is a simulation of LET on ISIS TS2.
+*
+* %Example: Ei=3.7 res=HF Detector: sample_PSDmon_I=31264.8
+* %Example: Ei=3.7 res=I Detector: sample_PSDmon_I=17839.7
+* %Example: Ei=3.7 res=HR Detector: sample_PSDmon_I=8835.3
+*
+* %P
+* Ei: 		    [meV]	Centre energy for moderator
+* dE: 		    [] 		Multiplier for energy spread:  Emin = Ei/dE, Emax = Ei*dE
+* Ch3_speed:	    [Hz]	Chopper 3 frequency
+* Ch5_speed:	    [Hz]	Chopper 5 frequency
+* Ch2_phase:	    [mus]	Chopper 2 phase setting
+* pha_offset:	    [mus]	Offset in time for moderator focus
+* res:		    [string] 	"HF" - High Flux, "HR" - High Resolution, "I" - Intermediate
+* snout:	    [string]	"in" or "out"
+* monitors_on:      [1]         Flag to enable/disable TOF monitors in primary optics
+* movable_monitors: [1]         Flag to enable/disable PSDs and Div monitors in primary optics
+*
+* %L
+* %E
+*******************************************************************************/
+
+DEFINE INSTRUMENT ISIS_LET(Ei = 3.7, dE=1.1, Ch3_speed=100, Ch5_speed=200,  Ch2_phase=95000, 
+			   pha_offset=80e-6, string res="HF", string snout = "out", int monitors_on=0, int movable_monitors=0)
+
+DECLARE
+%{
+double SE2K, v_foc, emin, emax, lam_min, lam_max, jitter=7e-7;
+double Ch1_speed, Ch2_speed=10, Ch2_offset=14500, Ch4_speed, Ch5_slit, snout_length;
+double L_Ch1=7.833, L_Ch2=8.200, L_Ch3=11.749, L_Ch4=15.664, L_Ch5=23.499;
+double L_sample=25, L2=3.5, Ch1_5_halfgap=0.005, smidge = 0.001;
+%}
+
+INITIALIZE 
+%{
+
+// get chopper5 slit width and speeds from resolution setting
+if (strcmp(res,"HR") == 0){
+	Ch5_slit = 0.015;
+	Ch1_speed = Ch5_speed / 2;
+} else if (strcmp(res,"I") == 0){
+	Ch5_slit = 0.02;
+	Ch1_speed = Ch5_speed / 4;
+} else if (strcmp(res,"HF") == 0){
+	Ch5_slit = 0.028;
+	Ch1_speed = Ch5_speed / 4;
+} else {
+	printf("\n Need valid resolution option, 'HR', 'I' or 'HF'\n");
+}
+
+// decide whether snout is in or out
+if (strcmp(snout,"out") == 0){
+	snout_length = 0.0;
+} else {
+	snout_length = 0.23;
+}
+
+SE2K	= SE2V * V2K;
+v_foc	= SE2V * sqrt(Ei);
+emax	= Ei*dE;
+emin	= Ei/dE;
+lam_min   	= 2 * PI / SE2K / sqrt(emax);
+lam_max 	= 2 * PI / SE2K / sqrt(emin);
+
+printf("\nv_foc: %f", v_foc);
+printf("\nChopper 1 delay: %f\n", (L_Ch1 - Ch1_5_halfgap)/v_foc+pha_offset);
+printf("\nEnergy range: Emin = %f, Emax = %f\n", emin, emax);
+%}
+
+TRACE
+
+COMPONENT Origin = Arm() 
+AT (0,0,0) ABSOLUTE
+
+COMPONENT SourceMantid = Commodus_I3(
+	Face = "Let_TS2_HydroMod_Upgrade2021_8cmThick.mcstas", 
+	E0 = emin, 
+	E1 = emax, 
+	dist = 1.68, 
+	xw = 0.04, 
+	yh = 0.09,
+	modXsize=0.12,
+	modZsize=0.12)
+AT (0, 0, 0) RELATIVE Origin
+
+COMPONENT shutter = Guide_channeled(
+	w1 = 0.04, h1 = 0.09, l = 1.980, alpha = 4.38, W=3e-3, mx = 2, my = 3)
+AT (0, 0, 1.680) RELATIVE Origin
+
+COMPONENT insert = Guide_channeled(
+	w1 = 0.04, h1 = 0.09, l = 2.500, alpha = 4.38, W=3e-3, mx = 2, my = 3)
+AT (0, 0, 3.740) RELATIVE Origin
+
+COMPONENT after_insert = Guide_channeled(
+	w1 = 0.04, h1 = 0.09, l = 1.514, alpha = 4.38, W=3e-3, mx = 2, my = 3)
+AT (0, 0, 6.300) RELATIVE Origin
+
+COMPONENT Monitor1 = TOF_monitor(
+	nt = 100, filename = "monitor1.dat", xwidth=0.06, yheight=0.1,nowritefile=!monitors_on,
+	tmin=1e6 * ((L_Ch1 - Ch1_5_halfgap - smidge) / SE2V / sqrt(emax) + pha_offset), 
+	tmax=1e6 * ((L_Ch1 - Ch1_5_halfgap - smidge) / SE2V / sqrt(emin) + pha_offset),restore_neutron=1)
+WHEN monitors_on == 1
+AT (0, 0, L_Ch1 - Ch1_5_halfgap - smidge) RELATIVE Origin
+
+COMPONENT LET_Chopper1_disk1 = DiskChopper(
+	radius = 0.350, 
+	yheight = 0.095,
+	nu  = Ch1_speed, 
+	nslit = 6, 
+	xwidth = 0.056, 
+	jitter = jitter, 
+	delay = (L_Ch1 - Ch1_5_halfgap)/v_foc + pha_offset)
+AT (0, 0, L_Ch1 - Ch1_5_halfgap) RELATIVE Origin
+
+COMPONENT LET_Chopper1_disk2 = DiskChopper(
+	radius = 0.350, 
+	yheight = 0.095,
+	nu  = Ch1_speed, 
+	nslit = 6, 
+	xwidth = 0.056, 
+	jitter = jitter, 
+	delay = (L_Ch1 + Ch1_5_halfgap)/v_foc + pha_offset)
+AT (0, 0, (L_Ch1 + Ch1_5_halfgap)) RELATIVE Origin ROTATED (0,0,180) RELATIVE PREVIOUS
+
+COMPONENT Monitor2 = TOF_monitor(
+    nt = 100, filename = "monitor2.dat", xwidth=0.06, yheight=0.1, nowritefile=!monitors_on,
+    tmin=1e6 * ((L_Ch1 + Ch1_5_halfgap + smidge) / SE2V / sqrt(emax) + pha_offset), 
+    tmax=1e6 * ((L_Ch1 + Ch1_5_halfgap + smidge) / SE2V / sqrt(emin) + pha_offset),restore_neutron=1)
+WHEN monitors_on == 1
+AT (0, 0, L_Ch1 + Ch1_5_halfgap + smidge) RELATIVE Origin
+
+COMPONENT between_chop1_and_chop2 = Guide_channeled(
+    w1 = 0.04, h1 = 0.09, l = 0.312, alpha = 4.38, W=3e-3, mx = 2, my = 3)
+AT (0, 0, 7.852) RELATIVE Origin
+
+COMPONENT LET_Chopper2 = DiskChopper(
+	radius = 0.600,
+	yheight = 0.107,
+	nu  = Ch2_speed, 
+	nslit = 1, 
+	xwidth = 0.79, 
+	jitter = jitter, 
+	delay = (Ch2_phase + Ch2_offset) / 1e6)
+AT (0, 0, L_Ch2) RELATIVE Origin
+
+COMPONENT Monitor3 = TOF_monitor(
+    nt = 100, filename = "monitor3.dat", xwidth=0.06, yheight=0.1, nowritefile=!monitors_on,
+    tmin = 1e6 * ((L_Ch2 + smidge) / SE2V / sqrt(emax) + pha_offset), 
+    tmax = 1e6 * ((L_Ch2 + smidge) / SE2V / sqrt(emin) + pha_offset),restore_neutron=1)
+WHEN monitors_on == 1
+AT (0, 0, L_Ch2 + smidge) RELATIVE Origin
+
+COMPONENT between_chop2_and_chop3 = Guide_channeled(
+    w1 = 0.04, h1 = 0.09, l = 3.499, alpha = 4.38, W=3e-3, mx = 2, my = 3)
+AT (0, 0, 8.236) RELATIVE Origin
+
+COMPONENT LET_Chopper3 = DiskChopper(
+	radius = 0.340, 
+	yheight = 0.090,
+	nu  = Ch3_speed, 
+	nslit = 2, 
+	xwidth = 0.045, 
+	jitter = jitter, 
+	delay = L_Ch3 / v_foc + pha_offset)
+AT (0, 0, L_Ch3) RELATIVE Origin
+
+COMPONENT Monitor4 = TOF_monitor(
+    nt = 100, filename = "monitor4.dat", xwidth=0.06, yheight=0.1,nowritefile=!monitors_on,
+    tmin = 1e6 * ((L_Ch3 + smidge) / SE2V / sqrt(emax) + pha_offset), 
+    tmax = 1e6 * ((L_Ch3 + smidge) / SE2V / sqrt(emin) + pha_offset), restore_neutron=1)
+WHEN monitors_on == 1
+AT (0, 0, L_Ch3 + smidge) RELATIVE Origin
+
+COMPONENT between_chop3_and_chop4 = Guide_channeled(
+    w1 = 0.04, h1 = 0.09, l = 3.886, alpha = 4.38, W=3e-3, mx = 2, my = 3)
+AT (0, 0, 11.765) RELATIVE Origin
+
+COMPONENT LET_Chopper4 = DiskChopper(
+	radius = 0.338, 
+	yheight = 0.090,
+	nu  = Ch5_speed / 2, 
+	nslit = 6, 
+	xwidth = 0.045, 
+	jitter = jitter, 
+	delay = L_Ch4 / v_foc + pha_offset)
+AT (0, 0, L_Ch4) RELATIVE Origin
+
+COMPONENT Monitor5 = TOF_monitor(
+    nt = 100, filename = "monitor5.dat", xwidth=0.06, yheight=0.08, nowritefile=!monitors_on,
+    tmin = 1e6 * ((L_Ch4 + smidge) / SE2V / sqrt(emax) + pha_offset), 
+    tmax = 1e6 * ((L_Ch4 + smidge) / SE2V / sqrt(emin) + pha_offset), restore_neutron=1)
+WHEN monitors_on == 1
+AT (0, 0, L_Ch4 + smidge) RELATIVE Origin
+
+COMPONENT between_chop4_and_movable = Guide_channeled(
+    w1 = 0.04, h1 = 0.09, h2 = 0.0639, l = 5.800, alpha = 4.38, W=3e-3, mx = 2, my = 3)
+AT (0, 0, 15.681) RELATIVE Origin
+
+COMPONENT moveable_front_PSDmon = PSD_monitor(
+	nx = 50, ny = 50, filename = "moveable_front_PSDmon.dat", xwidth = 0.06, yheight = 0.08,
+	restore_neutron=1, nowritefile=!movable_monitors)
+WHEN movable_monitors == 1
+AT (0, 0, 21.485) RELATIVE Origin
+
+COMPONENT moveable_front_Divmon = Divergence_monitor(
+	nh = 50, nv = 50, filename = "moveable_front_Divmon.dat", xwidth = 0.06, yheight = 0.08,
+	restore_neutron=1, maxdiv_h = 3, maxdiv_v = 3, nowritefile=!movable_monitors)
+WHEN movable_monitors == 1
+AT (0, 0, 21.485) RELATIVE Origin
+
+COMPONENT moveable_guide = Guide_channeled(
+    w1 = 0.04, h1 = 0.0639, w2 = 0.0311, h2 = 0.05718, l = 0.8813, alpha = 4.38, W=3e-3, m = 4)
+AT (0, 0, 21.489) RELATIVE Origin
+
+COMPONENT moveable_back_PSDmon = PSD_monitor(
+	nx = 100, ny = 100, filename = "moveable_back_PSDmon.dat", xwidth = 0.06, yheight = 0.08,
+	restore_neutron=1, nowritefile=!movable_monitors)
+WHEN movable_monitors == 1
+AT (0, 0, 22.372) RELATIVE Origin
+
+COMPONENT moveable_back_Divmon = Divergence_monitor(
+	nh = 50, nv = 50, filename = "moveable_back_Divmon.dat", xwidth = 0.06, yheight = 0.08,
+	restore_neutron=1, maxdiv_h = 3, maxdiv_v = 3, nowritefile=!movable_monitors)
+WHEN movable_monitors == 1
+AT (0, 0, 22.372) RELATIVE Origin
+
+COMPONENT funnel = Guide_channeled(
+    w1 = 0.031, h1 = 0.05711, w2 = 0.02, h2 = 0.04868, l = 1.107, alpha = 4.38, W=3e-3, m = 4)
+AT (0, 0, 22.373) RELATIVE Origin 
+
+COMPONENT LET_Chopper5_Disk1 = DiskChopper(
+	radius = 0.350, 
+	yheight = 0.06,
+	nu  = Ch5_speed, 
+	nslit = 1, 
+	xwidth = Ch5_slit, 
+	jitter = jitter, 
+	delay = (L_Ch5 - Ch1_5_halfgap) / v_foc + pha_offset)
+AT (0, 0, L_Ch5 - Ch1_5_halfgap) RELATIVE Origin 
+
+COMPONENT LET_Chopper5_Disk2 = DiskChopper(
+	radius = 0.350, 
+	yheight = 0.06,
+	nu  = Ch5_speed, 
+	nslit = 1, 
+	xwidth = Ch5_slit, 
+	jitter = jitter, 
+	delay = (L_Ch5 + Ch1_5_halfgap) / v_foc + pha_offset)
+AT (0, 0, L_Ch5 + Ch1_5_halfgap) RELATIVE Origin ROTATED (0,0,180) RELATIVE PREVIOUS
+
+COMPONENT Monitor6 = TOF_monitor(
+    nt = 100, filename = "monitor6.dat", xwidth=0.06, yheight=0.06, nowritefile=!monitors_on,
+    tmin = 1e6 * ((L_Ch5 + Ch1_5_halfgap + smidge) / SE2V / sqrt(emax) + pha_offset), 
+    tmax = 1e6 * ((L_Ch5 + Ch1_5_halfgap + smidge) / SE2V / sqrt(emin) + pha_offset), restore_neutron=1)
+WHEN monitors_on == 1
+AT (0, 0, L_Ch5 + Ch1_5_halfgap + smidge) RELATIVE Origin
+
+COMPONENT tanksection = Guide_channeled(
+    w1 = 0.02, h1 =0.0484 , w2 = 0.020, h2 = 0.04, l = 1.1, alpha = 4.38, W=3e-3, m = 4)
+AT (0, 0, 23.52) RELATIVE Origin
+
+COMPONENT snout = Guide_channeled(
+    w1 = 0.02, h1 =0.04 , l = snout_length, alpha = 4.38, W=3e-3, m = 4)
+AT (0, 0, 24.622) RELATIVE Origin
+
+COMPONENT sample = Arm()
+  AT (0, 0, L_sample) RELATIVE Origin
+
+COMPONENT sample_PSDmon = PSD_monitor(
+	nx = 100, ny = 100, filename = "sample_PSDmon.dat", xwidth = 0.04, yheight = 0.06,
+	restore_neutron=1)
+AT (0, 0, 0) RELATIVE sample
+
+COMPONENT sample_Divmon = Divergence_monitor(
+	nh = 50, nv = 50, filename = "sample_Divmon.dat", xwidth = 0.06, yheight = 0.06,
+	restore_neutron=1, maxdiv_h = 3, maxdiv_v = 3)
+AT (0, 0, 0) RELATIVE sample
+
+COMPONENT sample_tof = TOF_monitor(
+    nt = 100, filename = "sample_tof.dat", xwidth=0.04, yheight=0.06, 
+    tmin = 1e6 * ((L_sample) / SE2V / sqrt(Ei) + pha_offset) * 0.99, 
+    tmax = 1e6 * ((L_sample) / SE2V / sqrt(Ei) + pha_offset) * 1.01,
+    restore_neutron=1)
+AT (0, 0, 0) RELATIVE sample
+
+COMPONENT sample_Emon = E_monitor(
+	nE = 100, Emin=Ei-(emax-emin)/12, Emax=Ei+(emax-emin)/6, filename = "sample_Emon.dat", xwidth = 0.04, yheight = 0.06,
+	restore_neutron=1)
+AT (0, 0, 0) RELATIVE sample
+
+COMPONENT vanadium = Incoherent(
+	radius=0.007, thickness=0.0002, yheight=0.04, p_interact=1,
+    focus_r=0.1, target_z=0, target_y=0.0, target_x=3.5, sigma_abs=0.0, sigma_inc=5)
+AT (0, 0, 0) RELATIVE sample
+
+COMPONENT detectorArm = Arm()
+AT (0,0,0) RELATIVE sample ROTATED (0,90,0) RELATIVE sample
+
+COMPONENT detector_tof = TOF_monitor(
+    nt = 100, filename = "detector_tof.dat", xwidth=1, yheight=1, 
+    tmin = 1e6 * ((L_sample + L2) / SE2V / sqrt(Ei) + pha_offset) * 0.99, 
+    tmax = 1e6 * ((L_sample + L2) / SE2V / sqrt(Ei) + pha_offset) * 1.01,
+    restore_neutron=1)
+AT (0, 0, L2) RELATIVE detectorArm
+
+
+
+FINALLY
+%{
+
+%}
+
+END

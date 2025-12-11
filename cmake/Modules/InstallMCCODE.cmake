@@ -397,6 +397,8 @@ macro(installMCCODE)
   endif()
 
   if(WINDOWS)
+    cmake_path( CONVERT "${MCCODE_RELPATH_BINDIR2TOOLDIR}" TO_NATIVE_PATH_LIST MCCODE_RELPATH_BINDIR2TOOLDIR)
+
     # Generate and install Windows setup scripts
     foreach (name env.bat env.m go.bat test.bat)
       configure_file(
@@ -413,7 +415,7 @@ macro(installMCCODE)
     install(PROGRAMS ${WORK}/support/${FLAVOR}-labenv.bat DESTINATION "${DEST_BINDIR}")
 
     # Python/Perl related batches special handling
-    foreach (name run.bat doc.bat test.bat viewtest.bat resplot.bat plot.bat display.bat gui.bat guistart.bat plot-pyqtgraph.bat plot-matplotlib.bat plot-matlab.bat display-webgl.bat display-webgl-classic.bat display-pyqtgraph.bat display-cad.bat display-matplotlib.bat display-mantid.bat)
+    foreach (name run.bat doc.bat test.bat viewtest.bat resplot.bat plot.bat display.bat gui.bat guistart.bat plot-pyqtgraph.bat plot-matplotlib.bat plot-matlab.bat display-webgl.bat display-webgl-classic.bat display-pyqtgraph.bat display-cad.bat display-matplotlib.bat display-mantid.bat display-matlab.bat)
       configure_file(
 	      cmake/support/run-scripts/${name}.in
 	      work/support/${MCCODE_PREFIX}${name}
