@@ -397,6 +397,8 @@ macro(installMCCODE)
   endif()
 
   if(WINDOWS)
+    cmake_path( CONVERT "${MCCODE_RELPATH_BINDIR2TOOLDIR}" TO_NATIVE_PATH_LIST MCCODE_RELPATH_BINDIR2TOOLDIR)
+
     # Generate and install Windows setup scripts
     foreach (name env.bat env.m go.bat test.bat)
       configure_file(
