@@ -25,7 +25,7 @@
 * %End
 *******************************************************************************/
 
-DEFINE INSTRUMENT Geometry_test(string meshfile="torus.off")
+DEFINE INSTRUMENT Geometry_test(string meshfile="torus.STL")
 
 DECLARE
 %{
