@@ -64,7 +64,54 @@
 * It gives a 'changes' list from the beginning of the project
 *
 *******************************************************************************/
-Changes in McStas/McXtrace 3.6.0, December 12th, 2025
+## What's Changed - Main Highlights:
+
+### Overall release focus:
+* Code quality improvements: Suppression of warnings from c-compilers and our static code analysis tool `cppcheck`
+* Continuous integration improvement: Any change in instrument/component code is tested via GitHub CI features  
+
+### New tool features / capabilities:
+* `mcrun/mxrun` simulation launch tool: (@willend)
+  * Scans can be parallelised at the "step number" level, use `--scan_split`. Contribution from @Lomholy.
+  * If installed, `cppcheck` can be used to perform static code analysis on the generated code, use `-C/--c-lint?`
+  * Improved string-handling in input parameters, e.g. in use with `NCrystal` config strings. Contribution from @tkittel.
+* `mcplot/mxplot` simulation plot tools: (@willend)
+  * Better support for 'intermediate saves' done via `kill -USR2` or  `Progress_bar`, and plots should work on an unfinished simulation.
+  * Plotting a completed simulation with 'intermediate saves' will give you **latest** plot version in the 2D case and **multiple, overplotted** curves in the 1D case  
+  * The `mcplot-matlab/mxplot-matlab` tool is back. You need to manually install either Matlab or Octave to make use of this
+* `mcdisplay/mxdisplay` instrument visualisation tools: (@willend)
+  * On `conda`-based installations, the `mcdisplay-cad/mxdisplay-cad` tool includes the `cadquery` dependency. On completion of building the model, the OS is asked to handle the resulting CAD model. 
+  * The `mcdisplay-matlab/mxdisplay-matlab` tool is back. You need to manually install either Matlab or Octave to make use of this
+  * For better integration with McStasScript, the `mcdisplay-webgl-classic/mxdisplay-webgl-classic` is used in such scenarios
+  * The 'newer/fancy' `mcdisplay-webgl/mxdisplay-webgl` based on `THREE.js`, `react` and other javascript requires a slightly time-consuming installation process on 1st launch. The user now gets an info box about this.
+  * The McStas-specific `mcdisplay-mantid` IDF generator tool received a bug fix for OFF geometry detectors.
+* `mcdoc/mxdoc` documentation tool: (@willend)
+  * Higher quality / more complete comp/instr doc pages
+* `mctest/mxtest` test tool: (@willend)
+  * Easier to use locally for component/instrument developers  
+
+### Components and instruments:
+#### McXtrace:
+* The `Fluorescence` components have a new flag to enhance statistics/signal from low concentration materials. Work by @farhi.
+#### McStas:
+* The `Union` subsystem now handles 'surface physics'  with the introduction of a system of refraction/reflection processes on geometry surfaces. Work by @mads-bertelsen.
+* The `Union` subsystem now has a functional 3D-mesh system (`Union_mesh`) that supports CAD style geometries. (Ascii/binary STL files and OFF files are supported. - For now only those with triangular meshing.) Work by @Lomholy.
+* As part of the overall code-quality improvement process, various aspects of the `Union` subsystem have been tested / improved / revised. Contributions by @tkittel and @willend in close collaboration with @mads-bertelsen.
+* New ISIS-related instrument files, components and data:
+  * `ISIS_LET` by Ross Stewart and Rob Bewley, serves as test-instrument for `Commodus_I3` (ISIS source model - corresponds to `ViewModISIS` with a different parameter interface)
+  * Updated / larger set of input files for the ISIS moderator components
+  * `Multilayer_sample` from Rob Dalgliesh was updated with `nrepeats` which allows to repeat an SLD material stack. `ISIS_CRISP` was updated to include this feature.
+  * `TOF_PSDmonitor_toQ` is a new component with built-in data reduction from Rob Dalgliesh. Uses ToF to calculate Q. `Test_TOF_PSDmonitor_toQ` is a basic instrument to showcase the component.
+* Several of the basic McStas sample components received a systematic validation against analytical methods, thanks to @Lomholy with help from KU/NBI students.
+* As part of the overall code-quality improvement process, the whole component / instrument base got a BIG overhaul as such (@willend)
+
+### Platform support:
+* The Windows/`conda` platform which uses the `MSVC` compiler is now **fully** functional for all McStas code and a good part of the McXtrace code. As part of this process a new header-file `mccode-complex-lib.h` should be used by all code requiring complex numbers. (Implements functions for e.g. `+-*/` operations across platforms - MSVC does not self implement these operations...) @willend 
+
+
+## What's Changed - Details:
+
+### Common changes to McStas and McXtrace
 
 * Code quality improvements
   * Remove compiler warnings by @willend in https://github.com/mccode-dev/McCode/pull/2088
@@ -83,30 +130,30 @@ Changes in McStas/McXtrace 3.6.0, December 12th, 2025
     * Fixes for parameter quoting issues by @tkittel in https://github.com/mccode-dev/McCode/pull/2151
   * mcgui:
     * Fixes for parameter quoting issues by @tkittel in https://github.com/mccode-dev/McCode/pull/2151
-  * mctest:
-    * Implement 'cppcheck' linting support on Unix, use `mctest  --lint`
-    * Update mctest with log of attained test value if test ran by @willend in https://github.com/mccode-dev/McCode/pull/2161
-    * Add --local=DIR input to mctest, will test instruments from that folder instead of 'system' by @willend in https://github.com/mccode-dev/McCode/pull/2221
-    * Add mctest feature to filter tested instruments by use of given COMP by @willend in https://github.com/mccode-dev/McCode/pull/2236
+  * mcplot:
+    * Use multiple # Data entries in output files if -USR2 is used for intermediate saves by @willend in https://github.com/mccode-dev/McCode/pull/2181
+    * mcplot plot only last # Data block in files with multiple entries by @willend in https://github.com/mccode-dev/McCode/pull/2182
+    * Bring back mcplot-matlab/octave by @willend in https://github.com/mccode-dev/McCode/pull/2256
+    * Correct visualisation artefacts in Matlab/multiline mcdisplay by @willend in https://github.com/mccode-dev/McCode/pull/2257
   * mcdisplay: 
     * Let mcdisplay-webgl and -classic honour -d directory by @willend in https://github.com/mccode-dev/McCode/pull/2093
     * mcdisplay-webgl 1st run notice (wait until node.js install is done) @willend in https://github.com/mccode-dev/McCode/pull/2140
     * Bring back mcdisplay-matlab/octave by @willend in https://github.com/mccode-dev/McCode/pull/2256
     * Correct visualisation artefacts in Matlab/multiline mcdisplay by @willend in https://github.com/mccode-dev/McCode/pull/2257
     * Minor tool improvements: mcdisplay-cad  by @willend in https://github.com/mccode-dev/McCode/pull/2258
- * mcplot:
-   * Use multiple # Data entries in output files if -USR2 is used for intermediate saves by @willend in https://github.com/mccode-dev/McCode/pull/2181
-   * mcplot plot only last # Data block in files with multiple entries by @willend in https://github.com/mccode-dev/McCode/pull/2182
-   * Bring back mcplot-matlab/octave by @willend in https://github.com/mccode-dev/McCode/pull/2256
-   * Correct visualisation artefacts in Matlab/multiline mcdisplay by @willend in https://github.com/mccode-dev/McCode/pull/2257
- * mcdoc:
-   * mcdoc is now more tolerant to e.g. missing asterisks in header by @willend in https://github.com/mccode-dev/McCode/pull/2121
-   *  mcdoc fills in "short description" if not found by parsing by @willend in https://github.com/mccode-dev/McCode/pull/2123
-   * Improve clarity  of mcdoc Generate buttion and clipboard by @willend in https://github.com/mccode-dev/McCode/pull/2141
-   * Allow mcdoc to work with --dir .  by @willend in https://github.com/mccode-dev/McCode/pull/2147
-   * Bugfix to filtered search https://github.com/mccode-dev/McCode/pull/2148
-   * Fix mcdoc for single-file search (e.g. BNL_H8.instr)  by @willend in https://github.com/mccode-dev/McCode/pull/2166
-   * Mcdoc patch, tolerate missing ^* in header description / parameters by @willend in https://github.com/mccode-dev/McCode/pull/2179
+  * mcdoc:
+    * mcdoc is now more tolerant to e.g. missing asterisks in header by @willend in https://github.com/mccode-dev/McCode/pull/2121
+    *  mcdoc fills in "short description" if not found by parsing by @willend in https://github.com/mccode-dev/McCode/pull/2123
+    * Improve clarity  of mcdoc Generate buttion and clipboard by @willend in https://github.com/mccode-dev/McCode/pull/2141
+    * Allow mcdoc to work with --dir .  by @willend in https://github.com/mccode-dev/McCode/pull/2147
+    * Bugfix to filtered search https://github.com/mccode-dev/McCode/pull/2148
+    * Fix mcdoc for single-file search (e.g. BNL_H8.instr)  by @willend in https://github.com/mccode-dev/McCode/pull/2166
+    * Mcdoc patch, tolerate missing ^* in header description / parameters by @willend in https://github.com/mccode-dev/McCode/pull/2179
+  * mctest:
+    * Implement 'cppcheck' linting support on Unix, use `mctest  --lint`
+    * Update mctest with log of attained test value by @willend in https://github.com/mccode-dev/McCode/pull/2161
+    * Add --local=DIR input to mctest, will test instruments from that folder instead of 'system' by @willend in https://github.com/mccode-dev/McCode/pull/2221
+    * Add mctest feature to filter tested instruments by use of given COMP by @willend in https://github.com/mccode-dev/McCode/pull/2236
 * Code generator/Grammar/runtime libs: 
   * Let `-pygen` generated McStasScript code propose using `mcdisplay-webgl-classic` in Jupyter by @willend in https://github.com/mccode-dev/McCode/pull/2091
 * Common work on McStas / McXtrace components
@@ -151,6 +198,8 @@ Changes in McStas/McXtrace 3.6.0, December 12th, 2025
   * Script for flexible+convenient creation of .yml files by @tkittel in https://github.com/mccode-dev/McCode/pull/2105
   * New test/devel tool to build McCode in a conda env by @willend in https://github.com/mccode-dev/McCode/pull/2106, https://github.com/mccode-dev/McCode/pull/2160, @tkittel in https://github.com/mccode-dev/McCode/pull/2155, 
   * New PR template by @willend in https://github.com/mccode-dev/McCode/pull/2129, https://github.com/mccode-dev/McCode/pull/2130, https://github.com/mccode-dev/McCode/pull/2131, https://github.com/mccode-dev/McCode/pull/2132, https://github.com/mccode-dev/McCode/pull/2133, https://github.com/mccode-dev/McCode/pull/2134, https://github.com/mccode-dev/McCode/pull/2138, @tkittel in https://github.com/mccode-dev/McCode/pull/2176
+
+### Behind the scenes:
 
 * Deployment and CI
   * The 'autobuild' workflows automatically build non-conda packages for McStas and McXtrace on any new release tag by @willend in https://github.com/mccode-dev/McCode/pull/2079
