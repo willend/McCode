@@ -1,4 +1,4 @@
-# Install McStas 3.6.0 on Linux and Unix.
+# Install McStas 3.6.1 on Linux and Unix.
 
 * We provide Debian packages, RedHat packages, and tar.gz's of "preconfigured" source code.
 
