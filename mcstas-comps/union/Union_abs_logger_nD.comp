@@ -121,6 +121,8 @@ SHARE
 #endif
 
 %include "monitor_nd-lib" // Internally avoids double import
+%include "read_table-lib"
+%include "interoff-lib"
 
 struct temp_abs_nD_data_element_struct {
  double x_pos;
