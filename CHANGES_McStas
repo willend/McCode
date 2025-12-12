@@ -58,9 +58,9 @@
 * Modified by: PW February 2025: version 3.5.24
 * Modified by: PW April 2025: version 3.5.27
 * Modified by: PW June 2025: version 3.5.32
-* Modified by: PW December 2025: version 3.6.0
+* Modified by: PW December 2025: version 3.6.1
 *
-* This file is part of McStas 3.6.0, released December 12th 2025.
+* This file is part of McStas 3.6.1, released December 12th 2025.
 * It gives a 'changes' list from the beginning of the project
 *
 *******************************************************************************/
@@ -256,7 +256,7 @@
 ## New Contributors
 * @aaronfinke made their first contribution in https://github.com/mccode-dev/McCode/pull/2169
 
-**Full Changelog**: https://github.com/mccode-dev/McCode/compare/v3.5.32...v3.6.0
+**Full Changelog**: https://github.com/mccode-dev/McCode/compare/v3.5.32...v3.6.1
 
 
 Changes in McStas/McXtrace 3.5.32, June 17th, 2025
