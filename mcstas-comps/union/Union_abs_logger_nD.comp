@@ -114,11 +114,13 @@ OUTPUT PARAMETERS ()
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
 
-SHARE INHERIT Monitor_nD EXTEND
+SHARE
 %{
 #ifndef Union
 #error "The Union_init component must be included before this Union_abs_logger_nD component"
 #endif
+
+%include "monitor_nd-lib" // Internally avoids double import
 
 struct temp_abs_nD_data_element_struct {
  double x_pos;
