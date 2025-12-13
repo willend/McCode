@@ -181,6 +181,9 @@ AT (0,0,  2.143)    RELATIVE Guide_CGS
 COMPONENT Sample_pos = Arm()
 AT (0,0,2.143+0.165)RELATIVE Guide_DGS
 
+COMPONENT In=Event_monitor_simple()
+AT (0,0,0) RELATIVE Sample_pos
+
 /* sample at 2.143+0.165 m from Chopper 6 */
 SPLIT COMPONENT Sample = Isotropic_Sqw(
   Sqw_coh=coh, Sqw_inc=inc, p_interact=0.99,
@@ -189,6 +192,9 @@ AT (0,0,0)          RELATIVE Sample_pos ROTATED (0,45,0) RELATIVE Sample_pos
 EXTEND %{
   if (!SCATTERED) ABSORB;
 %}
+
+COMPONENT Out=Event_monitor_simple()
+AT (0,0,0) RELATIVE Sample_pos
 
 /* detector at 2.5 m from sample */
 COMPONENT Ideal_Det= Monitor_nD(radius=2.5, yheight=2,
