@@ -518,9 +518,8 @@ INITIALIZE
   FullEnergyT = E_t[nH_t-1];
 
   EAT = (double *) malloc((nH_t+1)*sizeof(double));
-  M1P1 = (double *) malloc((nH_p+1)*sizeof(double));
-  if(!EAT || !M1P1) {
-    fprintf(stderr, "PSD_Detector %s: malloc() failure EAT or M1P1 arrays. Exit!\n", NAME_CURRENT_COMP);
+  if(!EAT) {
+    fprintf(stderr, "PSD_Detector %s: malloc() failure EAT array. Exit!\n", NAME_CURRENT_COMP);
     exit(-1);
   }
   EAT[0] = 0;
