@@ -34,7 +34,7 @@
 * %Example: SAMPLE=3 Detector: PSDMonitor_I=9.77905e-15
 * %Example: SAMPLE=4 Detector: PSDMonitor_I=1.16433e-10
 * %Example: SAMPLE=5 Ncount=1e4 Detector: PSDMonitor_I=1.2001e-14
-* %Example: SAMPLE=6 Ncount=1e4 Detector: PSDMonitor_I=1.05945e-14
+* %Example: SAMPLE=6 Ncount=1e4 Detector: PSDMonitor_I=1.2400e-14
 * %Example: SAMPLE=7 Ncount=1e4 Detector: PSDMonitor_I=7.07865e-14
 * %Example: SAMPLE=9 Detector: PSDMonitor_I=1.11073e-14
 * %Example: SAMPLE=10 Detector: PSDMonitor_I=1.02884e-14
