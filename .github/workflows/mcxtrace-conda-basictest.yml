@@ -108,7 +108,7 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcxtrace
            mcxtrace --version
-           mxtest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests
+           mxtest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
@@ -134,8 +134,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcxtrace
            mcxtrace --version
-           mxtest${SUFFIX} --instr=JJ_SAXS --testdir=run_singletests
-           mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests
+           mxtest${SUFFIX} --instr=JJ_SAXS --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch ESRF_BM29 instrument
       id: ESRF_BM29
@@ -151,8 +151,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcxtrace
            mcxtrace --version
-           mxtest${SUFFIX} --instr=ESRF_BM29 --testdir=run_singletests
-           mxtest${SUFFIX} --instr=ESRF_BM29 --mpi=2 --testdir=run_singletests
+           mxtest${SUFFIX} --instr=ESRF_BM29 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mxtest${SUFFIX} --instr=ESRF_BM29 --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch MCPL test instrument
       id: mcpl-test
@@ -168,10 +168,10 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcxtrace
            mcxtrace --version
-           mxtest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests
-           mxtest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests
-           mxtest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests
-           mxtest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests
+           mxtest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mxtest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mxtest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mxtest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch Absorption test instrument
       id: Absorption-test
@@ -187,8 +187,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcxtrace
            mcxtrace --version
-           mxtest${SUFFIX} --instr=Test_Absorption --testdir=run_singletests
-           mxtest${SUFFIX} --instr=Test_Absorption --mpi=2 --testdir=run_singletests
+           mxtest${SUFFIX} --instr=Test_Absorption --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mxtest${SUFFIX} --instr=Test_Absorption --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Check for modified instruments
       id: instr-test
@@ -215,9 +215,9 @@ jobs:
                  if [ "$NUMMATCH" -gt "0" ];
                  then
                    if [ "$RUNNER_OS" != "Windows" ]; then
-                     mxtest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES $PERMISSIVE --verbose
+                     mxtest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE --verbose
                  else
-                     mxtest.bat --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES $PERMISSIVE --verbose
+                     mxtest.bat --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE --verbose
                  fi
              else
                    echo No matching tests found
@@ -248,10 +248,10 @@ jobs:
              fi
              mkdir run_mxtest && cd run_mxtest
              if [ "$RUNNER_OS" != "Windows" ]; then
-               mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE
                mxviewtest --nobrowse $PWD
              else
-               mxtest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mxtest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE
                mxviewtest.bat --nobrowse $PWD
              fi
            fi

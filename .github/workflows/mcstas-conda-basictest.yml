@@ -108,7 +108,7 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests
+           mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
@@ -134,8 +134,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest${SUFFIX} --instr=BNL_H8 --testdir=run_singletests
-           mctest${SUFFIX} --instr=BNL_H8 --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=BNL_H8 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=BNL_H8 --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch ISIS_CRISP
       id: ISIS_CRISP
@@ -151,8 +151,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest${SUFFIX} --instr=ISIS_CRISP --testdir=run_singletests
-           mctest${SUFFIX} --instr=ISIS_CRISP --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=ISIS_CRISP --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=ISIS_CRISP --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch MCPL test instrument
       id: mcpl-test
@@ -168,12 +168,12 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest${SUFFIX} --instr=ESS_BEER_MCPL --testdir=run_singletests
-           mctest${SUFFIX} --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests
-           mctest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests
-           mctest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests
-           mctest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests
-           mctest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=ESS_BEER_MCPL --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
@@ -189,8 +189,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest${SUFFIX} --instr=NCrystal_example --testdir=run_singletests
-           mctest${SUFFIX} --instr=NCrystal_example --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=NCrystal_example --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=NCrystal_example --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch NeXus test instrument
       id: nexus-test
@@ -206,8 +206,8 @@ jobs:
            fi
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
-           mctest${SUFFIX} --instr=templateSANS_Mantid --testdir=run_singletests
-           mctest${SUFFIX} --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests
+           mctest${SUFFIX} --instr=templateSANS_Mantid --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           mctest${SUFFIX} --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Check for modified instruments
       id: instr-test
@@ -234,9 +234,9 @@ jobs:
                  if [ "$NUMMATCH" -gt "0" ];
                  then
                    if [ "$RUNNER_OS" != "Windows" ]; then
-                     mctest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES $PERMISSIVE --verbose
+                     mctest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE --verbose
                    else
-                     mctest.bat --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES $PERMISSIVE --verbose
+                     mctest.bat --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.mpi }}  $PERMISSIVE --verbose
                    fi
                  else
                    echo No matching tests found
@@ -267,10 +267,10 @@ jobs:
              fi
              mkdir run_mctest && cd run_mctest
              if [ "$RUNNER_OS" != "Windows" ]; then
-               mctest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mctest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE
                mcviewtest --nobrowse $PWD
              else
-               mctest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES $PERMISSIVE
+               mctest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }}  $PERMISSIVE
                mcviewtest.bat --nobrowse $PWD
              fi
            fi
