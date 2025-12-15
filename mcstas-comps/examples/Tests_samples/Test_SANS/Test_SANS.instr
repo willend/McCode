@@ -93,7 +93,7 @@ COMPONENT SecondPinhole = Slit(
 AT (0, 0, DistanceFromSourceToSecondPinhole) RELATIVE Source
 
 COMPONENT SamplePos=Arm()
-  AT (0, 0, DistanceFromSampleToDetector) RELATIVE SecondPinhole
+  AT (0, 0, DistanceFromSourceToSecondPinhole) RELATIVE SecondPinhole
 
 COMPONENT Sample0 = SANSSpheres(
 	xwidth = 0.1,
