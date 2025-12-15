@@ -138,7 +138,7 @@ SHARE
   
   // PN_list_compare *****************************************************************
 
-int PN_list_compare(const void *a, const void *b)
+int PN_list_compare_union(const void *a, const void *b)
 {
     const struct line_data_union *pa = a;
     const struct line_data_union *pb = b;
