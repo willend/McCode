@@ -569,7 +569,7 @@ def main():
         points = len(pointlist[0])
         if not (all(map(lambda i: len(i) == points, intervals.values()))):
             raise OptionValueError(
-                'All variables much have an equal amount of points.')
+                'All variables must have an equal amount of points.')
         interval_points = LinearInterval.from_list(
             points, intervals)
 
