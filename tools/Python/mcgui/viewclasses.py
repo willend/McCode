@@ -71,7 +71,14 @@ class McView(object):
     '''
     def updateInstrument(self, labels, instr):
         ''' labels: <instrument path>, <work dir> '''
-        self.mw.ui.lblInstrument.setText(labels[0])
+        if len(labels[0])>70:
+            label=str(pathlib.Path("(..long dirname..)",pathlib.Path(labels[0]).name))
+            tooltip="Located in: "+str(pathlib.Path(labels[0]).parent)
+        else:
+            label=labels[0]
+            tooltip=labels[0]
+        self.mw.ui.lblInstrument.setText(label)
+        self.mw.ui.lblInstrument.setToolTip(tooltip)
         if str(labels[0]) == '':
             self.__ssd = None
         if Qsci:
@@ -85,11 +92,11 @@ class McView(object):
         if clear:
             self.mw.ui.txtbrwMcgui.setText('Cleared messages.')
         if error:
-            self.mw.ui.txtbrwMcgui.setTextColor(QtGui.QColor('red'))
+            self.mw.ui.txtbrwMcgui.setTextColor(QtGui.QColor(mccode_config.configuration["GUIERRCOLOR"]))
         elif gui:
-            self.mw.ui.txtbrwMcgui.setTextColor(QtGui.QColor('blue'))
+            self.mw.ui.txtbrwMcgui.setTextColor(QtGui.QColor(mccode_config.configuration["GUILOGCOLOR"]))
         else:
-            self.mw.ui.txtbrwMcgui.setTextColor(QtGui.QColor('green'))
+            self.mw.ui.txtbrwMcgui.setTextColor(QtGui.QColor(mccode_config.configuration["GUIINFOCOLOR"]))
         self.mw.ui.txtbrwMcgui.append(text)
     
     def disableRunBtn(self):
@@ -116,9 +123,9 @@ class McView(object):
         ui.btnEdit.setEnabled(enableRun)
         ui.btnPlot.setEnabled(enablePlot)
         if enableRun:
-            ui.lblInstrument.setStyleSheet('color: green')
+            ui.lblInstrument.setStyleSheet('color: ' + mccode_config.configuration["GUILOGCOLOR"])
         else:
-            ui.lblInstrument.setStyleSheet('color: red')
+            ui.lblInstrument.setStyleSheet('color: ' + mccode_config.configuration["GUIERRCOLOR"])
         ui.actionClose_Instrument.setEnabled(enableRun)
         ui.actionPlot.setEnabled(enablePlot)
         ui.actionDisplay.setEnabled(enableRun)
