@@ -184,77 +184,10 @@ SHARE
     if (pa->tau_z < pb->tau_z) return -1;
     if (pa->tau_z > pb->tau_z) return 1;
 
-    /* In case of tie, sort by h also */
-    if (pa->h < pb->h) return -1;
-    if (pa->h > pb->h) return 1;
-
-    /* In case of tie, sort by k also */
-    if (pa->k < pb->k) return -1;
-    if (pa->k > pb->k) return 1;
-
-    /* In case of tie, sort by l also */
-    if (pa->l < pb->l) return -1;
-    if (pa->l > pb->l) return 1;
-
     /* In case of tie, sort by F2 also */
     if (pa->F2 < pb->F2) return -1;
     if (pa->F2 > pb->F2) return 1;
 
-    /* In case of tie, sort by cutoff also */
-    if (pa->cutoff < pb->cutoff) return -1;
-    if (pa->cutoff > pb->cutoff) return 1;
-
-    /* In case of tie, sort by sig123 also */
-    if (pa->sig123 < pb->sig123) return -1;
-    if (pa->sig123 > pb->sig123) return 1;
-
-     /* In case of tie, sort by m1 also */
-    if (pa->m1 < pb->m1) return -1;
-    if (pa->m1 > pb->m1) return 1;
-
-    /* In case of tie, sort by sig123 also */
-    if (pa->m2 < pb->m2) return -1;
-    if (pa->m2 > pb->m2) return 1;
-
-     /* In case of tie, sort by m3 also */
-    if (pa->m3 < pb->m3) return -1;
-    if (pa->m3 > pb->m3) return 1;
-
-    /* In case of tie, sort by u1x also */
-    if (pa->u1x < pb->u1x) return -1;
-    if (pa->u1x > pb->u1x) return 1;
-
-    /* In case of tie, sort by u1y also */
-    if (pa->u1y < pb->u1y) return -1;
-    if (pa->u1y > pb->u1y) return 1;
-
-     /* In case of tie, sort by u1z also */
-    if (pa->u1z < pb->u1z) return -1;
-    if (pa->u1z > pb->u1z) return 1;
-
-    /* In case of tie, sort by u2x also */
-    if (pa->u2x < pb->u2x) return -1;
-    if (pa->u2x > pb->u2x) return 1;
-
-    /* In case of tie, sort by u2y also */
-    if (pa->u2y < pb->u2y) return -1;
-    if (pa->u2y > pb->u2y) return 1;
-
-     /* In case of tie, sort by u2z also */
-    if (pa->u2z < pb->u2z) return -1;
-    if (pa->u2z > pb->u2z) return 1;
-
-    /* In case of tie, sort by u3x also */
-    if (pa->u3x < pb->u3x) return -1;
-    if (pa->u3x > pb->u3x) return 1;
-
-    /* In case of tie, sort by u3y also */
-    if (pa->u3y < pb->u3y) return -1;
-    if (pa->u3y > pb->u3y) return 1;
-
-     /* In case of tie, sort by u3z also */
-    if (pa->u3z < pb->u3z) return -1;
-    if (pa->u3z > pb->u3z) return 1;
 
     return 0;
   } /* SX_list_compare */
