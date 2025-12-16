@@ -384,6 +384,18 @@ struct hkl_data
     if (pa->tau < pb->tau) return -1;
     if (pa->tau > pb->tau) return 1;
 
+    /* Sort by tau_x */
+    if (pa->tau_x < pb->tau_x) return -1;
+    if (pa->tau_x > pb->tau_x) return 1;
+
+    /* Sort by tau_y */
+    if (pa->tau_y < pb->tau_y) return -1;
+    if (pa->tau_y > pb->tau_y) return 1;
+
+    /* Sort by tau_z */
+    if (pa->tau_z < pb->tau_z) return -1;
+    if (pa->tau_z > pb->tau_z) return 1;
+
     /* In case of tie, sort by h also */
     if (pa->h < pb->h) return -1;
     if (pa->h > pb->h) return 1;
@@ -399,6 +411,10 @@ struct hkl_data
     /* In case of tie, sort by F2 also */
     if (pa->F2 < pb->F2) return -1;
     if (pa->F2 > pb->F2) return 1;
+
+    /* In case of tie, sort by cutoff also */
+    if (pa->cutoff < pb->cutoff) return -1;
+    if (pa->cutoff > pb->cutoff) return 1;
 
     /* In case of tie, sort by sig123 also */
     if (pa->sig123 < pb->sig123) return -1;
