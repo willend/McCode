@@ -420,6 +420,18 @@ struct hkl_data
     if (pa->sig123 < pb->sig123) return -1;
     if (pa->sig123 > pb->sig123) return 1;
 
+     /* In case of tie, sort by m1 also */
+    if (pa->m1 < pb->m1) return -1;
+    if (pa->m1 > pb->m1) return 1;
+
+    /* In case of tie, sort by sig123 also */
+    if (pa->m2 < pb->m2) return -1;
+    if (pa->m2 > pb->m2) return 1;
+
+     /* In case of tie, sort by m3 also */
+    if (pa->m3 < pb->m3) return -1;
+    if (pa->m3 > pb->m3) return 1;
+
     return 0;
   } /* SX_list_compare */
    
