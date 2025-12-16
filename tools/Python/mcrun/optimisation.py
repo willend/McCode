@@ -37,7 +37,9 @@ def build_header(options, params, intervals, detectors):
     # Date format: Fri Aug 26 12:21:39 2011
     date = datetime.strftime(datetime.now(), '%a %b %d %H %M %Y')
 
-    xvars = ', '.join(params)
+    # Strip header keys of -- (to make --seed -> seed
+    hdrparams = {key.lstrip('-') for key in params}
+    xvars = ', '.join(hdrparams)
     lst = intervals[list(params)[0]]
     xmin = min(lst)
     xmax = max(lst)
@@ -56,7 +58,7 @@ def build_header(options, params, intervals, detectors):
 
     scantype = 'multiarray_1d(%d)' % N
 
-    variables = list(params)
+    variables = list(hdrparams)
     for detector in detectors:
         variables += [detector + '_I', detector + '_ERR']
 
