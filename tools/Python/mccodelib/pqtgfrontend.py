@@ -30,9 +30,9 @@ def get_help_string():
     helplines.append('')
     helplines.append('q              - quit')
     helplines.append('p              - save png')
-    if not os.name == 'nt':
-        helplines.append('s              - save svg')
-    helplines.append('l              - log toggle')
+    helplines.append('s              - save svg')
+    helplines.append('l              - log toggle (disables plot from zero)')
+    helplines.append('0              - plot 1D-curves from zero (disables log)')
     helplines.append('t              - textinfo toggle')
     helplines.append('c              - cycle colormap')
     helplines.append('F1/h           - help')
@@ -49,14 +49,22 @@ class ViewModel():
     It is a kind of viewmodel, originally a log logstate housekeeping object,
     extended by various other logstate variables as well.
     '''
-    def __init__(self, log=False, legend=True, sourcedir=None):
+    def __init__(self, log=False, fromzero=False, legend=True, sourcedir=None):
         self.log = log
+        self.fromzero = fromzero
         self.icolormap = 0
         self.legend = legend
         self.sourcedir = sourcedir
     def flip_log(self):
         self.log = not self.log
+        if self.log:
+            self.fromzero=False
         return self.log
+    def flip_fromzero(self):
+        self.fromzero = not self.fromzero
+        if self.fromzero:
+            self.log=False
+        return self.fromzero
     def inc_colormap(self):
         self.icolormap += 1
     def flip_legend(self):
@@ -64,6 +72,8 @@ class ViewModel():
         return self.legend
     def logstate(self):
         return self.log
+    def fromzerostate(self):
+        return self.fromzero
     def legendstate(self):
         return self.legend
     def cmapindex(self):
@@ -267,7 +277,7 @@ class McPyqtgraphPlotter():
     def set_keyhandler(self, replot_cb, back_cb, key, modifier):
         ''' sets a clickhadler according to input '''
 
-        def key_handler(ev, replot_cb, back_cb, savefile_cb, flip_log, flip_legend, inc_cmap, expand_sp, debug=False):
+        def key_handler(ev, replot_cb, back_cb, savefile_cb, flip_log, flip_fromzero, flip_legend, inc_cmap, expand_sp, debug=False):
             ''' global keypress handler, replot_cb is a function of log '''
             
             if hasattr(QtCore.Qt, "Key"):
@@ -280,11 +290,13 @@ class McPyqtgraphPlotter():
             elif ev.key() == k.Key_L:               # l
                 flip_log()
                 replot_cb()
+            elif ev.key() == k.Key_0:               # 0
+                flip_fromzero()
+                replot_cb()
             elif ev.key() == k.Key_P:               # p
                 savefile_cb(format='png')
-            elif ev.key() == 83:                            # s
-                if not os.name == 'nt':
-                    savefile_cb(format='svg')
+            elif ev.key() == 83:                    # s
+                savefile_cb(format='svg')
             elif ev.key() == k.Key_T:               # t
                 print("Toggle legend visibility")
                 flip_legend()
@@ -313,6 +325,7 @@ class McPyqtgraphPlotter():
                                    savefile_cb = savefile_cb,
                                    back_cb = back_cb,
                                    flip_log = self.viewmodel.flip_log,
+                                   flip_fromzero = self.viewmodel.flip_fromzero,
                                    flip_legend = self.viewmodel.flip_legend,
                                    inc_cmap = self.viewmodel.inc_colormap,
                                    expand_sp = expand_sp)
@@ -411,10 +424,11 @@ class McPyqtgraphPlotter():
                 event, node_list=node_list, node_cb=node_cb, click=click, mod=modifier))
 
 
-    def get_plot_func_opts(self, log, legend, icolormap, verbose, fontsize, cbmin=None, cbmax=None):
+    def get_plot_func_opts(self, fromzero, log, legend, icolormap, verbose, fontsize, cbmin=None, cbmax=None):
         ''' returns a dict for holding the plot options relevant for this plotting frontend '''
         d = {}
         d['log'] = log
+        d['fromzero'] = fromzero
         d['legend'] = legend
         d['icolormap'] = icolormap
         d['verbose'] = verbose
@@ -470,7 +484,7 @@ class McPyqtgraphPlotter():
         else:
             cbmin, cbmax = self.get_sweep_multiplot_colorbar_limits(node)
 
-        options = self.get_plot_func_opts(
+        options = self.get_plot_func_opts(self.viewmodel.fromzerostate(),
             self.viewmodel.logstate(), self.viewmodel.legendstate(), self.viewmodel.cmapindex(),
             verbose, fontsize, cbmin, cbmax)
         view_box, plt_itm = self.plot_func(node, i, plt, options)
