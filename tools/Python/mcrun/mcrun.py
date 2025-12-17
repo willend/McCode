@@ -95,6 +95,10 @@ def add_mcrun_options(parser):
         type=int, metavar='NP',
         help='Set number of scan points')
 
+    add('--seeds',
+        metavar='SEEDS',
+        help='Set range of seeds to scan (each must be: SEED != 0)')
+
     add('-L', '--list',
         action='store_true',
         help='Use a fixed list of points for linear scanning')
@@ -541,6 +545,9 @@ def main():
     mcstas.prepare(options)
 
     (fixed_params, intervals) = get_parameters(options)
+    # Add --seeds as an 'interval', to allow scanning simulation seed
+    if options.seeds:
+        intervals['--seed']=options.seeds.split(',')
 
     # Indicate end of setup / start of computations
     LOG.info('===')
@@ -561,6 +568,10 @@ def main():
     if options.list and options.numpoints:
         raise OptionValueError('--numpoints cannot be used with --list')
 
+    # Can't both do list and --seeds scanning
+    if options.list and options.seeds:
+        raise OptionValueError('--seeds cannot be used with --list')
+
     if options.list:
         if len(intervals) == 0:
             raise OptionValueError(
@@ -569,7 +580,7 @@ def main():
         points = len(pointlist[0])
         if not (all(map(lambda i: len(i) == points, intervals.values()))):
             raise OptionValueError(
-                'All variables much have an equal amount of points.')
+                'All variables must have an equal amount of points.')
         interval_points = LinearInterval.from_list(
             points, intervals)
 
