@@ -30,7 +30,6 @@ def get_help_string():
     helplines.append('')
     helplines.append('q              - quit')
     helplines.append('p              - save png')
-    #if not os.name == 'nt':
     helplines.append('s              - save svg')
     helplines.append('l              - log toggle (disables plot from zero)')
     helplines.append('0              - plot 1D-curves from zero (disables log)')
@@ -296,8 +295,7 @@ class McPyqtgraphPlotter():
                 replot_cb()
             elif ev.key() == k.Key_P:               # p
                 savefile_cb(format='png')
-            elif ev.key() == 83:                            # s
-                #if not os.name == 'nt':
+            elif ev.key() == 83:                    # s
                 savefile_cb(format='svg')
             elif ev.key() == k.Key_T:               # t
                 print("Toggle legend visibility")
