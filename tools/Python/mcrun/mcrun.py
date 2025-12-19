@@ -444,12 +444,7 @@ def get_parameters(options):
 
 
 def find_instr_file(instr):
-    # Remove [-mpi].out to avoid parsing a binary file
     instr = clean_quotes(instr)
-    if instr.endswith("-mpi." + mccode_config.platform['EXESUFFIX']):
-        instr = instr[:-(5 + len(mccode_config.platform['EXESUFFIX']))]
-    if instr.endswith("." + mccode_config.platform['EXESUFFIX']):
-        instr = instr[:-(1 + len(mccode_config.platform['EXESUFFIX']))]
 
     # Append ".instr" if needed
     if not isfile(instr) and isfile(instr + ".instr"):
