@@ -52,12 +52,12 @@ SHARE
 #ifndef Union
 #define Union $Revision: 0.8 $
 
-%include "Union_functions.c"
-%include "Union_initialization.c"
+
+%include "union-init.c"
 
 #endif
 
-%include "Union_last_functions.c"
+%include "union-suffix.c"
 %}
 
 DECLARE
