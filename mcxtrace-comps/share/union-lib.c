@@ -1184,59 +1184,6 @@ void add_element_to_material_list(struct pointer_to_global_material_list *list,s
     }
 };
 
-void add_element_to_surface_list(struct pointer_to_global_surface_list *list, struct global_surface_element_struct new_element) {
-    if (list->num_elements == 0) {
-      list->num_elements++;
-      list->elements = malloc(list->num_elements*sizeof(struct global_surface_element_struct));
-      if (!list->elements) {
-	fprintf(stderr,"Failure allocating list in Union function add_element_to_surface_list 1 - Exit!\n");
-	exit(EXIT_FAILURE);
-      }
-      list->elements[0] = new_element;
-    }
-    else {
-      struct global_surface_element_struct *temp=malloc(list->num_elements*sizeof(struct global_surface_element_struct));
-      if (!temp) {
-	fprintf(stderr,"Failure allocating list in Union function add_element_to_surface_list 2 - Exit!\n");
-	exit(EXIT_FAILURE);
-      }
-    int iterate;
-    for (iterate=0;iterate<list->num_elements;iterate++) temp[iterate] = list->elements[iterate];
-    free(list->elements);
-    list->num_elements++;
-      list-> elements = malloc(list->num_elements*sizeof(struct global_surface_element_struct));
-      if (!list->elements) {
-	fprintf(stderr,"Failure allocating list in Union function add_element_to_surface_list 3 - Exit!\n");
-	exit(EXIT_FAILURE);
-      }
-    for (iterate=0;iterate<list->num_elements-1;iterate++) list->elements[iterate] = temp[iterate];
-      free(temp);
-    list->elements[list->num_elements-1] = new_element;
-    }
-};
-
-void add_element_to_surface_stack(struct surface_stack_struct *list, struct surface_process_struct *new_element) {
-    if (list->number_of_surfaces == 0) {
-        if (!list->p_surface_array) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(EXIT_FAILURE);
-        }
-        list->p_surface_array[0] = new_element;
-        list->number_of_surfaces = 1;
-    } else {
-        // Reallocate with space for one more element
-        struct surface_process_struct **temp = realloc(list->p_surface_array, 
-            (list->number_of_surfaces + 1) * sizeof(struct surface_process_struct*));
-        if (!temp) {
-            fprintf(stderr, "Memory reallocation failed\n");
-            exit(EXIT_FAILURE);
-        }
-        list->p_surface_array = temp;
-        list->p_surface_array[list->number_of_surfaces] = new_element;
-        list->number_of_surfaces++;
-    }
-};
-
 void add_element_to_geometry_list(struct pointer_to_global_geometry_list *list,struct global_geometry_element_struct new_element) {
     if (list->num_elements == 0) {
     list->num_elements++;
@@ -2177,44 +2124,28 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     direction[1] = r2[1] - r1[1];
     direction[2] = r2[2] - r1[2];
     int geometry_output;
-    
-    // Todo: switch to nicer intersect function call
-    double *double_dummy = malloc(2*sizeof(double));
-    int int_dummy[2];
-    // We need a storing pointer for the reallocs, to ensure that on realloc fail
-    // All is handled correctly
-    double *tmp;
-	
+
     // Find intersections
     for (volume_index = 1;volume_index < number_of_volumes; volume_index++) {
         if (volume_index != N) {
-         if (Geometries[volume_index]->eShape==mesh){
-            tmp = realloc(double_dummy, sizeof(double)*1000);
-            if ( tmp==NULL ) { 
-              free(tmp); 
-              printf("\nERROR: Realloc failed on double dummy");
-              exit(1);
-            } else {
-              double_dummy = tmp;
-              tmp = realloc(temp_intersection, sizeof(double)*1000);
-              if ( tmp == NULL){
-                free(tmp);
-                printf("\nERROR: Realloc failed on temp intersection");
-                exit(1);
-              } else{ temp_intersection = tmp;}
-            }
-         }
-            geometry_output = Geometries[volume_index]->intersect_function(temp_intersection, double_dummy, double_dummy, double_dummy, int_dummy, 
-			                                                               &number_of_solutions, r1, direction, Geometries[volume_index]);
+            geometry_output = Geometries[volume_index]->intersect_function(temp_intersection,&number_of_solutions,r1,direction,Geometries[volume_index]);
+             // printf("No solutions for intersection (Volume %d) with %d \n",N,volume_index);
                 for (iterate=0;iterate<number_of_solutions;iterate++) {
+                    // print_1d_double_list(intersection_list,"intersection_list");
                     if (temp_intersection[iterate] > 0 && temp_intersection[iterate] < 1) {
                         add_element_to_double_list(&intersection_list,temp_intersection[iterate]);
+                        // printf("solution taken = %f\n",temp_intersection[iterate]);
+                        }                         // printf("solution ignored = %f\n",temp_intersection[iterate]);
+                    // print_1d_double_list(intersection_list,"intersection_list");
+
                 }
+                // printf("First (%d) solutions added to the solution stack, intersection with %d \n",number_of_solutions,volume_index);
+                // printf(" Solutions: ");
+                // for (iterate = 0;iterate < intersection_list.num_elements;iterate++) printf("%f ",intersection_list.elements[iterate]);
+                // printf("\n");
+
         }
     }
-    }
-    free(double_dummy);
-    free(temp_intersection);
     // Now we have a list of intersection distances between r1 and r2 and all volumes.
     // This list needs to be sorted before we continue!
 
@@ -3524,78 +3455,148 @@ int sample_mesh_intersect(double *t,int *num_solutions,double *r,double *v,struc
     Coords edge1,edge2,h,s,q,tmp,intersect_pos;
     double UNION_EPSILON = 0.0000001;
     double this_facet_t;
-    double a,f,u,V;
-    double *t_intersect=malloc(n_facets*sizeof(double));
-    int *facet_index = malloc(n_facets*sizeof(int));
-    if (!t_intersect || !facet_index) {
-      fprintf(stderr,"Failure allocating list in Union function sample_mesh_intersect - Exit!\n");
-      exit(EXIT_FAILURE);
-    }
+    double a,f,u,V,t_intersect[n_facets];
     *num_solutions = 0;
     for (iter = 0 ; iter < n_facets ; iter++){
+    /*////printf("\n\n facet v1 = [%f,%f,%f]",v1_x[iter],v1_y[iter],v1_z[iter]);
+    ////printf("\n facet v2 = [%f,%f,%f]",v2_x[iter],v2_y[iter],v2_z[iter]);
+    ////printf("\n facet v3 = [%f,%f,%f]",v3_x[iter],v3_y[iter],v3_z[iter]);*/
         // Intersection with face plane (Möller–Trumbore)
         edge1 = coords_set(*(v2_x+iter)-*(v1_x+iter),*(v2_y+iter)-*(v1_y+iter),*(v2_z+iter)-*(v1_z+iter));
+            ////printf("\n edge 1 = [%f,%f,%f]",edge1.x,edge1.y,edge1.z);
         edge2 = coords_set(*(v3_x+iter)-*(v1_x+iter),*(v3_y+iter)-*(v1_y+iter),*(v3_z+iter)-*(v1_z+iter));
+        //h = vec_prod(rotated_velocity,edge2);
         vec_prod(h.x,h.y,h.z,rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,edge2.x,edge2.y,edge2.z);
+        ////printf("\n h = [%f,%f,%f]",h.x,h.y,h.z);
+        ////printf("\n rotated_velocity = [%f,%f,%f]",rotated_velocity.x,rotated_velocity.y,rotated_velocity.z);
+        ////printf("\n edge2 = [%f,%f,%f]",edge2.x,edge2.y,edge2.z);
+        //h = coord_set(rotated_velocity.y*edge2.z-rotated_velocity.z*edge2.y, rotated_velocity.z*edge2.x-rotated_velocity.x*edge2.z, rotated_velocity.x*edge2.y-rotated_velocity.y*edge2.x);
+        //a = Dot(h,edge1);
         a = Dot(edge1,h);
-
+        ////printf("\n a=%f",a);
+        //if (a > -UNION_EPSILON && a < UNION_EPSILON){
+            ////printf("\n UNION_EPSILON fail");
+        //} else{
             f = 1.0/a;
             s = coords_sub(rotated_coordinates, coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
             u = f * (Dot(s,h));
             if (u < 0.0 || u > 1.0){
-        } else {
+                ////printf("\n Nope 1");
+            }else{
                 //q = vec_prod(s,edge1);
                 vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
                 V = f * Dot(rotated_velocity,q);
                 if (V < 0.0 || u + V > 1.0){
+                    ////printf("\n Nope 2");
                 } else {
                     // At this stage we can compute t to find out where the intersection point is on the line.
+                    //tmp = Dot(q,edge2)
+                    ////printf("\nt inside loop = %f",f* Dot(q,edge2));
+                    if (f* Dot(q,edge2) > 0){
+                        
                         t_intersect[counter] = f* Dot(q,edge2);
-                        facet_index[counter] = iter;
+                        //printf("\nIntersects at time: t= %f\n",t_intersect[counter] );
                         counter++;
+                        
+                        //intersect_pos = coords_set(rotated_coordinates.x+t_intersect[counter]*rotated_velocity.x,rotated_coordinates.y+t_intersect[counter]*rotated_velocity.y,rotated_coordinates.z+t_intersect[counter]*rotated_velocity.z);
+                        //////printf("\n intersects at [%f,%f,%f]",intersect_pos.x,intersect_pos.y,intersect_pos.z);
+                    }
+                    
+                    
+                    
+                }
+            }
+        //}
+    }
+    
+    // find two smallest non-zero intersections:
+    /*
+    double t_min = -1.0;
+    double t_second_min= -1.0;
+    for (iter = 0 ; iter < counter; iter++){
+        // test
+        if (t_min == -1 && t_intersect[iter] > 0.0){
+            t_min = t_intersect[iter];
+
+        } else{
+            if (t_intersect[iter] > 0.0 && t_intersect[iter] < t_min) {
+                t_second_min = t_min;
+                t_min = t_intersect[iter];
+     
+            }
+            if (t_intersect[iter] > 0.0 && t_intersect[iter] > t_min) {
+                if (t_intersect[iter] < t_second_min || t_second_min == -1.0){
+                    t_second_min = t_intersect[iter];
                 }
             }
     }
     
-	*num_solutions = counter;
      
-	// Early exit if there are not solutions
-    if (*num_solutions == 0){
-        free(t_intersect);
-        free(facet_index);
-        return 0;
         }
      
-	// Move times and normal's into structs to be sorted
-    Intersection *hits = malloc(*num_solutions * sizeof(Intersection));
-    if (!hits) {
-      fprintf(stderr,"Failure allocating Intersection list struct in Union function sample_mesh_intersect - Exit!\n");
-      exit(EXIT_FAILURE);
-    }
+    //printf("\n number of intersections: %i\n",counter);
     
-    for (iter=0; iter < *num_solutions; iter++){
-	    hits[iter].t  = t_intersect[iter];;
-	    hits[iter].nx = normal_x[facet_index[iter]];
-	    hits[iter].ny = normal_y[facet_index[iter]];
-	    hits[iter].nz = normal_z[facet_index[iter]];				
-	    hits[iter].surface_index = 0;
+    
+    
+    
+    if (t_second_min > 0) {
+        if (counter % 2 == 0){
+            t[0] = t_second_min;
+            t[1] = t_min;
+            *num_solutions = 2;
+            //printf("\n t[0] = %f   t[1] = %f \n",t_min,t_second_min);
+        } else{
+            t[0] = -1;
+            t[1] = t_min;
+            *num_solutions = 1;
+            //printf("\n t[0] = %f   t[1] = %f \n",t_min,t_second_min);
+    }
+            ////printf("\n t[0] = %f   t[1] = %f \n",t[0],t[1]);
+    
+            //printf("\n num_solutions: %i\n",*num_solutions);
+            return 1;
+    }else if (t_min>0) {
+            t[0] = t_min;
+            t[1] = -1;
+            *num_solutions = 1;
+            //printf("\n num_solutions: %i\n",*num_solutions);
+            return 1;
+    } else {
+            t[0] = -1;
+            t[1] = -1;
+            *num_solutions = 0;
+            //printf("\n num_solutions: %i\n",*num_solutions);
+            return 0;
         }
+    return 0;
+    */
 
-    // Sort structs according to time
-    qsort(hits, *num_solutions, sizeof(Intersection), compare_intersections);
+
+    //for (iter=0;iter<99;iter++){
+    //    printf("\n t[%i] = %f",iter,t[iter]);
+    //    t[iter] = -1;
+    //}
     
-	// Place the solutions into the pointers given in the function parameters for return
-	for (int i = 0; i < *num_solutions; i++) {
-	    t[i]  = hits[i].t;
-	    nx[i] = hits[i].nx;
-	    ny[i] = hits[i].ny;
-	    nz[i] = hits[i].nz;
-	    surface_index[i] = hits[i].surface_index;
+    // Return all t
+    int counter2=0;
+    *num_solutions =0;
+    for (iter=0; iter < counter ; iter++){
+        if (t_intersect[iter] > 0.0){
+            t[counter2] = t_intersect[iter];
+            counter2++;
+            *num_solutions = counter2;
+        }
     }
+    // Sort t:
     
-    free(facet_index);
-    free(t_intersect);
-	free(hits);
+    if (*num_solutions == 0){
+        return 0;
+    }
+    qsort(t,*num_solutions,sizeof (double), Sample_compare_doubles);
+    if (*num_solutions > 2){
+        //printf("\n T(0) = %f T(1) = %f  T(2) = %f T(3) = %f T(4) = %f",t[0],t[1],t[2],t[3],t[4]);
+        //printf("\n TEST");
+    }
     return 1;
 };
 
@@ -3656,13 +3657,7 @@ int existence_of_intersection(Coords point1, Coords point2, struct geometry_stru
 
     start_point[0] = point1.x;start_point[1] = point1.y;start_point[2] = point1.z;
     vector_between_v[0] = vector_between.x;vector_between_v[1] = vector_between.y;vector_between_v[2] = vector_between.z;
-	
-	// todo: Switch to nicer intersect call
-	double dummy_double[2];
-	int dummy_int[2];
-	
-    //printf("\nChecking the existence of intersections");	
-    geometry->intersect_function(temp_solution, dummy_double, dummy_double, dummy_double, dummy_int, &number_of_solutions, start_point, vector_between_v, geometry);
+    geometry->intersect_function(temp_solution,&number_of_solutions,start_point,vector_between_v,geometry);
     if (number_of_solutions > 0) {
         if (temp_solution[0] > 0 && temp_solution[0] < 1) return 1;
         if (number_of_solutions == 2) {
@@ -3823,7 +3818,6 @@ int sample_cylinder_intersect(double *t,int *num_solutions,double *r,double *v,s
     // Rotate the position of the photon around the center of the cylinder
     rotated_velocity = rot_apply(geometry->transpose_rotation_matrix,velocity);
     
-	int output = 0;    
     // Cases where the velocity is parallel with the cylinder axis have given problems, and is checked for explicitly
     if (sqrt(rotated_velocity.x*rotated_velocity.x+rotated_velocity.z*rotated_velocity.z)/fabs(rotated_velocity.y) < 0.00001) {
 	  // The velocity is parallel with the cylinder axis. Either there are no solutions or two solutions
@@ -3833,53 +3827,8 @@ int sample_cylinder_intersect(double *t,int *num_solutions,double *r,double *v,s
       } else {
         *num_solutions = 2;
         t[0] = (0.5*height - rotated_coordinates.y)/rotated_velocity.y;
-		surface_index[0] = 1; // index indicating top
-		
         t[1] = (-0.5*height - rotated_coordinates.y)/rotated_velocity.y;
-		surface_index[1] = 2; // index indicating bottom
-		
-		// sort solutions
-		if (t[0] > t[1]) {
-		  double d_temp;
-		  
-		  d_temp = t[0];
-		  t[0] = t[1];
-		  t[1] = d_temp;
-		  
-		  int i_temp;
-		  
-		  i_temp = surface_index[0];
-		  surface_index[0] = surface_index[1];
-		  surface_index[1] = i_temp;
-		}
-	  }
-	} else {
-	  // velocity not parallel to cylinder axis, call standard mcstas cylinder intersect 
-
-	  // Run McXtrace built in sphere intersect funtion (sphere centered around origin)
-	  if ((output = cylinder_intersect(&t[0],&t[1],
-	                                   rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,
-	                                   rotated_velocity.x,rotated_velocity.y,rotated_velocity.z,radius,height)) == 0) {
-	      *num_solutions = 0;t[0]=-1;t[1]=-1;
-	  }
-	  else if (t[1] != 0) *num_solutions = 2;
-	  else {*num_solutions = 1; t[1]=-1;}
-	
-	  // decode output value
-	  // Check the bitmask for entry and exit
-	  if (*num_solutions > 0) {
-	    int entry_index = 0;
-	    if (output & 2) entry_index = 1; // Entry intersects top cap
-	    if (output & 4) entry_index = 2; // Entry intersects bottom cap
-	    surface_index[0] = entry_index;
-	  }
-	
-	  if (*num_solutions > 1) {
-	    int exit_index = 0;		
-	    if (output & 8) exit_index = 1;  // Exit intersects top cap
-	    if (output & 16) exit_index = 2; // Exit intersects bottom cap
-	    surface_index[1] = exit_index;
-	  }
+        return 1;
       }
     }
     
@@ -7444,7 +7393,7 @@ void generate_intersect_check_lists_experimental(struct pointer_to_1d_int_list *
 	exit(EXIT_FAILURE);
       }
       for (iterate=0;iterate<work_list.num_elements;iterate++) work_list.elements[iterate] = true_overlap_lists[volume_index]->elements[iterate];
-]
+
     //2) remove parents of n (normal parent list, with masks)
     for (iterate=work_list.num_elements-1;iterate>-1;iterate--) {
       if (on_int_list(*parents_lists[volume_index],work_list.elements[iterate]))
@@ -8476,7 +8425,6 @@ void focus_initialize(struct geometry_struct *geometry, Coords POS_A_TARGET, Coo
 
   // Initialize focus_data_struct
   focus_data.Aim = coords_set(0,0,0);
-  focus_data.RayAim = coords_set(0,0,0);
   focus_data.angular_focus_width = 0;
   focus_data.angular_focus_height = 0;
   focus_data.spatial_focus_width = 0;
