@@ -37,7 +37,7 @@
 * material:       [string] List of elements present in the material. Triggers a search for materials constants files.
 * init:           [string] Name of Union_init component (typically "init", default)
 *
-* OUTPUT PARAMETERS:
+* CALCULATED PARAMETERS:
 * this_material:            Structure that contains information on this material
 * global_material_element:  Element of global_material_list which is a global variable
 *
@@ -50,7 +50,7 @@
 ******************************************************************************/
 
 DEFINE COMPONENT Union_make_material
-DEFINITION PARAMETERS ()
+
 SETTING PARAMETERS(string process_string="NULL",my_absorption,absorber=0, string material_string="NULL", string init="init")
 OUTPUT PARAMETERS ()
 
@@ -137,7 +137,6 @@ int manual_linking_function(char *name, char *input_string) {
    /* walk through other tokens */
    while( token != NULL )
    {
-      //printf( " %s\n", token );
       if (strcmp(token,name) == 0) return_integer=1;
 
       token = strtok(NULL,",");
@@ -146,71 +145,7 @@ int manual_linking_function(char *name, char *input_string) {
    return return_integer;
 }
 
-
-
-/*
-int count_commas(char *string) {
-  int return_value = 0;
-
-  int index;
-  for (index=0;index<strlen(string);index++) {
-    printf("%c \n",string[index]);
-    if (string[index]==',') return_value++;
-  }
-
-  //printf("number_of_commas = %d \n",return_value);
-  return return_value;
-}
-*/
-
-int build_my_absorption_table_function(const char *material_string, struct element_data_struct **elements){
-  /*parse for commas*/
-  char local_string[128];
-  const int size=16; /*maximum number of elements in materials*/
-
-  strncpy(local_string,material_string,128);
-
-  /*for each token read the table and compute mu, scale by chemical number density, and put the thing in the new table*/
-
-  /*init empty elements - tables can be read later*/
-  *elements = calloc(size,sizeof(**elements));
-
-  char *token,*saveptr=NULL;
-  int table_counter=0;
-  int status;
-  token=strtok_r(local_string,",",&saveptr);
-  while (token!=NULL){ printf("Union_make_material: Reading data table for material %s\n",token);
-    /*allow an integer before the filename*/
-    if( (sscanf(token,"%d",&( (*elements)->multiplicity) )==1) ){
-      token+=1;
-    }else{
-      (*elements)->multiplicity=1;
-    }
-    if ( (status=Table_Read(&((*elements)->element_table),token,0))==-1){
-      printf("Union_make_material: ERROR Reading file %s.\n", token);
-      return -1;
-    }
-    /*parse the tabel header for some constants*/
-    char **header_parsed;
-    header_parsed=Table_ParseHeader((*elements)->element_table.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
-    if (header_parsed==NULL){
-      /*something went wrong when parsing the header*/
-        printf("Union_make_material: ERROR parsing header in file %s.\n", token);
-        return -1;
-    }
-    if (header_parsed[0]){(*elements)->Z=strtol(header_parsed[0],NULL,10);}
-    if (header_parsed[1]){(*elements)->Ar=strtod(header_parsed[1],NULL);}
-    if (header_parsed[2]){(*elements)->rho=strtod(header_parsed[2],NULL);}
-    else{fprintf(stderr,"Warning(Union_make_material): %s not found in header of %s, set to 1\n","rho",token);(*elements)->rho=1;}
-
-    table_counter++;
-    token=strtok_r(NULL,",",&saveptr);
-
-  }
-  return table_counter;
-}
 #ifndef MATERIAL_DETECTOR
-    //struct pointer_to_global_material_list global_material_list = {0,NULL};
     #define MATERIAL_DETECTOR dummy
 #endif
 
@@ -231,8 +166,6 @@ struct pointer_to_1d_int_list accepted_processes;
 
 // Add setup for loggers since make_material is called before any volume / master
 #ifndef UNION_LOGGER_DECLARE
-	//struct pointer_to_global_logger_list global_all_volume_logger_list = {0,NULL};
-    //struct pointer_to_global_logger_list global_specific_volumes_logger_list = {0,NULL};
 	#define UNION_LOGGER_DECLARE dummy
 #endif
 
@@ -243,14 +176,7 @@ INITIALIZE
 
   accepted_processes.num_elements = 0;
   accepted_processes.elements = NULL;
-
-  /*
-  // Comma test
-  printf("Starting comma test on string: %s \n",process_string);
-  printf("Number of commas in string: %d \n",count_commas(process_string));
-  exit(1);
-  */
-
+  
 
   if (0 == strcmp(NAME_CURRENT_COMP,"vacuum") || 0 == strcmp(NAME_CURRENT_COMP,"Vacuum")) {
     printf("ERROR, a Union material may not be called Vacuum. A vacuum volume may be created by material=\"Vacuum\" in a geometry component.\n");
@@ -260,19 +186,10 @@ INITIALIZE
     printf("ERROR, a Union material may not be called Exit. A exit volume may be created by material=\"Exit\" in a geometry component.\n");
     exit(1);
   }
-
-  if ( 0 == strcmp(material_string,"NULL") ){
     if (my_absorption < 0) {
       printf("ERROR, Union make material named %s has a negative absorption cross section!.\n",NAME_CURRENT_COMP);
       exit(1);
     }
-  }else{
-    /* a material_string is given so use that*/
-    if ( (this_material.number_of_elements = build_my_absorption_table_function(material_string, &(this_material.p_element_array) ))==-1 ){
-      printf("ERROR, The material data file assigned to Union make material named %s could not be read and parsed.\n",NAME_CURRENT_COMP);
-      exit(1);
-    }
-  }
 
   if (_getcomp_index(init) < 0) {
   fprintf(stderr,"Union_make_material:%s: Error identifying Union_init component, %s is not a known component name.\n",
@@ -339,6 +256,7 @@ struct pointer_to_global_master_list *global_master_list = COMP_GETPAR3(Union_in
 #ifdef MASTER_DETECTOR
   #ifdef ANY_GEOMETRY_DETECTOR_DECLARE
     #ifndef MASTER_DETECTOR_WARNING
+    
       for (loop_index=0;loop_index<global_geometry_list->num_elements;loop_index++) {
         if (global_geometry_list->elements[loop_index].component_index > global_master_list->elements[global_master_list->num_elements-1].component_index) {
           printf("WARNING: No Union_master component defined after Union volume named %s, this components did not affect the simulation in any way.\n",global_geometry_list->elements[loop_index].name);
@@ -370,3 +288,4 @@ struct pointer_to_global_master_list *global_master_list = COMP_GETPAR3(Union_in
 %}
 
 END
+
