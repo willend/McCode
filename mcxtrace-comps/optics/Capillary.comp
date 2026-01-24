@@ -18,9 +18,11 @@
 * A Capillary tube allowing for reflections along the tube. A material coating can be applied. Multilayer
 * coatings may be handled by generating a reflectivity file (e.g. by IMD) and setting rtable=1.
 * Waviness is implemented using the model described in
-* Wang et.al., J. Appl. Phys., 1996
-* where the grazing incidence angle $\theta$ is altered as
+* Wang et.al., J. Appl. Phys., 1996 where the grazing incidence angle <span class="latex">$\theta$</span> is altered as
+* <br>
+* <div class="latex">
 * $\theta' = \theta + \delta \theta \in [-min(theta,\Delta\theta,\Delta\theta]$
+* </div>
 * This ensures that reflected rays will never be scattered into the capillary.
 * \Delta\theta is the value specified by the parameter waviness.
 *
