@@ -61,7 +61,8 @@ jobs:
     - name: Update conda
       id: update-conda
       run: |
-           conda env update --file dependencies.yml
+           conda env remove -n mcxtrace -y
+           conda env create --file dependencies.yml -y
            echo DONE
 
     - name: Check versions
