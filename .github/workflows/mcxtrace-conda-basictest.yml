@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, python: '3.13', mpi: 'openmpi' }
-          - { os: ubuntu-latest, python: '3.13', mpi: 'mpich' }
+          - { os: ubuntu-latest, python: '3.12', mpi: 'openmpi' }
+          - { os: ubuntu-latest, python: '3.12', mpi: 'mpich' }
           - { os: macos-latest, python: '3.12', mpi: 'openmpi' }
           - { os: macos-latest, python: '3.12', mpi: 'mpich' }
           - { os: windows-latest, python: '3.12', mpi: 'msmpi' }
@@ -56,13 +56,12 @@ jobs:
       id: conda-deps
       run: |
            ./src/devel/bin/mccode-create-conda-yml -m mcxtrace -n mcxtrace -o dependencies.yml
-           echo DONE
+           cat dependencies.yml
 
     - name: Update conda
       id: update-conda
       run: |
-           conda env remove -n mcxtrace -y
-           conda env create --file dependencies.yml -y
+           onda env update --file dependencies.yml -y
            echo DONE
 
     - name: Check versions
