@@ -61,7 +61,7 @@ jobs:
     - name: Update conda
       id: update-conda
       run: |
-           onda env update --file dependencies.yml -y
+           conda env update --file dependencies.yml -y
            echo DONE
 
     - name: Check versions
