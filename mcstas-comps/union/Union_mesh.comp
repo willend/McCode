@@ -509,48 +509,48 @@ void mcdisplay_mesh_function(struct lines_to_draw *lines_to_draw_output,int inde
     // Make sure it does not print a line if it is already printed.... (might take a while?)
     for (i = 0 ; i < counter ; i++){
       if (print1 == 1 && coord_comp(point1 , list_startpoints[i])){
-	for (j = 0 ; j < counter  ; j++){
-	  if (coord_comp(point2 , list_startpoints[i])){
-	    print1 = 0;
-	  }
-	}
+	      for (j = 0 ; j < counter  ; j++){
+	        if (coord_comp(point2 , list_startpoints[i])){
+	          print1 = 0;
+	        }
+	      }
       }
       if (print2 == 1 && coord_comp(point2 , list_startpoints[i])){
-	for (j = 0 ; j < counter  ; j++){
-	  if (coord_comp(point1 , list_startpoints[i])){
-	    print1 = 0;
-	  }
-	}
+	      for (j = 0 ; j < counter  ; j++){
+	        if (coord_comp(point1 , list_startpoints[i])){
+	          print1 = 0;
+	        }
+	      }
       }
       if (print2 == 1 && coord_comp(point2 , list_startpoints[i]) ){
-	for (j = 0 ; j < counter  ; j++){
-	  if (coord_comp(point3 , list_startpoints[i])){
-	    print2 = 0;
-	  }
-	}
+	      for (j = 0 ; j < counter  ; j++){
+	        if (coord_comp(point3 , list_startpoints[i])){
+	          print2 = 0;
+	        }
+	      }
       }
       if (print3 == 1 && coord_comp(point3 , list_startpoints[i]) ){
-	for (j = 0 ; j < counter  ; j++){
-	  if (coord_comp(point2 , list_startpoints[i])){
-	    print2 = 0;
-	  }
-	}
+	      for (j = 0 ; j < counter  ; j++){
+	        if (coord_comp(point2 , list_startpoints[i])){
+	          print2 = 0;
+	        }
+	      }
       }
       if (print1 == 1 && coord_comp(point1 , list_startpoints[i]) ){
-	for (j = 0 ; j < counter ; j++){
-	  if (coord_comp(point1 , list_startpoints[i])){
-	    print3 = 0;
-	  }
-	}
+	      for (j = 0 ; j < counter ; j++){
+	        if (coord_comp(point1 , list_startpoints[i])){
+	          print3 = 0;
+	        }
+	      }
       }
       if (print3 == 1 && coord_comp(point3 , list_startpoints[i])){
-	for (j = 0 ; j < counter  ; j++){
-	  if (coord_comp(point1 , list_startpoints[i])){
-	    print3 = 0;
-	  }
-	}
+	      for (j = 0 ; j < counter  ; j++){
+	        if (coord_comp(point1 , list_startpoints[i])){
+	          print3 = 0;
+	        }
+	      }
       }
-
+      
     }
 
 
@@ -968,6 +968,8 @@ if(strcmp(dot, ".stl") == 0 || strcmp(dot, ".STL") == 0){
           NAME_CURRENT_COMP, filename);
    exit(1);
 }
+printf("\nCOMPONENT %s: Number of faces read: %d\t Number of vertices read: %d\n", 
+         NAME_CURRENT_COMP, n_verts, n_faces);
 // Loop over all vertices and multiply their positions with coordinate_scale
 for (int i = 0; i<n_verts; i++){
    verts[i] = coords_scale(verts[i], coordinate_scale);
