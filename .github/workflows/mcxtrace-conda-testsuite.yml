@@ -49,12 +49,17 @@ jobs:
         channels: conda-forge
         python-version: ${{ matrix.python }}
 
-    - name: Setup conda
-      id: setup-conda
+    - name: Get conda dependency list
+      id: conda-deps
       run: |
            ./src/devel/bin/mccode-create-conda-yml -m mcxtrace -n mcxtrace -o dependencies.yml
-           conda env update --file dependencies.yml
-           echo DONE
+           cat dependencies.yml
+
+    - name: Update conda
+      id: update-conda
+      run: |
+           conda install mamba -y
+           mamba env update --file dependencies.yml
 
     - name: Check versions
       id: version-checks
