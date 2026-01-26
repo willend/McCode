@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for McStas / McXtrace
-title: "[FEATURE]"
+title: "[FEATURE]: (please fill in...)"
 labels: ''
 assignees: ''
 
