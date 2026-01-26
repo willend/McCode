@@ -2146,8 +2146,7 @@ void merge_lines_to_draw(struct lines_to_draw *lines_master,struct lines_to_draw
     if (lines_master->number_of_lines == 0) {
     lines_master->number_of_lines = lines_new->number_of_lines;
     if (!lines_master->number_of_lines) {
-      fprintf(stderr,"Failure allocating list in Union function merge_lines_to_draw 1 - Exit!\n");
-      exit(EXIT_FAILURE);
+      return;
     }
     lines_master->lines = malloc(lines_master->number_of_lines*sizeof(struct line_segment));
     if (!lines_master->lines) {
@@ -2308,23 +2307,27 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     int geometry_output;
     
     // Todo: switch to nicer intersect function call
-    double *double_dummy = malloc(2*sizeof(double));
-    int int_dummy[2];
+    double *double_dummy = malloc(max_number_of_solutions*sizeof(double));
+    int *int_dummy = malloc(max_number_of_solutions*sizeof(int));
     // We need a storing pointer for the reallocs, to ensure that on realloc fail
     // All is handled correctly
     double *tmp;
+    int *tmpint;
 	
     // Find intersections
     for (volume_index = 1;volume_index < number_of_volumes; volume_index++) {
         if (volume_index != N) {
          if (Geometries[volume_index]->eShape==mesh){
             tmp = realloc(double_dummy, sizeof(double)*1000);
-            if ( tmp==NULL ) { 
+            tmpint = realloc(int_dummy, sizeof(double)*1000);
+            if ( tmp==NULL || tmpint==NULL ) { 
               free(tmp); 
+              free(tmpint);
               printf("\nERROR: Realloc failed on double dummy");
               exit(1);
             } else {
               double_dummy = tmp;
+              int_dummy = tmpint;
               tmp = realloc(temp_intersection, sizeof(double)*1000);
               if ( tmp == NULL){
                 free(tmp);

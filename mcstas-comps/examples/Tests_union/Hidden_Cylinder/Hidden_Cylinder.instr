@@ -1,0 +1,165 @@
+/********************************************************************************
+* 
+* McStas, neutron ray-tracing package
+*         Copyright (C) 1997-2008, All rights reserved
+*         Risoe National Laboratory, Roskilde, Denmark
+*         Institut Laue Langevin, Grenoble, France
+* 
+* This file was written by McStasScript, which is a 
+* python based McStas instrument generator written by 
+* Mads Bertelsen in 2019 while employed at the 
+* European Spallation Source Data Management and 
+* Software Centre
+* 
+* Instrument: Hidden_Cylinder
+* 
+* %Identification
+* Written by: Daniel Lomholt Christensen
+* Date: 15:54:48 on January 20, 2026
+* Origin: UCPH@NBI, Funded by ACTNXT
+* %INSTRUMENT_SITE: Tests_union
+* 
+* Small test instrument testing placement of low-priority Union cylinder within higher-priority Union cylinder.
+* 
+* %Description
+* A small test instrument testing the placement of one cylinder with a low priority
+* fully inside another cylinder with a higher priority. This was added to test 
+* for an mcdisplay error that used to occur, when a cylinder is completely 
+* enclosed in another cylinder.
+* To test this simply do
+* a "mcdisplay Hidden_Cylinder.instr -c -y"
+* 
+* %Example: pin_rad=0.0025 Detector: det_I=3.42884e-06
+* 
+* %Parameters
+* pin_rad: [m] Radius of source
+* d: [m] Distance between source and sample center
+* detector_x: [m] Detector Width
+* detector_y: [m] Detector Height
+* det_dist: [m] Distance between detector and sample center
+* 
+* %Link 
+* 
+* %End 
+********************************************************************************/
+
+DEFINE INSTRUMENT Hidden_Cylinder (
+double pin_rad = 0.0025, // Radius of source
+double d = 10, // Distance between source and sample center
+double detector_x = 0.01, // Detector Width
+double detector_y = 0.04, // Detector Height
+double det_dist = 0.005 // Distance between detector and sample center
+)
+
+DECLARE 
+%{
+%}
+
+INITIALIZE 
+%{
+%}
+
+TRACE 
+COMPONENT Origin = Progress_bar()
+AT (0, 0, 0) ABSOLUTE
+
+COMPONENT source = Source_simple(
+ radius = pin_rad, yheight = 0,
+ xwidth = 0, dist = d,
+ focus_xw = detector_x, focus_yh = detector_y,
+ lambda0 = 4, dlambda = 3)
+AT (0, 0, 0) RELATIVE Origin
+ROTATED (0.0, 0.0, 0.0) RELATIVE Origin
+
+COMPONENT entry_mon = PSD_monitor(
+ nx = 200, ny = 200,
+ xwidth = detector_x, yheight = detector_x,
+ restore_neutron = 1)
+AT (0, 0, 0.0001) RELATIVE source
+ROTATED (0.0, 0.0, 0.0) RELATIVE source
+
+COMPONENT arm_sample_position = Arm()
+AT (0, 0, d) RELATIVE source
+ROTATED (0, 0, 0) RELATIVE Origin
+
+COMPONENT init = Union_init()
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT Sample_inc = Incoherent_process(
+ sigma = 0.4 * 2, unit_cell_volume = 24.04)
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT Sample_pow = Powder_process(
+ reflections = "Fe.laz")
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT Sample = Union_make_material(
+ process_string = "Sample_inc,Sample_pow", my_absorption = 10*2.56 * 2 / 24.04 * 100)
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT gas_process = Incoherent_process(
+ sigma = 0.4 * 2, unit_cell_volume = 240000.04)
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT sample_gas = Union_make_material(
+ process_string = "gas_process", my_absorption = 21.29783693843594)
+AT (0, 0, 0) RELATIVE Sample
+ROTATED (0.0, 0.0, 0.0) RELATIVE Sample
+
+COMPONENT sample_cyl_metal = Union_cylinder(
+ material_string = "Sample", priority = 50,
+ radius = 0.005 / 2, yheight = 0.034)
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT sample_cyl_gas = Union_cylinder(
+ material_string = "sample_gas", priority = 51,
+ radius = 0.009 / 2, yheight = 0.053,
+ visualize = 1)
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+  COMPONENT logger_space_zx = Union_logger_2D_space(
+ D_direction_1 = "z", D1_min = -0.05,
+ D1_max = 0.05, n1 = 300,
+ D_direction_2 = "x", D2_min = -0.05,
+ D2_max = 0.05, n2 = 300,
+ filename = "logger_zx.dat")
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT logger_space_zy = Union_logger_2D_space(
+ D_direction_1 = "z", D1_min = -0.05,
+ D1_max = 0.05, n1 = 300,
+ D_direction_2 = "y", D2_min = -0.05,
+ D2_max = 0.05, n2 = 300,
+ filename = "logger_zy.dat")
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT Sample_environment = Union_master(
+ verbal = 1)
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT stop = Union_stop()
+AT (0, 0, 0) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+COMPONENT det = PSD_monitor(
+ nx = 1000, ny = 1000,
+ filename = "det", xwidth = detector_x,
+ yheight = detector_y)
+AT (0, 0, 0.034 / 2 + det_dist) RELATIVE arm_sample_position
+ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
+
+FINALLY 
+%{
+%}
+
+END
