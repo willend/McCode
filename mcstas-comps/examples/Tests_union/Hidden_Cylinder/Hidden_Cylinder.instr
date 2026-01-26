@@ -19,6 +19,7 @@
 * Origin: UCPH@NBI, Funded by ACTNXT
 * %INSTRUMENT_SITE: Tests_union
 * 
+* Small test instrument testing placement of low-priority Union cylinder within higher-priority Union cylinder.
 * 
 * %Description
 * A small test instrument testing the placement of one cylinder with a low priority
@@ -42,7 +43,7 @@
 * %End 
 ********************************************************************************/
 
-DEFINE INSTRUMENT imaging (
+DEFINE INSTRUMENT Hidden_Cylinder (
 double pin_rad = 0.0025, // Radius of source
 double d = 10, // Distance between source and sample center
 double detector_x = 0.01, // Detector Width
