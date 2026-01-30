@@ -27,30 +27,34 @@
 * gm:      [1]   M-value of the guide coating
 * delta1:  [m]   Optional focal displacement of guide wrt source
 * delta2:  [m]   Optional focal displacement of guide wrt sample position
+* Nbins:   [1]   Number of bins on Wavelength / Brilliance transfer monitors
 *
 * %L
 *
 * %E
 *******************************************************************************/
-DEFINE INSTRUMENT BTsimple(lambda=10, dlambda=9.9, maxhd=3, maxvd=3, gw=0.1, gh=0.1, gL=50, gm=6, delta1=0, delta2=0)
+DEFINE INSTRUMENT BTsimple(lambda=10, dlambda=9.9, maxhd=3, maxvd=3, gw=0.1, gh=0.1, gL=50, gm=6, delta1=0, delta2=0, int Nbins=101)
 
 DECLARE
 %{	
-	/* Arrays for storing the calculated brilliance transfer */
-	double BT_N[101];
-	double BT_p[101];
-	double BT_p2[101];
+  /* Arrays for storing the calculated brilliance transfer */
+  DArray1d BT_N;
+  DArray1d BT_p;
+  DArray1d BT_p2;
 %}
 
 USERVARS
 %{
-	/* Variables for calculation of neutron divergence  */
-        double VertDiv;
-        double HorDiv;
+  /* Variables for calculation of neutron divergence  */
+  double VertDiv;
+  double HorDiv;
 %}
 
 INITIALIZE
 %{
+  BT_N = create_darr1d(Nbins);
+  BT_p = create_darr1d(Nbins);
+  BT_p2 = create_darr1d(Nbins);
 %}
 
 TRACE
@@ -84,7 +88,7 @@ EXTEND %{
 %}
 
 /* Measure incoming phase-space */
-COMPONENT BT_in = L_monitor(xwidth=0.02, yheight=0.02, filename="BT_in.dat",Lmin=lambda-dlambda, Lmax=lambda+dlambda, nL=101, restore_neutron=1)
+COMPONENT BT_in = L_monitor(xwidth=0.02, yheight=0.02, filename="BT_in.dat",Lmin=lambda-dlambda, Lmax=lambda+dlambda, nL=Nbins, restore_neutron=1)
 WHEN ((VertDiv <= maxvd) && (HorDiv <=  maxhd)) AT (0,0,2.0) RELATIVE  origin
 
 
@@ -121,7 +125,7 @@ EXTEND %{
 %}
 
 /* Measure outgoing phase-space @ sample position */
-COMPONENT BT_out = L_monitor(xwidth=0.02, yheight=0.02, filename="BT_out.dat",Lmin=lambda-dlambda, Lmax=lambda+dlambda, nL=101, restore_neutron=1)
+COMPONENT BT_out = L_monitor(xwidth=0.02, yheight=0.02, filename="BT_out.dat",Lmin=lambda-dlambda, Lmax=lambda+dlambda, nL=Nbins, restore_neutron=1)
 WHEN ((VertDiv <= maxvd) && (HorDiv <=  maxhd)) AT (0,0,2.0+gL) RELATIVE  guide
 
 
@@ -138,47 +142,50 @@ AT (0,0,0) RELATIVE  PREVIOUS
 FINALLY
 %{
 /* This adds another "monitor" that measures BT_out / BT_in */
-/* In MPI-mode renormalisation by mpi_node_count needs doing */
-  int j;
-  double* tmpN;
-  double* tmpp1;
-  double* tmpp2;
-  double* tmpd1;
-  double* tmpd2;
-  tmpN =COMP_GETPAR(BT_out,L_N);
-  tmpp1=COMP_GETPAR(BT_in, L_p);
-  tmpp2=COMP_GETPAR(BT_out,L_p);
-  tmpd1=COMP_GETPAR(BT_in, L_p2);
-  tmpd2=COMP_GETPAR(BT_out,L_p2);
-  for (j=0;j<101;j++) {
-    
-    BT_N[j]=tmpN[j];
-    if (tmpp1[j] != 0) {
-      BT_p[j]=tmpp2[j]/tmpp1[j];
-    } else {
-      BT_p[j]=0;
-    }
-    if ((tmpp1[j] != 0) && (tmpp2[j] != 0)) {
-      BT_p2[j]=sqrt((tmpd1[j]/tmpp1[j])*(tmpd1[j]/tmpp1[j])  + (tmpd2[j]/tmpp2[j])*(tmpd2[j]/tmpp2[j]));
-    } else
-      BT_p2[j]=0;
-#if defined (USE_MPI)
-      BT_p[j] /= mpi_node_count;
-      BT_p2[j] /= mpi_node_count;
+/* In MPI-mode do the calculation on master only.           */
+#ifdef USE_MPI
+  if(mpi_node_rank == mpi_node_root) {
 #endif
-
+    int j;
+    double* tmpN;
+    double* tmpp1;
+    double* tmpp2;
+    double* tmpd1;
+    double* tmpd2;
+    tmpN =COMP_GETPAR(BT_out,L_N);
+    tmpp1=COMP_GETPAR(BT_in, L_p);
+    tmpp2=COMP_GETPAR(BT_out,L_p);
+    tmpd1=COMP_GETPAR(BT_in, L_p2);
+    tmpd2=COMP_GETPAR(BT_out,L_p2);
+    
+    for (j=0;j<Nbins;j++) {
+      BT_N[j]=tmpN[j];
+      if (tmpp1[j] != 0) {
+	BT_p[j]=tmpp2[j]/tmpp1[j];
+      } else {
+	BT_p[j]=0;
+      }
+      if ((tmpp1[j] != 0) && (tmpp2[j] != 0)) {
+	BT_p2[j]=sqrt((tmpd1[j]/tmpp1[j])*(tmpd1[j]/tmpp1[j])  + (tmpd2[j]/tmpp2[j])*(tmpd2[j]/tmpp2[j]));
+      } else
+	BT_p2[j]=0;
+    }
+#ifdef USE_MPI
   }
+  // Non-master MPI nodes wait here before we write the file to disk
+  MPI_Barrier(MPI_COMM_WORLD);
+#endif
   // we can not call the DETECTOR_OUT_1D as it transparently makes use of
   // NAME_CURRENT_COMP and POS_A_CURRENT_COMP, which are set to match '_comp'
   Rotation Rot;
   rot_set_rotation(Rot,0,0,0);
   mcdetector_out_1D(
-		  "Brilliance transfer",
-		  "Wavelength [AA]",
-		  "BT",
-		  "L", lambda-dlambda, lambda+dlambda, 101,
-		  &BT_N[0],&BT_p[0],&BT_p2[0],
-		  "Brilliance_transfer", "BTransfer", coords_set(0,0,0),Rot,9999);
+		    "Brilliance transfer",
+		    "Wavelength [AA]",
+		    "BT",
+		    "L", lambda-dlambda, lambda+dlambda, Nbins,
+		    &BT_N[0],&BT_p[0],&BT_p2[0],
+		    "Brilliance_transfer", "BTransfer", coords_set(0,0,0),Rot,9999);
 
 %}
 
