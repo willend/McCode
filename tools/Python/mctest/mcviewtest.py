@@ -85,7 +85,7 @@ def run_normal_mode(testdir, reflabel):
                 # if this is a second test of the same instr, it was already compiled, thus 0.001 compiletime is nonsense
                 compiletime = ""
             return (state, compiletime, "", "", "", burl)
-        elif not cellobj["testval"]:
+        elif cellobj["testval"]==None:
             testval = "missing"
             runtime = "%.2f s" % cellobj["runtime"]
             compiletime = "%.2f s" % cellobj["compiletime"]
@@ -102,8 +102,15 @@ def run_normal_mode(testdir, reflabel):
 
             # Always use embedded target value
             refval = float(cellobj["targetval"])
-
-            refp = abs(float(cellobj["testval"])/refval*100)
+            testval = float(cellobj["testval"])
+            # Special case, target test value is 0 explicitly:
+            if refval==0:
+                if testval==0:
+                    refp=100
+                else:
+                    refp=0
+            else: # Standard case, target test value is non-zero
+                refp = abs(testval/refval*100)
             if abs(refp-100) > ERROR_PERCENT_THRESSHOLD_ACCEPT:
                 state = 2
             else:
