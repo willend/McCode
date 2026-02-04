@@ -12,7 +12,13 @@
 * Unittest for ALLOW_BACKPROP macro
 *
 * %Description
-* Unittest to ensure that the macro ALLOW_BACKPROP works correctly
+* Unittest to ensure that the macro ALLOW_BACKPROP works correctly.
+*
+* The test instrument includes two monitors, with a selectable ALLOW_BACKPROP in between.
+* The second monitor is placed physically "earlier" than the first, but logically after.
+*
+* 1) With Backprop=0 the second monitor (closer to the source) should yield a signal of 0
+* 2) With Backprop=1 the second monitor should measure a signal since backpropagation is allowed
 *
 * %Example: Backprop=0 Detector: PSDcloser_I=0
 * %Example: Backprop=1 Detector: PSDcloser_I=0.099
