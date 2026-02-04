@@ -1,0 +1,63 @@
+/*******************************************************************************
+*         McStas instrument definition URL=http://www.mcstas.org
+*
+* Instrument: Unittest_ALLOW_BACKPROP
+*
+* %Identification
+* Written by: Peter Willendrup
+* Date: February 2026
+* Origin: ESS
+* %INSTRUMENT_SITE: Tests_grammar
+*
+* Unittest for ALLOW_BACKPROP macro
+*
+* %Description
+* Unittest to ensure that the macro ALLOW_BACKPROP works correctly
+*
+* %Example: Backprop=0 Detector: PSDcloser_I=0
+* %Example: Backprop=1 Detector: PSDcloser_I=0.099
+*
+* %Parameters
+* Backprop: [1] Flag to enable the ALLOW_BACKPROP macro
+*
+* %Link
+* A reference/HTML link for more information
+*
+* %End
+*******************************************************************************/
+DEFINE INSTRUMENT Unittest_ALLOW_BACKPROP(Backprop=0)
+
+TRACE
+
+COMPONENT Origin = Progress_bar()
+  AT (0,0,0) ABSOLUTE
+
+COMPONENT Source = Source_simple(
+    yheight=0.1, 
+    xwidth=0.1, 
+    dist=10, 
+    focus_xw=0.1, 
+    focus_yh=0.1, 
+    lambda0=5, 
+    dlambda=4.99)
+AT (0, 0, 0) RELATIVE PREVIOUS
+
+COMPONENT PSDfar = PSD_monitor(
+    xwidth=0.11, 
+    yheight=0.11)
+AT (0, 0, 10) RELATIVE Source
+EXTEND %{
+	if(INSTRUMENT_GETPAR(Backprop)) {
+          ALLOW_BACKPROP;
+        }
+%}
+
+COMPONENT PSDcloser = PSD_monitor(
+    xwidth=0.11, 
+    yheight=0.11)
+AT (0, 0, 9.99) RELATIVE Source
+
+
+/* The END token marks the instrument definition end */
+END
+
