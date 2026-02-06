@@ -92,7 +92,7 @@ class InstrExampleTest:
             "errmsg"       : self.errmsg,
         }
     def save(self, infolder):
-        text = json.dumps(self.get_json_repr())
+        text = json.dumps(self.get_json_repr(), indent=2)
         f = open(join(infolder, self.get_display_name()) + ".json", 'w').write(text)
     def get_display_name(self):
         if self.testnb > 1:
