@@ -31,13 +31,13 @@ DEFINE INSTRUMENT Test_Selectors(int selector=1, lambda=4, phi=48.3, d_vs=0.25)
 
 INITIALIZE
 %{
-  printf("\nTest_Selectors: ");
-  switch (selector) {
-  case 1:
-    printf("Using V_selector\n"); break;
-  case 2:
-    printf("Using Selector\n"); break;
-  }
+    printf("\nTest_Selectors: ");
+    switch (selector) {
+        case 1:
+        printf("Using V_selector\n"); break;
+        case 2:
+        printf("Using Selector\n"); break;
+    }
 %}
 
 TRACE

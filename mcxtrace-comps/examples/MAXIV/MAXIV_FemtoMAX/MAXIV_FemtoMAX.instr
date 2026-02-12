@@ -42,41 +42,40 @@ DEFINE INSTRUMENT MAXIV_FemtoMAX( DXUS=1e-2,DYUS=1e-2, MONO=1, MLMONO=1, int U2S
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double dxs1;
-  double dys1;
-  double dxs2;
-  double dys2;
-  double dxs3;
-  double dys3;
+    double dxs1;
+    double dys1;
+    double dxs2;
+    double dys2;
+    double dxs3;
+    double dys3;
 
-  double gamma_fm;
-  double gamma_mono;
-  double gamma_mlmono;
+    double gamma_fm;
+    double gamma_mono;
+    double gamma_mlmono;
 
-  double Ls_ml;
-  double Ld_ml;
+    double Ls_ml;
+    double Ld_ml;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  gamma_fm=1.2;
-  gamma_mono=1.2*MONO;
-  gamma_mlmono=1.2*MLMONO;
+    gamma_fm=1.2;
+    gamma_mono=1.2*MONO;
+    gamma_mlmono=1.2*MLMONO;
 
-  dxs1=1e-3;
-  dys1=1e-3;
+    dxs1=1e-3;
+    dys1=1e-3;
 
-  dxs2=1e-3;
-  dys2=1e-3;
+    dxs2=1e-3;
+    dys2=1e-3;
 
-  dxs3=1e-2;
-  dys3=1e-2;
+    dxs3=1e-2;
+    dys3=1e-2;
 
-  Ls_ml=1e3;
-  Ld_ml=1e3;
-
+    Ls_ml=1e3;
+    Ld_ml=1e3;
 %}
 
 /* Here comes the TRACE section, where the actual      */

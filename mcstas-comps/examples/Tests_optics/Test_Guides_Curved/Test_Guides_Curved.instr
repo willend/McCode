@@ -30,41 +30,41 @@ DEFINE INSTRUMENT Test_Guides_Curved(int Guide=1, curvature=1000, length=100)
 
 DECLARE
 %{
-  double Circumf, Arcangle, angle, ex, ey, ez, rx, ry, rz, lz;
+    double Circumf, Arcangle, angle, ex, ey, ez, rx, ry, rz, lz;
 
-  double calcAlpha(double length, double radius) {
-    // calculate angle of arm after curved guide
-    return RAD2DEG * length/radius;
-  }
+    double calcAlpha(double length, double radius) {
+        // calculate angle of arm after curved guide
+        return RAD2DEG * length/radius;
+    }
 
-  double calcX(double length, double radius) {
-    // calculate position and angle of arm after curved guide
-    double alpha = DEG2RAD * calcAlpha(length, radius);
-    return radius*(1.0-cos(alpha));
-  }
+    double calcX(double length, double radius) {
+        // calculate position and angle of arm after curved guide
+        double alpha = DEG2RAD * calcAlpha(length, radius);
+        return radius*(1.0-cos(alpha));
+    }
 
-  double calcZ(double length, double radius) {
-    // calculate position and angle of arm after curved guide
-    double alpha = DEG2RAD * calcAlpha(length, radius);
-    return radius*sin(alpha);
-  }
+    double calcZ(double length, double radius) {
+        // calculate position and angle of arm after curved guide
+        double alpha = DEG2RAD * calcAlpha(length, radius);
+        return radius*sin(alpha);
+    }
 %}
 
 INITIALIZE
 %{
-%}
+    %}
 
-TRACE
+    TRACE
 
-COMPONENT Origin = Progress_bar()
-  AT (0,0,0) ABSOLUTE
+    COMPONENT Origin = Progress_bar()
+    AT (0,0,0) ABSOLUTE
 
-COMPONENT Source = Source_gen(
-   focus_xw = 0.05, focus_yh = 0.05, lambda0 = 3.39, dlambda = 0.3,
-   yheight = 0.05, xwidth = 0.05)
-  AT (0, 0, 0) RELATIVE PREVIOUS
-EXTEND %{
-	t = randtriangle()*1e-3;	/* 1 ms triangle time window */
+    COMPONENT Source = Source_gen(
+    focus_xw = 0.05, focus_yh = 0.05, lambda0 = 3.39, dlambda = 0.3,
+    yheight = 0.05, xwidth = 0.05)
+    AT (0, 0, 0) RELATIVE PREVIOUS
+    EXTEND %{
+        t = randtriangle()*1e-3;	/* 1 ms triangle time window */
 %}
 
 COMPONENT Monitor1_xt = Monitor_nD(

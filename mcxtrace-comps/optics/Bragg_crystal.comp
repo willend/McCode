@@ -86,13 +86,13 @@ SHARE
 
 DECLARE
 %{
-  int Z;
-  double rho;
-  double At;
-  double f_rel;
-  double f_nt;
-  t_Table m_t;
-  t_Table f0_t;
+    int Z;
+    double rho;
+    double At;
+    double f_rel;
+    double f_nt;
+    t_Table m_t;
+    t_Table f0_t;
 %}
 
 INITIALIZE
@@ -105,9 +105,9 @@ INITIALIZE
         }
         char **header_parsed;
         header_parsed=Table_ParseHeader(m_t.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
-        if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
-        if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
-        if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
+    if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
+    if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
+    if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
     }else{
         fprintf(stderr,"Error(%s): No material file specified\n",NAME_CURRENT_COMP);
     }
@@ -135,7 +135,7 @@ TRACE
     double DeltaTheta0;			// (rad) the center of the reflectivity curve is at asin(n*lambda/(2*d)) + DeltaTheta0
     double Rpi, Rsig, R;          // Reflectivity value calculated by DarwinReflectivity() function for each incoming photon
     double x0,y0,z0,kx0,ky0,kz0,phi0,t0,Ex0,Ey0,Ez0,p0;
-    
+
     x0=x; y0=y; z0=z; kx0=kx; ky0=ky; kz0=kz; phi0=phi; t0=t; Ex0=Ex; Ey0=Ey; Ez0=Ez; p0=p;
     /* get the photon's kvector and energy */
     K=sqrt(kx*kx+ky*ky+kz*kz);
@@ -144,7 +144,7 @@ TRACE
     kxu = kx; kyu = ky; kzu = kz;
     NORM(kxu,kyu,kzu);
     /* printf("incoming kx,ky,kz, Ex, Ey, Ez, k.E: %f %f %f %g %g %g %g\n", kx,ky,kz,Ex,Ey,Ez, kxu*Ex+kyu*Ey+kzu*Ez); */
-    
+
     /*intersection calculation*/
     tin = -y/kyu;
     if (tin>=0){
@@ -152,7 +152,7 @@ TRACE
         x_int=x+kxu*tin;
         y_int=y+kyu*tin;
         z_int=z+kzu*tin;
-        
+
         if (fabs(x_int)<=width/2 && fabs(z_int)<=length/2){
             dist=sqrt(SQR(x-x_int)+SQR(y-y_int)+SQR(z-z_int));
             PROP_DL(dist); 			/* now the photon is on the crystal surface, ready to be reflected... */
@@ -168,10 +168,10 @@ TRACE
             /* check for 3rd & 1st quadrant hits, backward hit from above or forward hit from below and reverse sense of alpha */
             if( (ky<0 && kz<0) || (ky>0 && kz>0) ) alpha1=-alpha1;
             Mx_DarwinReflectivity(&Rpi , &Thetah, &Theta0, &DeltaTheta0, f00, f0h, fp, fpp, V, alpha1, h, k, l,
-                debye_waller_B, E, Thetain,1, crystal_type, structure_factor_scale_r, structure_factor_scale_i
+            debye_waller_B, E, Thetain,1, crystal_type, structure_factor_scale_r, structure_factor_scale_i
             );
             Mx_DarwinReflectivity(&Rsig, &Thetah, &Theta0, &DeltaTheta0, f00, f0h, fp, fpp, V, alpha1, h, k, l,
-                debye_waller_B, E, Thetain,2, crystal_type, structure_factor_scale_r, structure_factor_scale_i
+            debye_waller_B, E, Thetain,2, crystal_type, structure_factor_scale_r, structure_factor_scale_i
             );
 
             double pi_x, pi_y, pi_z, sig_x, sig_y, sig_z;
@@ -184,10 +184,10 @@ TRACE
             vec_prod_func(&pi_x, &pi_y, &pi_z, kx0, ky0, kz0, sig_x, sig_y, sig_z);
             NORM(pi_x , pi_y , pi_z );
 
-#ifdef MCDEBUG
+            #ifdef MCDEBUG
             printf("%s: Thetain: %.3f sigma: (%g, %g, %g) pi: (%g, %g, %g) \n", NAME_CURRENT_COMP,
-                   Thetain*180/PI, sig_x, sig_y, sig_z, pi_x, pi_y, pi_z);
-#endif
+            Thetain*180/PI, sig_x, sig_y, sig_z, pi_x, pi_y, pi_z);
+            #endif
 
             double sth=sin(Theta0+Thetah), cth=cos(Theta0+Thetah);
             if(sig_x*pi_y*pi_z > 0) { /* backwards hit, rotate the other way */
@@ -202,11 +202,11 @@ TRACE
                 sig_x*sig_z - cth*sig_x*sig_z - sig_y*sth,sig_y*sig_z - cth*sig_y*sig_z + sig_x*sth,cth*r2 + sz2
             };
 
-#ifdef MCDEBUG
+            #ifdef MCDEBUG
             printf("%s matrix=\n%12.3f %12.3f %12.3f\n%12.3f %12.3f %12.3f\n%12.3f %12.3f %12.3f\n", NAME_CURRENT_COMP,
-                m[0][0],m[0][1],m[0][2],m[1][0],m[1][1],m[1][2],m[2][0],m[2][1],m[2][2]
+            m[0][0],m[0][1],m[0][2],m[1][0],m[1][1],m[1][2],m[2][0],m[2][1],m[2][2]
             );
-#endif
+            #endif
 
             /* execute the rotation about the sigma vector */
             kx=m[0][0]*kx0+m[0][1]*ky0+m[0][2]*kz0;
@@ -232,11 +232,11 @@ TRACE
             Ey=Epi*pi_y+Esig*sig_y;
             Ez=Epi*pi_z+Esig*sig_z;
             NORM(Ex, Ey, Ez);
-#ifdef MCDEBUG
+            #ifdef MCDEBUG
             printf("%s: Rsig, Rpi, R, k0, k1, e0, e1: %g %g %g (%g, %g, %g) (%g, %g, %g) (%g, %g, %g) (%g, %g, %g)\n", NAME_CURRENT_COMP,
-                   Rsig,  Rpi, R,
-                   kx0, ky0, kz0, kx, ky, kz, Ex0, Ey0, Ez0, Ex, Ey, Ez);
-#endif
+            Rsig,  Rpi, R,
+            kx0, ky0, kz0, kx, ky, kz, Ex0, Ey0, Ez0, Ex, Ey, Ez);
+            #endif
             /* apply Darwin reflectivity if not is supplied from outside*/
             if (!R0){
                 p*=R;
@@ -246,8 +246,8 @@ TRACE
             /*catch dead rays*/
             if (p==0) ABSORB;
         } else {
-	  //RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);//
-	  x=x0; y=y0; z=z0; kx=kx0; ky=ky0; kz=kz0; phi=phi0; t=t0; Ex=Ex0; Ey=Ey0; Ez=Ez0; p=p0;
+            //RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);//
+            x=x0; y=y0; z=z0; kx=kx0; ky=ky0; kz=kz0; phi=phi0; t=t0; Ex=Ex0; Ey=Ey0; Ez=Ez0; p=p0;
         }
     }
 %}

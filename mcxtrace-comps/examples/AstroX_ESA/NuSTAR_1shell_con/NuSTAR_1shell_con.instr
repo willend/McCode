@@ -89,7 +89,6 @@ DECLARE
         "mirror_coating_unity.txt",
         "mirror_coating_unity.txt"
     };
-
 %}
 
 USERVARS %{

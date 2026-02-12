@@ -24,10 +24,10 @@ DEFINE INSTRUMENT Demo_shape_primitives_simple()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

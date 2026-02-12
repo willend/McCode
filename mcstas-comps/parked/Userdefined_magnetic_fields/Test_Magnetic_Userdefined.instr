@@ -37,22 +37,22 @@ DEFINE INSTRUMENT Test_Magnetic_Userdefined()
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double omegaL = -2 * PI * 29.16e6;
-  double MagnetLength = 0.2;
-  double SrcMagnetDist = 1;
+    double omegaL = -2 * PI * 29.16e6;
+    double MagnetLength = 0.2;
+    double SrcMagnetDist = 1;
 
-  double user_parameters[3];
+    double user_parameters[3];
 
-  int magnetic_field_t(double x, double y, double z, double t,
-          double *bx, double *by, double *bz, void *data_Ptr) {
-      double *d=data_Ptr;
-      // Example of time-dependent field. Note parameters t0 and rho defined
-    // just above, initialized below
-    *by =  (PI * (d[2] + d[1]/2))/(d[0]*d[1]*t);
-    *bx =  0;
-    *bz =  0;
-    return 1;
-  }
+    int magnetic_field_t(double x, double y, double z, double t,
+    double *bx, double *by, double *bz, void *data_Ptr) {
+        double *d=data_Ptr;
+        // Example of time-dependent field. Note parameters t0 and rho defined
+        // just above, initialized below
+        *by =  (PI * (d[2] + d[1]/2))/(d[0]*d[1]*t);
+        *bx =  0;
+        *bz =  0;
+        return 1;
+    }
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */

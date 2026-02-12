@@ -45,87 +45,86 @@ DEFINE INSTRUMENT SOLEIL_MARS(E0=16.99,
 
 DECLARE
 %{
-	  //Slit 1
-	double DistanceToPrimarySlit1 = 11.340;
-	double DistanceToPrimarySlit2 = 11.440;
-	double PrimarySlit1Width  = 0.02;
-	double PrimarySlit1Height = 0.002;
-	double PrimarySlit2Width  = 0.02;
-	double PrimarySlit2Height = 0.002;
+    //Slit 1
+    double DistanceToPrimarySlit1 = 11.340;
+    double DistanceToPrimarySlit2 = 11.440;
+    double PrimarySlit1Width  = 0.02;
+    double PrimarySlit1Height = 0.002;
+    double PrimarySlit2Width  = 0.02;
+    double PrimarySlit2Height = 0.002;
 
-	//Mirror M1
-	double DistanceSourceToM1 = 12.784;
-	double M12_depth = 0.06;
-	double M12_length = 2.1;
-	double AngleM1 = 0.0031*RAD2DEG;
+    //Mirror M1
+    double DistanceSourceToM1 = 12.784;
+    double M12_depth = 0.06;
+    double M12_length = 2.1;
+    double AngleM1 = 0.0031*RAD2DEG;
 
-	//DCM
-	double DistanceSourceToDCM = 14.395;
-	double DcmGap = 0.101268;
-	double AngleDCM = 10.59;
-	double alpha = 0;
-	double DcmHoriGap = 0.09863;
-	double Ts=0.04506/(2*0.1832);
-	double Tz=0.04506/(2*0.9830);
-	//double DiagonaleDcmGap = sqrt(Ts*Ts+Tz*Tz);
+    //DCM
+    double DistanceSourceToDCM = 14.395;
+    double DcmGap = 0.101268;
+    double AngleDCM = 10.59;
+    double alpha = 0;
+    double DcmHoriGap = 0.09863;
+    double Ts=0.04506/(2*0.1832);
+    double Tz=0.04506/(2*0.9830);
+    //double DiagonaleDcmGap = sqrt(Ts*Ts+Tz*Tz);
 
-	//BeamMonitor1
-	double DistanceToPrimaryBeamMonitor = 15.678;
-	double PrimaryBeamMonitorWidth = 0.05;
-	double PrimaryBeamMonitorHeight = 0.05;
+    //BeamMonitor1
+    double DistanceToPrimaryBeamMonitor = 15.678;
+    double PrimaryBeamMonitorWidth = 0.05;
+    double PrimaryBeamMonitorHeight = 0.05;
 
-	//Mirror M2
-	double DistanceSourceToM2 = 16.826;
-	double AngleM2 = 0.0031*RAD2DEG;
-	double RadiusM1 = 8248;
-  double RadiusM2 = 6600;
+    //Mirror M2
+    double DistanceSourceToM2 = 16.826;
+    double AngleM2 = 0.0031*RAD2DEG;
+    double RadiusM1 = 8248;
+    double RadiusM2 = 6600;
 
-	//Slit 2
-	double DistanceToSecondarySlit1 = 18.231;
-	double DistanceToSecondarySlit2 = 18.315;
-	double SecondarySlit1Width  = 0.03; // 3x5
-	double SecondarySlit1Height = 0.05;
-	double SecondarySlit2Width  = 0.005;
-	double SecondarySlit2Height = 0.03;
+    //Slit 2
+    double DistanceToSecondarySlit1 = 18.231;
+    double DistanceToSecondarySlit2 = 18.315;
+    double SecondarySlit1Width  = 0.03; // 3x5
+    double SecondarySlit1Height = 0.05;
+    double SecondarySlit2Width  = 0.005;
+    double SecondarySlit2Height = 0.03;
 
-	//BeamMonitor2
-	double DistanceToSecondaryBeamMonitor = 18.588;
-	double SecondaryBeamMonitorWidth = 0.5;
-	double SecondaryBeamMonitorHeight = 0.5;
-	
-	//Sample
+    //BeamMonitor2
+    double DistanceToSecondaryBeamMonitor = 18.588;
+    double SecondaryBeamMonitorWidth = 0.5;
+    double SecondaryBeamMonitorHeight = 0.5;
 
-	double DistanceToSample = 23.06;
+    //Sample
 
-
-	//cristal analyzor
-	double DistanceCentreToCristal = 0.446;
-	double AngleCa = 6.2267;
-	
-	//slit A1
-	double distanceCristalslitA1 = 0.194;
+    double DistanceToSample = 23.06;
 
 
+    //cristal analyzor
+    double DistanceCentreToCristal = 0.446;
+    double AngleCa = 6.2267;
 
-	//slit A2
-	double distanceCristalslitA2 = 0.224;
+    //slit A1
+    double distanceCristalslitA1 = 0.194;
 
 
-	//detector
-	double distanceCristaldetector = 0.224;
+
+    //slit A2
+    double distanceCristalslitA2 = 0.224;
 
 
-	/* Declarations */
-	
-	double M12_width=0.05;
-  double calculated_angle;
+    //detector
+    double distanceCristaldetector = 0.224;
+
+
+    /* Declarations */
+
+    double M12_width=0.05;
+    double calculated_angle;
 %}
 
 INITIALIZE
 %{
     calculated_angle=RAD2DEG*asin(12398.42*sqrt(8)/(2*5.4309*(E0*1e3)));
     fprintf(stdout,"%s: Energy %g [keV] Mono Angle %g [deg]\n", NAME_INSTRUMENT, E0, calculated_angle);
-    
 %}
 
 TRACE

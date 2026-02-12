@@ -36,48 +36,48 @@ DEFINE INSTRUMENT Test_texture(lmax=0,
       string fcoef_fn="coef_Four_L2.txt",barns=1)
 DECLARE
 %{
-  double sample_wx = 0.01;
-  double sample_wy = 0.01;
-  double sample_wz = 0.01;
+    double sample_wx = 0.01;
+    double sample_wy = 0.01;
+    double sample_wz = 0.01;
 
-  double lambda=3.0;
-  double cts, I, I2, nneutrons;
-  
-  int pack = 1;
-  double geometry_interact = 0.0;
+    double lambda=3.0;
+    double cts, I, I2, nneutrons;
 
-  FILE *filep;
+    int pack = 1;
+    double geometry_interact = 0.0;
+
+    FILE *filep;
 %}
 
 INITIALIZE
 %{
-%}
+    %}
 
-TRACE
+    TRACE
 
-COMPONENT init = Union_init()
-AT (0,0,0) ABSOLUTE
+    COMPONENT init = Union_init()
+    AT (0,0,0) ABSOLUTE
 
-COMPONENT texture = Texture_process(crystal_fn=crystal_fn,fcoef_fn=fcoef_fn,lmax_user=lmax,
-interact_fraction=-1,barns=barns,packing_factor=pack)
-AT (0,0,0) ABSOLUTE
-ROTATED (0,0,0) RELATIVE ABSOLUTE
+    COMPONENT texture = Texture_process(crystal_fn=crystal_fn,fcoef_fn=fcoef_fn,lmax_user=lmax,
+    interact_fraction=-1,barns=barns,packing_factor=pack)
+    AT (0,0,0) ABSOLUTE
+    ROTATED (0,0,0) RELATIVE ABSOLUTE
 
-COMPONENT texture_material = Union_make_material(my_absorption=0,process_string="texture")
-AT (0,0,0) ABSOLUTE
+    COMPONENT texture_material = Union_make_material(my_absorption=0,process_string="texture")
+    AT (0,0,0) ABSOLUTE
 
-COMPONENT a1 = Progress_bar()
-AT (0,0,0) ABSOLUTE
+    COMPONENT a1 = Progress_bar()
+    AT (0,0,0) ABSOLUTE
 
-// Source
-COMPONENT source = Source_div(xwidth=sample_wx,yheight=sample_wy,
-   focus_aw=0.4, focus_ah=0.4,
-   lambda0 = lambda,dlambda = 1.0, gauss=0)
-AT (0,0,0) RELATIVE a1 ROTATED (0,0,0) RELATIVE a1
-EXTEND
-%{
-  //printf("new neutron:\n");
-  //nneutrons += 1;
+    // Source
+    COMPONENT source = Source_div(xwidth=sample_wx,yheight=sample_wy,
+    focus_aw=0.4, focus_ah=0.4,
+    lambda0 = lambda,dlambda = 1.0, gauss=0)
+    AT (0,0,0) RELATIVE a1 ROTATED (0,0,0) RELATIVE a1
+    EXTEND
+    %{
+        //printf("new neutron:\n");
+        //nneutrons += 1;
 %}
 
 

@@ -31,9 +31,9 @@ DEFINE INSTRUMENT SE_usage_example()
 
 DECLARE
 %{
-%}
+    %}
 
-USERVARS %{
+    USERVARS %{
 %}
 
 INITIALIZE

@@ -28,10 +28,10 @@ DEFINE INSTRUMENT Unit_test_loggers_base()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

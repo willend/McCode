@@ -33,11 +33,11 @@ DEFINE INSTRUMENT Unittest_JUMP_ITERATE(Ncount=1000, int jumps=10)
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
-  mcset_ncount(Ncount);
+    INITIALIZE
+    %{
+        mcset_ncount(Ncount);
 %}
 
 TRACE

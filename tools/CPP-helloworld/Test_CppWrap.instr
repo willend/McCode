@@ -30,10 +30,10 @@ DEFINE INSTRUMENT Test_CppWrap(string saythis="HelloWorld")
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

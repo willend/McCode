@@ -36,40 +36,39 @@ DEFINE INSTRUMENT GISANS_tests(int mode=1, int BEAMSTOP=0)
 
 DECLARE
 %{
-  /* Source setup parameters */
-  double source_focus_xw;
-  double source_focus_yh;
-  /* Sample positional parameters */
-  double sample_x_rot;
-  double sample_y_pos;
-  /* Detector rotational parameter */
-  double detector_y_rot;
+    /* Source setup parameters */
+    double source_focus_xw;
+    double source_focus_yh;
+    /* Sample positional parameters */
+    double sample_x_rot;
+    double sample_y_pos;
+    /* Detector rotational parameter */
+    double detector_y_rot;
 %}
 
 INITIALIZE
 %{
-  if (mode==1) {
-    source_focus_xw=0.01;
-    source_focus_yh = 0.0008,
-    detector_y_rot=0.25;
-    sample_x_rot=89.700;
-    sample_y_pos=0.02;
-  } else if (mode==2) {
-    source_focus_xw=0.01;
-    source_focus_yh = 0.0008,
-    detector_y_rot=0;
-    sample_x_rot=90.300;
-    sample_y_pos=0.022;
-  } else if (mode==3) {
-    source_focus_xw=0.002;
-    source_focus_yh = 0.002;
-    detector_y_rot=0;
-    sample_x_rot=0;
-    sample_y_pos=0;
-  } else {
-    fprintf(stderr,"Error, no such test mode (%i)\n",mode);
-  }
-  
+    if (mode==1) {
+        source_focus_xw=0.01;
+        source_focus_yh = 0.0008,
+        detector_y_rot=0.25;
+        sample_x_rot=89.700;
+        sample_y_pos=0.02;
+    } else if (mode==2) {
+        source_focus_xw=0.01;
+        source_focus_yh = 0.0008,
+        detector_y_rot=0;
+        sample_x_rot=90.300;
+        sample_y_pos=0.022;
+    } else if (mode==3) {
+        source_focus_xw=0.002;
+        source_focus_yh = 0.002;
+        detector_y_rot=0;
+        sample_x_rot=0;
+        sample_y_pos=0;
+    } else {
+        fprintf(stderr,"Error, no such test mode (%i)\n",mode);
+    }
 %}
 
 TRACE

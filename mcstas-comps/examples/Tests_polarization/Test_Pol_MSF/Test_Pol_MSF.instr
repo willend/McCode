@@ -28,10 +28,10 @@ DEFINE INSTRUMENT Test_Pol_MSF()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

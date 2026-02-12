@@ -157,11 +157,11 @@ INITIALIZE
     }
     DMM_theta=DMM_angle;
 
-/* compute DMM curvature from energy */
+    /* compute DMM curvature from energy */
     DMM_rsag= (1093.1*E0) - 11847;
     DMM_rmer= 176 + (1.8*E0);
 
-/* set fine E-monitor parameters  */
+    /* set fine E-monitor parameters  */
     if(DCM && DCM_e0) {
         monitor_E0=DCM_e0;
         monitor_DE=DCM_e0*0.5e-3;
@@ -182,9 +182,9 @@ INITIALIZE
     snprintf(emon_options,255,"e limits %e %e\n",E0-DE, E0+DE);
     snprintf(divmon_options,255,"xdiv limits -4e-3 4e-3 ydiv limits -4e-3 4e-3");
 
-   /* set coarse E-monitor parameters */
-   Efull_min = E0-(0.5*DE);
-   Efull_max = E0+(0.5*DE);
+    /* set coarse E-monitor parameters */
+    Efull_min = E0-(0.5*DE);
+    Efull_max = E0+(0.5*DE);
 
     if(DCM && DMM) {
         /*if si-mono and ml mono the beam is only partly displaced by the 1st si mono (6 mm)
@@ -231,24 +231,23 @@ INITIALIZE
 
     /*calculate harmonic order and fundamental harmonic of the undulator*/
     if (E0>33.755){
-      h=15;
+        h=15;
     } else if (E0>29.254){
-      h=13;
+        h=13;
     } else if (E0>24.753){
-      h=11;
+        h=11;
     } else if (E0>20.253){
-      h=9;
+        h=9;
     } else if (E0>15.757){
-      h=7;
+        h=7;
     } else {
-      h=5;
+        h=5;
     }
     E1st=E0/h+(undDetune/1000);
 
     printf("INFO: DanMAX_undulator: fundamental energy: %g, harmonic= %d, target energy= %g\n",E1st, h, E0);
 
     printf("INFO: DanMAX: PXRD 1d-strip prms: %g %g %g %g\n",dm_strip_deth,dm_strip_detw, dm_strip_tthc, dm_strip_tth0);
-
 %}
 /* Here comes the TRACE section, where the actual      */
 /* instrument is defined as a sequence of components.  */
@@ -265,78 +264,78 @@ COMPONENT Origin = Progress_bar( )
 AT (0,0,0) ABSOLUTE
 EXTEND
 %{
-%}
+    %}
 
-COMPONENT dmu = Undulator(verbose=1, E0=E0, dE=DE, E1st=E1st,
-        focus_yh=1.1e-3, focus_xw=1.1e-3, dist=20, Ie=0.5, Ee=3.0, dEe=0.0008, K=undK, B=0,
-        quick_integ=1, Nper=187, lu=0.016, sigex=53.66e-6, sigey=4.008e-6, sigepx=5.963e-6, sigepy=2.004e-6)
-AT(0,0,0) RELATIVE Origin
+    COMPONENT dmu = Undulator(verbose=1, E0=E0, dE=DE, E1st=E1st,
+    focus_yh=1.1e-3, focus_xw=1.1e-3, dist=20, Ie=0.5, Ee=3.0, dEe=0.0008, K=undK, B=0,
+    quick_integ=1, Nper=187, lu=0.016, sigex=53.66e-6, sigey=4.008e-6, sigepx=5.963e-6, sigepy=2.004e-6)
+    AT(0,0,0) RELATIVE Origin
 
-/* Monitors */
-/*COMPONENT src_mon = DanMAX_monitor (filename = "src_mon", xwidth=5e-3, yheight=5e-3, ndiv=101, E0=monitor_E0, dE=monitor_DE, Efull_min=Efull_min, Efull_max=Efull_max, restore_xray=1)*/
-/*AT (0,0,1) RELATIVE Origin*/
+    /* Monitors */
+    /*COMPONENT src_mon = DanMAX_monitor (filename = "src_mon", xwidth=5e-3, yheight=5e-3, ndiv=101, E0=monitor_E0, dE=monitor_DE, Efull_min=Efull_min, Efull_max=Efull_max, restore_xray=1)*/
+    /*AT (0,0,1) RELATIVE Origin*/
 
-COMPONENT src_psd = Monitor_nD(restore_xray=1, filename="src_mon.psd", xwidth=5e-3, yheight=5e-3, bins=101, options="x limits -0.2e-3 0.2e-3 y limits -0.2e-3 0.2e-3")
-AT(0,0,1) RELATIVE Origin
-COMPONENT src_div = Monitor_nD(restore_xray=1, filename="src_mon.div", xwidth=5e-3, yheight=5e-3, bins=101, options=divmon_options)
-AT(0,0,1) RELATIVE Origin
-COMPONENT src_e = Monitor_nD(restore_xray=1, filename="src_mon.e", xwidth=5e-3, yheight=5e-3, bins=101, options=emon_options)
-AT(0,0,1) RELATIVE Origin
+    COMPONENT src_psd = Monitor_nD(restore_xray=1, filename="src_mon.psd", xwidth=5e-3, yheight=5e-3, bins=101, options="x limits -0.2e-3 0.2e-3 y limits -0.2e-3 0.2e-3")
+    AT(0,0,1) RELATIVE Origin
+    COMPONENT src_div = Monitor_nD(restore_xray=1, filename="src_mon.div", xwidth=5e-3, yheight=5e-3, bins=101, options=divmon_options)
+    AT(0,0,1) RELATIVE Origin
+    COMPONENT src_e = Monitor_nD(restore_xray=1, filename="src_mon.e", xwidth=5e-3, yheight=5e-3, bins=101, options=emon_options)
+    AT(0,0,1) RELATIVE Origin
 
-COMPONENT FM1 = Slit(
-        xwidth=5.68e-3, yheight=5.68e-3)
-AT(0,0,11.35) RELATIVE Origin
+    COMPONENT FM1 = Slit(
+    xwidth=5.68e-3, yheight=5.68e-3)
+    AT(0,0,11.35) RELATIVE Origin
 
-COMPONENT FM2 = Slit(
-        xwidth=1.58e-3, yheight=1.58e-3)
-AT(0,0,15.75) RELATIVE Origin
+    COMPONENT FM2 = Slit(
+    xwidth=1.58e-3, yheight=1.58e-3)
+    AT(0,0,15.75) RELATIVE Origin
 
-/* The beam defining movable mask */
-COMPONENT FEMM = Slit(
-        xwidth=FEMMw, yheight=FEMMh)
-AT(0,0,19.324) RELATIVE Origin
+    /* The beam defining movable mask */
+    COMPONENT FEMM = Slit(
+    xwidth=FEMMw, yheight=FEMMh)
+    AT(0,0,19.324) RELATIVE Origin
 
-/* COMPONENT FE_PDc = PD_monitor(filename = "FE_PDc", xwidth=3, yheight=3, nx=3, ny=3) */
-/* AT(0,0,0.001) RELATIVE PREVIOUS */
+    /* COMPONENT FE_PDc = PD_monitor(filename = "FE_PDc", xwidth=3, yheight=3, nx=3, ny=3) */
+    /* AT(0,0,0.001) RELATIVE PREVIOUS */
 
-/* COMPONENT FE_PDf = PD_monitor(filename = "FE_PDf", xwidth=1.4e-3, yheight=1.4e-3, nx=51, ny=51) */
-/* AT(0,0,0.001) RELATIVE PREVIOUS */
+    /* COMPONENT FE_PDf = PD_monitor(filename = "FE_PDf", xwidth=1.4e-3, yheight=1.4e-3, nx=51, ny=51) */
+    /* AT(0,0,0.001) RELATIVE PREVIOUS */
 
-/*FE wall*/
+    /*FE wall*/
 
-/*Optics hutch*/
-COMPONENT oh0 = Arm()
-AT(0,0,22.5) RELATIVE Origin
+    /*Optics hutch*/
+    COMPONENT oh0 = Arm()
+    AT(0,0,22.5) RELATIVE Origin
 
-/* diamond_filters */
-COMPONENT oh_diamond_filter1 = Filter(
-        refraction=0,xwidth=0.01,yheight=0.01, zdepth=diamond_zd,material_datafile="C-diamond.txt")
-AT(0,0,0.975) RELATIVE oh0
-
-
-/* placeholder: A single laue crystal to deflect the "parasitic" beam */
+    /* diamond_filters */
+    COMPONENT oh_diamond_filter1 = Filter(
+    refraction=0,xwidth=0.01,yheight=0.01, zdepth=diamond_zd,material_datafile="C-diamond.txt")
+    AT(0,0,0.975) RELATIVE oh0
 
 
-/* pre-monochromator guard slits*/
+    /* placeholder: A single laue crystal to deflect the "parasitic" beam */
 
 
-COMPONENT oh_premono_ap = Slit(
+    /* pre-monochromator guard slits*/
+
+
+    COMPONENT oh_premono_ap = Slit(
     xwidth=oh_premonow,yheight=oh_premonoh)
-AT(0,0,3.727) RELATIVE oh0
+    AT(0,0,3.727) RELATIVE oh0
 
 
-/* Optional high-resolution Si-111 monochromator.*/
-COMPONENT DCM0_a0 = Arm()
-AT(0,0,4.655) RELATIVE oh0
-ROTATED(0,DCM_theta,0) RELATIVE oh0
+    /* Optional high-resolution Si-111 monochromator.*/
+    COMPONENT DCM0_a0 = Arm()
+    AT(0,0,4.655) RELATIVE oh0
+    ROTATED(0,DCM_theta,0) RELATIVE oh0
 
-COMPONENT DCM0 =  Bragg_crystal(
-        length=50e-3, width=20e-3, h=1, k=1, l=1, V=160.1826, alpha=0, material="Si.txt")
-WHEN(DCM!=0) AT(0,0,0) RELATIVE DCM0_a0
-ROTATED (0,0,-90) RELATIVE DCM0_a0
-EXTEND
-%{
-    if (!SCATTERED) ABSORB;
+    COMPONENT DCM0 =  Bragg_crystal(
+    length=50e-3, width=20e-3, h=1, k=1, l=1, V=160.1826, alpha=0, material="Si.txt")
+    WHEN(DCM!=0) AT(0,0,0) RELATIVE DCM0_a0
+    ROTATED (0,0,-90) RELATIVE DCM0_a0
+    EXTEND
+    %{
+        if (!SCATTERED) ABSORB;
 %}
 COMPONENT DCM0_a1 = Arm()
 AT(0,0,0) RELATIVE DCM0_a0
@@ -712,7 +711,7 @@ AT (0,0,0) RELATIVE pxrd_1d_pt
 GROUP mythen
 EXTEND
 %{
-  SCATTER;
+    SCATTER;
 %}
 
 FINALLY

@@ -32,15 +32,15 @@ DEFINE INSTRUMENT Unittest_SPLIT(int SPLITS=10, Pp0=1)
 
 DECLARE
 %{
-%}
+    %}
 
-USERVARS
-%{
+    USERVARS
+    %{
 %}
 
 INITIALIZE
 %{
-  Pp0=1.0/mcget_ncount();
+    Pp0=1.0/mcget_ncount();
 %}
 
 TRACE

@@ -30,19 +30,19 @@ DEFINE INSTRUMENT MCPL_filter_wavelength(string MCPLfile="my.mcpl.gz", wavelengt
 
 DECLARE
 %{
-  char monopts1[128];
-  char monopts2[128];
+    char monopts1[128];
+    char monopts2[128];
 %}
 
 USERVARS
 %{
-  double Wavelength;
+    double Wavelength;
 %}
 
 INITIALIZE
 %{
-  sprintf(monopts1,"previous lambda limits=[%g %g] bins=%i",min, wavelength, bins);
-  sprintf(monopts2,"previous lambda limits=[%g %g] bins=%i",wavelength, max, bins);
+    sprintf(monopts1,"previous lambda limits=[%g %g] bins=%i",min, wavelength, bins);
+    sprintf(monopts2,"previous lambda limits=[%g %g] bins=%i",wavelength, max, bins);
 %}
 
 TRACE

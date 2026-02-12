@@ -47,22 +47,22 @@ SETTING PARAMETERS (xmin=-0.01, xmax=0.01, ymin=-0.025, ymax=0.025, xwidth=0, yh
 
 DECLARE
 %{
-  double slope;
-  double slopeV;
+    double slope;
+    double slopeV;
 %}
 INITIALIZE
 %{
-  slope = tan(MIN2RAD*divergence);
-  slopeV= tan(MIN2RAD*divergenceV);
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+    slope = tan(MIN2RAD*divergence);
+    slopeV= tan(MIN2RAD*divergenceV);
+    if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
+    if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
 
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("Collimator_linear: %s: Null slit opening area !\n"
-	         "ERROR              (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-           NAME_CURRENT_COMP);
-    exit(0);
-  }
+        if ((xmin >= xmax) || (ymin >= ymax)) {
+            printf("Collimator_linear: %s: Null slit opening area !\n"
+            "ERROR              (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+            exit(0);
+        }
 %}
 TRACE
 %{
@@ -70,51 +70,51 @@ TRACE
 
     PROP_Z0;
     if (x<xmin || x>xmax || y<ymin || y>ymax)
-      ABSORB;
+    ABSORB;
 
     double dirx,diry,dirz;
 
     /* Use direction vector z-component to decide needed propagation length */
     dirx=kx;diry=ky;dirz=kz;
     NORM(dirx,diry,dirz);
-   
+
     PROP_DL(length/dirz);
     if (x<xmin || x>xmax || y<ymin || y>ymax)
-      ABSORB;
+    ABSORB;
 
     if(slope > 0.0)
     {
-      Phi = fabs(kx/kz);
-      if (Phi > slope)
+        Phi = fabs(kx/kz);
+        if (Phi > slope)
         ABSORB;
-      else
+        else
         p *= transmission*(1.0 - Phi/slope);
-      SCATTER;
+        SCATTER;
     }
     if (slopeV > 0) {
-      Phi = fabs(ky/kz);
-      if (Phi > slopeV)
+        Phi = fabs(ky/kz);
+        if (Phi > slopeV)
         ABSORB;
-      else
+        else
         p *= transmission*(1.0 - Phi/slopeV);
-      SCATTER;
+        SCATTER;
     }
 %}
 
 MCDISPLAY
 %{
-  double x;
-  int i;
+    double x;
+    int i;
 
-  
-  for(x = xmin, i = 0; i <= 10; i++, x += (xmax - xmin)/10.0)
+
+    for(x = xmin, i = 0; i <= 10; i++, x += (xmax - xmin)/10.0)
     multiline(5, x, (double)ymin, 0.0, x, (double)ymax, 0.0,
-              x, (double)ymax, (double)length, x, (double)ymin, (double)length,
-              x, (double)ymin, 0.0);
-  line(xmin, ymin, 0,   xmax, ymin, 0);
-  line(xmin, ymax, 0,   xmax, ymax, 0);
-  line(xmin, ymin, length, xmax, ymin, length);
-  line(xmin, ymax, length, xmax, ymax, length);
+    x, (double)ymax, (double)length, x, (double)ymin, (double)length,
+    x, (double)ymin, 0.0);
+    line(xmin, ymin, 0,   xmax, ymin, 0);
+    line(xmin, ymax, 0,   xmax, ymax, 0);
+    line(xmin, ymin, length, xmax, ymin, length);
+    line(xmin, ymax, length, xmax, ymax, length);
 %}
 
 END

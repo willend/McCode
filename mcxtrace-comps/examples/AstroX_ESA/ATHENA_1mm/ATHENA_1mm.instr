@@ -99,7 +99,7 @@ DECLARE
     double src_pos_y;
     #pragma acc declare create(alphax)
     double alphax,alphay;
-    
+
     double pore_width=0.83e-3;
     double pore_height=0.605e-3;
 

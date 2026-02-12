@@ -39,10 +39,10 @@ DEFINE INSTRUMENT SESANS_Delft(L0=2.165, DL=0.02, By=4.68e-3)
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE
@@ -163,7 +163,7 @@ COMPONENT trick = Arm()
 AT(0,0,4.4) RELATIVE src
 EXTEND
 %{
-   RESTORE_NEUTRON(INDEX_CURRENT_COMP-2,x,y,z,vx,vy,vz,t,sx,sy,sz,p);
+    RESTORE_NEUTRON(INDEX_CURRENT_COMP-2,x,y,z,vx,vy,vz,t,sx,sy,sz,p);
 %}
 
 COMPONENT ana2 = PolAnalyser_ideal(mx=-1)

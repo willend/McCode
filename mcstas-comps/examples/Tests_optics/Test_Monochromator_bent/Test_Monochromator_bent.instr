@@ -38,12 +38,12 @@ double mono_mos=0)
 
 DECLARE 
 %{
-int reflections;
+    int reflections;
 %}
 
 INITIALIZE 
 %{
-// Start of initialize for generated Test_Monochromator_bent
+    // Start of initialize for generated Test_Monochromator_bent
 %}
 
 TRACE 
@@ -94,7 +94,7 @@ AT (0,0,0.5) RELATIVE monitor_arm
 
 FINALLY 
 %{
-// Start of finally for generated Test_Monochromator_bent
+    // Start of finally for generated Test_Monochromator_bent
 %}
 
 END

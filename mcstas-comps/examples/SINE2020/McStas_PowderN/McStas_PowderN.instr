@@ -50,10 +50,10 @@ DEFINE INSTRUMENT McStas_PowderN(string reflections="Al.lau", string geometry=""
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

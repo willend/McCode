@@ -47,64 +47,64 @@ SETTING PARAMETERS ( string coating="Be.txt", longw=1, radius=1, length=0.2, R0=
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */ 
 SHARE
 %{
-#include <complex.h>
-#include <math.h>
-%include "read_table-lib"
+    #include <complex.h>
+    #include <math.h>
+    %include "read_table-lib"
 %}
 DECLARE
 %{
-  int Z;
-  double At;
-  double rho;
-  double E_max;
-  double E_min;
-  double E_step;
-  double theta_max;
-  double theta_min;
-  double theta_step;
-  t_Table T;
-  int constant_R;
+    int Z;
+    double At;
+    double rho;
+    double E_max;
+    double E_min;
+    double E_step;
+    double theta_max;
+    double theta_min;
+    double theta_step;
+    t_Table T;
+    int constant_R;
 %}
 
 INITIALIZE
 %{
-  int status;
+    int status;
 
-  if (coating && !R0){
-      char **header_parsed;
-      if ( coating && (status=Table_Read(&(T),coating,0))==-1){
-          fprintf(stderr,"Error(%s): Could not parse file \"%s\"\n",NAME_CURRENT_COMP,coating);
-          exit(-1);
-      }
-      if (!rtable){
-          /*the given coating file is to be interpreted as a material data file*/
-          header_parsed=Table_ParseHeader(T.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
-          if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
-          if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
-          if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
-      }else{
-          header_parsed = Table_ParseHeader(T.header,
-                  "E_min=", "E_max=", "E_step=",
-                  "theta_min=", "theta_max=", "theta_step=",
-                  NULL);
-          if (header_parsed[0] && header_parsed[1] && header_parsed[2] &&
-                  header_parsed[3] && header_parsed[4] && header_parsed[5]){
-              sscanf(header_parsed[0], "%lf", &E_min);
-              sscanf(header_parsed[1], "%lf", &E_max);
-              sscanf(header_parsed[2], "%lf", &E_step);
-              sscanf(header_parsed[3], "%lf", &theta_min);
-              sscanf(header_parsed[4], "%lf", &theta_max);
-              sscanf(header_parsed[5], "%lf", &theta_step);
-          }
-      }
-      constant_R=0;
-  }else{
-      if (R0<0 || R0>1){
-          fprintf(stderr,"Error(%s) reflectivity (%g) is specified but is not in [0:1]\n",NAME_CURRENT_COMP,R0);
-          exit(-1);
-      }
-      constant_R=1;
-  }
+    if (coating && !R0){
+        char **header_parsed;
+        if ( coating && (status=Table_Read(&(T),coating,0))==-1){
+            fprintf(stderr,"Error(%s): Could not parse file \"%s\"\n",NAME_CURRENT_COMP,coating);
+            exit(-1);
+        }
+        if (!rtable){
+            /*the given coating file is to be interpreted as a material data file*/
+            header_parsed=Table_ParseHeader(T.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
+        if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
+        if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
+        if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
+        }else{
+            header_parsed = Table_ParseHeader(T.header,
+            "E_min=", "E_max=", "E_step=",
+            "theta_min=", "theta_max=", "theta_step=",
+            NULL);
+            if (header_parsed[0] && header_parsed[1] && header_parsed[2] &&
+            header_parsed[3] && header_parsed[4] && header_parsed[5]){
+                sscanf(header_parsed[0], "%lf", &E_min);
+                sscanf(header_parsed[1], "%lf", &E_max);
+                sscanf(header_parsed[2], "%lf", &E_step);
+                sscanf(header_parsed[3], "%lf", &theta_min);
+                sscanf(header_parsed[4], "%lf", &theta_max);
+                sscanf(header_parsed[5], "%lf", &theta_step);
+            }
+        }
+        constant_R=0;
+    }else{
+        if (R0<0 || R0>1){
+            fprintf(stderr,"Error(%s) reflectivity (%g) is specified but is not in [0:1]\n",NAME_CURRENT_COMP,R0);
+            exit(-1);
+        }
+        constant_R=1;
+    }
 %}
 
 TRACE
@@ -124,7 +124,7 @@ TRACE
                 break;
             }
             PROP_DL(l1);
-                
+
             nx=x;ny=y;nz=0;
             NORM(nx,ny,nz);
             s=scalar_prod(kx,ky,kz,nx,ny,0);
@@ -181,7 +181,7 @@ TRACE
                 f1=Table_Value(T,e,1);
 
                 /*the conversion factor in  the end is to transform the atomic density from cm^-3 to AA^-3
-                  -> therefore we get Q in AA^-1*/
+                -> therefore we get Q in AA^-1*/
                 na=NA*rho/At*1e-24;
                 Qc=4*sqrt(M_PI*na*RE*f1);
                 double R=1;
@@ -202,11 +202,11 @@ TRACE
                     }
                     /*and from this compute the reflectivity*/
                     Rc=(q-qp)/(q+qp);
-		    R=cabs(Rc);
+                    R=cabs(Rc);
                     p*=R;//pow(R,scatterc);
                     /*now also set the phase - have to compute manually since carg is not GPU yet*/
                     double arg = atan2(cimag(Rc),creal(Rc));
-		    phi= phi + arg;//*scatterc;
+                    phi= phi + arg;//*scatterc;
                 }
             }else{
                 double e,R,theta;

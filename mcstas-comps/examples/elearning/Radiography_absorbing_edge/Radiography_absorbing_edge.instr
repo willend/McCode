@@ -39,22 +39,21 @@ DEFINE INSTRUMENT Radiography_absorbing_edge(D=0.01,L=5, l=0.10, sigma_abs=5.08,
 
 DECLARE
 %{
-  double L0  = 5.0;   /* Distance between source and pinhole */
-  double sample_xoff ; /* Sample x offset */
-  double det_w = 0.10;
-  double det_h = 0.10;	
-  double sample_x=0.10;
-  double sample_y=0.10;
-  double sigma_inc=1e-4;/*Smallest possible value close to 0 where the absorption XS is still correctly calculated in the Incoherent component*/
-  double sqrt2=1.414214;         
- double frac_interact=1e-6; // set to something close to zero since we don't want to look at inchorent scattering. But do not set to 0 since then the scattering from sigma_inc will be considered            
+    double L0  = 5.0;   /* Distance between source and pinhole */
+    double sample_xoff ; /* Sample x offset */
+    double det_w = 0.10;
+    double det_h = 0.10;	
+    double sample_x=0.10;
+    double sample_y=0.10;
+    double sigma_inc=1e-4;/*Smallest possible value close to 0 where the absorption XS is still correctly calculated in the Incoherent component*/
+    double sqrt2=1.414214;         
+    double frac_interact=1e-6; // set to something close to zero since we don't want to look at inchorent scattering. But do not set to 0 since then the scattering from sigma_inc will be considered            
 %}
 
 INITIALIZE
 %{
  
-  sample_xoff  = sample_x/2*sqrt(2); /* Sample x offset */
-     
+    sample_xoff  = sample_x/2*sqrt(2); /* Sample x offset */
 %}
 
 TRACE

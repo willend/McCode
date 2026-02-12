@@ -68,77 +68,77 @@ DEFINE INSTRUMENT Test_Monochromators(int Mono=1, lmin=1.6, lmax=2.4, Moz=40, st
 
 DECLARE
 %{
-  /* to compute */
-  double A1,A2;
-  double mono_q;
+    /* to compute */
+    double A1,A2;
+    double mono_q;
 
-  /* This variable helps us switch on and off the different setups*/
-  double filterProb;
-  double NXmoz;
+    /* This variable helps us switch on and off the different setups*/
+    double filterProb;
+    double NXmoz;
 
-  char NXcfg[256];
-  char tofopts[256];
-  double vmin;
-  double vmax;
-  double tmin;
-  double tmax;
+    char NXcfg[256];
+    char tofopts[256];
+    double vmin;
+    double vmax;
+    double tmin;
+    double tmax;
 %}
 /* end of DECLARE */
 
 INITIALIZE
 %{
-  int    ORDER = 1;
-  double Ki;
-  int    SM;
+    int    ORDER = 1;
+    double Ki;
+    int    SM;
 
-  /* SM : scattering at mono to the right (-1)/left(+1) */
-  SM = 1;
+    /* SM : scattering at mono to the right (-1)/left(+1) */
+    SM = 1;
 
-  mono_q = 2*PI*ORDER/DM;  /* Q mono in Angs-1 */
+    mono_q = 2*PI*ORDER/DM;  /* Q mono in Angs-1 */
 
-  Ki = 2*PI/lambda;
+    Ki = 2*PI/lambda;
 
-  A2 = asin(mono_q/2/Ki)*RAD2DEG*2;
+    A2 = asin(mono_q/2/Ki)*RAD2DEG*2;
 
-  A2 *= SM;   /* A1 : mono theta (crystal) */
-  A1 = A2/2;  /* A2 : mono 2 theta (arm to sample) */
+    A2 *= SM;   /* A1 : mono theta (crystal) */
+    A1 = A2/2;  /* A2 : mono 2 theta (arm to sample) */
 
-  vmax = (2*PI/V2K)/lmin;
-  vmin = (2*PI/V2K)/lmax;
-  tmin = 1.5/vmax;
-  tmax = 1.5/vmin;
+    vmax = (2*PI/V2K)/lmin;
+    vmin = (2*PI/V2K)/lmax;
+    tmin = 1.5/vmax;
+    tmax = 1.5/vmin;
 
-  printf("\n%s: ", instrument_name);
+    printf("\n%s: ", instrument_name);
 
-  /* Fallback NXcfg string for non-NCrystal cases below */
-  sprintf(NXcfg,"void.ncmat");
+    /* Fallback NXcfg string for non-NCrystal cases below */
+    sprintf(NXcfg,"void.ncmat");
 
-  NXmoz = Moz/60.0;
+    NXmoz = Moz/60.0;
 
-  switch (Mono) {
-  case 1:
-    printf("Using Monochromator_flat\n"); break;
-  case 2:
-    printf("Using Monochromator_pol\n"); break;
-  case 3:
-    printf("Using Monochromator_pol (with 1%% events reflected)\n"); break;
-  case 4:
-    printf("Using Monochromator_curved (flat mode)\n"); break;
-  case 5:
-    printf("Using Monochromator_2foc (contrib, flat mode)\n"); break;
-  case 6:
-    printf("Using Single_crystal\n"); break;
-  case 7:
-    printf("Using NCrystal\n");
-    sprintf(NXcfg,"%s;mos=%fdeg;incoh_elas=0;inelas=0"
-	    ";dir1=@crys_hkl:1,0,0@lab:%f,%f,%f"
-	    ";dir2=@crys_hkl:0,0,1@lab:%f,%f,%f",NXrefs,NXmoz,ax,ay,az,cx,cy,cz);
-    break;
-  }
+    switch (Mono) {
+        case 1:
+        printf("Using Monochromator_flat\n"); break;
+        case 2:
+        printf("Using Monochromator_pol\n"); break;
+        case 3:
+        printf("Using Monochromator_pol (with 1%% events reflected)\n"); break;
+        case 4:
+        printf("Using Monochromator_curved (flat mode)\n"); break;
+        case 5:
+        printf("Using Monochromator_2foc (contrib, flat mode)\n"); break;
+        case 6:
+        printf("Using Single_crystal\n"); break;
+        case 7:
+        printf("Using NCrystal\n");
+        sprintf(NXcfg,"%s;mos=%fdeg;incoh_elas=0;inelas=0"
+        ";dir1=@crys_hkl:1,0,0@lab:%f,%f,%f"
+        ";dir2=@crys_hkl:0,0,1@lab:%f,%f,%f",NXrefs,NXmoz,ax,ay,az,cx,cy,cz);
+        break;
+    }
 
-  sprintf(tofopts,"t limits=[%g %g] bins=256",tmin,tmax);
+    sprintf(tofopts,"t limits=[%g %g] bins=256",tmin,tmax);
 
-  printf("Geometry of scattering: A1 %g A2 %g\n",A1,A2);
+    printf("Geometry of scattering: A1 %g A2 %g\n",A1,A2);
   %}
 /* end of INITIALIZE */
 

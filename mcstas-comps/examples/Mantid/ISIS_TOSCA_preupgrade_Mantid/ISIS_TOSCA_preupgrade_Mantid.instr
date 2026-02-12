@@ -75,13 +75,12 @@ USERVARS %{
 
 INITIALIZE
 %{
-L_minE= 10.0*sqrt(0.81787/(E_max*1.15));
-L_maxE= 10.0*sqrt(0.81787/(E_min*0.85));
-t_maxE = L0/sqrt(2/mneu*meV2J*(E_min*0.85))*1E6;
-t_minE = L0/sqrt(2/mneu*meV2J*(E_max*1.15))*1E6;
-printf("Found t_minE at %g \n",t_minE);
-#pragma acc update device(t_minE)
-
+    L_minE= 10.0*sqrt(0.81787/(E_max*1.15));
+    L_maxE= 10.0*sqrt(0.81787/(E_min*0.85));
+    t_maxE = L0/sqrt(2/mneu*meV2J*(E_min*0.85))*1E6;
+    t_minE = L0/sqrt(2/mneu*meV2J*(E_max*1.15))*1E6;
+    printf("Found t_minE at %g \n",t_minE);
+    #pragma acc update device(t_minE)
 %}
 
 TRACE
@@ -154,7 +153,7 @@ SPLIT 1000 COMPONENT powder=Isotropic_Sqw(
 ) AT (0, 0, 0) RELATIVE arm_sample
 EXTEND
 %{
-  if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT sampleMantid = Arm()

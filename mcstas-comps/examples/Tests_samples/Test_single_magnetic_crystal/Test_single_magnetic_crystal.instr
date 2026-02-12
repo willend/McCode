@@ -45,12 +45,12 @@ DEFINE INSTRUMENT Test_single_magnetic_crystal(L0=4,dL=3.91,OM=0,TT=0,PX=0,PY=1,
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-%}
+    %}
 
-/* The INITIALIZE section is executed when the simulation starts     */
-/* (C code). You may use them as component parameter values.         */
-INITIALIZE
-%{
+    /* The INITIALIZE section is executed when the simulation starts     */
+    /* (C code). You may use them as component parameter values.         */
+    INITIALIZE
+    %{
 %}
 
 /* Here comes the TRACE section, where the actual      */
@@ -119,7 +119,7 @@ COMPONENT Sample = Single_magnetic_crystal(
 AT (0, 0, 0) RELATIVE A3
 EXTEND
 %{ 
-if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT PSD4PImon = PSD_monitor_4PI(

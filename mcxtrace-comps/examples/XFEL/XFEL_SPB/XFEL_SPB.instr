@@ -40,28 +40,27 @@ DEFINE INSTRUMENT XFEL_SPB(L0=1.3051,DL=0.01, D=10,offset_omega_rad=3.6e-3,offse
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double theta=12,theta1=12,theta2=12;
-  double l_mono=2;
-  double delta_mono=0.2;
-  double delta_kbm1=0.5,delta_kbm2=0.5;
-  double gamma1=1.5e-3*RAD2DEG,gamma2=1.5e-3*RAD2DEG;
+    double theta=12,theta1=12,theta2=12;
+    double l_mono=2;
+    double delta_mono=0.2;
+    double delta_kbm1=0.5,delta_kbm2=0.5;
+    double gamma1=1.5e-3*RAD2DEG,gamma2=1.5e-3*RAD2DEG;
 
-/*source parameters*/
-  double src_sig_x=2e-6;
-  double src_sig_y=1e-6;
-  double src_div_x=1e-6;
-  double src_div_y=2e-6;
+    /*source parameters*/
+    double src_sig_x=2e-6;
+    double src_sig_y=1e-6;
+    double src_div_x=1e-6;
+    double src_div_y=2e-6;
 
-  double distr1_omega=1.35e-3*RAD2DEG;
-  double offset_omega;
-
+    double distr1_omega=1.35e-3*RAD2DEG;
+    double offset_omega;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  offset_omega=offset_omega_rad*RAD2DEG;
+    offset_omega=offset_omega_rad*RAD2DEG;
 %}
 
 /* Here comes the TRACE section, where the actual      */
@@ -162,7 +161,7 @@ AT (0, 0, 0) RELATIVE mono_origin
 ROTATED (-theta1,0,0) RELATIVE mono_origin
 EXTEND
 %{
-  if(!SCATTERED) ABSORB;
+    if(!SCATTERED) ABSORB;
 %}
 
 COMPONENT mono1_out = Arm()
@@ -174,7 +173,7 @@ AT(0,0,delta_mono) RELATIVE PREVIOUS
 ROTATED (theta2,0,0) RELATIVE PREVIOUS
 EXTEND
 %{
-  if(!SCATTERED) ABSORB;
+    if(!SCATTERED) ABSORB;
 %}
 
 COMPONENT mono2_out = Arm()
@@ -201,7 +200,7 @@ AT (0, 0, 0) RELATIVE kb_mirror1h_mnt
 ROTATED (0,gamma1,0) RELATIVE kb_mirror1h_mnt
 EXTEND
 %{
-  if(!SCATTERED) ABSORB;
+    if(!SCATTERED) ABSORB;
 %}
 
 COMPONENT kb_mirror1h_ex= Arm()
@@ -217,7 +216,7 @@ AT( 0,0,0) RELATIVE PREVIOUS
 ROTATED (0,gamma2,0) RELATIVE PREVIOUS
 EXTEND
 %{
-  if(!SCATTERED) ABSORB;
+    if(!SCATTERED) ABSORB;
 %}
 
 COMPONENT kb_mirror1_ex = Arm()

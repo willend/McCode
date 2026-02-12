@@ -31,12 +31,12 @@ DEFINE INSTRUMENT External_component(stick_displacement=0)
 
 DECLARE
 %{
-%}
+    %}
 
-USERVARS %{
-int first_master;
-int second_master;
-int powderN_scat;
+    USERVARS %{
+        int first_master;
+        int second_master;
+        int powderN_scat;
 %}
 
 TRACE
@@ -185,7 +185,7 @@ AT(0,0,0) RELATIVE beam_center
 ROTATED(0,0,0) RELATIVE beam_center
 EXTEND
 %{
-first_master = number_of_scattering_events;
+    first_master = number_of_scattering_events;
 %}
 
 COMPONENT cylinder_sample_powder = PowderN(reflections="Cu.laz", radius=0.01, yheight=0.03, pack=1, p_interact=0.8, thickness=0)
@@ -193,7 +193,7 @@ AT (0,0,0) RELATIVE beam_center
 ROTATED (0,0,0) RELATIVE beam_center
 EXTEND
 %{
-  if (SCATTERED) powderN_scat = 1; else powderN_scat = 0;
+    if (SCATTERED) powderN_scat = 1; else powderN_scat = 0;
 %}
 
 
@@ -202,7 +202,7 @@ AT(0,0,0) RELATIVE beam_center
 ROTATED(0,0,0) RELATIVE beam_center
 EXTEND
 %{
-second_master = number_of_scattering_events;
+    second_master = number_of_scattering_events;
 %}
 
 

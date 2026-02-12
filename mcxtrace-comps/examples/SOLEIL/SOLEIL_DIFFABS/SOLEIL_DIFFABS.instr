@@ -67,41 +67,41 @@ DEFINE INSTRUMENT SOLEIL_DIFFABS(E0=13,dE=1,
 
 DECLARE
 %{
-  double dcm_gap;
+    double dcm_gap;
 %}
 
 INITIALIZE
 %{
   
-  // DCM
-  double DM= 5.4909;     // Si d-spacing
-  double d = DM/sqrt(3); // <111> reflection |<111>|=3
-  dcm_gap  = 0.01;       // gap between the 2 monochromator crystals
+    // DCM
+    double DM= 5.4909;     // Si d-spacing
+    double d = DM/sqrt(3); // <111> reflection |<111>|=3
+    dcm_gap  = 0.01;       // gap between the 2 monochromator crystals
 
-  if (!DCM_theta && E0) {
-  // n.lambda = 2 d sin(theta) = 2*PI/E2K / E0 with n=ORDER=1
-  double sin_theta = 2*PI/E2K/E0 / 2 / d;
-  if (fabs(sin_theta) < 1)
-    DCM_theta = asin(sin_theta)*RAD2DEG;
-  } else if (DCM_theta && !E0)
+    if (!DCM_theta && E0) {
+        // n.lambda = 2 d sin(theta) = 2*PI/E2K / E0 with n=ORDER=1
+        double sin_theta = 2*PI/E2K/E0 / 2 / d;
+        if (fabs(sin_theta) < 1)
+        DCM_theta = asin(sin_theta)*RAD2DEG;
+    } else if (DCM_theta && !E0)
     E0 = 2*PI/E2K / (2*d*sin(DCM_theta*DEG2RAD));
-    
-  // M1 mirror
-  if (!M1_angle) {
-    if (19   <= E0)               M1_angle=2.4;
-    if (12.5 <= E0 && E0 < 19)    M1_angle=3;
-    if (6.5  <= E0 && E0 < 12.5)  M1_angle=5;
-    if (E0   < 6.5)               M1_angle=6;
-  }
-  
-  if (!DCM_theta || !E0 || dE <=0)
-     exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
-  MPI_MASTER(
-  printf("%s: E0=%g [keV] M1_angle=%g [mrad] %g [deg]\n", NAME_INSTRUMENT, E0, M1_angle, M1_angle*RAD2DEG/1000);
-  printf("%s: Monochromator theta=%g [deg]\n",            NAME_INSTRUMENT, DCM_theta);
-  );
-  
-  M1_angle *= RAD2DEG/1000;
+
+    // M1 mirror
+    if (!M1_angle) {
+        if (19   <= E0)               M1_angle=2.4;
+        if (12.5 <= E0 && E0 < 19)    M1_angle=3;
+        if (6.5  <= E0 && E0 < 12.5)  M1_angle=5;
+        if (E0   < 6.5)               M1_angle=6;
+    }
+
+    if (!DCM_theta || !E0 || dE <=0)
+    exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
+    MPI_MASTER(
+    printf("%s: E0=%g [keV] M1_angle=%g [mrad] %g [deg]\n", NAME_INSTRUMENT, E0, M1_angle, M1_angle*RAD2DEG/1000);
+    printf("%s: Monochromator theta=%g [deg]\n",            NAME_INSTRUMENT, DCM_theta);
+    );
+
+    M1_angle *= RAD2DEG/1000;
 %}
 
 // -----------------------------------------------------------------------------
@@ -183,7 +183,7 @@ AT (0, 0, 0)               RELATIVE DCM_location
 ROTATED (-DCM_theta, 0, 0) RELATIVE DCM_location
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT arm_crystal1 = Arm()
@@ -197,7 +197,7 @@ AT (0, dcm_gap, DCM_theta ? dcm_gap/tan(DCM_theta*DEG2RAD) : 0) RELATIVE bragg_c
 ROTATED (DCM_theta, 0, 0) RELATIVE arm_crystal1
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT arm_crystal2 = Arm()

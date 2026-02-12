@@ -38,45 +38,44 @@ SETTING PARAMETERS ()
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
 SHARE
 %{
-%}
+    %}
 
-USERVARS
-%{
+    USERVARS
+    %{
 %}
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE
 %{
-%}
+    %}
 
-SAVE
-%{
+    SAVE
+    %{
 %}
 
 FINALLY
 %{
-%}
+    %}
 
-MCDISPLAY
-%{
-  /* A bit ugly; hard-coded dimensions. */
-  
-  line(0,0,0,0.2,0,0);
-  line(0,0,0,0,0.2,0);
-  line(0,0,0,0,0,0.2);
+    MCDISPLAY
+    %{
+        /* A bit ugly; hard-coded dimensions. */
+
+        line(0,0,0,0.2,0,0);
+        line(0,0,0,0,0.2,0);
+        line(0,0,0,0,0,0.2);
 
 
-  cone(0.2,0,0,0.01,0.02,1,0,0);
-  cone(0,0.2,0,0.01,0.02,0,1,0);
-  cone(0,0,0.2,0.01,0.02,0,0,1);
-
+        cone(0.2,0,0,0.01,0.02,1,0,0);
+        cone(0,0.2,0,0.01,0.02,0,1,0);
+        cone(0,0,0.2,0.01,0.02,0,0,1);
 %}
 
 END

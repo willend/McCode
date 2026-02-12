@@ -34,21 +34,21 @@ DEFINE INSTRUMENT MCPL2hist(string MCPLfile="my.mcpl.gz", int NDoptions=1)
 
 DECLARE
 %{
-  char monopts[128];
+    char monopts[128];
 %}
 
 INITIALIZE
 %{
-  if (NDoptions == 1) {
-    sprintf(monopts,"previous, multiple, auto, x, y, z, vx, vy, vz, hdiv, vdiv, tof, lambda");
-  } else if (NDoptions == 2) {
-    sprintf(monopts,"previous, auto, x, y");
-  } else if (NDoptions == 3) {
-    sprintf(monopts,"previous, auto, tof, lambda");
-  } else {
-    printf("\n%s: Warning: NDoptions=%i is undefined. Your MonitorND will likely give no output.\n\n", NAME_INSTRUMENT, NDoptions);
-  }
-  printf("\n%s: Running with Monitor_nD options \"%s\"\n\n", NAME_INSTRUMENT, monopts);
+    if (NDoptions == 1) {
+        sprintf(monopts,"previous, multiple, auto, x, y, z, vx, vy, vz, hdiv, vdiv, tof, lambda");
+    } else if (NDoptions == 2) {
+        sprintf(monopts,"previous, auto, x, y");
+    } else if (NDoptions == 3) {
+        sprintf(monopts,"previous, auto, tof, lambda");
+    } else {
+        printf("\n%s: Warning: NDoptions=%i is undefined. Your MonitorND will likely give no output.\n\n", NAME_INSTRUMENT, NDoptions);
+    }
+    printf("\n%s: Running with Monitor_nD options \"%s\"\n\n", NAME_INSTRUMENT, monopts);
 %}
 
 TRACE

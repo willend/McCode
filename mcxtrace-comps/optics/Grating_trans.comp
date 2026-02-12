@@ -50,22 +50,22 @@ SETTING PARAMETERS (xwidth=1e-3, yheight=1e-3, period=1e-6,gamma=0.5,zdepth=1e-6
 
 SHARE
 %{
-  %include "read_table-lib"
+    %include "read_table-lib"
 %}
 
 
 DECLARE
 %{
-  int Z;
-  int mu_c;
-  double Ar;
-  double rho;
-  double delta_prefactor;
-  t_Table table;
-  double srho;
-  int smu_c;
-  t_Table stable;
-  int order;
+    int Z;
+    int mu_c;
+    double Ar;
+    double rho;
+    double delta_prefactor;
+    t_Table table;
+    double srho;
+    int smu_c;
+    t_Table stable;
+    int order;
 %}
 
 
@@ -94,24 +94,24 @@ INITIALIZE
     if (header_parsed[1]){Ar=strtod(header_parsed[1],NULL);}
     if (header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
     else{fprintf(stderr,"Warning(%s): %s not found in header of %s, set to 1\n",NAME_CURRENT_COMP,"rho",material);rho=1;}
-    /*which columns holds the mus*/
-    mu_c=5;
-    if (table.columns==3) mu_c=1;
+        /*which columns holds the mus*/
+        mu_c=5;
+        if (table.columns==3) mu_c=1;
 
-    delta_prefactor= NA*(rho*1e-24)/Ar * 2.0*M_PI*RE;
+        delta_prefactor= NA*(rho*1e-24)/Ar * 2.0*M_PI*RE;
 
-    /*read substrate datafile if present*/
-    if ( substrate && strlen(substrate)){
-      if ((status=Table_Read(&(stable),substrate,0))==-1){
-        fprintf(stderr,"Error(%s): Could not parse file \"%s\".\n",NAME_CURRENT_COMP,material);
-        exit(-1);
-      }
-      header_parsed=Table_ParseHeader(stable.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
-      if (header_parsed[2]){srho=strtod(header_parsed[2],NULL);}
+        /*read substrate datafile if present*/
+        if ( substrate && strlen(substrate)){
+            if ((status=Table_Read(&(stable),substrate,0))==-1){
+                fprintf(stderr,"Error(%s): Could not parse file \"%s\".\n",NAME_CURRENT_COMP,material);
+                exit(-1);
+            }
+            header_parsed=Table_ParseHeader(stable.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
+        if (header_parsed[2]){srho=strtod(header_parsed[2],NULL);}
 
-      smu_c=5;
-      if(stable.columns==3) smu_c=1;
-    }
+            smu_c=5;
+            if(stable.columns==3) smu_c=1;
+        }
 %}
 
 
@@ -135,9 +135,9 @@ TRACE
         delta = (fixed_delta ? fixed_delta : f/(k*k) * delta_prefactor);
         mu0=Table_Value(table,e,mu_c)*rho*1e2;
         beta = mu0/(2*k*1e10);
-    
+
         /*pick an order according the relative intensity as given by Schnopper*/
-        
+
         /* correct the period for horizontal angle*/
         thx=atan(fabs(kx/kz));
         period_eff=cos(thx)*period;
@@ -147,13 +147,13 @@ TRACE
         order = floor(rand01()*(max_order*2+1))-max_order;
         /* n_m(q)/N_0(q)=([sin(Mmpi)/Msin(mpi)]^2 [sin( (a/d)mpi)/mpi]^2 [1+exp(-2qzk)-2exp(-qzk)cos(qzdelta)]*/ 
         /* M=number of wires in the grating,
-         * d grating spacing (period)
-         * a width of grating opening (duty-cycle)
-         * z the thickness of grating wire
-         * k imaginary part of refr index
-         * n=1-delta real part of refr index
-         * q wavenumber.
-         */
+        * d grating spacing (period)
+        * a width of grating opening (duty-cycle)
+        * z the thickness of grating wire
+        * k imaginary part of refr index
+        * n=1-delta real part of refr index
+        * q wavenumber.
+        */
 
         /* correct the period for horizontal angle*/
         thx=atan(fabs(kx/kz));
@@ -182,14 +182,14 @@ TRACE
         }else{
             order_likelihood=gamma*gamma + (1-gamma)*(1-gamma)*exp(-2.0*k*1e10*zdepth_eff*beta) - 2.0*gamma*(1-gamma)*exp(-k*1e10*zdepth_eff*beta)*cos(k*1e10*zdepth_eff*delta);
         }
-        
+
         double fmc; 
         fmc=1.0/(max_order*2+1);
         pmul=order_likelihood/fmc;
 
         /*Pick an angle centered on the order*/
         theta=order*2*M_PI/(k*1e10*period_eff);/*the 1e10 factor because k is in AA^-1 and period is in m*/
-        
+
         /* we should rotate around an axis perpendicular to k and in yz-plane*/     
         /*i.e. (ay * ky + az*kz ) = 0 && ay>0 => Without loss of gen. ay=1 => az= -ky/kz*/
         double az;
@@ -197,9 +197,9 @@ TRACE
 
         /*change direction*/
         rotate(kx,ky,kz, kx,ky,kz, theta, 0,1,az);
-        
+
         /*do absorption according to mean absorption coefficient in the "slab",
-          remembering we can be at an angle. Just use the angle theta.*/
+        remembering we can be at an angle. Just use the angle theta.*/
         smu0=Table_Value(stable,e,smu_c)*srho*1e2;
 
         p*=pmul*exp(-smu0*(sdepth)/cos(theta))*exp(-mu0*(zdepth*(1-gamma)));
@@ -211,11 +211,11 @@ MCDISPLAY
 %{
     int i;
     rectangle("xy", 0,0,-(sdepth)/2.0, xwidth,yheight);
-  rectangle("xy", 0,0, (sdepth)/2.0, xwidth,yheight);
-  for (i=-1;i<2;i++){
-    box(period/4.0+i*period,0, sdepth/2.0 + zdepth/2.0, period/2.0, yheight, zdepth,0, 0, 1, 0);  
-    box(-3*period/4.0+ i*period,0, sdepth/2.0 + zdepth/2.0, period/2.0, yheight, zdepth,0, 0, 1, 0);  
-  }
+    rectangle("xy", 0,0, (sdepth)/2.0, xwidth,yheight);
+    for (i=-1;i<2;i++){
+        box(period/4.0+i*period,0, sdepth/2.0 + zdepth/2.0, period/2.0, yheight, zdepth,0, 0, 1, 0);  
+        box(-3*period/4.0+ i*period,0, sdepth/2.0 + zdepth/2.0, period/2.0, yheight, zdepth,0, 0, 1, 0);  
+    }
 %}
 
 END

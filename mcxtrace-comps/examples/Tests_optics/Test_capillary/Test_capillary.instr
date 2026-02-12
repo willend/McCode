@@ -31,26 +31,26 @@ DEFINE INSTRUMENT Test_capillary(TL=0.1, TR=1e-4, L1=3)
 
 DECLARE
 %{
-%}
-/* end of DECLARE */
-USERVARS
-%{
-  int reflecs;
+    %}
+    /* end of DECLARE */
+    USERVARS
+    %{
+        int reflecs;
 %}
 
 INITIALIZE
 %{
-%}
-/* end of INITIALIZE */
+    %}
+    /* end of INITIALIZE */
 
-TRACE
-/* Source description */
+    TRACE
+    /* Source description */
 
-COMPONENT Origin = Progress_bar()
-     AT (0,0,0) ABSOLUTE
-EXTEND
-%{
-    reflecs=0;
+    COMPONENT Origin = Progress_bar()
+    AT (0,0,0) ABSOLUTE
+    EXTEND
+    %{
+        reflecs=0;
 %}
 
 /* a flat constant source */

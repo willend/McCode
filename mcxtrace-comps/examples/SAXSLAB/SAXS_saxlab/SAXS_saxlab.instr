@@ -57,41 +57,37 @@ DEFINE INSTRUMENT SAXS_saxlab(Gamma=1.2 ,GammaP=0 ,S1=.045, S2 =.9, Energy=8.05,
 
 DECLARE
 %{
-  const double sourceh =10e-6;
-  const double sourcev =10e-6;
-  const double divh=9e-3;
-  const double divv =9e-3;
-  const double slitsize =1.5e-3;
-  const double xdet = 0.106 ;
-  const double ydet = 0.084 ;
+    const double sourceh =10e-6;
+    const double sourcev =10e-6;
+    const double divh=9e-3;
+    const double divv =9e-3;
+    const double slitsize =1.5e-3;
+    const double xdet = 0.106 ;
+    const double ydet = 0.084 ;
 
-  const double pin1_xw=1e-3;
-  const double pin1_yh=1e-3;
+    const double pin1_xw=1e-3;
+    const double pin1_yh=1e-3;
 
-  const double pin2_pos=0.2;
-  const double pin2_xw=1e-3;
-  const double pin2_yh=1e-3;
+    const double pin2_pos=0.2;
+    const double pin2_xw=1e-3;
+    const double pin2_yh=1e-3;
 
-  const double pin3_pos=0.4;
-  const double pin3_xw=1e-3;
-  const double pin3_yh=1e-3;
-  
-#define NXval 619
-#define NYval 487
-  double mwidth = 0.02;
-  double mlength = 0.06;
-  int Scatt;
-  double delta ;
+    const double pin3_pos=0.4;
+    const double pin3_xw=1e-3;
+    const double pin3_yh=1e-3;
 
-
-
-
+    #define NXval 619
+    #define NYval 487
+    double mwidth = 0.02;
+    double mlength = 0.06;
+    int Scatt;
+    double delta ;
 %}
 
 
 INITIALIZE
 %{
-  if (GammaP) Gamma=GammaP/sqrt(2);
+    if (GammaP) Gamma=GammaP/sqrt(2);
 %}
 
 TRACE

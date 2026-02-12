@@ -53,8 +53,8 @@ DEFINE INSTRUMENT ILL_Lagrange(lambda=0.897, DM=1.807, RV=-1, string coh="Rb_liq
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double A1,A5; /* rotation of monok and analyser */
-  double RVA;   /* focusing of analyser */
+    double A1,A5; /* rotation of monok and analyser */
+    double RVA;   /* focusing of analyser */
 %}
 
 USERVARS %{
@@ -68,41 +68,41 @@ USERVARS %{
 
 INITIALIZE
 %{
-  double L;
-  double KI, Vi, EI;
-  double KF, Vf, EF, DA, lambdaF;
+    double L;
+    double KI, Vi, EI;
+    double KF, Vf, EF, DA, lambdaF;
 
-  /* incoming beam */
-  KI = (2*PI)/lambda;
-  A1 =asin(lambda/(2*DM))*RAD2DEG;
-  A1 *= -1;
-  L = 1/(1/L1+1/L2);
-  if (RV < 0) RV=2*L*sin(DEG2RAD*A1);
-  Vi = K2V*fabs(KI);
-  EI = VS2E*Vi*Vi;
+    /* incoming beam */
+    KI = (2*PI)/lambda;
+    A1 =asin(lambda/(2*DM))*RAD2DEG;
+    A1 *= -1;
+    L = 1/(1/L1+1/L2);
+    if (RV < 0) RV=2*L*sin(DEG2RAD*A1);
+    Vi = K2V*fabs(KI);
+    EI = VS2E*Vi*Vi;
 
-  /* analyser beam */
-  DA = 3.355; /* PG002 d-spacing */
-  EF = 4.5;
-  Vf = sqrt(EF/VS2E);
-  KF = Vf*V2K;
-  lambdaF = (2*PI)/KF;
-  A5 = asin(lambdaF/(2*DA))*RAD2DEG;
-  RVA = fabs(L3/2/cos(A5*DEG2RAD));
+    /* analyser beam */
+    DA = 3.355; /* PG002 d-spacing */
+    EF = 4.5;
+    Vf = sqrt(EF/VS2E);
+    KF = Vf*V2K;
+    lambdaF = (2*PI)/KF;
+    A5 = asin(lambdaF/(2*DA))*RAD2DEG;
+    RVA = fabs(L3/2/cos(A5*DEG2RAD));
 
-  /* display information */
-  if (verbose) {
-    printf("%s: Detailed Lagrange configuration\n", NAME_INSTRUMENT);
-    printf("* Incoming beam:  lambda=%.4g [Angs] EI=%.4g [meV]  KI=%.4g [Angs-1] Vi=%g [m/s] \n\n",
-      lambda, EI, KI, Vi);
-    printf("* Monochromator:  DM=%.4g [Angs] RV=%.4g [m] %s, take-off A1=%.4g [deg]\n",
-      DM, RV, (!RV ? "flat" : "curved"), A1);
-    printf("* Analyser:       DA=%.4g [Angs] RV=%.4g [m] %s, take-off A5=%.4g [deg]\n",
-      DA, RVA, "curved", A5);
-    printf("* Outgoing beam:  lambda=%.4g [Angs] EF=%.4g [meV]  KF=%.4g [Angs-1] Vf=%g [m/s] \n",
-      lambdaF, EF, KF, Vf);
-  }
-  RV = -fabs(RV);
+    /* display information */
+    if (verbose) {
+        printf("%s: Detailed Lagrange configuration\n", NAME_INSTRUMENT);
+        printf("* Incoming beam:  lambda=%.4g [Angs] EI=%.4g [meV]  KI=%.4g [Angs-1] Vi=%g [m/s] \n\n",
+        lambda, EI, KI, Vi);
+        printf("* Monochromator:  DM=%.4g [Angs] RV=%.4g [m] %s, take-off A1=%.4g [deg]\n",
+        DM, RV, (!RV ? "flat" : "curved"), A1);
+        printf("* Analyser:       DA=%.4g [Angs] RV=%.4g [m] %s, take-off A5=%.4g [deg]\n",
+        DA, RVA, "curved", A5);
+        printf("* Outgoing beam:  lambda=%.4g [Angs] EF=%.4g [meV]  KF=%.4g [Angs-1] Vf=%g [m/s] \n",
+        lambdaF, EF, KF, Vf);
+    }
+    RV = -fabs(RV);
 %}
 
 TRACE
@@ -173,7 +173,7 @@ COMPONENT Sample = Isotropic_Sqw(
   AT (0, 0, 0) RELATIVE SamplePosition
 EXTEND
 %{
-  if (!SCATTERED) ABSORB; /* TIP: perfect beamstop */
+    if (!SCATTERED) ABSORB; /* TIP: perfect beamstop */
 %}
 
 COMPONENT cryostat_out = COPY(cryostat_in)(concentric=0)

@@ -86,55 +86,54 @@ SETTING PARAMETERS (int field_type=0, xwidth=0, yheight=0,zdepth=0, radius=0, Bx
 
 SHARE
 %{
-  %include "pol-lib"
+    %include "pol-lib"
 
-  double fmax(double, double);
-  double fmin(double, double);
+    double fmax(double, double);
+    double fmin(double, double);
 %}
 
 
 DECLARE
 %{
-  /* Larmor frequency and scalar product threshold*/
-  double Bprms[8];
-  int shape;
+    /* Larmor frequency and scalar product threshold*/
+    double Bprms[8];
+    int shape;
 %}
 
 INITIALIZE
 %{
-  enum shapes {NONE=0, BOX, WINDOW, CYLINDER, SPHERE, ANY};
-  enum field_functions ff=field_type;
-  /* these default field functions are part of pol-lib */
-  if (ff==constant){
-    double *t=Bprms;
-    t[0]=Bx;t[1]=By;t[2]=Bz;
-  } else if (ff==rotating){
-    double *t=Bprms;
-    t[0]=By;t[1]=zdepth;
-  } else if (ff==majorana){
-    double *t=Bprms;
-    t[0]=Bx; t[1]=By; t[2]=zdepth;
-  } 
+    enum shapes {NONE=0, BOX, WINDOW, CYLINDER, SPHERE, ANY};
+        enum field_functions ff=field_type;
+        /* these default field functions are part of pol-lib */
+        if (ff==constant){
+            double *t=Bprms;
+            t[0]=Bx;t[1]=By;t[2]=Bz;
+        } else if (ff==rotating){
+            double *t=Bprms;
+            t[0]=By;t[1]=zdepth;
+        } else if (ff==majorana){
+            double *t=Bprms;
+            t[0]=Bx; t[1]=By; t[2]=zdepth;
+        } 
 
-  if(xwidth && yheight && zdepth){
-      shape=BOX;
-  }else if (xwidth && yheight && !zdepth){
-      shape=WINDOW;
-  }else if(radius && yheight){
-      shape=CYLINDER;
-  }else if (radius) {
-      shape=SPHERE;
-  }else{
-      shape=NONE;
-  }
+        if(xwidth && yheight && zdepth){
+            shape=BOX;
+        }else if (xwidth && yheight && !zdepth){
+            shape=WINDOW;
+        }else if(radius && yheight){
+            shape=CYLINDER;
+        }else if (radius) {
+            shape=SPHERE;
+        }else{
+            shape=NONE;
+        }
 
-  if(shape == WINDOW && !concentric){
-      printf("Warning (%s): Magnetic field has window shape and concentric==0 => Field volume == 0.\n",NAME_CURRENT_COMP);
-  }
-  if(shape == NONE) {
-      printf("Warning (%s): Magnetic field has no geometry. Full Z=0-plane is used as boundary.\n",NAME_CURRENT_COMP);
-  }
-
+        if(shape == WINDOW && !concentric){
+            printf("Warning (%s): Magnetic field has window shape and concentric==0 => Field volume == 0.\n",NAME_CURRENT_COMP);
+        }
+        if(shape == NONE) {
+            printf("Warning (%s): Magnetic field has no geometry. Full Z=0-plane is used as boundary.\n",NAME_CURRENT_COMP);
+        }
 %}
 
 TRACE
@@ -143,9 +142,9 @@ TRACE
     int hit;
     enum shapes {NONE=0, BOX, WINDOW, CYLINDER, SPHERE, ANY};
 
-    /*enter through whatever object we are*/
-    switch (shape){
-        case BOX:
+        /*enter through whatever object we are*/
+        switch (shape){
+            case BOX:
             hit=box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,zdepth);
             /*terminate neutrons which miss the component*/
             if(!hit) ABSORB;
@@ -157,7 +156,7 @@ TRACE
                 PROP_DT(t1);
             }
             break;
-        case CYLINDER:
+            case CYLINDER:
             hit=cylinder_intersect(&t0,&t1,x,y,z,vx,vy,vz,radius,yheight);
             /*terminate neutrons which miss the component*/
             if(!hit)ABSORB;
@@ -169,52 +168,52 @@ TRACE
                 PROP_DT(t1);
             }
             break;
-        case WINDOW:
+            case WINDOW:
             PROP_Z0;
             if (2*x>xwidth || 2*x<-xwidth || 2*y>yheight || 2*y<-yheight){
                 /*terminate neutrons which miss the component*/
                 ABSORB;
             }
             break;
-        default:
+            default:
             PROP_Z0;
-    }
-    mcmagnet_push(_particle, field_type,&(ROT_A_CURRENT_COMP),&(POS_A_CURRENT_COMP),0,Bprms);
-#ifdef MCDEBUG
-    mcmagnet_print_stack();
-#endif
+        }
+        mcmagnet_push(_particle, field_type,&(ROT_A_CURRENT_COMP),&(POS_A_CURRENT_COMP),0,Bprms);
+        #ifdef MCDEBUG
+        mcmagnet_print_stack();
+        #endif
 
-    /*does the field "close/stop" itself*/
-    if (!concentric){
-        switch (shape){
-            case BOX:
+        /*does the field "close/stop" itself*/
+        if (!concentric){
+            switch (shape){
+                case BOX:
                 PROP_DT(t1);
                 break;
-            case CYLINDER:
+                case CYLINDER:
                 PROP_DT(t1);
                 break;
-            case WINDOW:
+                case WINDOW:
                 PROP_Z0;
                 /*terminate neutrons which miss the exit window*/
                 if (2*x>xwidth || 2*x<-xwidth || 2*y>yheight || 2*y<-yheight){
                     ABSORB;
                 }
                 break;
-            default:
+                default:
                 PROP_Z0;
+            }
+            mcmagnet_pop(_particle);
         }
-        mcmagnet_pop(_particle);
-    }
 %}
 
 MCDISPLAY
 %{
     enum shapes {NONE=0, BOX, WINDOW, CYLINDER, SPHERE, ANY};
-    switch (shape){
-        case BOX:
-	  box(0,0,0,xwidth,yheight,zdepth,0, 0, 1, 0);
+        switch (shape){
+            case BOX:
+            box(0,0,0,xwidth,yheight,zdepth,0, 0, 1, 0);
             break;
-        case CYLINDER:
+            case CYLINDER:
             circle("xz",0, yheight/2.0,0,radius);
             circle("xz",0,-yheight/2.0,0,radius);
             line(-radius,-yheight/2.0,0,-radius,yheight/2.0,0);
@@ -222,15 +221,15 @@ MCDISPLAY
             line(0,-yheight/2.0,-radius,0,yheight/2.0,-radius);
             line(0,-yheight/2.0, radius,0,yheight/2.0, radius);
             break;
-        case SPHERE:
+            case SPHERE:
             circle("xz",0,0,0,radius);
             circle("xy",0,0,0,radius);
             circle("yz",0,0,0,radius);
             break;
-        case WINDOW:
+            case WINDOW:
             rectangle("xy",0,0,0,xwidth,yheight);
             break;
-    }
+        }
 %}
 
 END

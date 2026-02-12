@@ -40,54 +40,54 @@ DEFINE INSTRUMENT ESS_butterfly_test(string sector="N",beamline=1,Lmin=0.2,Lmax=
 
 DECLARE
 %{
-  double XW, YH;
-  char options1[256],options2[256],options3[256],options4[256];
-  char srcdef[128];
-  double WidthC=0.072,WidthT=0.108;
-  double lambdamin, lambdamax;
-  double CCold,CThermal;
-  double TCollmin;
-  double TCollmax;
-  double EminTh=20, EmaxTh=100, EminC=0, EmaxC=20;
-  #pragma acc declare create(CCold,CThermal,EminC,EmaxC,EminTh,EmaxTh,TCollmin,TCollmax)
+    double XW, YH;
+    char options1[256],options2[256],options3[256],options4[256];
+    char srcdef[128];
+    double WidthC=0.072,WidthT=0.108;
+    double lambdamin, lambdamax;
+    double CCold,CThermal;
+    double TCollmin;
+    double TCollmax;
+    double EminTh=20, EmaxTh=100, EminC=0, EmaxC=20;
+    #pragma acc declare create(CCold,CThermal,EminC,EmaxC,EminTh,EmaxTh,TCollmin,TCollmax)
 %}
 
 USERVARS
 %{
-  int IsCold;
-  double SrcX;
-  double SrcY;
-  double SrcZ;
-  double WL;  
-  double SurfSign;
-  double Eneutron;
-  double Emin;
-  double Emax;
+    int IsCold;
+    double SrcX;
+    double SrcY;
+    double SrcZ;
+    double WL;  
+    double SurfSign;
+    double Eneutron;
+    double Emin;
+    double Emax;
 %}
 
 INITIALIZE
 %{
-  lambdamin=Lmin; 
-  lambdamax=Lmax;
-  XW=1.05*(WidthC+2*WidthT);
-  YH=1.05*Yheight;
-  sprintf(options1,"user1 bins=201 limits=[-%g,%g]",XW/2,XW/2);
-  sprintf(options4,"user1 bins=201 limits=[-%g,%g]",YH/2,YH/2);
-  sprintf(options2,"user1 bins=201 limits=[-%g,%g], user2 bins=201 limits=[-%g,%g]",XW/2,XW/2,YH/2,YH/2);
-  sprintf(options3,"user1 bins=201 limits=[-%g,%g], user2 bins=201 limits=[-%g,%g]",1.05*(WidthC/2),1.05*(WidthC/2),1.05*Yheight/2,1.05*Yheight/2);
-  sprintf(srcdef,"2015");
-  if (beamline==1) {
-    TCollmin=0;
-    TCollmax=0.058;
-  } else if (beamline==2) {
-    TCollmin=0;
-    TCollmax=0.06;
-  }
-  else {
-    TCollmin=0.011;
-    TCollmax=0.071;
-  }
-  #pragma acc update device(CCold,CThermal,EminC,EmaxC,EminTh,EmaxTh,TCollmin,TCollmax)
+    lambdamin=Lmin; 
+    lambdamax=Lmax;
+    XW=1.05*(WidthC+2*WidthT);
+    YH=1.05*Yheight;
+    sprintf(options1,"user1 bins=201 limits=[-%g,%g]",XW/2,XW/2);
+    sprintf(options4,"user1 bins=201 limits=[-%g,%g]",YH/2,YH/2);
+    sprintf(options2,"user1 bins=201 limits=[-%g,%g], user2 bins=201 limits=[-%g,%g]",XW/2,XW/2,YH/2,YH/2);
+    sprintf(options3,"user1 bins=201 limits=[-%g,%g], user2 bins=201 limits=[-%g,%g]",1.05*(WidthC/2),1.05*(WidthC/2),1.05*Yheight/2,1.05*Yheight/2);
+    sprintf(srcdef,"2015");
+    if (beamline==1) {
+        TCollmin=0;
+        TCollmax=0.058;
+    } else if (beamline==2) {
+        TCollmin=0;
+        TCollmax=0.06;
+    }
+    else {
+        TCollmin=0.011;
+        TCollmax=0.071;
+    }
+    #pragma acc update device(CCold,CThermal,EminC,EmaxC,EminTh,EmaxTh,TCollmin,TCollmax)
 %}
 
 TRACE

@@ -52,12 +52,10 @@ DEFINE INSTRUMENT McStas_Single_crystal(string reflections="Al.lau",
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
-
-
+    INITIALIZE
+    %{
 %}
 
 TRACE

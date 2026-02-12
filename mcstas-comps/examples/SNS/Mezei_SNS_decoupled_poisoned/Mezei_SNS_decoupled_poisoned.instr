@@ -31,14 +31,14 @@ DEFINE INSTRUMENT Mezei_SNS_decoupled_poisoned(Lambda_min=0.5,Lambda_max=20)
 
 DECLARE
 %{
-  double E_min;
-  double E_max;
+    double E_min;
+    double E_max;
 %}
 
 INITIALIZE
 %{
-  E_min=81.82/(Lambda_max*Lambda_max);
-  E_max=81.82/(Lambda_min*Lambda_min);
+    E_min=81.82/(Lambda_max*Lambda_max);
+    E_max=81.82/(Lambda_min*Lambda_min);
 %}
 
 /* Here comes the TRACE section, where the actual      */

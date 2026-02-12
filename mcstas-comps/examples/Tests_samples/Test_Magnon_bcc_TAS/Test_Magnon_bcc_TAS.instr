@@ -51,14 +51,14 @@ INITIALIZE
     q = qh*2*PI/aa; 
     A1 = RAD2DEG*asin(1.87325/(2*ki)); 
     if (A3auto == 1) 
-      A3 = RAD2DEG*acos((ki*ki+q*q-kf*kf)/(2*q*ki))+A3offset;
+    A3 = RAD2DEG*acos((ki*ki+q*q-kf*kf)/(2*q*ki))+A3offset;
     else
-      A3 = A3offset;
+    A3 = A3offset;
     A4 = RAD2DEG*acos((ki*ki+kf*kf-q*q)/(2*ki*kf));
     A5 = RAD2DEG*asin(1.87325/(2*kf));
     printf("ki %g , kf %g , q %g , A1 %g , A3 %g , A4 %g , A5 %g \n",ki,kf,q,A1,A3,A4,A5);
-    
-    
+
+
     if (highres == 1)
     {    
         yy = 0.001; 
@@ -82,7 +82,7 @@ INITIALIZE
         eta = 37;
         sample_r = 0.005;
         sample_h = 0.02;
-     }
+    }
 %}
 
 TRACE 

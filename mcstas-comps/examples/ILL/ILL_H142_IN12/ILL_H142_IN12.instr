@@ -46,9 +46,9 @@ DEFINE INSTRUMENT ILL_H142_IN12(m=1, KI=2.662, QM=1.0, EN=0.0, verbose=1, WM=0.0
 
 INITIALIZE
 %{
-  lambda=2*PI/KI;
-  dlambda=lambda*0.015;
-  printf("%s: Incoming wavelength lambda=%g [Angs]\n", NAME_INSTRUMENT, lambda);
+    lambda=2*PI/KI;
+    dlambda=lambda*0.015;
+    printf("%s: Incoming wavelength lambda=%g [Angs]\n", NAME_INSTRUMENT, lambda);
 %}
 
 TRACE

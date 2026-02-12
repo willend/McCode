@@ -35,10 +35,10 @@ DEFINE INSTRUMENT test_Source_custom (
 
 DECLARE 
 %{
-%}
+    %}
 
-INITIALIZE 
-%{
+    INITIALIZE 
+    %{
 %}
 
 TRACE 

@@ -36,13 +36,13 @@ DEFINE INSTRUMENT NSLS2_CHX(L=33.5,L2=35.3,L3=44,Energy=10)
 
 DECLARE
 %{
-	const double source_h=43e-6;
-	const double source_v=7e-6;
-	const double div_h=22e-6;
-	const double div_v=8.8e-6;
-	
-	const double slit_x=44e-6;
-	const double slit_y=1e-3;
+    const double source_h=43e-6;
+    const double source_v=7e-6;
+    const double div_h=22e-6;
+    const double div_v=8.8e-6;
+
+    const double slit_x=44e-6;
+    const double slit_y=1e-3;
 %}
 
 INITIALIZE

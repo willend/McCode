@@ -30,18 +30,18 @@ DEFINE INSTRUMENT MCPL_filter_energy(string MCPLfile="my.mcpl.gz", energy=40, ma
 
 DECLARE
 %{
-  char monopts1[128];
-  char monopts2[128];
+    char monopts1[128];
+    char monopts2[128];
 %}
 
 USERVARS
 %{
-  double Energy;
+    double Energy;
 %}
 INITIALIZE
 %{
-  sprintf(monopts1,"previous E limits=[%g %g] bins=%i",min, energy, bins);
-  sprintf(monopts2,"previous E limits=[%g %g] bins=%i",energy, max, bins);
+    sprintf(monopts1,"previous E limits=[%g %g] bins=%i",min, energy, bins);
+    sprintf(monopts2,"previous E limits=[%g %g] bins=%i",energy, max, bins);
 %}
 
 TRACE

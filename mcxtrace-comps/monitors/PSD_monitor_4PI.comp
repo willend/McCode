@@ -47,61 +47,61 @@ SETTING PARAMETERS (radius=1, restore_xray=0, int nx=90, int ny=90, string filen
 
 DECLARE
 %{
-  DArray2d PSD_N;
-  DArray2d PSD_p;
-  DArray2d PSD_p2;
+    DArray2d PSD_N;
+    DArray2d PSD_p;
+    DArray2d PSD_p2;
 %}
 INITIALIZE
 %{
-  int i,j;
+    int i,j;
 
-  PSD_N = create_darr2d(nx, ny);
-  PSD_p = create_darr2d(nx, ny);
-  PSD_p2 = create_darr2d(nx, ny);
+    PSD_N = create_darr2d(nx, ny);
+    PSD_p = create_darr2d(nx, ny);
+    PSD_p2 = create_darr2d(nx, ny);
 
-  // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+    // Use instance name for monitor output if no input was given
+    if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
 %}
 TRACE
 %{
-  double l0, l1, psi, theta;
-  int i,j;
+    double l0, l1, psi, theta;
+    int i,j;
 
-  if(sphere_intersect(&l0, &l1, x, y, z, kx, ky, kz, radius) && l1 > 0)
-  {
-    if(l0 < 0)
-      l0 = l1;
-    /* l0 is the intersection length with the sphere. */
-    PROP_DL(l0);
-    psi = atan2(x,z);
-    i = floor(nx*(psi/(2*PI)+0.5));
-    if(i >= nx)
-      i = nx-1;                      /* Special case for psi = PI. */
-    else if(i < 0)
-      i = 0;
-    theta=asin(y/radius);
-    j = floor(ny*(theta+PI/2)/PI+0.5);
-    if(j >= ny)
-      j = ny-1;                      /* Special case for y = radius. */
-    else if(j < 0)
-      j = 0;
-    double p2 = p*p;
-#pragma acc atomic
-    PSD_N[i][j] = PSD_N[i][j]+1 ;
-#pragma acc atomic
-    PSD_p[i][j] = PSD_p[i][j] + p;
-#pragma acc atomic
-    PSD_p2[i][j] = PSD_p2[i][j] + p2;
-    SCATTER;
-  }
-  if (restore_xray) {
-    RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
-  }
+    if(sphere_intersect(&l0, &l1, x, y, z, kx, ky, kz, radius) && l1 > 0)
+    {
+        if(l0 < 0)
+        l0 = l1;
+        /* l0 is the intersection length with the sphere. */
+        PROP_DL(l0);
+        psi = atan2(x,z);
+        i = floor(nx*(psi/(2*PI)+0.5));
+        if(i >= nx)
+        i = nx-1;                      /* Special case for psi = PI. */
+        else if(i < 0)
+        i = 0;
+        theta=asin(y/radius);
+        j = floor(ny*(theta+PI/2)/PI+0.5);
+        if(j >= ny)
+        j = ny-1;                      /* Special case for y = radius. */
+        else if(j < 0)
+        j = 0;
+        double p2 = p*p;
+        #pragma acc atomic
+        PSD_N[i][j] = PSD_N[i][j]+1 ;
+        #pragma acc atomic
+        PSD_p[i][j] = PSD_p[i][j] + p;
+        #pragma acc atomic
+        PSD_p2[i][j] = PSD_p2[i][j] + p2;
+        SCATTER;
+    }
+    if (restore_xray) {
+        RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+    }
 %}
 
 SAVE
 %{
-  DETECTOR_OUT_2D(
+    DETECTOR_OUT_2D(
     "4PI PSD monitor",
     "Longitude [deg]",
     "Lattitude [deg]",
@@ -113,18 +113,18 @@ SAVE
 
 FINALLY
 %{
-  destroy_darr2d(PSD_N);
-  destroy_darr2d(PSD_p);
-  destroy_darr2d(PSD_p2);
+    destroy_darr2d(PSD_N);
+    destroy_darr2d(PSD_p);
+    destroy_darr2d(PSD_p2);
 %}
 
 
 MCDISPLAY
 %{
   
-  circle("xy",0,0,0,radius);
-  circle("xz",0,0,0,radius);
-  circle("yz",0,0,0,radius);
+    circle("xy",0,0,0,radius);
+    circle("xz",0,0,0,radius);
+    circle("yz",0,0,0,radius);
 %}
 
 END

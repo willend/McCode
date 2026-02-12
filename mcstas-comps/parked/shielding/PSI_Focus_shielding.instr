@@ -37,61 +37,61 @@ DEFINE INSTRUMENT PSI_Focus_shielding(lambda=4.4, dL=4.0, chopp_ratio=1, DET=-69
 
 DECLARE
 %{
- double lambda;
- double chopp_ratio;
- double DET;
- double PHM, TTM;
- double RV_2, RH_2;
- double FO_PHA;
- double DISC_SPEED, FERMI_SPEED;
- /* mono d-spacing */
- double monodd = 3.355;
- /* time constant [mus/A/m] */
- double c = 252.78;
- /* distance sample - detector */
- double dsd = 2.5;
- /* distance guide - monochromator */
- double dgm = 2.996;
- /* distance fermi-chopper - sample */
- double dfcs = 0.4997;
- /* distance disk chopper - monochromator */
- double ddcm = 2.944;
- /* distance  monochromator - fermi-chopper */
- double mfc = 1.002;
- /* distance  monochromator - sample */
- double dms = 1.4997;
- /* setting range of sources */
- double dL; // 0.7;
- double LMIN, LMAX;
- double EMIN, EMAX;
-/********************/
-//#define MaxRate 3.0   //dose rate requirement at the outer surface of the shielding
-#define M1THICKNESS 1500.0
+    double lambda;
+    double chopp_ratio;
+    double DET;
+    double PHM, TTM;
+    double RV_2, RH_2;
+    double FO_PHA;
+    double DISC_SPEED, FERMI_SPEED;
+    /* mono d-spacing */
+    double monodd = 3.355;
+    /* time constant [mus/A/m] */
+    double c = 252.78;
+    /* distance sample - detector */
+    double dsd = 2.5;
+    /* distance guide - monochromator */
+    double dgm = 2.996;
+    /* distance fermi-chopper - sample */
+    double dfcs = 0.4997;
+    /* distance disk chopper - monochromator */
+    double ddcm = 2.944;
+    /* distance  monochromator - fermi-chopper */
+    double mfc = 1.002;
+    /* distance  monochromator - sample */
+    double dms = 1.4997;
+    /* setting range of sources */
+    double dL; // 0.7;
+    double LMIN, LMAX;
+    double EMIN, EMAX;
+    /********************/
+    //#define MaxRate 3.0   //dose rate requirement at the outer surface of the shielding
+    #define M1THICKNESS 1500.0
 %}
 
 INITIALIZE
 %{
 
- /* setting theta and 2Theta */
- PHM = asin(lambda/2/monodd)*180/PI;
- TTM = 2*PHM;
+    /* setting theta and 2Theta */
+    PHM = asin(lambda/2/monodd)*180/PI;
+    TTM = 2*PHM;
 
- /* setting speed of Fermi chopper, Disk chopper */
- FERMI_SPEED=1.0e6/(PI*lambda*c*(1./tan(PHM*PI/180))*(dsd*pow((1),1.5)+dfcs)*(1.0-(dms/dgm)));
- DISC_SPEED = FERMI_SPEED/chopp_ratio;
+    /* setting speed of Fermi chopper, Disk chopper */
+    FERMI_SPEED=1.0e6/(PI*lambda*c*(1./tan(PHM*PI/180))*(dsd*pow((1),1.5)+dfcs)*(1.0-(dms/dgm)));
+    DISC_SPEED = FERMI_SPEED/chopp_ratio;
 
- /* calculate the phase between Fermi and Disk chopper */
- FO_PHA = (c*lambda*(ddcm+mfc))/1e6;
+    /* calculate the phase between Fermi and Disk chopper */
+    FO_PHA = (c*lambda*(ddcm+mfc))/1e6;
 
- /* setting monochromator curvature */
- RV_2 = 2*dms*(sin(DEG2RAD*PHM));
- RH_2 = 2*dms/(sin(DEG2RAD*PHM));
+    /* setting monochromator curvature */
+    RV_2 = 2*dms*(sin(DEG2RAD*PHM));
+    RH_2 = 2*dms/(sin(DEG2RAD*PHM));
 
- /* setting E and L monitors */
- LMIN = lambda - dL;
- LMAX = lambda + dL;
- EMIN = 81.81/(LMAX*LMAX);
- EMAX = 81.81/(LMIN*LMIN);
+    /* setting E and L monitors */
+    LMIN = lambda - dL;
+    LMAX = lambda + dL;
+    EMIN = 81.81/(LMAX*LMAX);
+    EMAX = 81.81/(LMIN*LMIN);
 %}
 
 TRACE
@@ -121,10 +121,10 @@ COMPONENT log_P_start=Shielding_logger()
 AT (0,0,0) RELATIVE PREVIOUS
 EXTEND
 %{
-#ifdef scatter_logger_stop
-#undef scatter_logger_stop
-#endif
-#define scatter_logger_stop log_P_start
+    #ifdef scatter_logger_stop
+    #undef scatter_logger_stop
+    #endif
+    #define scatter_logger_stop log_P_start
 %}
 
 
@@ -174,10 +174,10 @@ COMPONENT iter_P1_start = Shielding_log_iterator_Ni_new()
 AT (0,0,0) RELATIVE EndOfModerator //ABSOLUTE
 EXTEND
 %{
-#ifdef scatter_iterator_stop
-#undef scatter_iterator_stop
-#endif
-#define scatter_iterator_stop iter_P1_start
+    #ifdef scatter_iterator_stop
+    #undef scatter_iterator_stop
+    #endif
+    #define scatter_iterator_stop iter_P1_start
 %}
 JUMP arm_iter_P1_stop WHEN(optics_not_hit)
 
@@ -219,10 +219,10 @@ COMPONENT iter_P2_start = Shielding_log_iterator_Ti_new()
 AT (0,0,0) RELATIVE EndOfModerator //ABSOLUTE
 EXTEND
 %{
-#ifdef scatter_iterator_stop
-#undef scatter_iterator_stop
-#endif
-#define scatter_iterator_stop iter_P2_start
+    #ifdef scatter_iterator_stop
+    #undef scatter_iterator_stop
+    #endif
+    #define scatter_iterator_stop iter_P2_start
 %}
 JUMP arm_iter_P2_stop WHEN(optics_not_hit)
 
@@ -262,10 +262,10 @@ COMPONENT iter_P3_start = Shielding_log_iterator_total()
 AT (0,0,0) RELATIVE EndOfModerator //ABSOLUTE
 EXTEND
 %{
-#ifdef scatter_iterator_stop
-#undef scatter_iterator_stop
-#endif
-#define scatter_iterator_stop iter_P3_start
+    #ifdef scatter_iterator_stop
+    #undef scatter_iterator_stop
+    #endif
+    #define scatter_iterator_stop iter_P3_start
 %}
 JUMP arm_iter_P3_stop WHEN(optics_not_hit)
 
@@ -552,8 +552,8 @@ AT (0,0,0) RELATIVE PREVIOUS
 
 SAVE
 %{
-%}
-FINALLY
-%{
+    %}
+    FINALLY
+    %{
 %}
 END

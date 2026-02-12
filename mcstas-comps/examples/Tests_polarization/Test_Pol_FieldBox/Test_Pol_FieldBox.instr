@@ -26,14 +26,14 @@ DEFINE INSTRUMENT Test_Pol_FieldBox(pihalfturns=1, int BOX=0)
 
 DECLARE
 %{
-	double L0;
-	double By;
+    double L0;
+    double By;
 %}
 
 INITIALIZE
 %{
-	By=1e-3; /*1mT field*/
-	L0=pihalfturns*PI*PI*K2V/(0.02*1.8325e8 * By);		
+    By=1e-3; /*1mT field*/
+    L0=pihalfturns*PI*PI*K2V/(0.02*1.8325e8 * By);		
 %}
 
 TRACE

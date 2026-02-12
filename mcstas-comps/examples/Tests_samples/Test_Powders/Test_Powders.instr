@@ -64,22 +64,22 @@ DECLARE %{
 INITIALIZE
 %{
 
-  if (!strcmp("Ge",material)) {
-    sprintf(ciffile,"Ge.cif");
-    sprintf(ncmatfile,"autogen_Ge_sg227_cod9011050.ncmat");
-  } else if (!strcmp("Al",material)) {
-    sprintf(ciffile,"Al.cif");
-    sprintf(ncmatfile,"autogen_Al_sg225_cod1502689.ncmat");
-  } else if (!strcmp("LaMnO3",material)) {
-    sprintf(ciffile,"LaMnO3.cif");
-    sprintf(ncmatfile,"autogen_LaMnO3_sg62_cod1006141.ncmat");
-  } else if (!strcmp("NaCl",material)) {
-    sprintf(ciffile,"NaCl.cif");
-    sprintf(ncmatfile,"autogen_ClNa_sg225_cod1000041.ncmat");
-  } else {
-    fprintf(stderr,"Material %s not supported\n",material);
-    exit(-1);
-  }
+    if (!strcmp("Ge",material)) {
+        sprintf(ciffile,"Ge.cif");
+        sprintf(ncmatfile,"autogen_Ge_sg227_cod9011050.ncmat");
+    } else if (!strcmp("Al",material)) {
+        sprintf(ciffile,"Al.cif");
+        sprintf(ncmatfile,"autogen_Al_sg225_cod1502689.ncmat");
+    } else if (!strcmp("LaMnO3",material)) {
+        sprintf(ciffile,"LaMnO3.cif");
+        sprintf(ncmatfile,"autogen_LaMnO3_sg62_cod1006141.ncmat");
+    } else if (!strcmp("NaCl",material)) {
+        sprintf(ciffile,"NaCl.cif");
+        sprintf(ncmatfile,"autogen_ClNa_sg225_cod1000041.ncmat");
+    } else {
+        fprintf(stderr,"Material %s not supported\n",material);
+        exit(-1);
+    }
 %}
 
 /* Here comes the TRACE section, where the actual      */

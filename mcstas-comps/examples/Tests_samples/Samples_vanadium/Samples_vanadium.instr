@@ -34,7 +34,7 @@ DEFINE INSTRUMENT Samples_vanadium(ROT=0)
 
 DECLARE
 %{
-  double coll_div = 60;
+    double coll_div = 60;
 %}
 
 TRACE

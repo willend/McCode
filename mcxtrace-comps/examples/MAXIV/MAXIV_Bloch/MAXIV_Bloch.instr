@@ -84,30 +84,30 @@ DEFINE INSTRUMENT MAXIV_Bloch(
 *******************************************************/
 DECLARE
 %{ 
-   /* values for the undulator */
-   int h; 
-   double E1st; 
-   /*For monitor energies*/
-   double monitor_wl_min,monitor_wl_max, monitor_Emin, monitor_Emax; 
-   /*Parameters for the slits*/
-   double slit_yshit; 
-   /* Angles used in the beamline */
-   double theta_cPGM, theta_PG_NIM, theta_NIM,theta_mirror2, PGM_theta;  
-   /*Parameters to find grating angle theta_cPGM.*/
-   double m, PGM_alpha, PGM_r_rho,PGM_beta,PGM_wl; 
-   /* Distances for monochromtor, for motivation see (R. Sabkari: "ARPES beamline at MAX IV: Detailed optical design report", 2014) */
-   double A,B,C,D,E,F,G,X; 
-   /* Parameters for errors */
-   double M2_theta_error,theta_PG1_error;
-   double M2_theta_error,theta_PG1_error,X_error,y_error ,pitch_error ,yaw_error ,roll_error ,X_error_PGM ,Y_error_PGM ,Z_error_PGM, pitch_error_PGM ,yaw_error_PGM ,roll_error_PGM ,Z_error_exitSlit,
-Opening_error_exitslit;
-   /* MISC*/
-   double R0_cPGM, R0_NIM,d;
-   double MCAngleVariation;
-   double d,a,bb,c,vinkel,beta_wl,beta_rho;
-   //double angle_grating;
-   double alpha,beta;
-   //double mirror2_angle;
+    /* values for the undulator */
+    int h; 
+    double E1st; 
+    /*For monitor energies*/
+    double monitor_wl_min,monitor_wl_max, monitor_Emin, monitor_Emax; 
+    /*Parameters for the slits*/
+    double slit_yshit; 
+    /* Angles used in the beamline */
+    double theta_cPGM, theta_PG_NIM, theta_NIM,theta_mirror2, PGM_theta;  
+    /*Parameters to find grating angle theta_cPGM.*/
+    double m, PGM_alpha, PGM_r_rho,PGM_beta,PGM_wl; 
+    /* Distances for monochromtor, for motivation see (R. Sabkari: "ARPES beamline at MAX IV: Detailed optical design report", 2014) */
+    double A,B,C,D,E,F,G,X; 
+    /* Parameters for errors */
+    double M2_theta_error,theta_PG1_error;
+    double M2_theta_error,theta_PG1_error,X_error,y_error ,pitch_error ,yaw_error ,roll_error ,X_error_PGM ,Y_error_PGM ,Z_error_PGM, pitch_error_PGM ,yaw_error_PGM ,roll_error_PGM ,Z_error_exitSlit,
+    Opening_error_exitslit;
+    /* MISC*/
+    double R0_cPGM, R0_NIM,d;
+    double MCAngleVariation;
+    double d,a,bb,c,vinkel,beta_wl,beta_rho;
+    //double angle_grating;
+    double alpha,beta;
+    //double mirror2_angle;
 %}
 
 
@@ -122,179 +122,179 @@ Opening_error_exitslit;
 *******************************************************/
 INITIALIZE
 %{
-/*
-Description of initialize section: 
-1) Error section.
-2) Undulator section.
-3) Distances in monochromator section.
-4) Calculate wanted energy and corresponding grating order.
-5) Calculating angles used in the monochromator as defined from input parameters.
-6) Monitor definitions.  
-7) Error messages.
-*/
+    /*
+    Description of initialize section: 
+    1) Error section.
+    2) Undulator section.
+    3) Distances in monochromator section.
+    4) Calculate wanted energy and corresponding grating order.
+    5) Calculating angles used in the monochromator as defined from input parameters.
+    6) Monitor definitions.  
+    7) Error messages.
+    */
 
-#include <complex.h>
-/******************************************************
-1)
-Errors: 
-If Error=1, the error in accuracy will be implemented as a random error in the beamline.
-The errors are found from R. Sankari.
-These can easily be implemented.
-*******************************************************/
-M2_theta_error=0;theta_PG1_error=0;X_error=0;y_error=0;pitch_error=0;yaw_error =0;roll_error=0;X_error_PGM =0;Y_error_PGM =0;Z_error_PGM=0; pitch_error_PGM =0;yaw_error_PGM =0;roll_error_PGM =0;
-Z_error_exitSlit=0;Opening_error_exitslit=0;
+    #include <complex.h>
+    /******************************************************
+    1)
+    Errors: 
+    If Error=1, the error in accuracy will be implemented as a random error in the beamline.
+    The errors are found from R. Sankari.
+    These can easily be implemented.
+    *******************************************************/
+    M2_theta_error=0;theta_PG1_error=0;X_error=0;y_error=0;pitch_error=0;yaw_error =0;roll_error=0;X_error_PGM =0;Y_error_PGM =0;Z_error_PGM=0; pitch_error_PGM =0;yaw_error_PGM =0;roll_error_PGM =0;
+    Z_error_exitSlit=0;Opening_error_exitslit=0;
 
-if(Error)
-{
-  M2_theta_error=rand01()*(0.01*(1/3600));
-  theta_PG1_error=rand01()*(0.02*(1/3600));
-  X_error = 5e-6*rand01();
-  y_error = 5e-6*rand01();
-  pitch_error =0.5e-6*rand01()*RAD2DEG;
-  yaw_error = 0.5e-6*rand01()*RAD2DEG;
-  roll_error = 5e-6*rand01()*RAD2DEG;
-  X_error_PGM = 1e-4*rand01();
-  Y_error_PGM = 1e-4*rand01();
-  Z_error_PGM = 1e-4*rand01();
-  pitch_error_PGM =2e-6*rand01()*RAD2DEG; 
-  yaw_error_PGM = 2e-6*rand01()*RAD2DEG;
-  roll_error_PGM = 2e-6*rand01()*RAD2DEG;
-  Z_error_exitSlit = 1e-5*rand01();
-  Opening_error_exitslit = 1e-6*rand01();
-}
+    if(Error)
+    {
+        M2_theta_error=rand01()*(0.01*(1/3600));
+        theta_PG1_error=rand01()*(0.02*(1/3600));
+        X_error = 5e-6*rand01();
+        y_error = 5e-6*rand01();
+        pitch_error =0.5e-6*rand01()*RAD2DEG;
+        yaw_error = 0.5e-6*rand01()*RAD2DEG;
+        roll_error = 5e-6*rand01()*RAD2DEG;
+        X_error_PGM = 1e-4*rand01();
+        Y_error_PGM = 1e-4*rand01();
+        Z_error_PGM = 1e-4*rand01();
+        pitch_error_PGM =2e-6*rand01()*RAD2DEG; 
+        yaw_error_PGM = 2e-6*rand01()*RAD2DEG;
+        roll_error_PGM = 2e-6*rand01()*RAD2DEG;
+        Z_error_exitSlit = 1e-5*rand01();
+        Opening_error_exitslit = 1e-6*rand01();
+    }
 
-/******************************************************
-2)
-Calculate harmonic order(h) and fundamental harmonic(E1st) of the undulator
+    /******************************************************
+    2)
+    Calculate harmonic order(h) and fundamental harmonic(E1st) of the undulator
 
-If SourceChoice!=0 and undulator will be used. 
-*******************************************************/
-h=5;
+    If SourceChoice!=0 and undulator will be used. 
+    *******************************************************/
+    h=5;
     if (E0>15.757){
-	h=7;
+        h=7;
     } else if (E0>20.253){
         h=9;
     } else if (E0>24.753){
-	h=11;
+        h=11;
     }else if (E0>29.254){
         h=13;
     }else if (E0>33.755){
         h=15;
     }
-E1st=1.0018*E0/h;
+    E1st=1.0018*E0/h;
 
-/*******************************************************
-3)
-Distances used in the Monochromator:
-*******************************************************/
+    /*******************************************************
+    3)
+    Distances used in the Monochromator:
+    *******************************************************/
 
-A = 0.064819;
-B = -0.000125;
-C = 0.043821;
-D = 0.020;
-E = 0.620;
-F = 0.042;
-G = 0.140;
-X = 0.072746;
-theta_NIM = (M_PI_2-atan(F/X))*RAD2DEG;
+    A = 0.064819;
+    B = -0.000125;
+    C = 0.043821;
+    D = 0.020;
+    E = 0.620;
+    F = 0.042;
+    G = 0.140;
+    X = 0.072746;
+    theta_NIM = (M_PI_2-atan(F/X))*RAD2DEG;
 
-/*******************************************************
-4)
-Finding wanted energy if none is given
-Finding grating mode if none is given
-*******************************************************/
-if (!Wanted_energy){
-  /* If no wanted energy is given, it is assumed the wanted energy is E0. */
-  printf("Warning: No wanted energy is given. Default is E0=%f keV \n",E0);
-  Wanted_energy = E0;
-}
-if(grating_mode!=1 && grating_mode!=0){
-  // If no grating mode is given, the grating mode will be found using the incoming energy. 
-  if(E0>=0.01 && E0<0.025){
-    grating_mode=1;
-    printf("Exception: Cannot set range [nan, nan]No grating mode is given. The NIM mode will be used. \n");
-  } 
-  else if (E0>=0.025){
-    printf("No grating mode is given. The cPGM mode will be used.\n");
-    grating_mode=0;
-  } 
-  else {
-    printf("Warning:Energy below 1 keV (%f keV), NIM mode is used. \n", E0);
-    grating_mode=0;
-  }
-}
-/*******************************************************
-5)
-Calculating the angle for the monochromator. For motivation, see Urpelainen, Samuli 2014.
-*******************************************************/
-MCAngleVariation=5;
-/*If grating_mode=0, the cPGM will be used.*/
+    /*******************************************************
+    4)
+    Finding wanted energy if none is given
+    Finding grating mode if none is given
+    *******************************************************/
+    if (!Wanted_energy){
+        /* If no wanted energy is given, it is assumed the wanted energy is E0. */
+        printf("Warning: No wanted energy is given. Default is E0=%f keV \n",E0);
+        Wanted_energy = E0;
+    }
+    if(grating_mode!=1 && grating_mode!=0){
+        // If no grating mode is given, the grating mode will be found using the incoming energy. 
+        if(E0>=0.01 && E0<0.025){
+            grating_mode=1;
+            printf("Exception: Cannot set range [nan, nan]No grating mode is given. The NIM mode will be used. \n");
+        } 
+        else if (E0>=0.025){
+            printf("No grating mode is given. The cPGM mode will be used.\n");
+            grating_mode=0;
+        } 
+        else {
+            printf("Warning:Energy below 1 keV (%f keV), NIM mode is used. \n", E0);
+            grating_mode=0;
+        }
+    }
+    /*******************************************************
+    5)
+    Calculating the angle for the monochromator. For motivation, see Urpelainen, Samuli 2014.
+    *******************************************************/
+    MCAngleVariation=5;
+    /*If grating_mode=0, the cPGM will be used.*/
 
-if (cff && !grating_mode){
-  beta_wl = (12.398/Wanted_energy)*pow(10,-10);
-  beta_rho = 1/(r_rho*1000);
-  a = (1-pow(cff,2));
-  bb = 2*pow(cff,2)*(m*beta_wl/beta_rho);
-  c = pow(cff,2)-1-pow(cff,2)*((pow(m,2)*pow(beta_wl,2))/pow(beta_rho,2)); 
-  beta = asin((-bb+sqrt(pow(bb,2)-4*a*c))/(2*a));      
-  alpha =acos(cos(beta)/cff);
-  beta = (beta*RAD2DEG);
-  alpha = alpha*RAD2DEG;
-  angle_grating = (beta+90);   
-  mirror2_angle = ((180+beta-alpha));
-  mirror2_angle= mirror2_angle/2;
-  //            mirror2_angle = (90-blazed_angle+beta);   
-  mirror2_angle = (90+beta);   
-} 
-/*if(blazed && blazed_angle){*/
-/*  angle_grating = angle_grating-blazed_angle;*/
-/*}*/
+    if (cff && !grating_mode){
+        beta_wl = (12.398/Wanted_energy)*pow(10,-10);
+        beta_rho = 1/(r_rho*1000);
+        a = (1-pow(cff,2));
+        bb = 2*pow(cff,2)*(m*beta_wl/beta_rho);
+        c = pow(cff,2)-1-pow(cff,2)*((pow(m,2)*pow(beta_wl,2))/pow(beta_rho,2)); 
+        beta = asin((-bb+sqrt(pow(bb,2)-4*a*c))/(2*a));      
+        alpha =acos(cos(beta)/cff);
+        beta = (beta*RAD2DEG);
+        alpha = alpha*RAD2DEG;
+        angle_grating = (beta+90);   
+        mirror2_angle = ((180+beta-alpha));
+        mirror2_angle= mirror2_angle/2;
+        //            mirror2_angle = (90-blazed_angle+beta);   
+        mirror2_angle = (90+beta);   
+    } 
+    /*if(blazed && blazed_angle){*/
+    /*  angle_grating = angle_grating-blazed_angle;*/
+    /*}*/
 
-if(verbose){
-  fprintf(stdout,"INFO(%s):Monochromator specs: \n Angle of pre-mirror=%f deg. \n Angle of grating=%f deg.\n",instrument_name,mirror2_angle,angle_grating);
-}
-MCAngleVariation=angle_grating*0.99;
-
-
+    if(verbose){
+        fprintf(stdout,"INFO(%s):Monochromator specs: \n Angle of pre-mirror=%f deg. \n Angle of grating=%f deg.\n",instrument_name,mirror2_angle,angle_grating);
+    }
+    MCAngleVariation=angle_grating*0.99;
 
 
-/*******************************************************
-6)
-Monitor definitions:
-*******************************************************/
 
-if(E0 && dE){
-  monitor_Emin = E0-2*dE;
-  monitor_Emax = E0+2*dE;
-} else if(E0 && !dE){
-  monitor_Emin = E0-3e-3;
-  monitor_Emax = E0+3e-2;
-} else if (!E0){
-  printf("\n Error: No Energy is given! \n");
-  exit(-1);
-}
-monitor_wl_max = 12.3984/monitor_Emin;
-monitor_wl_min = 12.3984/monitor_Emax;
 
-/*******************************************************
-7)
-Error messages:
-*******************************************************/
-if (angle_grating>30 || angle_grating<0)
-{
-  fprintf(stderr,"ERROR: cPGM grating angle is out of bounds(%f DEG). Simulation ended.\n",angle_grating);
-  exit(-1);
-}
-if (mirror2_angle>21 || mirror2_angle<0)
-{
-  fprintf(stderr,"ERROR: M2 angle is out of bounds(%f DEG). Simulation ended.\n",mirror2_angle);
-  exit(-1);
-}
-if (theta_PG_NIM>30 || theta_PG_NIM<0)
-{
-  fprintf(stderr,"ERROR: NIM grating angle is out of bounds(%f DEG). Simulation ended.\n",theta_PG_NIM);
-  exit(-1);
-}
+    /*******************************************************
+    6)
+    Monitor definitions:
+    *******************************************************/
+
+    if(E0 && dE){
+        monitor_Emin = E0-2*dE;
+        monitor_Emax = E0+2*dE;
+    } else if(E0 && !dE){
+        monitor_Emin = E0-3e-3;
+        monitor_Emax = E0+3e-2;
+    } else if (!E0){
+        printf("\n Error: No Energy is given! \n");
+        exit(-1);
+    }
+    monitor_wl_max = 12.3984/monitor_Emin;
+    monitor_wl_min = 12.3984/monitor_Emax;
+
+    /*******************************************************
+    7)
+    Error messages:
+    *******************************************************/
+    if (angle_grating>30 || angle_grating<0)
+    {
+        fprintf(stderr,"ERROR: cPGM grating angle is out of bounds(%f DEG). Simulation ended.\n",angle_grating);
+        exit(-1);
+    }
+    if (mirror2_angle>21 || mirror2_angle<0)
+    {
+        fprintf(stderr,"ERROR: M2 angle is out of bounds(%f DEG). Simulation ended.\n",mirror2_angle);
+        exit(-1);
+    }
+    if (theta_PG_NIM>30 || theta_PG_NIM<0)
+    {
+        fprintf(stderr,"ERROR: NIM grating angle is out of bounds(%f DEG). Simulation ended.\n",theta_PG_NIM);
+        exit(-1);
+    }
 %}
 
 /**************************************************************
@@ -527,9 +527,9 @@ AT (0, 0, 0) RELATIVE M3_arm
 ROTATED (90, 0, 0) RELATIVE M3_arm
 EXTEND
 %{
-/*    if(!SCATTERED){*/
-/*        ABSORB;*/
-/*    }*/
+    /*    if(!SCATTERED){*/
+    /*        ABSORB;*/
+    /*    }*/
 %}
 /*    else{*/
 /*        printf("through\n");*/

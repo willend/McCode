@@ -46,39 +46,39 @@ DECLARE %{
 
 INITIALIZE
 %{
-  printf("\nTest_Fermi: ");
-  switch (Fermi) {
-  case 1:
-    printf("Using FermiChopper\n"); break;
-  case 2:
-    printf("Using Vitess_ChopperFermi - unsupported.\n"); exit(0);
-  case 3:
-    printf("Using FermiChopper_ILL\n"); break;
-  case 4:
-    printf("Using rotating Guide_gravity\n"); break;
-  case 5:
-    printf("Using rotating Guide_channeled\n"); break;
-  }
+    printf("\nTest_Fermi: ");
+    switch (Fermi) {
+        case 1:
+        printf("Using FermiChopper\n"); break;
+        case 2:
+        printf("Using Vitess_ChopperFermi - unsupported.\n"); exit(0);
+        case 3:
+        printf("Using FermiChopper_ILL\n"); break;
+        case 4:
+        printf("Using rotating Guide_gravity\n"); break;
+        case 5:
+        printf("Using rotating Guide_channeled\n"); break;
+    }
 
-  double w = width_FC/Nslit_FC;
-  double v = 3956/lambda;
+    double w = width_FC/Nslit_FC;
+    double v = 3956/lambda;
 
-  printf("\nTheor: Lambda=%g [Angs]\n",
+    printf("\nTheor: Lambda=%g [Angs]\n",
     3956*w/2/PI/FC_Hz/length_FC/length_FC/2);
 
-  printf("Theor: Time from source  t=%g [s]\n", d_SF/v);
-  printf("Theor: Time to detection t=%g [s]\n", d_FD/v);
-  printf("       Time period      dt=%g [s]\n", 1/FC_Hz);
-  printf("       Slit pack div       %g [deg] (full width)\n", 2*atan2(w,length_FC)/PI*180);
-  printf("       Time window width  =%g [s] (pulse width)\n",
+    printf("Theor: Time from source  t=%g [s]\n", d_SF/v);
+    printf("Theor: Time to detection t=%g [s]\n", d_FD/v);
+    printf("       Time period      dt=%g [s]\n", 1/FC_Hz);
+    printf("       Slit pack div       %g [deg] (full width)\n", 2*atan2(w,length_FC)/PI*180);
+    printf("       Time window width  =%g [s] (pulse width)\n",
     atan2(w,length_FC)/PI/FC_Hz);
-  printf("       Phase           phi=%g [deg]\n", (d_SF/v)/(1/FC_Hz)*360);
+    printf("       Phase           phi=%g [deg]\n", (d_SF/v)/(1/FC_Hz)*360);
 
-  time_to_arrival  = (d_SF/v);
-  time_window_width = atan2(w,length_FC)/PI/FC_Hz;
-  if (phase == -0) phase=(d_SF/v)/(1/FC_Hz)*360; /* assumes time at source is centered on 0 */
-  Time_window_width = time_window_width;
-  #pragma acc update device(Time_window_width)
+    time_to_arrival  = (d_SF/v);
+    time_window_width = atan2(w,length_FC)/PI/FC_Hz;
+    if (phase == -0) phase=(d_SF/v)/(1/FC_Hz)*360; /* assumes time at source is centered on 0 */
+    Time_window_width = time_window_width;
+    #pragma acc update device(Time_window_width)
 %}
 
 TRACE

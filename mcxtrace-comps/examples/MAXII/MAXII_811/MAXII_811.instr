@@ -65,25 +65,25 @@ DEFINE INSTRUMENT MAXII_811(
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  const double prim_slit_L=6.4;
-  const double ap2_L=6;
-  const double ap3_L=7;
+    const double prim_slit_L=6.4;
+    const double ap2_L=6;
+    const double ap3_L=7;
 
-  const double att_filter1_L=16;
-  const double c_filter_L=17;
+    const double att_filter1_L=16;
+    const double c_filter_L=17;
 
-  double mono1_y;
-  double mono2_z;
-  double mono2_y;
+    double mono1_y;
+    double mono2_z;
+    double mono2_y;
 
-  const double Delta_y=25e-3;
+    const double Delta_y=25e-3;
 
-  double mirror1_angle;
-  double mirror2_angle;
-  const double M2_L=20;
+    double mirror1_angle;
+    double mirror2_angle;
+    const double M2_L=20;
 
-  double Lmin;
-  double Lmax;
+    double Lmin;
+    double Lmax;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
@@ -91,42 +91,41 @@ DECLARE
 INITIALIZE
 %{
 
-  if (M1 && M1_pitch){
-    mirror1_angle=RAD2DEG*1e-3*M1_pitch;
-  }else{
-    mirror1_angle=0;
-  }
+    if (M1 && M1_pitch){
+        mirror1_angle=RAD2DEG*1e-3*M1_pitch;
+    }else{
+        mirror1_angle=0;
+    }
 
-  if (M2 && !M2_pitch){
-    mirror2_angle=mirror1_angle;
-  }else if(M2){
-    mirror2_angle=RAD2DEG*1e-3*M2_pitch;
-  }else{
-    mirror2_angle=0;
-  }
+    if (M2 && !M2_pitch){
+        mirror2_angle=mirror1_angle;
+    }else if(M2){
+        mirror2_angle=RAD2DEG*1e-3*M2_pitch;
+    }else{
+        mirror2_angle=0;
+    }
 
-  /*the lower monchromator must be displaced to catch the beam from the mirrors*/
-  mono1_y=8*sin(2*mirror1_angle*DEG2RAD);
-  /*now compute the position of mono2*/
-  double beta=DEG2RAD*(2*theta-2*mirror1_angle);
-  if (beta<=0){
-    fprintf(stderr,"ERROR: (%s): theta (%g) must be larger than mirror 1 deflection angle (%g) to match fixed exit criterion.\n",instrument_name,theta,mirror1_angle);
-    exit(-1);
-  }
+    /*the lower monchromator must be displaced to catch the beam from the mirrors*/
+    mono1_y=8*sin(2*mirror1_angle*DEG2RAD);
+    /*now compute the position of mono2*/
+    double beta=DEG2RAD*(2*theta-2*mirror1_angle);
+    if (beta<=0){
+        fprintf(stderr,"ERROR: (%s): theta (%g) must be larger than mirror 1 deflection angle (%g) to match fixed exit criterion.\n",instrument_name,theta,mirror1_angle);
+        exit(-1);
+    }
 
-  if (mirror2_angle==0){
-    double t=(-mono1_y+Delta_y)/sin(beta);
-    mono2_y=mono1_y+t*sin(beta);
-    mono2_z=8+t*cos(beta);
-  }else{
-    double t,s;
-    s=( (mono1_y+Delta_y) - tan(beta)*(10-8))/(-sin(2*DEG2RAD*mirror2_angle)-cos( 2*DEG2RAD*mirror2_angle)*tan(beta) );
-    mono2_y=(Delta_y)+s*sin(2*DEG2RAD*mirror2_angle);
-    mono2_z=10-s*cos(2*DEG2RAD*mirror2_angle);
-  }
-  Lmin=2*M_PI/(E2K*20);
-  Lmax=2*M_PI/(E2K*0.1);
-
+    if (mirror2_angle==0){
+        double t=(-mono1_y+Delta_y)/sin(beta);
+        mono2_y=mono1_y+t*sin(beta);
+        mono2_z=8+t*cos(beta);
+    }else{
+        double t,s;
+        s=( (mono1_y+Delta_y) - tan(beta)*(10-8))/(-sin(2*DEG2RAD*mirror2_angle)-cos( 2*DEG2RAD*mirror2_angle)*tan(beta) );
+        mono2_y=(Delta_y)+s*sin(2*DEG2RAD*mirror2_angle);
+        mono2_z=10-s*cos(2*DEG2RAD*mirror2_angle);
+    }
+    Lmin=2*M_PI/(E2K*20);
+    Lmax=2*M_PI/(E2K*0.1);
 %}
 
 /* Here comes the TRACE section, where the actual      */
@@ -318,7 +317,7 @@ SPLIT COMPONENT si_sample = PowderN(
 AT (0, 0, 0) RELATIVE diff_sample_pos
 EXTEND
 %{
-  if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT tth_arm=Arm()

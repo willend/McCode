@@ -54,11 +54,11 @@ DEPENDENCY " @NCRYSTALFLAGS@ -DFUNNEL "
 
 DECLARE 
 %{
-%}
+    %}
 
-INITIALIZE 
-%{
-// Start of initialize for generated imaging
+    INITIALIZE 
+    %{
+        // Start of initialize for generated imaging
 %}
 
 TRACE 
@@ -166,7 +166,7 @@ ROTATED (0.0, 0.0, 0.0) RELATIVE arm_sample_position
 
 FINALLY 
 %{
-// Start of finally for generated imaging
+    // Start of finally for generated imaging
 %}
 
 END

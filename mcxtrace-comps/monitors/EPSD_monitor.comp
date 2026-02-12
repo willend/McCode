@@ -69,15 +69,15 @@ INITIALIZE
     ymax = yheight/2; ymin = -ymax;
 
     if ((xmin >= xmax) || (ymin >= ymax)) {
-      fprintf(stderr,"ERROR (%s): Null detection area! Aborting.\n",NAME_CURRENT_COMP);
-      exit(-1);
+        fprintf(stderr,"ERROR (%s): Null detection area! Aborting.\n",NAME_CURRENT_COMP);
+        exit(-1);
     }
     if (Emax<=Emin){
-      fprintf(stderr,"ERROR (%s): Unmeaningful energy interval E:[%g,%g]\n Aborting",NAME_CURRENT_COMP,Emin,Emax);
-      exit(-1);
+        fprintf(stderr,"ERROR (%s): Unmeaningful energy interval E:[%g,%g]\n Aborting",NAME_CURRENT_COMP,Emin,Emax);
+        exit(-1);
     }
     if (Emax==0){
-      Emax=FLT_MAX;
+        Emax=FLT_MAX;
     }
 
     if (nE>1){
@@ -102,99 +102,99 @@ TRACE
     e=sqrt(scalar_prod(kx,ky,kz,kx,ky,kz))*K2E;
     if (x>xmin && x<xmax && y>ymin && y<ymax && e<Emax && e>Emin )
     {
-      i = floor((x - xmin)*nx/(xmax - xmin));
-      j = floor((y - ymin)*ny/(ymax - ymin));
-      k = floor((e-Emin)*nE/(Emax-Emin));
+        i = floor((x - xmin)*nx/(xmax - xmin));
+        j = floor((y - ymin)*ny/(ymax - ymin));
+        k = floor((e-Emin)*nE/(Emax-Emin));
 
-      p2=p*p;
-      if (nE>1){
-#pragma acc atomic
-        PSD_N[k][i*ny+j] += 1;
-#pragma acc atomic
-        PSD_p[k][i*ny+j] += p;
-#pragma acc atomic
-        PSD_p2[k][i*ny+j] += p2;
-      }
-#pragma acc atomic
-      PSD_N_s[i][j] += 1;
-#pragma acc atomic
-      PSD_p_s[i][j] += p;
-#pragma acc atomic
-      PSD_p2_s[i][j] += p2;
-      SCATTER;
+        p2=p*p;
+        if (nE>1){
+            #pragma acc atomic
+            PSD_N[k][i*ny+j] += 1;
+            #pragma acc atomic
+            PSD_p[k][i*ny+j] += p;
+            #pragma acc atomic
+            PSD_p2[k][i*ny+j] += p2;
+        }
+        #pragma acc atomic
+        PSD_N_s[i][j] += 1;
+        #pragma acc atomic
+        PSD_p_s[i][j] += p;
+        #pragma acc atomic
+        PSD_p2_s[i][j] += p2;
+        SCATTER;
     }
     if (restore_xray) {
-      RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+        RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
     }
 %}
 
 SAVE
 %{
     if(!nowritefile){
-      if (nE<=1){
-          DETECTOR_OUT_2D(
-                  "PSD monitor",
-                  "X position [m]",
-                  "Y position [m]",
-                  xmin, xmax, ymin, ymax,
-                  nx, ny,
-                  &PSD_N_s[0][0],&PSD_p_s[0][0],&PSD_p2_s[0][0],
-                  filename);
-      }else{
-          int kk;
-          char ff[256];
-          char tt[256];
+        if (nE<=1){
+            DETECTOR_OUT_2D(
+            "PSD monitor",
+            "X position [m]",
+            "Y position [m]",
+            xmin, xmax, ymin, ymax,
+            nx, ny,
+            &PSD_N_s[0][0],&PSD_p_s[0][0],&PSD_p2_s[0][0],
+            filename);
+        }else{
+            int kk;
+            char ff[256];
+            char tt[256];
 
-          /*figure out padding to make the files appear in alphanuerical order*/
-          char  format[32];
-          snprintf(format,32,"%%s_%%0%ui",(int) floor(log(nE)/log(10.0))+1);
-          sprintf(ff, "%s_Sum",filename);
+            /*figure out padding to make the files appear in alphanuerical order*/
+            char  format[32];
+            snprintf(format,32,"%%s_%%0%ui",(int) floor(log(nE)/log(10.0))+1);
+            sprintf(ff, "%s_Sum",filename);
 
-          DETECTOR_OUT_2D(
-                  "PSD monitor Energy Sum",
-                  "X position [m]",
-                  "Y position [m]",
-                  xmin, xmax, ymin, ymax,
-                  nx, ny,
-                  &PSD_N_s[0][0],&PSD_p_s[0][0],&PSD_p2_s[0][0],
-                  ff);
-  
-          for (kk=0; kk<nE; kk++) {
-              sprintf(ff, format,filename,kk);
-              sprintf(tt, "PSD monitor Energy slice %i ~ %g keV",kk,Emin+kk*(Emax-Emin)/nE);
-              DETECTOR_OUT_2D(
-                      tt,
-                      "X position [m]",
-                      "Y position [m]",
-                      xmin, xmax, ymin, ymax, nx, ny,
-                      &PSD_N[kk][0],&PSD_p[kk][0],&PSD_p2[kk][0],
-                      ff);
-          }
-      }
+            DETECTOR_OUT_2D(
+            "PSD monitor Energy Sum",
+            "X position [m]",
+            "Y position [m]",
+            xmin, xmax, ymin, ymax,
+            nx, ny,
+            &PSD_N_s[0][0],&PSD_p_s[0][0],&PSD_p2_s[0][0],
+            ff);
+
+            for (kk=0; kk<nE; kk++) {
+                sprintf(ff, format,filename,kk);
+                sprintf(tt, "PSD monitor Energy slice %i ~ %g keV",kk,Emin+kk*(Emax-Emin)/nE);
+                DETECTOR_OUT_2D(
+                tt,
+                "X position [m]",
+                "Y position [m]",
+                xmin, xmax, ymin, ymax, nx, ny,
+                &PSD_N[kk][0],&PSD_p[kk][0],&PSD_p2[kk][0],
+                ff);
+            }
+        }
     }
 %}
 
 FINALLY
 %{
-  if(nE>1){
-    destroy_darr2d(PSD_N);
-    destroy_darr2d(PSD_p);
-    destroy_darr2d(PSD_p2);
-  }
+    if(nE>1){
+        destroy_darr2d(PSD_N);
+        destroy_darr2d(PSD_p);
+        destroy_darr2d(PSD_p2);
+    }
 
-  destroy_darr2d(PSD_N_s);
-  destroy_darr2d(PSD_p_s);
-  destroy_darr2d(PSD_p2_s);
+    destroy_darr2d(PSD_N_s);
+    destroy_darr2d(PSD_p_s);
+    destroy_darr2d(PSD_p2_s);
 %}
 
 MCDISPLAY
 %{
   
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+    multiline(5, (double)xmin, (double)ymin, 0.0,
+    (double)xmax, (double)ymin, 0.0,
+    (double)xmax, (double)ymax, 0.0,
+    (double)xmin, (double)ymax, 0.0,
+    (double)xmin, (double)ymin, 0.0);
 %}
 
 END

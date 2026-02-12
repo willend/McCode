@@ -34,20 +34,20 @@ DEFINE INSTRUMENT Test_RNG_randvec_target_circle(Ncount=1000000,int seed=0, dist
 
 DECLARE
 %{
-  double p0;
-  #pragma acc declare create(p0)
-  double Dist;
-  #pragma acc declare create(Dist)
+    double p0;
+    #pragma acc declare create(p0)
+    double Dist;
+    #pragma acc declare create(Dist)
 %}
 
 INITIALIZE
 %{
-  mcset_ncount(Ncount);
-  if (seed) mcseed = seed;
-  p0=1.0/mcget_ncount();
-  #pragma acc update device(p0)
-  Dist=dist;
-  #pragma acc update device(Dist)
+    mcset_ncount(Ncount);
+    if (seed) mcseed = seed;
+    p0=1.0/mcget_ncount();
+    #pragma acc update device(p0)
+    Dist=dist;
+    #pragma acc update device(Dist)
 %}
 
 TRACE

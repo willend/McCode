@@ -54,10 +54,10 @@ DEFINE INSTRUMENT McStas_Isotropic_Sqw(string Sqw_coh="Rb_liq_coh.sqw", string S
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

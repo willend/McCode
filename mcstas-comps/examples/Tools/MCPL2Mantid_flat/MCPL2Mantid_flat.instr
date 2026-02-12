@@ -53,22 +53,22 @@ DEPENDENCY " @NEXUSFLAGS@ "
 
 DECLARE
 %{
-  char monopts1[128];
-  char monopts2[128];
-  double xmin,xmax,ymin,ymax;
+    char monopts1[128];
+    char monopts2[128];
+    double xmin,xmax,ymin,ymax;
 %}
 
 INITIALIZE
 %{
-  xmin = -xwidth/2.0;
-  xmax = xwidth/2.0;
-  ymin = -yheight/2.0;
-  ymax = yheight/2.0;
-  
-  sprintf(monopts1,"square x limits=[%g %g] bins=%d y limits=[%g %g] bins=%d", xmin, xmax, xbins, ymin, ymax, ybins);
-  sprintf(monopts2,"mantid square x limits=[%g %g] bins=%d y limits=[%g %g] bins=%d, neutron pixel min=0 t, list all neutrons", xmin, xmax, xbins, ymin, ymax, ybins);
-  printf("%s\n",monopts1);
-  printf("%s\n",monopts2);
+    xmin = -xwidth/2.0;
+    xmax = xwidth/2.0;
+    ymin = -yheight/2.0;
+    ymax = yheight/2.0;
+
+    sprintf(monopts1,"square x limits=[%g %g] bins=%d y limits=[%g %g] bins=%d", xmin, xmax, xbins, ymin, ymax, ybins);
+    sprintf(monopts2,"mantid square x limits=[%g %g] bins=%d y limits=[%g %g] bins=%d, neutron pixel min=0 t, list all neutrons", xmin, xmax, xbins, ymin, ymax, ybins);
+    printf("%s\n",monopts1);
+    printf("%s\n",monopts2);
 %}
 
 TRACE

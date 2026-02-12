@@ -33,12 +33,12 @@ DEFINE INSTRUMENT Test_RNG_randpm1(Ncount=1000,int seed=0)
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
-  mcset_ncount(Ncount);
-  if (seed) mcseed = seed;
+    INITIALIZE
+    %{
+        mcset_ncount(Ncount);
+        if (seed) mcseed = seed;
 %}
 
 TRACE

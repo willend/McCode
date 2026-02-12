@@ -44,15 +44,15 @@ DEPENDENCY " @NEXUSFLAGS@ "
 
 DECLARE
 %{ 
-	double e_min, e_max, SDD,SDI; 
+    double e_min, e_max, SDD,SDI; 
 %}
 
 INITIALIZE 
 %{ 
-	e_min=81.799/l_max/l_max;
-	e_max=81.799/l_min/l_min;
-        /*sample-detector distance diffraction= 2 m.*/
-        SDD=2;
+    e_min=81.799/l_max/l_max;
+    e_max=81.799/l_min/l_min;
+    /*sample-detector distance diffraction= 2 m.*/
+    SDD=2;
 %}
 
 TRACE

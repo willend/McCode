@@ -38,30 +38,29 @@ DEPENDENCY " -DLOADPATH=@MCCODE_LIB@/data "
 
 DECLARE
 %{
-  unsigned long long phid;
+    unsigned long long phid;
 
-  double deth,detw;
-  double troh=1.4;
-  double trow=0.6;
+    double deth,detw;
+    double troh=1.4;
+    double trow=0.6;
 
-  int dNx,dNy;
+    int dNx,dNy;
 %}
 
 
 INITIALIZE
 %{
-  /*set some geometry parameters*/
-  double s=1;
+    /*set some geometry parameters*/
+    double s=1;
 
-  dNy=200/s;//(int)(deth/1e-3);
-  dNx=200/s;//(int)(detw/1e-3);
+    dNy=200/s;//(int)(deth/1e-3);
+    dNx=200/s;//(int)(detw/1e-3);
 
-  deth=s*dNy*2e-3;//7.0/6.0*troh;
-  detw=s*dNx*2e-3;//7.0/6.0*trow;
-  
-  if (Ncount>0)
+    deth=s*dNy*2e-3;//7.0/6.0*troh;
+    detw=s*dNx*2e-3;//7.0/6.0*trow;
+
+    if (Ncount>0)
     mcset_ncount(Ncount);
-  
 %}
 
 TRACE

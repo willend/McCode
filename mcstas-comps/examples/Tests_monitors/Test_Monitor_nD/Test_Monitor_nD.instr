@@ -47,14 +47,14 @@ USERVARS %{
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  V=K2V*(2*PI/lambda);
-  E=VS2E*V*V;
-  T=L1/V;
-  sprintf(lmonopts,"lambda limits=[%g %g] bins=%i",0.985*lambda,1.025*lambda,bins);
-  sprintf(xyopts,"x bins=%i, y bins=%i",bins,bins);
-  sprintf(divopts,"hdiv limits=[%g %g] bins=%i, vdiv limits=[%g %g] bins=%i",-hdiv,hdiv,bins,-vdiv,vdiv,bins);
-  sprintf(eopts,"energy limits=[%g %g] bins=%i",0.9*E,1.1*E,bins);
-  sprintf(tofopts,"tof limits=[%g %g] bins=%i",0.985*T,1.025*T,bins);
+    V=K2V*(2*PI/lambda);
+    E=VS2E*V*V;
+    T=L1/V;
+    sprintf(lmonopts,"lambda limits=[%g %g] bins=%i",0.985*lambda,1.025*lambda,bins);
+    sprintf(xyopts,"x bins=%i, y bins=%i",bins,bins);
+    sprintf(divopts,"hdiv limits=[%g %g] bins=%i, vdiv limits=[%g %g] bins=%i",-hdiv,hdiv,bins,-vdiv,vdiv,bins);
+    sprintf(eopts,"energy limits=[%g %g] bins=%i",0.9*E,1.1*E,bins);
+    sprintf(tofopts,"tof limits=[%g %g] bins=%i",0.985*T,1.025*T,bins);
 %}
 
 /* Here comes the TRACE section, where the actual      */

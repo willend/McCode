@@ -55,76 +55,76 @@ DEFINE INSTRUMENT Mirror_validation(
 
 DECLARE 
 %{
-%}
+    %}
 
-USERVARS
-%{
-int scattered;
+    USERVARS
+    %{
+        int scattered;
 %}
 
 INITIALIZE 
 %{
-%}
+    %}
 
-TRACE 
-COMPONENT init = Union_init()
-AT (0,0,0) ABSOLUTE
+    TRACE 
+    COMPONENT init = Union_init()
+    AT (0,0,0) ABSOLUTE
 
-// Union materials	
-COMPONENT Ni_total = NCrystal_process(
-  cfg = "Ni_sg225.ncmat;temp=10C")
-AT (0,0,0) ABSOLUTE
+    // Union materials	
+    COMPONENT Ni_total = NCrystal_process(
+    cfg = "Ni_sg225.ncmat;temp=10C")
+    AT (0,0,0) ABSOLUTE
 
-COMPONENT Ni = Union_make_material(
-  process_string = "Ni_total", my_absorption = 41.0437,
-  refraction_SLD = 9.41537E-06)
-AT (0,0,0) ABSOLUTE
-	  
-// Union Mirror surface
-COMPONENT mirror = Mirror_surface(
-  R0 = R0_value, Qc = Qc_value,
-  alpha = alpha_value, m = m_value,
-  W = W_value)
-AT (0,0,0) ABSOLUTE
+    COMPONENT Ni = Union_make_material(
+    process_string = "Ni_total", my_absorption = 41.0437,
+    refraction_SLD = 9.41537E-06)
+    AT (0,0,0) ABSOLUTE
 
-COMPONENT source = Source_simple(
- yheight = 1E-08, xwidth = 0.01,
- dist = 1, focus_xw = 0.01,
- focus_yh = 1E-08, lambda0 = 4,
- dlambda = 0.01, flux = 1E+16)
-AT (0,0,0) ABSOLUTE
+    // Union Mirror surface
+    COMPONENT mirror = Mirror_surface(
+    R0 = R0_value, Qc = Qc_value,
+    alpha = alpha_value, m = m_value,
+    W = W_value)
+    AT (0,0,0) ABSOLUTE
 
-COMPONENT detector_source = PSD_monitor(
- nx = 50, ny = 60,
- filename = "PSD_source.dat", xwidth = 0.02,
- yheight = 0.002, restore_neutron = 1)
-AT (0,0,0.01) RELATIVE source
+    COMPONENT source = Source_simple(
+    yheight = 1E-08, xwidth = 0.01,
+    dist = 1, focus_xw = 0.01,
+    focus_yh = 1E-08, lambda0 = 4,
+    dlambda = 0.01, flux = 1E+16)
+    AT (0,0,0) ABSOLUTE
 
-COMPONENT sample_position = Arm()
-AT (0,0,1) RELATIVE source
+    COMPONENT detector_source = PSD_monitor(
+    nx = 50, ny = 60,
+    filename = "PSD_source.dat", xwidth = 0.02,
+    yheight = 0.002, restore_neutron = 1)
+    AT (0,0,0.01) RELATIVE source
 
-COMPONENT sample_arm = Arm()
-AT (0,0,0) RELATIVE sample_position
-ROTATED (-angle,0,0) RELATIVE sample_position
+    COMPONENT sample_position = Arm()
+    AT (0,0,1) RELATIVE source
 
-COMPONENT sample = Union_box(
- material_string = "Ni", priority = 4,
- xwidth = 0.1, yheight = 0.004,
- zdepth = 0.3, plus_y_surface = "mirror")
-AT (0,-0.002,0) RELATIVE sample_arm
+    COMPONENT sample_arm = Arm()
+    AT (0,0,0) RELATIVE sample_position
+    ROTATED (-angle,0,0) RELATIVE sample_position
 
-// Reference sample with same dimensions as the union box and rotated to match 
-COMPONENT ref_mirror = Mirror(
- xwidth = 0.1, yheight = 0.3,
- R0 = R0_value, Qc = Qc_value,
- alpha = alpha_value, m = m_value,
- W = W_value, center = 1,
- transmit = 1)
-WHEN (ref_component==1)
-AT (0,0,0) RELATIVE sample_arm
-ROTATED (90,0,0) RELATIVE sample_arm
-EXTEND %{
-scattered = 0;
+    COMPONENT sample = Union_box(
+    material_string = "Ni", priority = 4,
+    xwidth = 0.1, yheight = 0.004,
+    zdepth = 0.3, plus_y_surface = "mirror")
+    AT (0,-0.002,0) RELATIVE sample_arm
+
+    // Reference sample with same dimensions as the union box and rotated to match 
+    COMPONENT ref_mirror = Mirror(
+    xwidth = 0.1, yheight = 0.3,
+    R0 = R0_value, Qc = Qc_value,
+    alpha = alpha_value, m = m_value,
+    W = W_value, center = 1,
+    transmit = 1)
+    WHEN (ref_component==1)
+    AT (0,0,0) RELATIVE sample_arm
+    ROTATED (90,0,0) RELATIVE sample_arm
+    EXTEND %{
+        scattered = 0;
 %}
 
 COMPONENT master = Union_master(enable_reflection=1)

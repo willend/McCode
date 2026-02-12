@@ -81,27 +81,27 @@ DEFINE INSTRUMENT ESS_IN5_reprate(Lmin=4.9, Lmax=5.1, lambda0=5, Pulse_width=2.8
 
 DECLARE
 %{
-        double FREQ;
-        double t_FO1, t_FO2, t_fast1, t_fast2, t_fast2a, t_fast3, t_sample, t_detector;
-        double tmin_zoom, tmax_zoom, t_offset;
-        double E_target;
+    double FREQ;
+    double t_FO1, t_FO2, t_fast1, t_fast2, t_fast2a, t_fast3, t_sample, t_detector;
+    double tmin_zoom, tmax_zoom, t_offset;
+    double E_target;
 %}
 
 INITIALIZE
 %{
-        FREQ = ESS_SOURCE_FREQUENCY;
-        t_offset=Pulse_width/2.0+170e-6;
-        t_FO1 = FO1_DIST*lambda0/(2*PI*K2V)+t_offset;
-        t_FO2 = Length/2*lambda0/(2*PI*K2V)+t_offset;
-        t_fast1 = (Length/2+0.1)*lambda0/(2*PI*K2V)+t_offset;
-        t_fast2 = Length*lambda0/(2*PI*K2V)+t_offset;
-        t_fast2a = (Length+GUI_GAP)*lambda0/(2*PI*K2V)+t_offset;
-        t_fast3 = (Length+2*GUI_GAP)*lambda0/(2*PI*K2V)+t_offset;
-        t_sample = (Length+SAMPLE_DIST)*lambda0/(2*PI*K2V)+t_offset;
-        t_detector = (Length+SAMPLE_DIST+DETECTOR_DIST)*lambda0/(2*PI*K2V)+t_offset;
-        tmin_zoom = t_fast2*1e6-1e3;
-        tmax_zoom = t_fast2*1e6+1e3;
-        E_target = VS2E*(K2V*2*PI/lambda0)*(K2V*2*PI/lambda0);
+    FREQ = ESS_SOURCE_FREQUENCY;
+    t_offset=Pulse_width/2.0+170e-6;
+    t_FO1 = FO1_DIST*lambda0/(2*PI*K2V)+t_offset;
+    t_FO2 = Length/2*lambda0/(2*PI*K2V)+t_offset;
+    t_fast1 = (Length/2+0.1)*lambda0/(2*PI*K2V)+t_offset;
+    t_fast2 = Length*lambda0/(2*PI*K2V)+t_offset;
+    t_fast2a = (Length+GUI_GAP)*lambda0/(2*PI*K2V)+t_offset;
+    t_fast3 = (Length+2*GUI_GAP)*lambda0/(2*PI*K2V)+t_offset;
+    t_sample = (Length+SAMPLE_DIST)*lambda0/(2*PI*K2V)+t_offset;
+    t_detector = (Length+SAMPLE_DIST+DETECTOR_DIST)*lambda0/(2*PI*K2V)+t_offset;
+    tmin_zoom = t_fast2*1e6-1e3;
+    tmax_zoom = t_fast2*1e6+1e3;
+    E_target = VS2E*(K2V*2*PI/lambda0)*(K2V*2*PI/lambda0);
 %}
 
 TRACE

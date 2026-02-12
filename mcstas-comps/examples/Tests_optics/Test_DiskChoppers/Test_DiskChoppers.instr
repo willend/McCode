@@ -28,10 +28,10 @@ DEFINE INSTRUMENT Test_DiskChoppers(chopper=0,lambda=10, dlambda=9.9,deltay=-0.1
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

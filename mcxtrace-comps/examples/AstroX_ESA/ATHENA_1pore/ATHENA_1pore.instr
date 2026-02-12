@@ -94,7 +94,7 @@ DECLARE
     double PX[1024],PY[1024], PR[1024], PA[1024];
     int IDX[2014],ROW[2014], RIDX[1024];
     double PRP[1024],PRM[1024],PRH[1024],PRL[1024],PRW[1024];
-    
+
     double src_pos_x;
     double src_pos_y;
     #pragma acc declare create(alphax)
@@ -209,7 +209,6 @@ EXTEND
         x-=INSTRUMENT_GETPAR(optics_dist)*sin(alphax);
         SCATTER;
     }while(0);
-
 %}
 
 COMPONENT detector_pre_optics = PSD_monitor(restore_xray=1, xwidth=3, yheight=1.5, nx=51, ny=51, filename="det_preo.dat")

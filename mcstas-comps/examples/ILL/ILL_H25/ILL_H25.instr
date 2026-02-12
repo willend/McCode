@@ -33,50 +33,49 @@ DEFINE INSTRUMENT ILL_H25(m=2, lambda=4, dlambda=3.9, mip=2)
 DECLARE
 %{
 
-  /* Thermal (H2x) source parameters */
+    /* Thermal (H2x) source parameters */
 
-  /* guide coating parameters */
-  double gR0          = 1;
-  double gQc          = 0.0219;
-  double gAlpha       = 4.07;
-  double gW           = 1.0/300.0;
-  /* gaps and Al windows parameters */
-  double Al_Thickness = 0.002;
-  double gGap         = 0.001;
-  /* guide curvatures */
-  double gRh          = -8170; /* downwards */
-  /* guide section parameters (total length/number of elements) 'Carter' indexing */
-  double gH =0.2;
-  double L_H25_1 =3.5  /4,  Rh_H25_1 =0;
-  double L_H25_2 =2.5  /3,  Rh_H25_2 =0; /* end of C2=VS 148 mm */
-  double L_H25_3 =9.5  /10, Rh_H25_3 =0;
-  double L_H25_4 =7.0  /7,  Rh_H25_4 =0; /* end of C4=2 mm window */
-  double L_H25_5 =4.75 /5,  Rh_H25_5 =0; /* end of C5=OT1 H25 109 mm */
-  double L_H25_6 =10.0 /10, Rh_H25_6 =0;
-  double L_H25_7 =10.0 /10, Rh_H25_7 =0;
-  double L_H25_8 =5.0  /5,  Rh_H25_8 =0; /* end of C8=S18 Mono+OS S18 */
-  double L_H25_9 =5.7  /6,  Rh_H25_9 =0; /* end of C9=D23 Mono +OS D23 */
-  double L_H25_10=4.7  /5,  Rh_H25_10=0; /* end of C10=IN22 Mono +OS IN22, height 12 cm (top) */
+    /* guide coating parameters */
+    double gR0          = 1;
+    double gQc          = 0.0219;
+    double gAlpha       = 4.07;
+    double gW           = 1.0/300.0;
+    /* gaps and Al windows parameters */
+    double Al_Thickness = 0.002;
+    double gGap         = 0.001;
+    /* guide curvatures */
+    double gRh          = -8170; /* downwards */
+    /* guide section parameters (total length/number of elements) 'Carter' indexing */
+    double gH =0.2;
+    double L_H25_1 =3.5  /4,  Rh_H25_1 =0;
+    double L_H25_2 =2.5  /3,  Rh_H25_2 =0; /* end of C2=VS 148 mm */
+    double L_H25_3 =9.5  /10, Rh_H25_3 =0;
+    double L_H25_4 =7.0  /7,  Rh_H25_4 =0; /* end of C4=2 mm window */
+    double L_H25_5 =4.75 /5,  Rh_H25_5 =0; /* end of C5=OT1 H25 109 mm */
+    double L_H25_6 =10.0 /10, Rh_H25_6 =0;
+    double L_H25_7 =10.0 /10, Rh_H25_7 =0;
+    double L_H25_8 =5.0  /5,  Rh_H25_8 =0; /* end of C8=S18 Mono+OS S18 */
+    double L_H25_9 =5.7  /6,  Rh_H25_9 =0; /* end of C9=D23 Mono +OS D23 */
+    double L_H25_10=4.7  /5,  Rh_H25_10=0; /* end of C10=IN22 Mono +OS IN22, height 12 cm (top) */
 %}
 /* end of DECLARE */
 
 INITIALIZE
 %{
 
-/* Element rotations = Element length / Curvature Radius * RAD2DEG */
-	if (gRh) {
-		Rh_H25_1  = L_H25_1 /gRh*RAD2DEG;
-		Rh_H25_2  = L_H25_2 /gRh*RAD2DEG;
-		Rh_H25_3  = L_H25_3 /gRh*RAD2DEG;
-		Rh_H25_4  = L_H25_4 /gRh*RAD2DEG;
-		Rh_H25_5  = L_H25_5 /gRh*RAD2DEG;
-		Rh_H25_6  = L_H25_6 /gRh*RAD2DEG;
-		Rh_H25_7  = L_H25_7 /gRh*RAD2DEG;
-		Rh_H25_8  = L_H25_8 /gRh*RAD2DEG;
-	}
+    /* Element rotations = Element length / Curvature Radius * RAD2DEG */
+    if (gRh) {
+        Rh_H25_1  = L_H25_1 /gRh*RAD2DEG;
+        Rh_H25_2  = L_H25_2 /gRh*RAD2DEG;
+        Rh_H25_3  = L_H25_3 /gRh*RAD2DEG;
+        Rh_H25_4  = L_H25_4 /gRh*RAD2DEG;
+        Rh_H25_5  = L_H25_5 /gRh*RAD2DEG;
+        Rh_H25_6  = L_H25_6 /gRh*RAD2DEG;
+        Rh_H25_7  = L_H25_7 /gRh*RAD2DEG;
+        Rh_H25_8  = L_H25_8 /gRh*RAD2DEG;
+    }
 
-	printf("Instrument: ILL_H25 (H25@ILL thermal guide).\n");
-
+    printf("Instrument: ILL_H25 (H25@ILL thermal guide).\n");
 %}
 /* end of INITIALIZE */
 

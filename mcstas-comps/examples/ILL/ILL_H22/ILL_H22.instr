@@ -30,39 +30,38 @@ DEFINE INSTRUMENT ILL_H22(m=2, lambda=4, dlambda=3.9, mip=2)
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  /* Thermal (H2x) source parameters */
-  /* guide coating parameters */
-  double gR0          = 1;
-  double gQc          = 0.021;
-  double gAlpha       = 4.07;
-  double gW           = 1.0/300.0;
-  /* gaps and Al windows parameters */
-  double Al_thickness = 0.002;
-  double gGap         = 0.001;
-  /* guide curvatures */
-  double gRh          = -27000; /* clockwise */
-  /* guide section parameters (total length/number of elements) */
-  double L_H22_3 =7.5/7,    Rh_H22_3 =0;
-  double L_H22_4 =15/15,    Rh_H22_4 =0;
-  double L_H22_5 =4.75 /5,  Rh_H22_5 =0;
-  double L_H22_6 =60/60,    Rh_H22_6 =0;
+    /* Thermal (H2x) source parameters */
+    /* guide coating parameters */
+    double gR0          = 1;
+    double gQc          = 0.021;
+    double gAlpha       = 4.07;
+    double gW           = 1.0/300.0;
+    /* gaps and Al windows parameters */
+    double Al_thickness = 0.002;
+    double gGap         = 0.001;
+    /* guide curvatures */
+    double gRh          = -27000; /* clockwise */
+    /* guide section parameters (total length/number of elements) */
+    double L_H22_3 =7.5/7,    Rh_H22_3 =0;
+    double L_H22_4 =15/15,    Rh_H22_4 =0;
+    double L_H22_5 =4.75 /5,  Rh_H22_5 =0;
+    double L_H22_6 =60/60,    Rh_H22_6 =0;
 
-  /* capture flux positions from moderator: 21.4    28.4    61.2 */
-
+    /* capture flux positions from moderator: 21.4    28.4    61.2 */
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  /* Element rotations = Element length / Curvature Radius * RAD2DEG */
-  if (gRh) {
-    Rh_H22_3  = L_H22_3 /gRh*RAD2DEG;
-    Rh_H22_4  = L_H22_4 /gRh*RAD2DEG;
-    Rh_H22_5  = L_H22_5 /gRh*RAD2DEG;
-    Rh_H22_6  = L_H22_6 /gRh*RAD2DEG;
-  }
-  printf("Instrument: ILL_H22 (H22@ILL thermal guide).\n");
+    /* Element rotations = Element length / Curvature Radius * RAD2DEG */
+    if (gRh) {
+        Rh_H22_3  = L_H22_3 /gRh*RAD2DEG;
+        Rh_H22_4  = L_H22_4 /gRh*RAD2DEG;
+        Rh_H22_5  = L_H22_5 /gRh*RAD2DEG;
+        Rh_H22_6  = L_H22_6 /gRh*RAD2DEG;
+    }
+    printf("Instrument: ILL_H22 (H22@ILL thermal guide).\n");
 %}
 
 /* Here comes the TRACE section, where the actual      */

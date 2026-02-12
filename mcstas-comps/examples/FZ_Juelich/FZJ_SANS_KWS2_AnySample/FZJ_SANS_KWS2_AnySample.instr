@@ -41,19 +41,19 @@ DEFINE INSTRUMENT SANS_KWS2_AnySample(lambda=7.0, dlambda=0.7, FLUX=1e8, NGblen=
 
 INITIALIZE
 %{
-  char sample_str[32];
-  switch (sample) {
-  case 1:
-    strcpy(sample_str, "AnySample"); break;
-  case 2:
-    strcpy(sample_str, "Debye"); break;
-  case 3:
-    strcpy(sample_str, "Guinier"); break;
-  default:
-    strcpy(sample_str, "None"); break;
-  }
+    char sample_str[32];
+    switch (sample) {
+        case 1:
+        strcpy(sample_str, "AnySample"); break;
+        case 2:
+        strcpy(sample_str, "Debye"); break;
+        case 3:
+        strcpy(sample_str, "Guinier"); break;
+        default:
+        strcpy(sample_str, "None"); break;
+    }
 
-  printf("SANS_KWS2_AnySample: sample is selected as %s\n", sample_str);
+    printf("SANS_KWS2_AnySample: sample is selected as %s\n", sample_str);
 %}
 
 TRACE

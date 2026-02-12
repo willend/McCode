@@ -37,22 +37,22 @@ DEFINE INSTRUMENT Test_Pol_Bender_Vs_Guide_Curved(guideLength=10.0, guideRadius=
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double calcAlpha(double length, double radius) {
-    // calculate angle of arm after curved guide
-    return RAD2DEG * length/radius;
-  }
+    double calcAlpha(double length, double radius) {
+        // calculate angle of arm after curved guide
+        return RAD2DEG * length/radius;
+    }
 
-  double calcX(double length, double radius) {
-    // calculate position and angle of arm after curved guide
-    double alpha = DEG2RAD * calcAlpha(length, radius);
-    return radius*(1.0-cos(alpha));
-  }
+    double calcX(double length, double radius) {
+        // calculate position and angle of arm after curved guide
+        double alpha = DEG2RAD * calcAlpha(length, radius);
+        return radius*(1.0-cos(alpha));
+    }
 
-  double calcZ(double length, double radius) {
-    // calculate position and angle of arm after curved guide
-    double alpha = DEG2RAD * calcAlpha(length, radius);
-    return radius*sin(alpha);
-  }
+    double calcZ(double length, double radius) {
+        // calculate position and angle of arm after curved guide
+        double alpha = DEG2RAD * calcAlpha(length, radius);
+        return radius*sin(alpha);
+    }
   %}
 
 USERVARS %{
@@ -62,26 +62,26 @@ USERVARS %{
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-%}
+    %}
 
-/* Here comes the TRACE section, where the actual      */
-/* instrument is defined as a sequence of components.  */
-TRACE
+    /* Here comes the TRACE section, where the actual      */
+    /* instrument is defined as a sequence of components.  */
+    TRACE
 
-/* The Arm() class component defines reference points and orientations  */
-/* in 3D space. Every component instance must have a unique name. Here, */
-/* Origin is used. This Arm() component is set to define the origin of  */
-/* our global coordinate system (AT (0,0,0) ABSOLUTE). It may be used   */
-/* for further RELATIVE reference, Other useful keywords are : ROTATED  */
-/* EXTEND GROUP PREVIOUS. Also think about adding a neutron source !    */
-/* Progress_bar is an Arm displaying simulation progress.               */
-COMPONENT Origin = Progress_bar()
-     AT (0,0,0) ABSOLUTE
-EXTEND
-%{
-  // Multiply probability by 3 because we have 3 cases
-  p*=3.0;
-  randomSwitch = rand01();
+    /* The Arm() class component defines reference points and orientations  */
+    /* in 3D space. Every component instance must have a unique name. Here, */
+    /* Origin is used. This Arm() component is set to define the origin of  */
+    /* our global coordinate system (AT (0,0,0) ABSOLUTE). It may be used   */
+    /* for further RELATIVE reference, Other useful keywords are : ROTATED  */
+    /* EXTEND GROUP PREVIOUS. Also think about adding a neutron source !    */
+    /* Progress_bar is an Arm displaying simulation progress.               */
+    COMPONENT Origin = Progress_bar()
+    AT (0,0,0) ABSOLUTE
+    EXTEND
+    %{
+        // Multiply probability by 3 because we have 3 cases
+        p*=3.0;
+        randomSwitch = rand01();
   %}
 
 COMPONENT source =

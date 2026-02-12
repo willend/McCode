@@ -61,13 +61,13 @@ INITIALIZE
         mz*=polval;
     }
     if (!box) {
-      radius=0.11;
-      xwidth=0;
-      yheight=0;
+        radius=0.11;
+        xwidth=0;
+        yheight=0;
     } else {
-      xwidth=0.11;
-      yheight=0.11;
-      radius=0;
+        xwidth=0.11;
+        yheight=0.11;
+        radius=0;
     }
 %}
 
@@ -80,10 +80,9 @@ COMPONENT src =Source_div(lambda0=(lamb_1+lamb_2)/2.0, dlambda=(lamb_2-lamb_1)/2
 AT(0, 0, 0) RELATIVE origin
 EXTEND
 %{
-  double v=sqrt(vx*vx+vy*vy+vz*vz);
-  vx=vy=0;
-  vz=v;
-
+    double v=sqrt(vx*vx+vy*vy+vz*vz);
+    vx=vy=0;
+    vz=v;
 %}
 COMPONENT setpol = Set_pol(px=mx,py=my,pz=mz)
 WHEN(RANDOM==0) AT(0,0,1) RELATIVE src

@@ -43,49 +43,47 @@ DEFINE INSTRUMENT PSI_DMC_simple(lambda=2.5666, R=0.87, R_curve=0.87, string fil
 
 DECLARE
 %{
-  double mono_q = 1.8734;
-  double OMA;  
-  double RV;
-  double y_mono = 0.025;
-  double NV = 5;
-  double d_phi_0;
-  double TTM;
-  double sample_radius = 0.008/2;
-  double sample_height = 0.03;
-  double can_radius = 0.0083/2;
-  double can_height = 0.0303;
-  double can_thick = 0.00015;
-  
-  /******Mirrorvalues*****/
-  
-  double alpha;
-  double Qc=0.0217;
-  double R0=0.995;
-  double Mvalue=1.9;
-  double W=1.0/250.0;
-  
-  double alpha_curve;
-  double Qc_curve=0.0217;
-  double R0_curve= 0.995;
-  double Mvalue_curve=2.1;
-  double W_curve=1.0/250.0;
-  
-  double ldiff=0.05;
-  /* Curved guide element angle*/
-  double angleGuideCurved;
+    double mono_q = 1.8734;
+    double OMA;  
+    double RV;
+    double y_mono = 0.025;
+    double NV = 5;
+    double d_phi_0;
+    double TTM;
+    double sample_radius = 0.008/2;
+    double sample_height = 0.03;
+    double can_radius = 0.0083/2;
+    double can_height = 0.0303;
+    double can_thick = 0.00015;
 
+    /******Mirrorvalues*****/
+
+    double alpha;
+    double Qc=0.0217;
+    double R0=0.995;
+    double Mvalue=1.9;
+    double W=1.0/250.0;
+
+    double alpha_curve;
+    double Qc_curve=0.0217;
+    double R0_curve= 0.995;
+    double Mvalue_curve=2.1;
+    double W_curve=1.0/250.0;
+
+    double ldiff=0.05;
+    /* Curved guide element angle*/
+    double angleGuideCurved;
 %}
 
 INITIALIZE
 %{
-  TTM = 2*asin(mono_q*lambda/(4*PI))*RAD2DEG;
-  OMA = TTM/2;
-  RV = fabs(2*2.82*sin(DEG2RAD*OMA));
-  
-  angleGuideCurved=-2.0*asin(0.4995 /2.0/3612)/PI*180;
-  alpha=(R0-R)/Qc/(Mvalue-1);
-  alpha_curve=(R0_curve-R_curve)/Qc_curve/(Mvalue_curve-1);
-  
+    TTM = 2*asin(mono_q*lambda/(4*PI))*RAD2DEG;
+    OMA = TTM/2;
+    RV = fabs(2*2.82*sin(DEG2RAD*OMA));
+
+    angleGuideCurved=-2.0*asin(0.4995 /2.0/3612)/PI*180;
+    alpha=(R0-R)/Qc/(Mvalue-1);
+    alpha_curve=(R0_curve-R_curve)/Qc_curve/(Mvalue_curve-1);
 %}
 
 TRACE

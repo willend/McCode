@@ -75,74 +75,74 @@ DEFINE INSTRUMENT ILL_D2B_noenv(lambda=1.594, DM=0, string Powder="Na2Ca3Al2F14.
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-	double U,V,W;   /* Caglioti UVW parameters */
-	double L0;
-	char lamopts[128];
+    double U,V,W;   /* Caglioti UVW parameters */
+    double L0;
+    char lamopts[128];
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-	double L;
-	double KI, Vi, EI;
-	double ALPHA3_Opt;
+    double L;
+    double KI, Vi, EI;
+    double ALPHA3_Opt;
 
-	if (!THETA_M && lambda && DM)
-		THETA_M =asin(lambda/(2*DM))*RAD2DEG;
-	else if (THETA_M && !lambda && DM)
-		lambda = fabs(sin(THETA_M*DEG2RAD))*2*DM;
-	else if (THETA_M && lambda)
-		DM = fabs(lambda/sin(DEG2RAD*THETA_M)/2.0);
+    if (!THETA_M && lambda && DM)
+    THETA_M =asin(lambda/(2*DM))*RAD2DEG;
+    else if (THETA_M && !lambda && DM)
+    lambda = fabs(sin(THETA_M*DEG2RAD))*2*DM;
+    else if (THETA_M && lambda)
+    DM = fabs(lambda/sin(DEG2RAD*THETA_M)/2.0);
 
-	THETA_M *= SM; /* take-off direction left or right */
+    THETA_M *= SM; /* take-off direction left or right */
 
-	/* test input parameters */
-	if (!THETA_M || !DM || !lambda) exit(fprintf(stderr,
-	      "ILL_D2B: ERROR: Monochromator take-off, d-spacing or wavelength is null (THETA_M=%g, DM=%g, lambda=%g). Abort.\n",
-	      THETA_M, DM, lambda));
+    /* test input parameters */
+    if (!THETA_M || !DM || !lambda) exit(fprintf(stderr,
+    "ILL_D2B: ERROR: Monochromator take-off, d-spacing or wavelength is null (THETA_M=%g, DM=%g, lambda=%g). Abort.\n",
+    THETA_M, DM, lambda));
 
-	/* perform additional computations */
-	if (!L1)    L = L2;
-	else        L = 1/(1/L1+1/L2);
-	if (RV < 0) RV=2*L*sin(DEG2RAD*THETA_M);
-	KI = 2*PI/lambda;
-	Vi = K2V*fabs(KI);
-	EI = VS2E*Vi*Vi;
+    /* perform additional computations */
+    if (!L1)    L = L2;
+    else        L = 1/(1/L1+1/L2);
+    if (RV < 0) RV=2*L*sin(DEG2RAD*THETA_M);
+    KI = 2*PI/lambda;
+    Vi = K2V*fabs(KI);
+    EI = VS2E*Vi*Vi;
 
-	if (ALPHA1<0)  ALPHA1=600;
-	if (ALPHA2<0)  ALPHA2=600;
-	if (ALPHA3<0)  ALPHA3=600;
-	if (ETA<=0)    ETA   =30;
+    if (ALPHA1<0)  ALPHA1=600;
+    if (ALPHA2<0)  ALPHA2=600;
+    if (ALPHA3<0)  ALPHA3=600;
+    if (ETA<=0)    ETA   =30;
 
-	/* compute Cagioloti U,V,W and L0 (intensity) */
-	U = 4*(ALPHA1*ALPHA1 * ALPHA2*ALPHA2 + ALPHA1*ALPHA1 * ETA*ETA + ALPHA2*ALPHA2 * ETA*ETA)
-	     /(tan(THETA_M*DEG2RAD)*tan(THETA_M*DEG2RAD) * (ALPHA1*ALPHA1 + ALPHA2*ALPHA2 + 4*ETA*ETA));
+    /* compute Cagioloti U,V,W and L0 (intensity) */
+    U = 4*(ALPHA1*ALPHA1 * ALPHA2*ALPHA2 + ALPHA1*ALPHA1 * ETA*ETA + ALPHA2*ALPHA2 * ETA*ETA)
+    /(tan(THETA_M*DEG2RAD)*tan(THETA_M*DEG2RAD) * (ALPHA1*ALPHA1 + ALPHA2*ALPHA2 + 4*ETA*ETA));
 
-	V = 4*ALPHA2*ALPHA2*(ALPHA1*ALPHA1 +2*ETA*ETA)
-	     /(tan(THETA_M*DEG2RAD) * (ALPHA1*ALPHA1 + ALPHA2*ALPHA2 + 4*ETA*ETA));
+    V = 4*ALPHA2*ALPHA2*(ALPHA1*ALPHA1 +2*ETA*ETA)
+    /(tan(THETA_M*DEG2RAD) * (ALPHA1*ALPHA1 + ALPHA2*ALPHA2 + 4*ETA*ETA));
 
-	W = ALPHA3*ALPHA3+(ALPHA1*ALPHA1 * ALPHA2*ALPHA2 + 4*ALPHA2*ALPHA2 * ETA*ETA)
-	                 /(ALPHA1*ALPHA1 + ALPHA2*ALPHA2 + 4*ETA*ETA);
-	L0 = (ALPHA1*ETA*ALPHA2*ALPHA3/tan(fabs(THETA_M)*DEG2RAD))
-	   / sqrt(ALPHA1*ALPHA1 + ALPHA2*ALPHA2 + 4*ETA*ETA);
+    W = ALPHA3*ALPHA3+(ALPHA1*ALPHA1 * ALPHA2*ALPHA2 + 4*ALPHA2*ALPHA2 * ETA*ETA)
+    /(ALPHA1*ALPHA1 + ALPHA2*ALPHA2 + 4*ETA*ETA);
+    L0 = (ALPHA1*ETA*ALPHA2*ALPHA3/tan(fabs(THETA_M)*DEG2RAD))
+    / sqrt(ALPHA1*ALPHA1 + ALPHA2*ALPHA2 + 4*ETA*ETA);
 
-	ALPHA3_Opt = 1/sqrt(1/ALPHA1/ALPHA1+1/ALPHA2/ALPHA2+1/ETA/ETA);
+    ALPHA3_Opt = 1/sqrt(1/ALPHA1/ALPHA1+1/ALPHA2/ALPHA2+1/ETA/ETA);
 
-	if (verbose) {
-	  printf("ILL_D2B: Detailed DIF configuration\n");
-	  printf("* Incoming beam: lambda=%.4g [Angs] EI=%.4g [meV]  KI=%.4g [Angs-1] Vi=%g [m/s]\n",
-	    lambda, EI, KI, Vi);
-	  printf("* Monochromator:  DM=%.4g [Angs] RV=%.4g [m] %s, take-off 2*THETA_M=%.4g [deg]\n",
-	    DM, RV, (!RV ? "flat" : "curved"), THETA_M*2);
-	  printf("* Resolution:     Caglioti              U=%g V=%g W=%g [deg^2]\n", U/60/60, V/60/60, W/60/60);
-	  printf("                  Optimal          ALPHA3=%g [min]\n",  ALPHA3_Opt);
-	  printf("                  Optimal resolution A1/2=%g [min]\n",  ALPHA3_Opt/sqrt(2));
-	  printf("                  Normalized Intensity L0=%g [min^3]\n", L0);
-	}
+    if (verbose) {
+        printf("ILL_D2B: Detailed DIF configuration\n");
+        printf("* Incoming beam: lambda=%.4g [Angs] EI=%.4g [meV]  KI=%.4g [Angs-1] Vi=%g [m/s]\n",
+        lambda, EI, KI, Vi);
+        printf("* Monochromator:  DM=%.4g [Angs] RV=%.4g [m] %s, take-off 2*THETA_M=%.4g [deg]\n",
+        DM, RV, (!RV ? "flat" : "curved"), THETA_M*2);
+        printf("* Resolution:     Caglioti              U=%g V=%g W=%g [deg^2]\n", U/60/60, V/60/60, W/60/60);
+        printf("                  Optimal          ALPHA3=%g [min]\n",  ALPHA3_Opt);
+        printf("                  Optimal resolution A1/2=%g [min]\n",  ALPHA3_Opt/sqrt(2));
+        printf("                  Normalized Intensity L0=%g [min^3]\n", L0);
+    }
 
-	RV = fabs(RV)*SM;
-	sprintf(lamopts, "lambda limits=[%g, %g]",lambda*0.99, lambda*1.01);
+    RV = fabs(RV)*SM;
+    sprintf(lamopts, "lambda limits=[%g, %g]",lambda*0.99, lambda*1.01);
 %}
 
 /* Here comes the TRACE section, where the actual      */

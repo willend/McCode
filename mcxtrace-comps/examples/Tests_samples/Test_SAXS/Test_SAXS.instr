@@ -67,12 +67,12 @@ DEFINE INSTRUMENT Test_SAXS(
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
-  if (Ncount>0)
-    mcset_ncount(Ncount);
+    INITIALIZE
+    %{
+        if (Ncount>0)
+        mcset_ncount(Ncount);
 %}
 
 

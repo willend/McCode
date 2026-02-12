@@ -75,179 +75,178 @@ DEFINE INSTRUMENT ILL_H15_D11(Lambda=4.51, string Config="Borkron_1972", Lc=0, i
 DECLARE
 %{
 
-  #define VERSION "H15_D11@ILL Farhi 10/08/2003"
+    #define VERSION "H15_D11@ILL Farhi 10/08/2003"
 
-  /* all variables defined here can be used, and modified, in the whole instrument */
-  /* variables used in instrument definition and for user computations */
+    /* all variables defined here can be used, and modified, in the whole instrument */
+    /* variables used in instrument definition and for user computations */
 
-  /* Source specifications */
-  double sLambda            = 4;
-  double sDeltaLambdaPercent= 0.08;  /* Lambda spread in % (full width) */
-  double sDeltaLambda;
-  double sT1=216.8,sI1=1.24e+13;  /* VCS */
-  double sT2=33.9, sI2=1.02e+13; 
-  double sT3=16.7, sI3=3.0423e+12;
-  double sH                 = 0.22;
-  double sW                 = 0.10;
+    /* Source specifications */
+    double sLambda            = 4;
+    double sDeltaLambdaPercent= 0.08;  /* Lambda spread in % (full width) */
+    double sDeltaLambda;
+    double sT1=216.8,sI1=1.24e+13;  /* VCS */
+    double sT2=33.9, sI2=1.02e+13; 
+    double sT3=16.7, sI3=3.0423e+12;
+    double sH                 = 0.22;
+    double sW                 = 0.10;
 
-  /* Guide geometry specifications, default values */
-  double gInputWidth        = 0.038;
-  double gObtWidth          = 0.032;
-  double gGuideHeight1      = 0.2;
-  double gGuideHeight2      = 0.05;
-  double gSourceInput       = 2.33;
+    /* Guide geometry specifications, default values */
+    double gInputWidth        = 0.038;
+    double gObtWidth          = 0.032;
+    double gGuideHeight1      = 0.2;
+    double gGuideHeight2      = 0.05;
+    double gSourceInput       = 2.33;
 
-  double gGuideWidth        = 0.03;
-  double gLength1           = 25.5;   /* 25 pieces */
-  double gCurvatureRadius   = 2700.0;
-  double gLength2           = 22.284; /* 22 pieces */
-  double gLength3           = 5.4;    /* 5 pieces */  
+    double gGuideWidth        = 0.03;
+    double gLength1           = 25.5;   /* 25 pieces */
+    double gCurvatureRadius   = 2700.0;
+    double gLength2           = 22.284; /* 22 pieces */
+    double gLength3           = 5.4;    /* 5 pieces */  
 
-  double gToSampleLength    = 1.5;
-  double gElementGap        = 0.004;
+    double gToSampleLength    = 1.5;
+    double gElementGap        = 0.004;
 
-  double gElmtLength1;
-  double gElmtLength2;
-  double gElmtLength3;
-  double gElmtRot1;
+    double gElmtLength1;
+    double gElmtLength2;
+    double gElmtLength3;
+    double gElmtRot1;
 
-  /* Guide coatings specifications */
-  double mInPile            = 1;
-  double mGuide1            = 1;
-  double mGuide2            = 0.65; /* 0.953075 */
+    /* Guide coatings specifications */
+    double mInPile            = 1;
+    double mGuide1            = 1;
+    double mGuide2            = 0.65; /* 0.953075 */
 
-  double mAlpha             = 4.07; /* 0 */
-  double mQc                = 0.0218; /* 0.0175455 */
-  double mR0                = 0.995;  /* 0.953075 */
-  double mW                 = 1.0/300.0;  /* 0.00299565 */
-  
-  double Vrpm;
-  double Config_l[20];
-  double Config_n[20];
-  double Config_g[20];
-  
-  /* geometry configurations */
-  double Borkron_1972_l[] = {20, 0,0,0,  0,4,3,3,2.5,0,  2.5,0,  1.5,0,1.5,0,0};  /* length 17 */
-  double Borkron_2003_l[] = {6.5,0,6,7.5,0,4,3,3,2.5,0,  2.5,0,  1.5,0,1.5,0,1};
-  double Borofloat_2001_l[]={0.5,6,6,0.5,7,4,3,3,2,  0.5,2,  0.5,0.5,1,0.5,1,1};
-  
-  double Borkron_1972_n[] = {40,0,0, 0, 0,8,6,6,5,0,5,0,3,0,3,0,0};
-  double Borkron_2003_n[] = {13,0,12,15,0,8,6,6,5,0,5,0,3,0,3,0,2};
-  double Borofloat_2001_n[]={1, 6,6, 1, 7,4,3,3,2,1,2,1,1,1,1,1,1};
-  
-  double Borkron_1972_g[] = {0   ,0   };
-  double Borkron_2003_g[] = {0.002,0.002};
-  double Borofloat_2001_g[]={0.002,0.002};
-  
-  double Length_Lc[]       ={1.5,2.5,4,5.5,8,10.5,13.5,16.5,20.5,28,34,40.5};
-  
-  double microGap = 0.0001;
+    double mAlpha             = 4.07; /* 0 */
+    double mQc                = 0.0218; /* 0.0175455 */
+    double mR0                = 0.995;  /* 0.953075 */
+    double mW                 = 1.0/300.0;  /* 0.00299565 */
 
-  char xlmonopts[128];
+    double Vrpm;
+    double Config_l[20];
+    double Config_n[20];
+    double Config_g[20];
+
+    /* geometry configurations */
+    double Borkron_1972_l[] = {20, 0,0,0,  0,4,3,3,2.5,0,  2.5,0,  1.5,0,1.5,0,0};  /* length 17 */
+    double Borkron_2003_l[] = {6.5,0,6,7.5,0,4,3,3,2.5,0,  2.5,0,  1.5,0,1.5,0,1};
+    double Borofloat_2001_l[]={0.5,6,6,0.5,7,4,3,3,2,  0.5,2,  0.5,0.5,1,0.5,1,1};
+
+    double Borkron_1972_n[] = {40,0,0, 0, 0,8,6,6,5,0,5,0,3,0,3,0,0};
+    double Borkron_2003_n[] = {13,0,12,15,0,8,6,6,5,0,5,0,3,0,3,0,2};
+    double Borofloat_2001_n[]={1, 6,6, 1, 7,4,3,3,2,1,2,1,1,1,1,1,1};
+
+    double Borkron_1972_g[] = {0   ,0   };
+    double Borkron_2003_g[] = {0.002,0.002};
+    double Borofloat_2001_g[]={0.002,0.002};
+
+    double Length_Lc[]       ={1.5,2.5,4,5.5,8,10.5,13.5,16.5,20.5,28,34,40.5};
+
+        double microGap = 0.0001;
+
+        char xlmonopts[128];
 %}
 /* end of DECLARE */
 
 INITIALIZE
 %{
-  double PhiC, GammaC, ThetaC, LambdaC, LStar, Zc;
-  double Ki;
-  int    i=0;
-  double sum_length=0;
-  double n_elements=0;
-  
-  /* curved section total 25.5 m in 25 elements */
-  gElmtLength1 = fabs(gLength1)/25;
-  gElmtRot1    = gElmtLength1/gCurvatureRadius*180/PI;
-  
-  gElmtLength2 = fabs(gLength2)/22;
-  gElmtLength3 = fabs(gLength3)/5;
+    double PhiC, GammaC, ThetaC, LambdaC, LStar, Zc;
+    double Ki;
+    int    i=0;
+    double sum_length=0;
+    double n_elements=0;
 
-/* INFO ******************************************************************* */
-  printf("Simulation : %s on %s [pid %i]\n",VERSION,getenv("HOSTNAME"), getpid());
+    /* curved section total 25.5 m in 25 elements */
+    gElmtLength1 = fabs(gLength1)/25;
+    gElmtRot1    = gElmtLength1/gCurvatureRadius*180/PI;
 
-  /* Source and guide parameters */
- 
-  sLambda = Lambda;
-  sDeltaLambda        = sDeltaLambdaPercent * sLambda / 2;
+    gElmtLength2 = fabs(gLength2)/22;
+    gElmtLength3 = fabs(gLength3)/5;
 
-  /* First guide Phase-Space parameters */
-  PhiC    = sqrt(2*fabs(gGuideWidth/gCurvatureRadius));
-  GammaC  = mGuide1*mQc/4/PI;
-  ThetaC  = sLambda*GammaC;
-  LambdaC = PhiC/GammaC;
-  LStar   = sqrt(8*fabs(gGuideWidth*gCurvatureRadius));
-  Zc      = gGuideWidth*(0.5-ThetaC*ThetaC/PhiC/PhiC);
+    /* INFO ******************************************************************* */
+    printf("Simulation : %s on %s [pid %i]\n",VERSION,getenv("HOSTNAME"), getpid());
 
-  printf("Guide: L =%.4f m, rho=%.4f m, m=%.2f\n", gLength1, gCurvatureRadius, mGuide1);
-  printf("Guide: L*=%.2f m, Phi_c = %.2f deg, Gamma_c = %.2f deg/Angs\n", LStar, PhiC*RAD2DEG, GammaC*RAD2DEG);
-  printf("Guide: Zc = %.4f m, Lambda_c = %.2f Angs\n", Zc, LambdaC);
-  if (sLambda < LambdaC) 
+    /* Source and guide parameters */
+
+    sLambda = Lambda;
+    sDeltaLambda        = sDeltaLambdaPercent * sLambda / 2;
+
+    /* First guide Phase-Space parameters */
+    PhiC    = sqrt(2*fabs(gGuideWidth/gCurvatureRadius));
+    GammaC  = mGuide1*mQc/4/PI;
+    ThetaC  = sLambda*GammaC;
+    LambdaC = PhiC/GammaC;
+    LStar   = sqrt(8*fabs(gGuideWidth*gCurvatureRadius));
+    Zc      = gGuideWidth*(0.5-ThetaC*ThetaC/PhiC/PhiC);
+
+    printf("Guide: L =%.4f m, rho=%.4f m, m=%.2f\n", gLength1, gCurvatureRadius, mGuide1);
+    printf("Guide: L*=%.2f m, Phi_c = %.2f deg, Gamma_c = %.2f deg/Angs\n", LStar, PhiC*RAD2DEG, GammaC*RAD2DEG);
+    printf("Guide: Zc = %.4f m, Lambda_c = %.2f Angs\n", Zc, LambdaC);
+    if (sLambda < LambdaC) 
     printf("Guide: Garland reflections only\n");
-  else 
+    else 
     printf("Guide: Garland and Zig-Zag reflections\n");
-  if (gLength1 < LStar) 
+    if (gLength1 < LStar) 
     printf("Guide: Guide is too short\n");
-  
-  if (Lambda < 0.12) exit(printf("** D11 Error: Unreachable wavelength for D11: %.4g\n", Lambda));
 
-  Ki   = 2*PI/Lambda;
-  Vrpm = 124270/(Lambda-0.11832);
-  if (Vrpm < 3100 || Vrpm > 28300) exit(printf("D11 Error: Unreachable V_selector speed for D11: %.4g\n", Vrpm));
-  if (Vrpm > 9000 && Vrpm < 11900) printf("D11 Warning: Resonance V_selector speed for D11: %.4g\n", Vrpm);
-  printf("D11:   Ki = %.4g [Angs-1], Lambda = %.4g [Angs], V_Dolores=%.4g [rpm]\n", Ki, Lambda, Vrpm);
-  
-  if (!Config) exit(printf("** D11 Error: No movable guide configuration selected for D11\n"));
-  
-  if (strstr(Config, "Borkron_1972")) {
-    for (i=0; i<17; i++) {
-      Config_l[i] = Borkron_1972_l[i];
-      Config_n[i] = Borkron_1972_n[i];
-      if (i<2) Config_g[i] = Borkron_1972_g[i];
+    if (Lambda < 0.12) exit(printf("** D11 Error: Unreachable wavelength for D11: %.4g\n", Lambda));
+
+    Ki   = 2*PI/Lambda;
+    Vrpm = 124270/(Lambda-0.11832);
+    if (Vrpm < 3100 || Vrpm > 28300) exit(printf("D11 Error: Unreachable V_selector speed for D11: %.4g\n", Vrpm));
+    if (Vrpm > 9000 && Vrpm < 11900) printf("D11 Warning: Resonance V_selector speed for D11: %.4g\n", Vrpm);
+    printf("D11:   Ki = %.4g [Angs-1], Lambda = %.4g [Angs], V_Dolores=%.4g [rpm]\n", Ki, Lambda, Vrpm);
+
+    if (!Config) exit(printf("** D11 Error: No movable guide configuration selected for D11\n"));
+
+    if (strstr(Config, "Borkron_1972")) {
+        for (i=0; i<17; i++) {
+            Config_l[i] = Borkron_1972_l[i];
+            Config_n[i] = Borkron_1972_n[i];
+            if (i<2) Config_g[i] = Borkron_1972_g[i];
+        }
     }
-  }
-  if (strstr(Config, "Borkron_2003")) {
-    for (i=0; i<17; i++) {
-      Config_l[i] = Borkron_2003_l[i];
-      Config_n[i] = Borkron_2003_n[i];
-      if (i<2) Config_g[i] = Borkron_2003_g[i];
+    if (strstr(Config, "Borkron_2003")) {
+        for (i=0; i<17; i++) {
+            Config_l[i] = Borkron_2003_l[i];
+            Config_n[i] = Borkron_2003_n[i];
+            if (i<2) Config_g[i] = Borkron_2003_g[i];
+        }
     }
-  }
-  if (strstr(Config, "Borofloat_2001")) {
-    for (i=0; i<17; i++) {
-      Config_l[i] = Borofloat_2001_l[i];
-      Config_n[i] = Borofloat_2001_n[i];
-      if (i<2) Config_g[i] = Borofloat_2001_g[i];
+    if (strstr(Config, "Borofloat_2001")) {
+        for (i=0; i<17; i++) {
+            Config_l[i] = Borofloat_2001_l[i];
+            Config_n[i] = Borofloat_2001_n[i];
+            if (i<2) Config_g[i] = Borofloat_2001_g[i];
+        }
     }
-  }
-  if (strstr(Config, "Borofloat_2003")) {
-    for (i=0; i<17; i++) {
-      Config_l[i] = Borofloat_2001_l[i];
-      Config_n[i] = Borofloat_2001_n[i];
-      if (i<2) Config_g[i] = Borofloat_2001_g[i];
+    if (strstr(Config, "Borofloat_2003")) {
+        for (i=0; i<17; i++) {
+            Config_l[i] = Borofloat_2001_l[i];
+            Config_n[i] = Borofloat_2001_n[i];
+            if (i<2) Config_g[i] = Borofloat_2001_g[i];
+        }
     }
-  }
-  if (!i) exit(printf("** D11 Error: No movable guide configuration selected for D11\n"));
-  if (strstr(Config,"nogap")) for (i=0; i<2; Config_g[i++]=0);
-  
-  if (Lc == 0)
+    if (!i) exit(printf("** D11 Error: No movable guide configuration selected for D11\n"));
+    if (strstr(Config,"nogap")) for (i=0; i<2; Config_g[i++]=0);
+
+    if (Lc == 0)
     if (iLc >= 0 && iLc < 12)
-      Lc = Length_Lc[(int)iLc];
+    Lc = Length_Lc[(int)iLc];
     else exit(printf("** D11 Error: invalid collimator length specification for D11\n"));
-  
-  for (i=0; i< 17; i++) { 
-    if (40.5 - Lc <= sum_length) Config_n[i]=0;
-    else {
-      sum_length += Config_l[i];
-      n_elements += Config_n[i];
+
+    for (i=0; i< 17; i++) { 
+        if (40.5 - Lc <= sum_length) Config_n[i]=0;
+        else {
+            sum_length += Config_l[i];
+            n_elements += Config_n[i];
+        }
     }
-  }
-  printf("D11:   Coll.  L_c=%8.3g [m], Configuration='%s', \n", Lc, Config);
-  printf("D11:   Length L_g=%8.3g [m], n_elements=%8.2g\n", sum_length, n_elements);
-  printf("D11:   Chamfers  =%8.3g [m], Waviness  =%8.3g [rad] (%.3g [deg])\n", Chamfers, Waviness, Waviness*RAD2DEG);
-  Waviness *= RAD2DEG;
+    printf("D11:   Coll.  L_c=%8.3g [m], Configuration='%s', \n", Lc, Config);
+    printf("D11:   Length L_g=%8.3g [m], n_elements=%8.2g\n", sum_length, n_elements);
+    printf("D11:   Chamfers  =%8.3g [m], Waviness  =%8.3g [rad] (%.3g [deg])\n", Chamfers, Waviness, Waviness*RAD2DEG);
+    Waviness *= RAD2DEG;
 
-  sprintf(xlmonopts,"x bins=100 lambda limits=[%g %g] bins=100",sLambda-sDeltaLambda,sLambda+sDeltaLambda);
-
+    sprintf(xlmonopts,"x bins=100 lambda limits=[%g %g] bins=100",sLambda-sDeltaLambda,sLambda+sDeltaLambda);
 %}
 /* end of INITIALIZE */
 

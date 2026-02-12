@@ -41,24 +41,24 @@ DECLARE %{
 
 USERVARS
 %{
-  int Flag_anyshape_scatter;
-  int Flag_anyshape_r_scatter;
+    int Flag_anyshape_scatter;
+    int Flag_anyshape_r_scatter;
 %}
 
 INITIALIZE
 %{
-  if(Guide==1) printf("Using Guide\n");
-  if(Guide==2) printf("Using Guide_channeled\n"); 
-  if(Guide==3) printf("Using Guide_gravity\n"); 
-  if(Guide==4) printf("Using Guide_wavy\n"); 
-  if(Guide==5) printf("Using Guide_curved\n");
-  if(Guide==6) printf("Using Elliptic_guide_gravity\n"); 
-  if(Guide==7) printf("Using Guide_anyshape\n");
-  if(Guide==8) printf("Using Guide_honeycomb\n");
-  if(Guide==9) printf("Using Guide_r_anyshape\n");
+    if(Guide==1) printf("Using Guide\n");
+    if(Guide==2) printf("Using Guide_channeled\n"); 
+    if(Guide==3) printf("Using Guide_gravity\n"); 
+    if(Guide==4) printf("Using Guide_wavy\n"); 
+    if(Guide==5) printf("Using Guide_curved\n");
+    if(Guide==6) printf("Using Elliptic_guide_gravity\n"); 
+    if(Guide==7) printf("Using Guide_anyshape\n");
+    if(Guide==8) printf("Using Guide_honeycomb\n");
+    if(Guide==9) printf("Using Guide_r_anyshape\n");
 
-  _Guide=Guide;
-  #pragma acc update device(_Guide)
+    _Guide=Guide;
+    #pragma acc update device(_Guide)
 %}
 
 TRACE

@@ -47,7 +47,6 @@ INITIALIZE
     fprintf(stdout,"n %g \n", n);
     calculated_angle=RAD2DEG*asin(12398.4198*sqrt(n)/(2*5.43096*Etohit));
     fprintf(stdout,"Energy eV %g / Angle deg %g \n", Etohit, calculated_angle);
-        
 %}
 
 TRACE

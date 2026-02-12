@@ -39,14 +39,14 @@ DEFINE INSTRUMENT SE_example(POL_ANGLE=2, SAMPLE=0, Bguide=0.1, Bflip=3e-4, dBz=
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double pol_radius;
+    double pol_radius;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  pol_radius=0.3/(POL_ANGLE*DEG2RAD);
+    pol_radius=0.3/(POL_ANGLE*DEG2RAD);
 %}
 
 /* Here comes the TRACE section, where the actual      */

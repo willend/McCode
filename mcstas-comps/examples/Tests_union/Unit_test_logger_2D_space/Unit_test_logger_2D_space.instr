@@ -29,10 +29,10 @@ DEFINE INSTRUMENT Unit_test_logger_2D_space()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

@@ -27,10 +27,10 @@ DEFINE INSTRUMENT vinput2mcpl(string inputfile="input", string outputfile="outpu
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

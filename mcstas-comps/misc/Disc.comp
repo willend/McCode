@@ -45,15 +45,15 @@ SETTING PARAMETERS (radius=0, xwidth=0, yheight=0, zdepth=0, nx=0, ny=1, nz=0)
 
 SHARE
 %{
-%}
+    %}
 
-DECLARE
-%{
+    DECLARE
+    %{
 %}
 
 INITIALIZE
 %{
-  /* */
+    /* */
 %}
 
 

@@ -74,40 +74,40 @@ DECLARE %{
 INITIALIZE
 %{
   
-   detoptstr=malloc(150*sizeof(char));
-   tfilename=malloc(50*sizeof(char));
-   detsampoptstr=malloc(200*sizeof(char));
-   detdetoptstr=malloc(200*sizeof(char));
-   mon1optstr=malloc(200*sizeof(char));
-   mon2optstr=malloc(200*sizeof(char));
-   v_fname=malloc(200*sizeof(char));
-   /*set lengths defined above */
-   LT0=8.77;LF=11.61;LM1=11.82;LM2=18.50;LS=13.61;L3=3.5;
-   /*determine emission time of certain energy neutrons after the prompt pulse */
-   ch_x=log10(Edes*1e-3);  ch_y=-0.4420*ch_x*(1+tanh((ch_x+1.1197)/0.4042))/2-0.1235*ch_x*(1-tanh((ch_x+1.1197)/0.4042))/2-0.4189*tanh((ch_x+1.1197)/0.4042)+0.5612;
+    detoptstr=malloc(150*sizeof(char));
+    tfilename=malloc(50*sizeof(char));
+    detsampoptstr=malloc(200*sizeof(char));
+    detdetoptstr=malloc(200*sizeof(char));
+    mon1optstr=malloc(200*sizeof(char));
+    mon2optstr=malloc(200*sizeof(char));
+    v_fname=malloc(200*sizeof(char));
+    /*set lengths defined above */
+    LT0=8.77;LF=11.61;LM1=11.82;LM2=18.50;LS=13.61;L3=3.5;
+    /*determine emission time of certain energy neutrons after the prompt pulse */
+    ch_x=log10(Edes*1e-3);  ch_y=-0.4420*ch_x*(1+tanh((ch_x+1.1197)/0.4042))/2-0.1235*ch_x*(1-tanh((ch_x+1.1197)/0.4042))/2-0.4189*tanh((ch_x+1.1197)/0.4042)+0.5612;
     // toffset=0.0;
-   toffset=pow(10,ch_y)/1.0e6;
-   /*set phases for the critical lengths */
-   phasefc1=(LF)/(sqrt(Edes)*SE2V)+toffset;
-   phase_T0=(LT0)/(sqrt(Edes)*SE2V)+toffset;
-   phase_sam=(LS)/(sqrt(Edes)*SE2V)+toffset;
-   phase_det=(LS+L3)/(sqrt(Edes)*SE2V)+toffset;
-   phase_m1=(LM1)/(sqrt(Edes)*SE2V)+toffset;
-   phase_m2=(LM2)/(sqrt(Edes)*SE2V)+toffset;
-   /* set parameters for guide reflectivity profile */
-   Gu_R=0.98;Gu_alpha=5.5;Gu_m=3.6;Gu_Qc=0.02;Gu_W=2e-3;
-  /* set energy range to examine  set to +/- 20% of Edes value*/
-   Emin=Edes*0.8;Emax=Edes*1.2;
-   //tplotw=((0.06-0.0005)/nchans-0.0005)/(4.0*PI*Fermi_nu*0.05)*4.0;
-   tplotmin=LM1/(sqrt(Emax)*SE2V)+toffset;
-   tplotmax=LM1/(sqrt(Emin)*SE2V)+toffset;
-   sprintf(detoptstr,"ARCS_Sam_mon_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".Edat");
-   sprintf(detsampoptstr,"ARCS_Sam_mon_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".tdat");
-   sprintf(detdetoptstr,"ARCS_det_mon_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".tdat");
-   sprintf(mon1optstr,"ARCS_mon1_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".tdat");
-   sprintf(mon2optstr,"ARCS_mon2_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".tdat");
-   sprintf(tfilename,"%s%1.0f%s","tdet_E_",Edes,".dat");
-   sprintf(v_fname,"virt_src_ARCS_E%1.2f_F_nu_%g_T0_nu_%g_%g.dat",Edes,Fermi_nu,T0_nu,run_num);
+    toffset=pow(10,ch_y)/1.0e6;
+    /*set phases for the critical lengths */
+    phasefc1=(LF)/(sqrt(Edes)*SE2V)+toffset;
+    phase_T0=(LT0)/(sqrt(Edes)*SE2V)+toffset;
+    phase_sam=(LS)/(sqrt(Edes)*SE2V)+toffset;
+    phase_det=(LS+L3)/(sqrt(Edes)*SE2V)+toffset;
+    phase_m1=(LM1)/(sqrt(Edes)*SE2V)+toffset;
+    phase_m2=(LM2)/(sqrt(Edes)*SE2V)+toffset;
+    /* set parameters for guide reflectivity profile */
+    Gu_R=0.98;Gu_alpha=5.5;Gu_m=3.6;Gu_Qc=0.02;Gu_W=2e-3;
+    /* set energy range to examine  set to +/- 20% of Edes value*/
+    Emin=Edes*0.8;Emax=Edes*1.2;
+    //tplotw=((0.06-0.0005)/nchans-0.0005)/(4.0*PI*Fermi_nu*0.05)*4.0;
+    tplotmin=LM1/(sqrt(Emax)*SE2V)+toffset;
+    tplotmax=LM1/(sqrt(Emin)*SE2V)+toffset;
+    sprintf(detoptstr,"ARCS_Sam_mon_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".Edat");
+    sprintf(detsampoptstr,"ARCS_Sam_mon_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".tdat");
+    sprintf(detdetoptstr,"ARCS_det_mon_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".tdat");
+    sprintf(mon1optstr,"ARCS_mon1_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".tdat");
+    sprintf(mon2optstr,"ARCS_mon2_Edes_%1.3e_Ferminu_%1.2e_nrad_%1.5g_nchans_%g_T0_off_%1.3e_T0_nu_%1.1e%s",Edes,Fermi_nu,nrad,nchans,T0_off,T0_nu,".tdat");
+    sprintf(tfilename,"%s%1.0f%s","tdet_E_",Edes,".dat");
+    sprintf(v_fname,"virt_src_ARCS_E%1.2f_F_nu_%g_T0_nu_%g_%g.dat",Edes,Fermi_nu,T0_nu,run_num);
   %}
 TRACE
 COMPONENT mod=SNS_source(filename=filename,
@@ -277,6 +277,6 @@ AT (0,0,0.00005) RELATIVE Sample_Arm
 
 FINALLY
 %{
-   free(detoptstr);free(tfilename);free(detsampoptstr);free(detdetoptstr);free(mon1optstr);free(mon2optstr);
+    free(detoptstr);free(tfilename);free(detsampoptstr);free(detdetoptstr);free(mon1optstr);free(mon2optstr);
 %}
 END

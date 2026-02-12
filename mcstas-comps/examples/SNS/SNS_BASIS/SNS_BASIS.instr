@@ -79,70 +79,69 @@ DEFINE INSTRUMENT SNS_BASIS(
 
 DECLARE
 %{
-  double Omega1,Omega2,Omega3;
-#pragma acc declare create(Omega1,Omega2,Omega3)
-  double TOTAL_LENGTH;
-  double Guide_extension; 
-  double E_min; 
-  double E_max;
-  double SGS3;
-  double End_Guide;
-  double Analyser;
-  double Detector1;
-  double  q_si111=2.003886241;
-  char myfilename_1 [128];
-  char myfilename_2 [128];
-  char myfilename_3 [128];
-  char myfilename_4 [128];
-  char myfilename_5 [128];
-  char myfilename_6 [128];
-  char myfilename_7 [128];
-  char myfilename_8 [128];
-  char myfilename_9 [128];
-  char myfilename_10 [128];
-  char myfilename_11 [128];
-  char myfilename_12 [128];
-  char myfilename_13 [128];
-  char myfilename_14 [128];
-  char myfilename_15 [128];
-  char myfilename_16 [128];
-  char myfilename_17 [128];
-  char myfilename_18 [128];
-  char myfilename_19 [128];
- 
-  // Variable to help classify hits from different analyzer crystals
-  int groupNumber = 0;
-  
-  // Flags for absorbtion of unwanted events
-  int hitSample;
-  int hitAnalyzer;
-  
-  // Parameters to control neutron propagation and label neutrons
-  int flag_analyser_scatt;
-  
-  // Si111 analyser specifications
-  double an_x_min=-0.2325;
-  double an_x_max=0.2325;
-  double an_y_min=-0.49;
-  double an_y_max=0.49;
-  double analyser_focus_dist=1.2;
-  
-  // Graphite ANALYZER SECTION PARAMETERS
-  const double anaRadius     = 0.9068; // m
-  const double anaHeight     = 0.01; // m
-  const double anaWidth      = 0.01; // m
-  // We scale the mosaicity to take into account the d-spacing resolution!
-  /*   const double anaMosaicH    = 2.41*0.8*60; // arc minutes  */
-  /*   const double anaMosaicV    = 2.41*0.8*60; // arc minutes */
-  const double anaMosaicH    = 0.8*60; // arc minutes 
-  const double anaMosaicV    = 0.8*60; // arc minutes
-  //  const double anad          = 3.354; // 
-  const double anaQ          = 2*PI/3.354; // AA-1
-  
-  
-  double dist_sample_detector=0.2;
-  double myt,myx,myy;
+    double Omega1,Omega2,Omega3;
+    #pragma acc declare create(Omega1,Omega2,Omega3)
+    double TOTAL_LENGTH;
+    double Guide_extension; 
+    double E_min; 
+    double E_max;
+    double SGS3;
+    double End_Guide;
+    double Analyser;
+    double Detector1;
+    double  q_si111=2.003886241;
+    char myfilename_1 [128];
+    char myfilename_2 [128];
+    char myfilename_3 [128];
+    char myfilename_4 [128];
+    char myfilename_5 [128];
+    char myfilename_6 [128];
+    char myfilename_7 [128];
+    char myfilename_8 [128];
+    char myfilename_9 [128];
+    char myfilename_10 [128];
+    char myfilename_11 [128];
+    char myfilename_12 [128];
+    char myfilename_13 [128];
+    char myfilename_14 [128];
+    char myfilename_15 [128];
+    char myfilename_16 [128];
+    char myfilename_17 [128];
+    char myfilename_18 [128];
+    char myfilename_19 [128];
 
+    // Variable to help classify hits from different analyzer crystals
+    int groupNumber = 0;
+
+    // Flags for absorbtion of unwanted events
+    int hitSample;
+    int hitAnalyzer;
+
+    // Parameters to control neutron propagation and label neutrons
+    int flag_analyser_scatt;
+
+    // Si111 analyser specifications
+    double an_x_min=-0.2325;
+    double an_x_max=0.2325;
+    double an_y_min=-0.49;
+    double an_y_max=0.49;
+    double analyser_focus_dist=1.2;
+
+    // Graphite ANALYZER SECTION PARAMETERS
+    const double anaRadius     = 0.9068; // m
+    const double anaHeight     = 0.01; // m
+    const double anaWidth      = 0.01; // m
+    // We scale the mosaicity to take into account the d-spacing resolution!
+    /*   const double anaMosaicH    = 2.41*0.8*60; // arc minutes  */
+    /*   const double anaMosaicV    = 2.41*0.8*60; // arc minutes */
+    const double anaMosaicH    = 0.8*60; // arc minutes 
+    const double anaMosaicV    = 0.8*60; // arc minutes
+    //  const double anad          = 3.354; // 
+    const double anaQ          = 2*PI/3.354; // AA-1
+
+
+    double dist_sample_detector=0.2;
+    double myt,myx,myy;
 %}
 
  
@@ -153,43 +152,42 @@ DECLARE
 
 INITIALIZE
 %{
- // Omega1=2*PI*omega1/60;
- // Omega2=2*PI*omega2/60;
- // Omega3=2*PI*omega3/60;
- Omega1=omega1;
- Omega2=omega2;
- Omega3=omega3;
-#pragma acc update device(Omega1,Omega2,Omega3)
-  Guide_extension = TOTAL_LENGTH - 84.0 ;
-  SGS3 = 75.7305 + Guide_extension;
-  End_Guide = SGS3 + 8.0003;
-  Analyser = End_Guide + 2.7798;
-  Detector1 = Analyser - 2.2202;
-  sprintf(myfilename_1, "TOF_monitor_%g_just_before_Funnel", SGS3);
-  sprintf(myfilename_2, "Lam_monitor_%g_just_before_Funnel", SGS3);
-  sprintf(myfilename_3, "PSD_monitor_%g_just_before_Funnel", SGS3);
-  sprintf(myfilename_4, "TOF_monitor_%g_atEndof_Guide", End_Guide);
-  sprintf(myfilename_5, "Lam_monitor_%g_atEndof_Guide", End_Guide);
-  sprintf(myfilename_6, "PSD_monitor_%g_atEndof_Guide", End_Guide);
-  sprintf(myfilename_7, "TOF_monitor_%g_just_before_analyzer", Analyser);
-  sprintf(myfilename_8, "TOF_monitor_%g_just_before_analyzer_zoom", Analyser);   
-  sprintf(myfilename_9, "Lam_monitor_%g_just_before_analyzer", Analyser);
-  sprintf(myfilename_10, "Lam_monitor_%g_just_before_analyzer_zoom", Analyser);
-  sprintf(myfilename_11, "Energy_monitor_%g_just_before_analyzer", Analyser);
-  sprintf(myfilename_12, "Energy_monitor_%g_just_before_analyzer_zoom", Analyser);
-  sprintf(myfilename_13, "E_monitor_Det1_%g_close_to_sample", Detector1);
-  sprintf(myfilename_14, "E_monitor_Det1_%g_close_to_sample_zoom", Detector1);
-  sprintf(myfilename_15, "Lam_monitor_%g_close_to_sample", Detector1);
-  sprintf(myfilename_16, "Lam_monitor_%g_close_to_sample_zoom", Detector1);
-  sprintf(myfilename_17, "TOF_monitor_%g_close_to_sample", Detector1);
-  sprintf(myfilename_18, "TOF_monitor_%g_close_to_sample_zoom", Detector1);
-  sprintf(myfilename_19, "TOF_monitor_%g_close_to_sample_zoom_less_chan", Detector1);
+    // Omega1=2*PI*omega1/60;
+    // Omega2=2*PI*omega2/60;
+    // Omega3=2*PI*omega3/60;
+    Omega1=omega1;
+    Omega2=omega2;
+    Omega3=omega3;
+    #pragma acc update device(Omega1,Omega2,Omega3)
+    Guide_extension = TOTAL_LENGTH - 84.0 ;
+    SGS3 = 75.7305 + Guide_extension;
+    End_Guide = SGS3 + 8.0003;
+    Analyser = End_Guide + 2.7798;
+    Detector1 = Analyser - 2.2202;
+    sprintf(myfilename_1, "TOF_monitor_%g_just_before_Funnel", SGS3);
+    sprintf(myfilename_2, "Lam_monitor_%g_just_before_Funnel", SGS3);
+    sprintf(myfilename_3, "PSD_monitor_%g_just_before_Funnel", SGS3);
+    sprintf(myfilename_4, "TOF_monitor_%g_atEndof_Guide", End_Guide);
+    sprintf(myfilename_5, "Lam_monitor_%g_atEndof_Guide", End_Guide);
+    sprintf(myfilename_6, "PSD_monitor_%g_atEndof_Guide", End_Guide);
+    sprintf(myfilename_7, "TOF_monitor_%g_just_before_analyzer", Analyser);
+    sprintf(myfilename_8, "TOF_monitor_%g_just_before_analyzer_zoom", Analyser);   
+    sprintf(myfilename_9, "Lam_monitor_%g_just_before_analyzer", Analyser);
+    sprintf(myfilename_10, "Lam_monitor_%g_just_before_analyzer_zoom", Analyser);
+    sprintf(myfilename_11, "Energy_monitor_%g_just_before_analyzer", Analyser);
+    sprintf(myfilename_12, "Energy_monitor_%g_just_before_analyzer_zoom", Analyser);
+    sprintf(myfilename_13, "E_monitor_Det1_%g_close_to_sample", Detector1);
+    sprintf(myfilename_14, "E_monitor_Det1_%g_close_to_sample_zoom", Detector1);
+    sprintf(myfilename_15, "Lam_monitor_%g_close_to_sample", Detector1);
+    sprintf(myfilename_16, "Lam_monitor_%g_close_to_sample_zoom", Detector1);
+    sprintf(myfilename_17, "TOF_monitor_%g_close_to_sample", Detector1);
+    sprintf(myfilename_18, "TOF_monitor_%g_close_to_sample_zoom", Detector1);
+    sprintf(myfilename_19, "TOF_monitor_%g_close_to_sample_zoom_less_chan", Detector1);
 
-  E_min=81.82/(Lambda_max*Lambda_max);
-  E_max=81.82/(Lambda_min*Lambda_min);
+    E_min=81.82/(Lambda_max*Lambda_max);
+    E_max=81.82/(Lambda_min*Lambda_min);
 
-  printf("Energies as calculated by the instrument: %g - %g\n",E_min,E_max);
-
+    printf("Energies as calculated by the instrument: %g - %g\n",E_min,E_max);
 %}
 
 /* Here comes the TRACE section, where the actual      */

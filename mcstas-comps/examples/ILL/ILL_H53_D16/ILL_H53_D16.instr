@@ -51,48 +51,47 @@ DEFINE INSTRUMENT ILL_H53_D16(lambda=4.7, DM=3.355, dlambda=0.05, string Powder=
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-double KI, Vi, EI;
+    double KI, Vi, EI;
 %}
 
 USERVARS
 %{
-/* D16 parameters */
-  char flag_al;
-  char flag_sample;
-/* capture flux positions from moderator: 21.4    28.4    61.2 */
+    /* D16 parameters */
+    char flag_al;
+    char flag_sample;
+    /* capture flux positions from moderator: 21.4    28.4    61.2 */
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-if (!THETA_M && lambda && DM)
-	THETA_M =asin(lambda/(2*DM))*RAD2DEG;
-else if (THETA_M && !lambda && DM)
-	lambda = fabs(sin(THETA_M*DEG2RAD))*2*DM;
-else if (THETA_M && lambda)
-	DM = fabs(lambda/sin(DEG2RAD*THETA_M)/2.0);
+    if (!THETA_M && lambda && DM)
+    THETA_M =asin(lambda/(2*DM))*RAD2DEG;
+    else if (THETA_M && !lambda && DM)
+    lambda = fabs(sin(THETA_M*DEG2RAD))*2*DM;
+    else if (THETA_M && lambda)
+    DM = fabs(lambda/sin(DEG2RAD*THETA_M)/2.0);
 
-/* test input parameters */
-if (!THETA_M || !DM || !lambda) exit(fprintf(stderr,
-      "%s: ERROR: Monochromator take-off, d-spacing or wavelength is null (THETA_M=%g, DM=%g, lambda=%g). Abort.\n",
-      NAME_INSTRUMENT, THETA_M, DM, lambda));
+    /* test input parameters */
+    if (!THETA_M || !DM || !lambda) exit(fprintf(stderr,
+    "%s: ERROR: Monochromator take-off, d-spacing or wavelength is null (THETA_M=%g, DM=%g, lambda=%g). Abort.\n",
+    NAME_INSTRUMENT, THETA_M, DM, lambda));
 
-if (RV < 0) RV=2*L2*sin(DEG2RAD*THETA_M);
-KI=2*PI/lambda;
-Vi = K2V*fabs(KI);
-EI = VS2E*Vi*Vi;
+    if (RV < 0) RV=2*L2*sin(DEG2RAD*THETA_M);
+    KI=2*PI/lambda;
+    Vi = K2V*fabs(KI);
+    EI = VS2E*Vi*Vi;
 
-if (verbose) {
-  printf("%s: Detailed D16 configuration on H53@ILL\n", NAME_INSTRUMENT);
-  printf("* Incoming beam: lambda=%.4g +/- %g [Angs] EI=%.4g [meV]  KI=%.4g [Angs-1] Vi=%g [m/s]\n",
-    lambda, dlambda, EI, KI, Vi);
-  printf("* Monochromator:  DM=%.4g [Angs] RV=%.4g [m] %s, take-off THETA_M=%.4g [deg]\n",
-    DM, RV, (!RV ? "flat" : "curved"), THETA_M*2);
-  printf("* MILAND Detector: entrance window radius=%g [m] thickness=%g [m] gap=%g [m]\n",
-    RadiusDet, DetEthick, DetEgap);
-}
-
+    if (verbose) {
+        printf("%s: Detailed D16 configuration on H53@ILL\n", NAME_INSTRUMENT);
+        printf("* Incoming beam: lambda=%.4g +/- %g [Angs] EI=%.4g [meV]  KI=%.4g [Angs-1] Vi=%g [m/s]\n",
+        lambda, dlambda, EI, KI, Vi);
+        printf("* Monochromator:  DM=%.4g [Angs] RV=%.4g [m] %s, take-off THETA_M=%.4g [deg]\n",
+        DM, RV, (!RV ? "flat" : "curved"), THETA_M*2);
+        printf("* MILAND Detector: entrance window radius=%g [m] thickness=%g [m] gap=%g [m]\n",
+        RadiusDet, DetEthick, DetEgap);
+    }
 %}
 
 /* Here comes the TRACE section, where the actual      */

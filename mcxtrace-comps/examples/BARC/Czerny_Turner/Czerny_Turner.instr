@@ -32,63 +32,62 @@ DEFINE INSTRUMENT Czerny_Turner(x_screw=0, scan=0)
 
 DECLARE
 %{
-double E0;
-double dE;
+    double E0;
+    double dE;
 
-double grazing_angle_reflect_grating;
+    double grazing_angle_reflect_grating;
 
-double number_lines_per_mm; //Number of lines pr mm of the grating
-double grazing_angle_order_grating;
-double order;
-double period;
+    double number_lines_per_mm; //Number of lines pr mm of the grating
+    double grazing_angle_order_grating;
+    double order;
+    double period;
 
-double x_screw; //x_screw=L*sin(theta_calculated), L=164.61 and x_screw goes from 0 to 100 mm (0 to 10K Angstroms)
-double theta_calculated;
+    double x_screw; //x_screw=L*sin(theta_calculated), L=164.61 and x_screw goes from 0 to 100 mm (0 to 10K Angstroms)
+    double theta_calculated;
 
-double w_monitor_value;
-double x_screw_var;
-double w_monitor_error;
-double number_events_w_monitor;
+    double w_monitor_value;
+    double x_screw_var;
+    double w_monitor_error;
+    double number_events_w_monitor;
 %}
 
 INITIALIZE
 %{
 
-//For 5k Ang, give a d_phi=0 to the grating to verify with the 3D views that the ray behaves correctly
-//E0=0.00248;
-//dE=0;
+    //For 5k Ang, give a d_phi=0 to the grating to verify with the 3D views that the ray behaves correctly
+    //E0=0.00248;
+    //dE=0;
 
-//Our source range: 1.2 to 6.2 eV
-E0 = 0.0037;
-dE = 0.0025;
+    //Our source range: 1.2 to 6.2 eV
+    E0 = 0.0037;
+    dE = 0.0025;
 
-number_lines_per_mm = 1200;
+    number_lines_per_mm = 1200;
 
-theta_calculated = RAD2DEG*asin(x_screw/164.61);
+    theta_calculated = RAD2DEG*asin(x_screw/164.61);
 
-fprintf(stdout,"theta_calculated %g degrees, should be 17.6833 for x_screw 50 mm approximately \n", theta_calculated);
+    fprintf(stdout,"theta_calculated %g degrees, should be 17.6833 for x_screw 50 mm approximately \n", theta_calculated);
 
-order=1;
+    order=1;
 
-if (theta_calculated<9){ //to take into account the ray arriving on the other side of the norm. The order 1 does not go towards the M2 when theta_calculated is inferior to 9 degrees, so 
-//better to be centered on the order -1.
-order=-1;
-}
+    if (theta_calculated<9){ //to take into account the ray arriving on the other side of the norm. The order 1 does not go towards the M2 when theta_calculated is inferior to 9 degrees, so 
+        //better to be centered on the order -1.
+        order=-1;
+    }
 
-period = 1/(1e3*number_lines_per_mm);
-fprintf(stdout,"Grating period %g \n", period);
+    period = 1/(1e3*number_lines_per_mm);
+    fprintf(stdout,"Grating period %g \n", period);
 
 
-//Information purposes only:
-//For 5K Angstroms (x_screw = 50 mm), the angle between the grating's norm and the incident ray arrives at 8.6833 degrees
-//and the angle between the grating's norm and the order m=1 is equal to 26.6833 deg
-//the angle between the incident ray and the order m=1 equals to 26.6833-8.6833 = 18 degrees (angle called phi)
-//we position the grating angle's norm on the bisector of phi
-//then a sine drive mechanism gives us a simple linear relation: lambda = 2*period*cos(pĥi)*x_screw/L
-//grazing_angle_reflect_grating = 90-8.6833;
-//grazing_angle_order_grating = RAD2DEG*acos(-(12.39842/(E0))/1e10*order/period+cos(DEG2RAD*grazing_angle_reflect_grating));
-//fprintf(stdout,"Grazing angle for order %g is %g degrees \n", order, grazing_angle_order_grating);
-
+    //Information purposes only:
+    //For 5K Angstroms (x_screw = 50 mm), the angle between the grating's norm and the incident ray arrives at 8.6833 degrees
+    //and the angle between the grating's norm and the order m=1 is equal to 26.6833 deg
+    //the angle between the incident ray and the order m=1 equals to 26.6833-8.6833 = 18 degrees (angle called phi)
+    //we position the grating angle's norm on the bisector of phi
+    //then a sine drive mechanism gives us a simple linear relation: lambda = 2*period*cos(pĥi)*x_screw/L
+    //grazing_angle_reflect_grating = 90-8.6833;
+    //grazing_angle_order_grating = RAD2DEG*acos(-(12.39842/(E0))/1e10*order/period+cos(DEG2RAD*grazing_angle_reflect_grating));
+    //fprintf(stdout,"Grazing angle for order %g is %g degrees \n", order, grazing_angle_order_grating);
 %}
 
 TRACE
@@ -121,7 +120,7 @@ AT (0, 0, 0) RELATIVE PREVIOUS
 ROTATED (-(90-4.5), 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT arm = Arm()
@@ -194,7 +193,7 @@ AT (0, 0, 0) RELATIVE PREVIOUS
 ROTATED (-(90-5), 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT arm2 = Arm()
@@ -248,28 +247,28 @@ FINALLY
 %{
     // If there is a scan, calculate the Wavelength(Angstroms) as a function of x_screw(mm).
     if(scan>=1){ 
-#ifdef USE_MPI
+        #ifdef USE_MPI
         //MPI_MASTER is equivalent to if(mpi_node_root>=mpi_node_rank){ //statement }
         //If DETECTOR_OUT_0D is inside of MPI_MASTER the program hangs forever. 
         //If outside it seems to work. Weird.
         MPI_MASTER(
-#endif
-	 MCDETECTOR w_monitor_var = COMP_GETPAR(w_monitor,detector); // We have to think in terms of wavelength, the sine drive mechanism was built to linearize the wavelength.
+        #endif
+        MCDETECTOR w_monitor_var = COMP_GETPAR(w_monitor,detector); // We have to think in terms of wavelength, the sine drive mechanism was built to linearize the wavelength.
         w_monitor_value = w_monitor_var.centerX;
         x_screw_var = x_screw;
         w_monitor_error = 0; //Forgot how to get rid of the error bar.  
         //For the error we could have dlambda = lambda*2*period*cos(phi)/L*dx_screw/x_screw, but we need to have dx_screw. Does it make sense for dx_screw to exist in an exact simulation?
         number_events_w_monitor = w_monitor_var.events;   
-                                                 
-#ifdef USE_MPI                  
+
+        #ifdef USE_MPI                  
         );
         //MPI_Barrier(MPI_COMM_WORLD);
-#endif  
+        #endif  
         //Adding a legend to the graph would be good, need to find out how to do that at a later date. todo            
         // This set of defines is to avoid getting a '.' in the component name
-	 Rotation Rot;
-	 rot_set_rotation(Rot,0,0,0);
-	mcdetector_out_0D("Wavelength(Ang) as a function of x_screw(mm)", number_events_w_monitor, w_monitor_value, w_monitor_error, "Wavelength", coords_set(0,0,0),Rot,9999);
+        Rotation Rot;
+        rot_set_rotation(Rot,0,0,0);
+        mcdetector_out_0D("Wavelength(Ang) as a function of x_screw(mm)", number_events_w_monitor, w_monitor_value, w_monitor_error, "Wavelength", coords_set(0,0,0),Rot,9999);
 
     }
 %}

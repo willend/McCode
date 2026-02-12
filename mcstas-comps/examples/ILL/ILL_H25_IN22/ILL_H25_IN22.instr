@@ -54,9 +54,9 @@ DEFINE INSTRUMENT ILL_H25_IN22( m=2, KI=3.84, QM=1.0, EN=0.0, verbose=1, WM=0.15
 
 INITIALIZE
 %{
-  lambda=2*PI/KI;
-  dlambda=lambda*0.015;
-  printf("%s: Incoming wavelength lambda=%g [Angs]\n", NAME_INSTRUMENT, lambda);
+    lambda=2*PI/KI;
+    dlambda=lambda*0.015;
+    printf("%s: Incoming wavelength lambda=%g [Angs]\n", NAME_INSTRUMENT, lambda);
 %}
 /* end of INITIALIZE */
 

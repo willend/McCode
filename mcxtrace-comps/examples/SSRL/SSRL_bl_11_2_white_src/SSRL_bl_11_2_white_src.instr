@@ -50,11 +50,10 @@ INITIALIZE
     fprintf(stdout,"n %g \n", n);
     calculated_angle=RAD2DEG*asin(12398.4198*sqrt(n)/(2*5.43096*Etohit));
     fprintf(stdout,"Energy eV %g / Angle deg %g \n", Etohit, calculated_angle);
-       
+
     //the fwhm is 0.1 degrees by default, the value for the for 6900-7500 eV range. For other ranges find it by doing a scan with the detuning_rockingcurve parameter.
     theta_detuning=(detuning_percentage/100)*fwhm;
     fprintf(stdout,"theta_detuning degrees %g \n", theta_detuning);
-      
 %}
 
 TRACE

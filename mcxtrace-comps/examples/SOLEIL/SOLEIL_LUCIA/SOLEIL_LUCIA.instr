@@ -41,28 +41,28 @@ DEFINE INSTRUMENT SOLEIL_LUCIA(E0=3.09, dE=0.02, dcm_theta=38.9,
 
 DECLARE
 %{
-  double dcm_gap;
+    double dcm_gap;
 %}
 
 INITIALIZE
 %{
-  double DM= 5.4909;     // Si d-spacing
-  double d = DM/sqrt(3); // <111> reflection |<111>|=3
-  dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
-   
-  if (!dcm_theta && E0) {
-    // n.lambda = 2 d sin(dcm_theta) = 2*PI/E2K / E0 with n=ORDER=1
-    double sin_theta = 2*PI/E2K/E0 / 2 / d;
-    if (fabs(sin_theta) < 1)
-      dcm_theta = asin(sin_theta)*RAD2DEG;
-  } else if (dcm_theta && !E0)
+    double DM= 5.4909;     // Si d-spacing
+    double d = DM/sqrt(3); // <111> reflection |<111>|=3
+    dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
+
+    if (!dcm_theta && E0) {
+        // n.lambda = 2 d sin(dcm_theta) = 2*PI/E2K / E0 with n=ORDER=1
+        double sin_theta = 2*PI/E2K/E0 / 2 / d;
+        if (fabs(sin_theta) < 1)
+        dcm_theta = asin(sin_theta)*RAD2DEG;
+    } else if (dcm_theta && !E0)
     E0 = 2*PI/E2K / (2*d*sin(dcm_theta*DEG2RAD));
-  if (!dcm_theta || !E0 || dE <=0)
+    if (!dcm_theta || !E0 || dE <=0)
     exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
-  MPI_MASTER(
+    MPI_MASTER(
     printf("%s: E0=%g [keV] Monochromator dcm_theta=%g [deg] \n", NAME_INSTRUMENT, E0, dcm_theta);
-  );
-  if (fabs(dE/E0)>0.1) dE = 3e-2*E0;
+    );
+    if (fabs(dE/E0)>0.1) dE = 3e-2*E0;
 %}
 
 TRACE

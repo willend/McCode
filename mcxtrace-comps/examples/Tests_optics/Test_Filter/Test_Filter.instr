@@ -37,10 +37,10 @@ DEFINE INSTRUMENT Test_Filter(string filter_mat="Rh.txt",thickness=100e-6,L0=1,D
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 

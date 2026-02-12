@@ -62,162 +62,160 @@ SETTING PARAMETERS (R=100, dR=0.0,Phi=1e-3, Delta_rho=0.6, sigma_a=0.50, qmax=0.
 
 DECLARE
 %{
-  double my_a_v;
-  double isq;
-  double Ri;
-  double fi;
+    double my_a_v;
+    double isq;
+    double Ri;
+    double fi;
 %}
 
 INITIALIZE
 %{
     if (!xwidth || !yheight || !zthick) {
-  exit(fprintf(stderr,"SANS_AnySamp: %s:   sample has no volume (zero dimensions)\n", NAME_CURRENT_COMP));
+        exit(fprintf(stderr,"SANS_AnySamp: %s:   sample has no volume (zero dimensions)\n", NAME_CURRENT_COMP));
     }
 
-  int    iqmax=30000,iq=iqmax;    // number of intervals
-  double q,sq,f;
+    int    iqmax=30000,iq=iqmax;    // number of intervals
+    double q,sq,f;
 
-  isq = 0.0;           // integral = 0
+    isq = 0.0;           // integral = 0
 
-  while (iq > 1)       // start integrating with low intensities at large q
-  {                               // MODIFIY HERE
-  q  = (iq-0.5)*qmax/iqmax;       // q always slightly larger than 0
-  if(Ri<=0)
-    fi = 0;
-else
-    fi = 3*(sin(q*Ri) - q*Ri*cos(q*Ri))/(q*Ri*q*Ri*q*Ri);
-    
-  sq = fi*fi;	                  // define this function in INITIALIZE and TRACE part
-  sq*= q;
-  isq+= sq;
-  --iq;
-  }
+    while (iq > 1)       // start integrating with low intensities at large q
+    {                               // MODIFIY HERE
+        q  = (iq-0.5)*qmax/iqmax;       // q always slightly larger than 0
+        if(Ri<=0)
+        fi = 0;
+        else
+        fi = 3*(sin(q*Ri) - q*Ri*cos(q*Ri))/(q*Ri*q*Ri*q*Ri);
 
-  isq*=qmax/iqmax;
-  my_a_v = sigma_a*2200*100;           /* Is not yet divided by v. 100: Convert barns -> fm^2 */
+        sq = fi*fi;	                  // define this function in INITIALIZE and TRACE part
+        sq*= q;
+        isq+= sq;
+        --iq;
+    }
 
+    isq*=qmax/iqmax;
+    my_a_v = sigma_a*2200*100;           /* Is not yet divided by v. 100: Convert barns -> fm^2 */
 %}
 
 TRACE
 %{
-  double a,q,qm,sq,f;
-  double Vi,Vo;
-  double RiTrace,Ro;
-  double fiTrace, fo;
-  double transsim=0.5;                  // portion of paths for transmission, ~ 0.03 for SANS, 0.5 for SESANS
-  double my_s_pre;
-  double q_v;
+    double a,q,qm,sq,f;
+    double Vi,Vo;
+    double RiTrace,Ro;
+    double fiTrace, fo;
+    double transsim=0.5;                  // portion of paths for transmission, ~ 0.03 for SANS, 0.5 for SESANS
+    double my_s_pre;
+    double q_v;
 
-  double transmr, t0, t1, v, l_full, l, dt, d_phi, theta;
-  double axis_x, axis_y, axis_z;
-  double arg, tmp_vx, tmp_vy, tmp_vz, vout_x, vout_y, vout_z;
-  char   intersect=0;
+    double transmr, t0, t1, v, l_full, l, dt, d_phi, theta;
+    double axis_x, axis_y, axis_z;
+    double arg, tmp_vx, tmp_vy, tmp_vz, vout_x, vout_y, vout_z;
+    char   intersect=0;
 
-  RiTrace=Ri;
-  fiTrace=fi;
-  
-  Ro=R+randnorm()*dR;
-  RiTrace = Ro-dbilayer; /*  Calculate inner radius of liposphere */
-  if(dbilayer==R)
-	  RiTrace=0; /*  Treat sample as solid spheres */
-  Vi = 4/3*PI*RiTrace*RiTrace*RiTrace;
-  Vo = 4/3*PI*Ro*Ro*Ro;
-  my_s_pre = Phi * (Vo-Vi) * Delta_rho*Delta_rho;
+    RiTrace=Ri;
+    fiTrace=fi;
 
-  intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zthick);
-  if(intersect)
-  {
-    if(t0 < 0) ABSORB;                   /* Neutron enters at t=t0. */
+    Ro=R+randnorm()*dR;
+    RiTrace = Ro-dbilayer; /*  Calculate inner radius of liposphere */
+    if(dbilayer==R)
+    RiTrace=0; /*  Treat sample as solid spheres */
+    Vi = 4/3*PI*RiTrace*RiTrace*RiTrace;
+    Vo = 4/3*PI*Ro*Ro*Ro;
+    my_s_pre = Phi * (Vo-Vi) * Delta_rho*Delta_rho;
 
-    v = sqrt(vx*vx + vy*vy + vz*vz);
-    /* amount of scattering is described by \lambda^2 zthick Delta_rho^2 phi 3/2 R */
-    /* for example J. Schelten, W. Schmatz: J. Appl. Crystallogr. 13, 385 (1980) */
-    /* units perfectly cancel each other \AA^2 m fm^2 \AA^-6 \AA = 1 */
-    transmr = 1.0 - 4.0*PI*PI/V2K/V2K/v/v*zthick*Delta_rho*Delta_rho*Phi*1.5*R;       /* transmission for single scattering */
-/*  if (transmr<1e-10) transmr = 1e-10; */
-/*  if (transmr>0.99 ) transmr = 0.99;  */
-
-    l_full = v * (t1 - t0);              /* Length of full path through sample */
-    transmr = exp(log(transmr)*l_full/zthick);  /* real transmission */
-
-    dt = rand01()*(t1 - t0) + t0;        /* Time of scattering */
-    PROP_DT(dt);                         /* Point of scattering */
-    l = v*dt;                            /* Penetration in sample */
-
-    qm = qmax;                           // adjust maximal q
-    if (qm > 2.0*v/K2V) qm = 2.0*v/K2V;  // should not be totally wrong
-    q = sqrt(rand01())*qm;               // otherwise normalization with isq is wrong
-
-    q_v = q*K2V;                         /* scattering possible ??? */
-    arg = q_v/(2.0*v);
-
-    if(rand01()>transsim)
+    intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zthick);
+    if(intersect)
     {
-      //  f = 3 * (sin(q*R) - q*R*cos(q*R))/(q*R*q*R*q*R);
+        if(t0 < 0) ABSORB;                   /* Neutron enters at t=t0. */
 
-    fo = 3*(sin(q*Ro) - q*Ro*cos(q*Ro))/(q*Ro*q*Ro*q*Ro);
-    
-if(RiTrace<=0)
-    fiTrace = 0;
-else
-    fiTrace = 3*(sin(q*RiTrace) - q*RiTrace*cos(q*RiTrace))/(q*RiTrace*q*RiTrace*q*RiTrace);
-    
-    f= (Vo*fo-Vi*fiTrace)/(Vo-Vi);
+        v = sqrt(vx*vx + vy*vy + vz*vz);
+        /* amount of scattering is described by \lambda^2 zthick Delta_rho^2 phi 3/2 R */
+        /* for example J. Schelten, W. Schmatz: J. Appl. Crystallogr. 13, 385 (1980) */
+        /* units perfectly cancel each other \AA^2 m fm^2 \AA^-6 \AA = 1 */
+        transmr = 1.0 - 4.0*PI*PI/V2K/V2K/v/v*zthick*Delta_rho*Delta_rho*Phi*1.5*R;       /* transmission for single scattering */
+        /*  if (transmr<1e-10) transmr = 1e-10; */
+        /*  if (transmr>0.99 ) transmr = 0.99;  */
 
-    sq = f*f;	                  // define this function in INITIALIZE and TRACE part
+        l_full = v * (t1 - t0);              /* Length of full path through sample */
+        transmr = exp(log(transmr)*l_full/zthick);  /* real transmission */
 
-    p*= sq*(qmax*qmax*0.5)*(1.0-transmr)/(1.0-transsim)/isq;
+        dt = rand01()*(t1 - t0) + t0;        /* Time of scattering */
+        PROP_DT(dt);                         /* Point of scattering */
+        l = v*dt;                            /* Penetration in sample */
 
-    theta = asin(arg);                   /* Bragg scattering law */
-    d_phi = 2*PI*rand01();
+        qm = qmax;                           // adjust maximal q
+        if (qm > 2.0*v/K2V) qm = 2.0*v/K2V;  // should not be totally wrong
+        q = sqrt(rand01())*qm;               // otherwise normalization with isq is wrong
 
-    vec_prod(axis_x, axis_y, axis_z, vx, vy, vz, 0, 1, 0);
-    rotate(tmp_vx, tmp_vy, tmp_vz, vx, vy, vz, 2*theta, axis_x, axis_y, axis_z);
-    rotate(vout_x, vout_y, vout_z, tmp_vx, tmp_vy, tmp_vz, d_phi, vx, vy, vz);
+        q_v = q*K2V;                         /* scattering possible ??? */
+        arg = q_v/(2.0*v);
 
-    vx = vout_x;
-    vy = vout_y;
-    vz = vout_z;
+        if(rand01()>transsim)
+        {
+            //  f = 3 * (sin(q*R) - q*R*cos(q*R))/(q*R*q*R*q*R);
 
-    if(!box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zthick))    fprintf(stderr, "SANS_AnySamp: FATAL ERROR: Did not hit box from inside.\n");
+            fo = 3*(sin(q*Ro) - q*Ro*cos(q*Ro))/(q*Ro*q*Ro*q*Ro);
+
+            if(RiTrace<=0)
+            fiTrace = 0;
+            else
+            fiTrace = 3*(sin(q*RiTrace) - q*RiTrace*cos(q*RiTrace))/(q*RiTrace*q*RiTrace*q*RiTrace);
+
+            f= (Vo*fo-Vi*fiTrace)/(Vo-Vi);
+
+            sq = f*f;	                  // define this function in INITIALIZE and TRACE part
+
+            p*= sq*(qmax*qmax*0.5)*(1.0-transmr)/(1.0-transsim)/isq;
+
+            theta = asin(arg);                   /* Bragg scattering law */
+            d_phi = 2*PI*rand01();
+
+            vec_prod(axis_x, axis_y, axis_z, vx, vy, vz, 0, 1, 0);
+            rotate(tmp_vx, tmp_vy, tmp_vz, vx, vy, vz, 2*theta, axis_x, axis_y, axis_z);
+            rotate(vout_x, vout_y, vout_z, tmp_vx, tmp_vy, tmp_vz, d_phi, vx, vy, vz);
+
+            vx = vout_x;
+            vy = vout_y;
+            vz = vout_z;
+
+            if(!box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zthick))    fprintf(stderr, "SANS_AnySamp: FATAL ERROR: Did not hit box from inside.\n");
+        }
+        else
+        {
+            p*= transmr / transsim;
+        }
+        p *= exp(-my_a_v*(l_full)/v);
+        SCATTER;
     }
-    else
-    {
-    p*= transmr / transsim;
-    }
-    p *= exp(-my_a_v*(l_full)/v);
-    SCATTER;
-  }
 %}
 
 MCDISPLAY
 %{
-  double radius = 0;
-  double h = 0;
-  magnify("xyz");
-  {
-    double xmin = -0.5*xwidth;
-    double xmax =  0.5*xwidth;
-    double ymin = -0.5*yheight;
-    double ymax =  0.5*yheight;
-    double zmin = -0.5*zthick;
-    double zmax =  0.5*zthick;
-    multiline(5, xmin, ymin, zmin,
-                 xmax, ymin, zmin,
-                 xmax, ymax, zmin,
-                 xmin, ymax, zmin,
-                 xmin, ymin, zmin);
-    multiline(5, xmin, ymin, zmax,
-                 xmax, ymin, zmax,
-                 xmax, ymax, zmax,
-                 xmin, ymax, zmax,
-                 xmin, ymin, zmax);
-    line(xmin, ymin, zmin, xmin, ymin, zmax);
-    line(xmax, ymin, zmin, xmax, ymin, zmax);
-    line(xmin, ymax, zmin, xmin, ymax, zmax);
-    line(xmax, ymax, zmin, xmax, ymax, zmax);
-  }
-
+    double radius = 0;
+    double h = 0;
+    magnify("xyz");
+    {
+        double xmin = -0.5*xwidth;
+        double xmax =  0.5*xwidth;
+        double ymin = -0.5*yheight;
+        double ymax =  0.5*yheight;
+        double zmin = -0.5*zthick;
+        double zmax =  0.5*zthick;
+        multiline(5, xmin, ymin, zmin,
+        xmax, ymin, zmin,
+        xmax, ymax, zmin,
+        xmin, ymax, zmin,
+        xmin, ymin, zmin);
+        multiline(5, xmin, ymin, zmax,
+        xmax, ymin, zmax,
+        xmax, ymax, zmax,
+        xmin, ymax, zmax,
+        xmin, ymin, zmax);
+        line(xmin, ymin, zmin, xmin, ymin, zmax);
+        line(xmax, ymin, zmin, xmax, ymin, zmax);
+        line(xmin, ymax, zmin, xmin, ymax, zmax);
+        line(xmax, ymax, zmin, xmax, ymax, zmax);
+    }
 %}
 END
 

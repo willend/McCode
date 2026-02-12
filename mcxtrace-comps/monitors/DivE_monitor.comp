@@ -52,13 +52,13 @@ SETTING PARAMETERS (int nE=20, int nh=20, string filename=0, xwidth=0.1, yheight
 
 DECLARE
 %{
-  DArray2d DivE_N;
-  DArray2d DivE_p;
-  DArray2d DivE_p2;
-  double xmin;
-  double xmax;
-  double ymin;
-  double ymax;
+    DArray2d DivE_N;
+    DArray2d DivE_p;
+    DArray2d DivE_p2;
+    double xmin;
+    double xmax;
+    double ymin;
+    double ymax;
 %}
 
 INITIALIZE
@@ -69,8 +69,8 @@ INITIALIZE
     ymax = yheight/2; ymin = -ymax;
 
     if ((xmin >= xmax) || (ymin >= ymax)) {
-      printf("ERROR: (%s): Null detection area! Exiting.\n",NAME_CURRENT_COMP);
-      exit(-1);
+        printf("ERROR: (%s): Null detection area! Exiting.\n",NAME_CURRENT_COMP);
+        exit(-1);
     }
     DivE_N = create_darr2d(nE, nh);
     DivE_p = create_darr2d(nE, nh);
@@ -91,21 +91,21 @@ TRACE
     PROP_Z0;
     e = K2E*sqrt(kx*kx + ky*ky + kz*kz);
     if (x>xmin && x<xmax && y>ymin && y<ymax &&
-        e > Emin && e < Emax)
+    e > Emin && e < Emax)
     {
-      /* Find length of projection onto the [nx ny nz] axis */
-      kn = scalar_prod(kx, ky, kz, nx, ny, nz);
-      div = RAD2DEG*atan2(kx,kn);
+        /* Find length of projection onto the [nx ny nz] axis */
+        kn = scalar_prod(kx, ky, kz, nx, ny, nz);
+        div = RAD2DEG*atan2(kx,kn);
 
-      if (div < maxdiv_h && div > -maxdiv_h)
-      {
-        i = floor((e -Emin)*nE/(Emax - Emin));
-        j = floor((div + maxdiv_h)*nh/(2.0*maxdiv_h));
-        DivE_N[i][j]++;
-        DivE_p[i][j] += p;
-        DivE_p2[i][j] += p*p;
-        SCATTER;
-      }
+        if (div < maxdiv_h && div > -maxdiv_h)
+        {
+            i = floor((e -Emin)*nE/(Emax - Emin));
+            j = floor((div + maxdiv_h)*nh/(2.0*maxdiv_h));
+            DivE_N[i][j]++;
+            DivE_p[i][j] += p;
+            DivE_p2[i][j] += p*p;
+            SCATTER;
+        }
     }
     if (restore_xray) {
         RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
@@ -114,8 +114,8 @@ TRACE
 
 SAVE
 %{
-  if(!nowritefile){
-    DETECTOR_OUT_2D(
+    if(!nowritefile){
+        DETECTOR_OUT_2D(
         "Energy-divergence monitor",
         "Energy [keV]",
         "divergence [deg]",
@@ -123,24 +123,24 @@ SAVE
         nE, nh,
         &DivE_N[0][0],&DivE_p[0][0],&DivE_p2[0][0],
         filename);
-  }
+    }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(DivE_N);
-  destroy_darr2d(DivE_p);
-  destroy_darr2d(DivE_p2);
+    destroy_darr2d(DivE_N);
+    destroy_darr2d(DivE_p);
+    destroy_darr2d(DivE_p2);
 %}
 
 MCDISPLAY
   %{
     
     multiline(5, (double)xmin, (double)ymin, 0.0,
-                 (double)xmax, (double)ymin, 0.0,
-                 (double)xmax, (double)ymax, 0.0,
-                 (double)xmin, (double)ymax, 0.0,
-                 (double)xmin, (double)ymin, 0.0);
+    (double)xmax, (double)ymin, 0.0,
+    (double)xmax, (double)ymax, 0.0,
+    (double)xmin, (double)ymax, 0.0,
+    (double)xmin, (double)ymin, 0.0);
 %}
 
 END

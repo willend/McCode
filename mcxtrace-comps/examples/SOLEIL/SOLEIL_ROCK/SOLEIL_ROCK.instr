@@ -102,7 +102,7 @@ INITIALIZE
     i_h=1;
     i_k=1;
     i_l=1;
-    
+
     if(cc>=3){ //automatically select the right cc for the energy E0
         if(E0<=15.516){ 
             cc = 2;
@@ -153,30 +153,30 @@ INITIALIZE
     }
 
     calculated_angle=RAD2DEG*asin(12.39842*sqrt(n)/(2*5.4309*E0));
-    
-    if (!reflec_material_M2A_M2B || !strlen(reflec_material_M2A_M2B) 
-        || !strcmp(reflec_material_M2A_M2B, "NULL") || !strcmp(reflec_material_M2A_M2B, "0")) {
 
-      if(E0<=7.98){
-          reflec_material_M2A_M2B="B4C.dat";
-      }
-      else if (E0<=16.46){
-          reflec_material_M2A_M2B="Pd.dat";
-      }
-      else if (E0>16.46){
-          reflec_material_M2A_M2B="Pt.dat";
-      }
+    if (!reflec_material_M2A_M2B || !strlen(reflec_material_M2A_M2B) 
+    || !strcmp(reflec_material_M2A_M2B, "NULL") || !strcmp(reflec_material_M2A_M2B, "0")) {
+
+        if(E0<=7.98){
+            reflec_material_M2A_M2B="B4C.dat";
+        }
+        else if (E0<=16.46){
+            reflec_material_M2A_M2B="Pd.dat";
+        }
+        else if (E0>16.46){
+            reflec_material_M2A_M2B="Pt.dat";
+        }
     }
-    
+
     MPI_MASTER(
     fprintf(stdout,"%s: Energy=%g [keV]\n"
-      "\tM2 mirror=%s\n"
-      "\tMonochromator Si<%i %i %i> angle %g [deg], config=%i\n", 
-      NAME_INSTRUMENT, E0, reflec_material_M2A_M2B, i_h,i_k,i_l, calculated_angle, cc);
+    "\tM2 mirror=%s\n"
+    "\tMonochromator Si<%i %i %i> angle %g [deg], config=%i\n", 
+    NAME_INSTRUMENT, E0, reflec_material_M2A_M2B, i_h,i_k,i_l, calculated_angle, cc);
     );
 
     sprintf(e_repartition_options,"energy limits=[%g %g], y",
-        E0-0.02*E0, E0+0.02*E0);  
+    E0-0.02*E0, E0+0.02*E0);  
 %}
 
 TRACE
@@ -214,7 +214,7 @@ AT (0, 0, 10.15-8.6486) RELATIVE PREVIOUS
 ROTATED (-angle_m1*RAD2DEG/2, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT mirror_m1_out = Arm()
@@ -242,7 +242,7 @@ AT (0, 0, (16.82-11.6905)) RELATIVE PREVIOUS
 ROTATED (-angle_m2a_m2b*RAD2DEG/2, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT mirror_m2a_out = Arm()
@@ -277,7 +277,7 @@ AT (0, 0, 0) RELATIVE arm_crystal0
 ROTATED (-calculated_angle, 0, 0) RELATIVE arm_crystal0
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT arm_crystal1 = Arm()
@@ -292,7 +292,7 @@ AT (0, 0.01, calculated_angle ? 0.01/tan(calculated_angle*DEG2RAD) : 0) RELATIVE
 ROTATED (calculated_angle, 0, 0) RELATIVE arm_crystal1
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT arm_crystal2 = Arm()
@@ -327,7 +327,7 @@ AT (0, 0, 22.44-21.25) RELATIVE PREVIOUS
 ROTATED (angle_m2a_m2b*RAD2DEG/2, 0, 90) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB; 
+    if (!SCATTERED) ABSORB; 
 %}
 
 COMPONENT mirror_m2b_out = Arm()
@@ -393,12 +393,12 @@ FINALLY
 %{
     // If there is a scan, calculate the absorption coefficient.
     if(scan>=1){ 
-#ifdef USE_MPI
+        #ifdef USE_MPI
         //MPI_MASTER is equivalent to if(mpi_node_root>=mpi_node_rank){ //statement }
         //If DETECTOR_OUT_0D is inside of MPI_MASTER the program hangs forever. 
         //If outside it seems to work. Weird.
         MPI_MASTER(
-#endif 
+        #endif 
         MCDETECTOR e_before_sample = COMP_GETPAR2(EnergyMonitor_before_sample,detector);
         MCDETECTOR e_after_sample =  COMP_GETPAR2(EnergyMonitor_after_sample,detector);
         absorption_coefficient = log(e_before_sample.intensity/e_after_sample.intensity);              
@@ -411,21 +411,21 @@ FINALLY
         fprintf(stdout,"After the sample: I %g I_error %g N %g \n", e_after_sample.intensity, e_after_sample.error, e_after_sample.events); 
         fprintf(stdout,"I_err_calc: I %g \n", I_err_calc);
         fprintf(stdout,"*** \n ");  
-                                                 
-#ifdef USE_MPI                  
+
+        #ifdef USE_MPI                  
         );
         //MPI_Barrier(MPI_COMM_WORLD);
-#endif  
-                      
+        #endif  
+
         // This set of defines is to avoid getting a '.' in the component name
         #ifdef NAME_CURRENT_COMP
         #undef NAME_CURRENT_COMP
         #define NAME_CURRENT_COMP "absorption_coefficient"
         #endif           
-	Coords dummy;
-	Rotation Rot;
-	rot_set_rotation(Rot,0,0,0);
-	mcdetector_out_0D("XANES EXAFS",number_events_after_sample, absorption_coefficient, absorption_coefficient_error,instrument_name,dummy,Rot,9999);  
+        Coords dummy;
+        Rotation Rot;
+        rot_set_rotation(Rot,0,0,0);
+        mcdetector_out_0D("XANES EXAFS",number_events_after_sample, absorption_coefficient, absorption_coefficient_error,instrument_name,dummy,Rot,9999);  
     }
 %}
 

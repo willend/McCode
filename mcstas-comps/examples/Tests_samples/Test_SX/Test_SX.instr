@@ -51,8 +51,8 @@ USERVARS %{
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  DirectBeam = directbeam;
-  #pragma acc update device(DirectBeam)
+    DirectBeam = directbeam;
+    #pragma acc update device(DirectBeam)
 %}
 
 /* Here comes the TRACE section, where the actual      */

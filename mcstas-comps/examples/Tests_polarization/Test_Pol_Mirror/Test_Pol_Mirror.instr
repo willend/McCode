@@ -35,61 +35,61 @@ DECLARE %{
 
 USERVARS
 %{
-  int reflected;
+    int reflected;
 %}
 
 INITIALIZE
 %{
-%}
+    %}
 
-TRACE
+    TRACE
 
-COMPONENT Origin = Progress_bar()
-AT (0,0,0) ABSOLUTE
+    COMPONENT Origin = Progress_bar()
+    AT (0,0,0) ABSOLUTE
 
-COMPONENT source =
-Source_simple(radius = 0.001, dist = 1.0, focus_xw = 0.01, focus_yh = 0.01, lambda0 = 15,
-	      dlambda = 14.5, flux = 1)
-AT (0, 0, 0) RELATIVE Origin
+    COMPONENT source =
+    Source_simple(radius = 0.001, dist = 1.0, focus_xw = 0.01, focus_yh = 0.01, lambda0 = 15,
+    dlambda = 14.5, flux = 1)
+    AT (0, 0, 0) RELATIVE Origin
 
-COMPONENT setPol = Set_pol(randomOn=1, normalize=1)
-WHEN (polarize) AT (0, 0, 0) RELATIVE Origin
+    COMPONENT setPol = Set_pol(randomOn=1, normalize=1)
+    WHEN (polarize) AT (0, 0, 0) RELATIVE Origin
 
-COMPONENT lamStart =
-L_monitor(nL = 30, filename = "lambdaStart.dat",
-	  xwidth = 0.20, yheight = 0.20,
-	  Lmin = 0.0, Lmax = 30)
-AT (0, 0, 0.5) RELATIVE Origin
+    COMPONENT lamStart =
+    L_monitor(nL = 30, filename = "lambdaStart.dat",
+    xwidth = 0.20, yheight = 0.20,
+    Lmin = 0.0, Lmax = 30)
+    AT (0, 0, 0.5) RELATIVE Origin
 
- COMPONENT mirror =
-Pol_mirror(zwidth = 0.40, yheight = 0.40, p_reflect=mirrorOption,
-	   rUpPar={1.0, 0.0219, 6.07, 2.0, 0.003},
-	   rDownPar={0.1, 0.0219, 6.07, 2.0, 0.003})
-AT (0, 0, 1.0) RELATIVE Origin ROTATED (0, 2, 0) RELATIVE Origin
+    COMPONENT mirror =
+    Pol_mirror(zwidth = 0.40, yheight = 0.40, p_reflect=mirrorOption,
+    rUpPar={1.0, 0.0219, 6.07, 2.0, 0.003},
+    rDownPar={0.1, 0.0219, 6.07, 2.0, 0.003})
+        AT (0, 0, 1.0) RELATIVE Origin ROTATED (0, 2, 0) RELATIVE Origin
 
-/* COMPONENT mirror = */
-/* Pol_mirror(zw = 0.40, yh = 0.40, option=mirrorOption, */
-/* 	   rUpFunc=TableReflecFunc, rUpPar="supermirror_m3.rfl", */
-/* 	   rDownFunc=TableReflecFunc, rDownPar="supermirror_m2.rfl", */
-/* 	   useTables=1) */
-/*      AT (0, 0, 1.0) RELATIVE Origin ROTATED (0, 2, 0) RELATIVE Origin */
+        /* COMPONENT mirror = */
+        /* Pol_mirror(zw = 0.40, yh = 0.40, option=mirrorOption, */
+        /* 	   rUpFunc=TableReflecFunc, rUpPar="supermirror_m3.rfl", */
+        /* 	   rDownFunc=TableReflecFunc, rDownPar="supermirror_m2.rfl", */
+        /* 	   useTables=1) */
+        /*      AT (0, 0, 1.0) RELATIVE Origin ROTATED (0, 2, 0) RELATIVE Origin */
 
-COMPONENT armTransmit = Arm()
-     AT (0, 0, 1) RELATIVE Origin
+        COMPONENT armTransmit = Arm()
+        AT (0, 0, 1) RELATIVE Origin
 
-COMPONENT armReflec = Arm()
-     AT (0, 0, 1) RELATIVE Origin
-     ROTATED (0, 4, 0) RELATIVE Origin
+        COMPONENT armReflec = Arm()
+        AT (0, 0, 1) RELATIVE Origin
+        ROTATED (0, 4, 0) RELATIVE Origin
 
-COMPONENT pollambdaMonitorReflecY =
-MeanPolLambda_monitor(xwidth=0.05, yheight=0.05,
-		      nL=30, Lmin = 0, Lmax = 30,
-		      my=1, filename="pollambdaMonReflecY.data")
-AT (0, 0, 1.0) RELATIVE armReflec
-GROUP monitorGroup
-EXTEND
-%{
-  reflected=1;
+        COMPONENT pollambdaMonitorReflecY =
+        MeanPolLambda_monitor(xwidth=0.05, yheight=0.05,
+        nL=30, Lmin = 0, Lmax = 30,
+        my=1, filename="pollambdaMonReflecY.data")
+        AT (0, 0, 1.0) RELATIVE armReflec
+        GROUP monitorGroup
+        EXTEND
+        %{
+            reflected=1;
 %}
 
 COMPONENT pollambdaMonitorTransmitY =
@@ -100,7 +100,7 @@ AT (0, 0, 1.0) RELATIVE armTransmit
 GROUP monitorGroup
 EXTEND
 %{
-  reflected=0;
+    reflected=0;
 %}
 
 COMPONENT lamReflec =

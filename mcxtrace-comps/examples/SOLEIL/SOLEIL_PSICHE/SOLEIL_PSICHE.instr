@@ -45,35 +45,35 @@ DEFINE INSTRUMENT SOLEIL_PSICHE(E0=31, dE=1, DCM_present=0, sample_theta=0,
 
 DECLARE
 %{
-  double dcm_gap;
-  double dcm_scatter;
-  #pragma acc declare create(dcm_scatter)
+    double dcm_gap;
+    double dcm_scatter;
+    #pragma acc declare create(dcm_scatter)
 %}
 
 INITIALIZE
 %{
-   double DM= 5.4909;     // Si d-spacing
-   double d = DM/sqrt(3); // <111> reflection |<111>|=3
-   dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
-   dcm_scatter = DCM_present;
-   #pragma acc update device(dcm_scatter)
-   
-   if (DCM_present) {
-     if (!dcm_theta && E0) {
-       // n.lambda = 2 d sin(dcm_theta) = 2*PI/E2K / E0 with n=ORDER=1
-       double sin_theta = 2*PI/E2K/E0 / 2 / d;
-       if (fabs(sin_theta) < 1)
-         dcm_theta = asin(sin_theta)*RAD2DEG;
-     } else if (dcm_theta && !E0)
-       E0 = 2*PI/E2K / (2*d*sin(dcm_theta*DEG2RAD));
-     if (!dcm_theta || !E0 || dE <=0)
-       exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
-     printf("%s: E0=%g [keV] Monochromator dcm_theta=%g [deg] \n", NAME_INSTRUMENT, E0, dcm_theta);
-     if (fabs(dE/E0)>0.1) dE = 3e-2*E0;
-   } else {
-     dcm_gap=dcm_theta=0;
-     printf("%s: E0=%g [keV] Monochromator OFF\n", NAME_INSTRUMENT, E0);
-   }
+    double DM= 5.4909;     // Si d-spacing
+    double d = DM/sqrt(3); // <111> reflection |<111>|=3
+    dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
+    dcm_scatter = DCM_present;
+    #pragma acc update device(dcm_scatter)
+
+    if (DCM_present) {
+        if (!dcm_theta && E0) {
+            // n.lambda = 2 d sin(dcm_theta) = 2*PI/E2K / E0 with n=ORDER=1
+            double sin_theta = 2*PI/E2K/E0 / 2 / d;
+            if (fabs(sin_theta) < 1)
+            dcm_theta = asin(sin_theta)*RAD2DEG;
+        } else if (dcm_theta && !E0)
+        E0 = 2*PI/E2K / (2*d*sin(dcm_theta*DEG2RAD));
+        if (!dcm_theta || !E0 || dE <=0)
+        exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
+        printf("%s: E0=%g [keV] Monochromator dcm_theta=%g [deg] \n", NAME_INSTRUMENT, E0, dcm_theta);
+        if (fabs(dE/E0)>0.1) dE = 3e-2*E0;
+    } else {
+        dcm_gap=dcm_theta=0;
+        printf("%s: E0=%g [keV] Monochromator OFF\n", NAME_INSTRUMENT, E0);
+    }
 %}
 
 TRACE

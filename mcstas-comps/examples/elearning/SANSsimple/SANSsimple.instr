@@ -47,15 +47,15 @@ DEFINE INSTRUMENT SANS2_liposomes(pinhole_rad=0.004,LC=3,LD=3,Lambda=6, DLambda=
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-double nm=1e-9;
-double Rdet;
+    double nm=1e-9;
+    double Rdet;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  Rdet=0.5; // Radius of detector, also used for focusing sample
+    Rdet=0.5; // Radius of detector, also used for focusing sample
 %}
 
 /* Here comes the TRACE section, where the actual      */

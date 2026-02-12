@@ -31,17 +31,17 @@ DEFINE INSTRUMENT ESS_mcpl2hist(string sector="N",int beamline=1,int filter=0,th
 
 DECLARE
 %{
-  double WL;
-  char MCPLfile[128];
+    double WL;
+    char MCPLfile[128];
 %}
 
 INITIALIZE
 %{
-  if (filter==0)
+    if (filter==0)
     sprintf(MCPLfile,"%s%i.mcpl.gz",sector,beamline);
-  else
+    else
     sprintf(MCPLfile,"%s%i_filtered.mcpl.gz",sector,beamline);
-  printf("MCPLfile is %s\n",MCPLfile);
+    printf("MCPLfile is %s\n",MCPLfile);
 %}
 
 TRACE

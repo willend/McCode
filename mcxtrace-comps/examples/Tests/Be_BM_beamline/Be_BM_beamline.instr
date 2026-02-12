@@ -36,11 +36,11 @@ DEFINE INSTRUMENT Be_BM_beamline(L1=10,L2=1,dS=1e-2, N=1)
 
 DECLARE
 %{
-%}
+    %}
 
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

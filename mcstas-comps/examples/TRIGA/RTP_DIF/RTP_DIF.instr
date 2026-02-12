@@ -36,14 +36,14 @@ DEFINE INSTRUMENT RTP_DIF(lambda=2.36, DM=3.355, Mono_tilt=0, string powder="Na2
 /* functions in C syntax. These may be used in the whole instrument. */
 USERVARS
 %{
-  double mono_index;
+    double mono_index;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  printf("RTP_DIF: Monochromator take-off angle=%g [deg]\n",
+    printf("RTP_DIF: Monochromator take-off angle=%g [deg]\n",
     2*asin(lambda/2/DM)*RAD2DEG);
 %}
 

@@ -64,13 +64,12 @@ DEFINE INSTRUMENT SEMSANS_instrument(triacoil_depth=1.935000e-01, triacoil_width
 DECLARE
 %{
 
-%}
+    %}
 
-/* The INITIALIZE section is executed when the simulation starts     */
-/* (C code). You may use them as component parameter values.         */
-INITIALIZE
-%{
-
+    /* The INITIALIZE section is executed when the simulation starts     */
+    /* (C code). You may use them as component parameter values.         */
+    INITIALIZE
+    %{
 %}
 /* Here comes the TRACE section, where the actual      */
 /* instrument is defined as a sequence of components.  */

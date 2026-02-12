@@ -68,12 +68,12 @@ DEFINE INSTRUMENT Test_Incoherent_MS(flux_mult=0.5512,thick=0.001,
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double det_rot;
-  double E_i;
-  double focus_w;
-  double focus_h;
-  int sample_case=0; // 0 = none, 1 = thin, 2 = thick
-  #pragma acc declare create(sample_case)
+    double det_rot;
+    double E_i;
+    double focus_w;
+    double focus_h;
+    int sample_case=0; // 0 = none, 1 = thin, 2 = thick
+    #pragma acc declare create(sample_case)
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
@@ -81,33 +81,32 @@ DECLARE
 INITIALIZE
 %{
 
-  /* Set up default sample focusing */
-  focus_w = 0.031822776602;
-  focus_h = 0.031822776602;
-  
-  /* Determine if this is "thin", "thick" or "hollow" sample case */
-  if (!strcmp("thin", sample)){
-    det_rot=20;
-    E_i = 25.3;
-    sample_case=1;
-  } else if (!strcmp("thick", sample)){
-    det_rot=180;
-    E_i = 10;
-    sample_case=2;
-  } else if (!strcmp("none", sample)){
-    det_rot=20;
-    E_i = 25.3;
-    total_scattering=1;
-  } else {
-    fprintf(stderr,"ERROR: Sample case %s is not supported!\n",sample);
-  }
-  #pragma acc update device(sample_case)
-  
-  if (total_scattering){
-    focus_w = 0;
-    focus_h = 0;
-  }
+    /* Set up default sample focusing */
+    focus_w = 0.031822776602;
+    focus_h = 0.031822776602;
 
+    /* Determine if this is "thin", "thick" or "hollow" sample case */
+    if (!strcmp("thin", sample)){
+        det_rot=20;
+        E_i = 25.3;
+        sample_case=1;
+    } else if (!strcmp("thick", sample)){
+        det_rot=180;
+        E_i = 10;
+        sample_case=2;
+    } else if (!strcmp("none", sample)){
+        det_rot=20;
+        E_i = 25.3;
+        total_scattering=1;
+    } else {
+        fprintf(stderr,"ERROR: Sample case %s is not supported!\n",sample);
+    }
+    #pragma acc update device(sample_case)
+
+    if (total_scattering){
+        focus_w = 0;
+        focus_h = 0;
+    }
 %}
 
 /* Here comes the TRACE section, where the actual      */

@@ -37,10 +37,10 @@ l_max = 6.0
 
 DECLARE 
 %{
-%}
+    %}
 
-INITIALIZE 
-%{
+    INITIALIZE 
+    %{
 %}
 
 TRACE 

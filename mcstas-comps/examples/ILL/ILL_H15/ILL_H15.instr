@@ -33,41 +33,40 @@ DEFINE INSTRUMENT ILL_H15(m=1, lambda=10, dlambda=9.9, mip=1)
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  /* guide coating parameters */
-  double gR0          = 1;
-  double gQc          = 0.021;
-  double gAlpha       = 4.07;
-  double gW           = 1.0/300.0;
-  /* gaps and Al windows parameters */
-  double Al_Thickness = 0.002;
-  double gGap         = 0.001;
-  /* guide curvatures */
-  double gRh          = 2700; /* anti clockwise */
-  /* guide section parameters (total length/number of elements) */
-  double L_H15_2 =5.5  /6,  Rh_H15_2 =0;
-  double L_H15_3 =9.973/10, Rh_H15_3 =0; /* end: d ~ 15.5 moderator at -5.9 */
-  double L_H15_4 =6.973/7,  Rh_H15_4 =0; /* end: d ~ 22.5 ... */
-  double L_H15_5 =4.75 /5,  Rh_H15_5 =0; /* VTE is at the end of this section */
-  double L_H15_6 =11.473/12,Rh_H15_6 =0; /* end of H15 MAN spec sheet after 2 elements */
-  double L_H15_7 =9.473/10, Rh_H15_7 =0; /* end: IN6 */
-  double L_H15_8 =5.573/6,  Rh_H15_8 =0; /* end MAN spec drawing (d ~ 55.3): D7 */
-  double L_H15_9 =1.25,     Rh_H15_9 =0;
+    /* guide coating parameters */
+    double gR0          = 1;
+    double gQc          = 0.021;
+    double gAlpha       = 4.07;
+    double gW           = 1.0/300.0;
+    /* gaps and Al windows parameters */
+    double Al_Thickness = 0.002;
+    double gGap         = 0.001;
+    /* guide curvatures */
+    double gRh          = 2700; /* anti clockwise */
+    /* guide section parameters (total length/number of elements) */
+    double L_H15_2 =5.5  /6,  Rh_H15_2 =0;
+    double L_H15_3 =9.973/10, Rh_H15_3 =0; /* end: d ~ 15.5 moderator at -5.9 */
+    double L_H15_4 =6.973/7,  Rh_H15_4 =0; /* end: d ~ 22.5 ... */
+    double L_H15_5 =4.75 /5,  Rh_H15_5 =0; /* VTE is at the end of this section */
+    double L_H15_6 =11.473/12,Rh_H15_6 =0; /* end of H15 MAN spec sheet after 2 elements */
+    double L_H15_7 =9.473/10, Rh_H15_7 =0; /* end: IN6 */
+    double L_H15_8 =5.573/6,  Rh_H15_8 =0; /* end MAN spec drawing (d ~ 55.3): D7 */
+    double L_H15_9 =1.25,     Rh_H15_9 =0;
 
-/* capture flux positions from moderator: 21.4    28.4    61.2 */
-
+    /* capture flux positions from moderator: 21.4    28.4    61.2 */
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 INITIALIZE
 %{
-  /* Element rotations = Element length / Curvature Radius * RAD2DEG */
-  if (gRh) {
-    Rh_H15_2  = L_H15_2 /gRh*RAD2DEG;
-    Rh_H15_3  = L_H15_3 /gRh*RAD2DEG;
-    Rh_H15_4  = L_H15_4 /gRh*RAD2DEG;
-    Rh_H15_5  = L_H15_5 /gRh*RAD2DEG;
-  }
-  printf("Instrument: ILL_H15 (H15@ILL cold guide on VCS).\n");
+    /* Element rotations = Element length / Curvature Radius * RAD2DEG */
+    if (gRh) {
+        Rh_H15_2  = L_H15_2 /gRh*RAD2DEG;
+        Rh_H15_3  = L_H15_3 /gRh*RAD2DEG;
+        Rh_H15_4  = L_H15_4 /gRh*RAD2DEG;
+        Rh_H15_5  = L_H15_5 /gRh*RAD2DEG;
+    }
+    printf("Instrument: ILL_H15 (H15@ILL cold guide on VCS).\n");
 %}
 
 /* Here comes the TRACE section, where the actual      */

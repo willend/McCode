@@ -59,7 +59,7 @@ DEFINE INSTRUMENT Powder_validation(
 
 USERVARS
 %{
-int single_scattering_flag;
+    int single_scattering_flag;
 %}
 
 TRACE
@@ -98,8 +98,8 @@ WHEN(comp_select == 1)
 AT(0,0,1) RELATIVE a1
 EXTEND
 %{
-if (number_of_scattering_events == 1) single_scattering_flag = 1;
-else single_scattering_flag = 0;
+    if (number_of_scattering_events == 1) single_scattering_flag = 1;
+    else single_scattering_flag = 0;
 %}
 
 COMPONENT cylinder_sample_powder = PowderN(reflections=material_data_file, radius=sample_radius, yheight=sample_height, pack=pack, p_interact=0.8, thickness=0, d_phi=d_phi)
@@ -108,8 +108,8 @@ AT (0,0,0) RELATIVE sample_position
 ROTATED (0,0,0) RELATIVE sample_position
 EXTEND
 %{
-if (SCATTERED) single_scattering_flag = 1;
-else single_scattering_flag = 0;
+    if (SCATTERED) single_scattering_flag = 1;
+    else single_scattering_flag = 0;
 %}
 
 COMPONENT detectors_m4pi = PSD_monitor_4PI(radius=1, nx=180, ny=180, filename="4Pi_events.dat",restore_neutron=1)

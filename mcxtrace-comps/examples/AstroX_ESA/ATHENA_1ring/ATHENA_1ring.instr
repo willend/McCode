@@ -92,13 +92,13 @@ INITIALIZE
         alphax=offaxis_angle * MIN2RAD;
     }
     alphay=(src_pos_y)/optics_dist;
-   
+
     t_Table tp;
     int ii;
 
     /* read 1st block data from file into tp */
     if (Table_Read(&tp, geomfile, 1) <= 0) {
-      exit(fprintf(stderr,"Error(%s): can not read file %s\n", instrument_name, geomfile));
+        exit(fprintf(stderr,"Error(%s): can not read file %s\n", instrument_name, geomfile));
     }
 
     for (ii=0;ii<tp.rows;ii++){
@@ -110,7 +110,7 @@ INITIALIZE
         PRW[ii]=Table_Index(tp,ii,5);
     }
     #pragma acc update device(alphax)
-//        fscanf(fp,"%d %lf %lf %lf %lf %lf\n",RIDX+ii,PRL+ii, PRH+ii, PRM+ii, PRP+ii, PRW+ii);
+    //        fscanf(fp,"%d %lf %lf %lf %lf %lf\n",RIDX+ii,PRL+ii, PRH+ii, PRM+ii, PRP+ii, PRW+ii);
 %}
 /* instrument is defined as a sequence of components.  */
 TRACE

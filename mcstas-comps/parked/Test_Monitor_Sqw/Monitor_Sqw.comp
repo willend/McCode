@@ -85,200 +85,200 @@ SETTING PARAMETERS (symbol user3=FLT_MAX,
 
 SHARE
 %{
-  %include "monitor_nd-lib"
+    %include "monitor_nd-lib"
 %}
 
 DECLARE
 %{
-  MonitornD_Defines_type DEFS;
-  MonitornD_Variables_type Vars;
-  MCDETECTOR detector;
-  off_struct offdata;
-  double mean_vx;
-  double mean_vy;
-  double mean_vz;
-  double sum_p;
+    MonitornD_Defines_type DEFS;
+    MonitornD_Variables_type Vars;
+    MCDETECTOR detector;
+    off_struct offdata;
+    double mean_vx;
+    double mean_vy;
+    double mean_vz;
+    double sum_p;
 %}
 
 INITIALIZE
 %{
-  char tmp[CHAR_BUF_LENGTH];
-  strcpy(Vars.compcurname, NAME_CURRENT_COMP);
-  if (options != NULL)
+    char tmp[CHAR_BUF_LENGTH];
+    strcpy(Vars.compcurname, NAME_CURRENT_COMP);
+    if (options != NULL)
     strncpy(Vars.option, options, CHAR_BUF_LENGTH);
-  if (!strstr(Vars.option, "user1"))
+    if (!strstr(Vars.option, "user1"))
     strncat(Vars.option," user1", CHAR_BUF_LENGTH);
-  if (!strstr(Vars.option, "user2"))
+    if (!strstr(Vars.option, "user2"))
     strncat(Vars.option," user2", CHAR_BUF_LENGTH);
-  if (!strstr(Vars.option, "limits") && !strstr(Vars.option, "auto"))
+    if (!strstr(Vars.option, "limits") && !strstr(Vars.option, "auto"))
     strncat(Vars.option," all auto", CHAR_BUF_LENGTH);
-  strncat(Vars.option," borders", CHAR_BUF_LENGTH);
-  Vars.compcurpos = POS_A_CURRENT_COMP;
+    strncat(Vars.option," borders", CHAR_BUF_LENGTH);
+    Vars.compcurpos = POS_A_CURRENT_COMP;
 
-  if (bins && !strstr(Vars.option, "bins")) {
-    sprintf(tmp, " all bins=%ld ", (long)bins); strncat(Vars.option, tmp, CHAR_BUF_LENGTH);
-  }
-  if (min > -FLT_MAX && max < FLT_MAX && !strstr(Vars.option, "limits")) {
-    sprintf(tmp, " all limits=[%g %g]", min, max); strncat(Vars.option, tmp, CHAR_BUF_LENGTH);
-  }
-  else if (min > -FLT_MAX) {
-    sprintf(tmp, " all min=%g", min); strncat(Vars.option, tmp, CHAR_BUF_LENGTH);
-  }
-  else if (max <  FLT_MAX) {
-    sprintf(tmp, " all max=%g", max); strncat(Vars.option, tmp, CHAR_BUF_LENGTH);
-  }
-
-  strcpy(Vars.UserName1, "Momentum transfer Q [Angs-1]");
-  strcpy(Vars.UserName2, "Energy transfer w [meV]");
-  strncpy(Vars.UserName3, username3 && strlen(username3) ? username3 : "", 128);
-  if (radius) {
-    xwidth = zdepth = 2*radius;
-    if (yheight && !strstr(Vars.option, "cylinder") && !strstr(Vars.option, "banana"))
-      strncat(Vars.option, " banana", CHAR_BUF_LENGTH);
-    else if (!yheight && !strstr(Vars.option ,"sphere")) {
-      strncat(Vars.option, " sphere", CHAR_BUF_LENGTH);
-      yheight=2*radius;
+    if (bins && !strstr(Vars.option, "bins")) {
+        sprintf(tmp, " all bins=%ld ", (long)bins); strncat(Vars.option, tmp, CHAR_BUF_LENGTH);
     }
-  }
-  int offflag=0;
-  if (geometry && strlen(geometry) && strcmp(geometry,"NULL") && strcmp(geometry,"0"))
+    if (min > -FLT_MAX && max < FLT_MAX && !strstr(Vars.option, "limits")) {
+        sprintf(tmp, " all limits=[%g %g]", min, max); strncat(Vars.option, tmp, CHAR_BUF_LENGTH);
+    }
+    else if (min > -FLT_MAX) {
+        sprintf(tmp, " all min=%g", min); strncat(Vars.option, tmp, CHAR_BUF_LENGTH);
+    }
+    else if (max <  FLT_MAX) {
+        sprintf(tmp, " all max=%g", max); strncat(Vars.option, tmp, CHAR_BUF_LENGTH);
+    }
+
+    strcpy(Vars.UserName1, "Momentum transfer Q [Angs-1]");
+    strcpy(Vars.UserName2, "Energy transfer w [meV]");
+    strncpy(Vars.UserName3, username3 && strlen(username3) ? username3 : "", 128);
+    if (radius) {
+        xwidth = zdepth = 2*radius;
+        if (yheight && !strstr(Vars.option, "cylinder") && !strstr(Vars.option, "banana"))
+        strncat(Vars.option, " banana", CHAR_BUF_LENGTH);
+        else if (!yheight && !strstr(Vars.option ,"sphere")) {
+            strncat(Vars.option, " sphere", CHAR_BUF_LENGTH);
+            yheight=2*radius;
+        }
+    }
+    int offflag=0;
+    if (geometry && strlen(geometry) && strcmp(geometry,"NULL") && strcmp(geometry,"0"))
     if (!off_init(  geometry, xwidth, yheight, zdepth, 0, &offdata )) {
-      printf("Monitor_Sqw: %s could not initiate the OFF geometry. \n"
-             "            Defaulting to normal Monitor dimensions.\n", NAME_CURRENT_COMP);
-      strcpy(geometry, "");
+        printf("Monitor_Sqw: %s could not initiate the OFF geometry. \n"
+        "            Defaulting to normal Monitor dimensions.\n", NAME_CURRENT_COMP);
+        strcpy(geometry, "");
     } else {
-      offflag=1;
+        offflag=1;
     }
 
-  if (!radius && !xwidth && !yheight && !zdepth && !xmin && !xmax && !ymin && !ymax && !strstr(Vars.option, "previous") && (!geometry || !strlen(geometry)))
+    if (!radius && !xwidth && !yheight && !zdepth && !xmin && !xmax && !ymin && !ymax && !strstr(Vars.option, "previous") && (!geometry || !strlen(geometry)))
     exit(printf("Monitor_Sqw: %s has no dimension specified. Aborting (radius, xwidth, yheight, zdepth, previous, geometry).\n", NAME_CURRENT_COMP));
 
-  Monitor_nD_Init(&DEFS, &Vars, xwidth, yheight, zdepth, xmin,xmax,ymin,ymax,zmin,zmax,offflag);
+    Monitor_nD_Init(&DEFS, &Vars, xwidth, yheight, zdepth, xmin,xmax,ymin,ymax,zmin,zmax,offflag);
 
-  if (filename && strlen(filename) && strcmp(filename,"NULL") && strcmp(filename,"0"))
+    if (filename && strlen(filename) && strcmp(filename,"NULL") && strcmp(filename,"0"))
     strncpy(Vars.Mon_File, filename, 128);
 
-  Vars.Flag_parallel=1;
-  detector.m = 0;
+    Vars.Flag_parallel=1;
+    detector.m = 0;
 
-  mean_vx=0; mean_vy=0; mean_vz=0; sum_p=0;
+    mean_vx=0; mean_vy=0; mean_vz=0; sum_p=0;
 %}
 
 TRACE
 %{
-  double  XY=0;
-  double  t0 = 0;
-  double  t1 = 0;
-  double  pp;
-  int     intersect   = 0;
+    double  XY=0;
+    double  t0 = 0;
+    double  t1 = 0;
+    double  pp;
+    int     intersect   = 0;
 
-  Vars.UserVariable3 = user3;
+    Vars.UserVariable3 = user3;
 
-  if (geometry && strlen(geometry) && strcmp(geometry,"NULL") && strcmp(geometry,"0"))
-  {
-    /* determine intersections with object */
-    intersect = off_intersect(&t0, &t1, NULL, NULL,
-       x,y,z, vx, vy, vz, 0, 0, 0, offdata );
-  }
-  else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_SQUARE) /* square xy */
-  {
-    PROP_Z0;
-    intersect = (x>=Vars.mxmin && x<=Vars.mxmax && y>=Vars.mymin && y<=Vars.mymax);
-  }
-  else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_DISK)   /* disk xy */
-  {
-    PROP_Z0;
-    intersect = ((x*x + y*y) <= Vars.Sphere_Radius*Vars.Sphere_Radius);
-  }
-  else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_SPHERE) /* sphere */
-  {
-    intersect = sphere_intersect(&t0, &t1, x, y, z, vx, vy, vz, Vars.Sphere_Radius);
-  /*      intersect = (intersect && t0 > 0); */
-  }
-  else if ((abs(Vars.Flag_Shape) == DEFS.SHAPE_CYLIND) || (abs(Vars.Flag_Shape) == DEFS.SHAPE_BANANA)) /* cylinder */
-  {
-    intersect = cylinder_intersect(&t0, &t1, x, y, z, vx, vy, vz, Vars.Sphere_Radius, Vars.Cylinder_Height);
-  }
-  else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_BOX) /* box */
-  {
-    intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, fabs(Vars.mxmax-Vars.mxmin), fabs(Vars.mymax-Vars.mymin), fabs(Vars.mzmax-Vars.mzmin));
-  }
-  else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_PREVIOUS) /* previous comp */
-  { intersect = 1; }
-
-
-
-  if (intersect)
-  {
-    double rx,ry,rz,rvx,rvy,rvz,rt,rsx,rsy,rsz,rp;
-    double Ei, Ef;
-
-    if ((abs(Vars.Flag_Shape) == DEFS.SHAPE_SPHERE) || (abs(Vars.Flag_Shape) == DEFS.SHAPE_CYLIND)
-     || (abs(Vars.Flag_Shape) == DEFS.SHAPE_BOX) || (abs(Vars.Flag_Shape) == DEFS.SHAPE_BANANA)
-     || (geometry && strlen(geometry) && strcmp(geometry,"NULL") && strcmp(geometry,"0")) )
+    if (geometry && strlen(geometry) && strcmp(geometry,"NULL") && strcmp(geometry,"0"))
     {
-      /* check if we have to remove the top/bottom with BANANA shape */
-      if ((abs(Vars.Flag_Shape) == DEFS.SHAPE_BANANA) && (intersect != 1)) {
-        double y0,y1;
-        /* propagate to intersection point as temporary variable to check top/bottom */
-        y0 = y+t0*vy;
-        y1 = y+t1*vy;
-        if (fabs(y0) >= Vars.Cylinder_Height/2*0.99) t0 = t1;
-        if (fabs(y1) >= Vars.Cylinder_Height/2*0.99) t1 = t0;
-      }
-      if (t0 < 0 && t1 > 0)
-        t0 = t;  /* neutron was already inside ! */
-      if (t1 < 0 && t0 > 0) /* neutron exit before entering !! */
-        t1 = t;
-      /* t0 is now time of incoming intersection with the detection area */
-      if ((Vars.Flag_Shape < 0) && (t1 > 0))
-        PROP_DT(t1); /* t1 outgoing beam */
-      else
-        PROP_DT(t0); /* t0 incoming beam */
-      /* Final test if we are on lid / bottom of banana */
-      if (abs(Vars.Flag_Shape) == DEFS.SHAPE_BANANA) {
-        if (fabs(y) >= Vars.Cylinder_Height/2*0.99) ABSORB;
-      }
+        /* determine intersections with object */
+        intersect = off_intersect(&t0, &t1, NULL, NULL,
+        x,y,z, vx, vy, vz, 0, 0, 0, offdata );
     }
-    SCATTER;
+    else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_SQUARE) /* square xy */
+    {
+        PROP_Z0;
+        intersect = (x>=Vars.mxmin && x<=Vars.mxmax && y>=Vars.mymin && y<=Vars.mymax);
+    }
+    else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_DISK)   /* disk xy */
+    {
+        PROP_Z0;
+        intersect = ((x*x + y*y) <= Vars.Sphere_Radius*Vars.Sphere_Radius);
+    }
+    else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_SPHERE) /* sphere */
+    {
+        intersect = sphere_intersect(&t0, &t1, x, y, z, vx, vy, vz, Vars.Sphere_Radius);
+        /*      intersect = (intersect && t0 > 0); */
+    }
+    else if ((abs(Vars.Flag_Shape) == DEFS.SHAPE_CYLIND) || (abs(Vars.Flag_Shape) == DEFS.SHAPE_BANANA)) /* cylinder */
+    {
+        intersect = cylinder_intersect(&t0, &t1, x, y, z, vx, vy, vz, Vars.Sphere_Radius, Vars.Cylinder_Height);
+    }
+    else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_BOX) /* box */
+    {
+        intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, fabs(Vars.mxmax-Vars.mxmin), fabs(Vars.mymax-Vars.mymin), fabs(Vars.mzmax-Vars.mzmin));
+    }
+    else if (abs(Vars.Flag_Shape) == DEFS.SHAPE_PREVIOUS) /* previous comp */
+    { intersect = 1; }
 
-    Ef = VS2E*(vx*vx+vy*vy+vz*vz);
 
-    /* get incoming beam velocity in 'initial' coordinate frame */
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP+index,
-      rx,ry,rz,rvx,rvy,rvz,rt,rsx,rsy,rsz,rp);
-    mean_vx += rvx*rp; mean_vy += rvy*rp; mean_vz += rvz*rp;
-    sum_p   += rp;
 
-    /* compute mean incoming energy and mean beam direction */
-    rvx = mean_vx/sum_p; rvy = mean_vy/sum_p; rvz = mean_vz/sum_p;
-    Ei  =  VS2E*(rvx*rvx+rvy*rvy+rvz*rvz);
+        if (intersect)
+        {
+            double rx,ry,rz,rvx,rvy,rvz,rt,rsx,rsy,rsz,rp;
+            double Ei, Ef;
 
-    Vars.UserVariable1=V2K*sqrt( (vx-rvx)*(vx-rvx)
-                                +(vy-rvy)*(vy-rvy)
-                                +(vz-rvz)*(vz-rvz) ); // Q = |Kf - Ki| with left/right sign
-    Vars.UserVariable1 *= (x >= 0 ? 1 : -1);
-    Vars.UserVariable2  = Ef-Ei;                      // E = Ef-Ei
+            if ((abs(Vars.Flag_Shape) == DEFS.SHAPE_SPHERE) || (abs(Vars.Flag_Shape) == DEFS.SHAPE_CYLIND)
+            || (abs(Vars.Flag_Shape) == DEFS.SHAPE_BOX) || (abs(Vars.Flag_Shape) == DEFS.SHAPE_BANANA)
+            || (geometry && strlen(geometry) && strcmp(geometry,"NULL") && strcmp(geometry,"0")) )
+            {
+                /* check if we have to remove the top/bottom with BANANA shape */
+                if ((abs(Vars.Flag_Shape) == DEFS.SHAPE_BANANA) && (intersect != 1)) {
+                    double y0,y1;
+                    /* propagate to intersection point as temporary variable to check top/bottom */
+                    y0 = y+t0*vy;
+                    y1 = y+t1*vy;
+                    if (fabs(y0) >= Vars.Cylinder_Height/2*0.99) t0 = t1;
+                    if (fabs(y1) >= Vars.Cylinder_Height/2*0.99) t1 = t0;
+                }
+                if (t0 < 0 && t1 > 0)
+                t0 = t;  /* neutron was already inside ! */
+                if (t1 < 0 && t0 > 0) /* neutron exit before entering !! */
+                t1 = t;
+                /* t0 is now time of incoming intersection with the detection area */
+                if ((Vars.Flag_Shape < 0) && (t1 > 0))
+                PROP_DT(t1); /* t1 outgoing beam */
+                else
+                PROP_DT(t0); /* t0 incoming beam */
+                /* Final test if we are on lid / bottom of banana */
+                if (abs(Vars.Flag_Shape) == DEFS.SHAPE_BANANA) {
+                    if (fabs(y) >= Vars.Cylinder_Height/2*0.99) ABSORB;
+                }
+            }
+            SCATTER;
 
-    /* send current neutron state to Monitor_nD_Trace */
-    /* Vars.cp  = p;
-    Vars.cx  = x;
-    Vars.cvx = vx;
-    Vars.csx = sx;
-    Vars.cy  = y;
-    Vars.cvy = vy;
-    Vars.csy = sy;
-    Vars.cz  = z;
-    Vars.cvz = vz;
-    Vars.csz = sz;
-    Vars.ct  = t; */
+            Ef = VS2E*(vx*vx+vy*vy+vz*vz);
 
-    pp = Monitor_nD_Trace(&DEFS, &Vars, _particle);
-    SCATTER;
+            /* get incoming beam velocity in 'initial' coordinate frame */
+            RESTORE_NEUTRON(INDEX_CURRENT_COMP+index,
+            rx,ry,rz,rvx,rvy,rvz,rt,rsx,rsy,rsz,rp);
+            mean_vx += rvx*rp; mean_vy += rvy*rp; mean_vz += rvz*rp;
+            sum_p   += rp;
 
-  } /* end if intersection */
+            /* compute mean incoming energy and mean beam direction */
+            rvx = mean_vx/sum_p; rvy = mean_vy/sum_p; rvz = mean_vz/sum_p;
+            Ei  =  VS2E*(rvx*rvx+rvy*rvy+rvz*rvz);
 
-  RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+            Vars.UserVariable1=V2K*sqrt( (vx-rvx)*(vx-rvx)
+            +(vy-rvy)*(vy-rvy)
+            +(vz-rvz)*(vz-rvz) ); // Q = |Kf - Ki| with left/right sign
+            Vars.UserVariable1 *= (x >= 0 ? 1 : -1);
+            Vars.UserVariable2  = Ef-Ei;                      // E = Ef-Ei
+
+            /* send current neutron state to Monitor_nD_Trace */
+            /* Vars.cp  = p;
+            Vars.cx  = x;
+            Vars.cvx = vx;
+            Vars.csx = sx;
+            Vars.cy  = y;
+            Vars.cvy = vy;
+            Vars.csy = sy;
+            Vars.cz  = z;
+            Vars.cvz = vz;
+            Vars.csz = sz;
+            Vars.ct  = t; */
+
+            pp = Monitor_nD_Trace(&DEFS, &Vars, _particle);
+            SCATTER;
+
+        } /* end if intersection */
+
+        RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
 %}
 
 SAVE INHERIT Monitor_nD

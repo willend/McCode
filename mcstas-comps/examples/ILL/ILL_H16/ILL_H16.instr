@@ -27,21 +27,21 @@
 DEFINE INSTRUMENT ILL_H16(lambda=10, dlambda=9.9, m=1)
 DECLARE
 %{
-//---Guide (1st part of guide) --------------------------------------
-  double L_Guide1, L_Guide21;
-  double L_Guide22, L_Guide23;             // gerade dimensions
-  double L_Guide3, L_Guide41;
-  double L_Guide42, L_Guide43;
-  double L_Guide44, L_Guide45;
-  double L_Collimator, L_CollSample;
-  double L_gap, disk_gap,mono_gap;
-  //---Reactor & Krumm Guide coating (2nd part of guide) ------------
-  double alt_Guide_Qc,alt_Guide_Ro,alt_Guide_alpha,alt_Guide_W;
-  double L_reactor_guide; // total length of the reactor guide
-                          // from the source to the VTE valve
-  double L_source_sample;
-  //---Neue Guide coating--------------------------------------------
-  double Guide_Qc,Guide_Ro,Guide_alpha,Guide_W;
+    //---Guide (1st part of guide) --------------------------------------
+    double L_Guide1, L_Guide21;
+    double L_Guide22, L_Guide23;             // gerade dimensions
+    double L_Guide3, L_Guide41;
+    double L_Guide42, L_Guide43;
+    double L_Guide44, L_Guide45;
+    double L_Collimator, L_CollSample;
+    double L_gap, disk_gap,mono_gap;
+    //---Reactor & Krumm Guide coating (2nd part of guide) ------------
+    double alt_Guide_Qc,alt_Guide_Ro,alt_Guide_alpha,alt_Guide_W;
+    double L_reactor_guide; // total length of the reactor guide
+    // from the source to the VTE valve
+    double L_source_sample;
+    //---Neue Guide coating--------------------------------------------
+    double Guide_Qc,Guide_Ro,Guide_alpha,Guide_W;
 %}
 
 
@@ -49,54 +49,53 @@ DECLARE
 INITIALIZE
 %{
 
-//==========================================================================
-//                Source
-//==========================================================================
-/*  sT1=216.8; sI1=1.24e+13;*/    //example source data
-/*  sT2=33.9;  sI2=1.02e+13;*/
-/*  sT3=16.7;  sI3=3.0423e+12;*/
+    //==========================================================================
+    //                Source
+    //==========================================================================
+    /*  sT1=216.8; sI1=1.24e+13;*/    //example source data
+    /*  sT2=33.9;  sI2=1.02e+13;*/
+    /*  sT3=16.7;  sI3=3.0423e+12;*/
 
-//==========================================================================
-//                 Guide
-//==========================================================================
-  L_reactor_guide = 33.30127; // Total length: Source-VTE [m]
-  L_gap      = 0.2130;     // gap VTE+OT-H16
-  L_Guide1  = 4.3900;     // for gerade Guide1
-  L_Guide21 = 0.6950;     // for gerade Guide21
-  L_Guide22 = 0.1300;     // for gerade Guide22
-  L_Guide23 = 0.69500;    // for gerade Guide23
-  disk_gap   = 0.02;       // full gap at choppers
-  L_Guide3  = 5.5125;     // for gerade Guide3
-  L_Guide41 = 0.7425;     // for gerade Guide41
-  L_Guide42 = 0.0350;     // for gerade Guide42
-  L_Guide43 = 0.7500;     // for gerade Guide43
-  L_Guide44 = 0.0350;     // for gerade Guide44
-  L_Guide45 = 0.7900;     // for gerade Guide45
-  mono_gap   = 0.0300;     // gap for the 1st monitor
-  L_Collimator= 0.1300;     // for gerade Collimator
-  L_CollSample= 0.2400-0.025;     // the sample chamber size & keep
-                                 // place for the vana sample
+    //==========================================================================
+    //                 Guide
+    //==========================================================================
+    L_reactor_guide = 33.30127; // Total length: Source-VTE [m]
+    L_gap      = 0.2130;     // gap VTE+OT-H16
+    L_Guide1  = 4.3900;     // for gerade Guide1
+    L_Guide21 = 0.6950;     // for gerade Guide21
+    L_Guide22 = 0.1300;     // for gerade Guide22
+    L_Guide23 = 0.69500;    // for gerade Guide23
+    disk_gap   = 0.02;       // full gap at choppers
+    L_Guide3  = 5.5125;     // for gerade Guide3
+    L_Guide41 = 0.7425;     // for gerade Guide41
+    L_Guide42 = 0.0350;     // for gerade Guide42
+    L_Guide43 = 0.7500;     // for gerade Guide43
+    L_Guide44 = 0.0350;     // for gerade Guide44
+    L_Guide45 = 0.7900;     // for gerade Guide45
+    mono_gap   = 0.0300;     // gap for the 1st monitor
+    L_Collimator= 0.1300;     // for gerade Collimator
+    L_CollSample= 0.2400-0.025;     // the sample chamber size & keep
+    // place for the vana sample
 
-  L_source_sample = L_reactor_guide+L_gap+L_Guide1+L_Guide21+disk_gap;
-  L_source_sample+= L_Guide22+disk_gap+L_Guide23+L_Guide3+L_Guide41;
-  L_source_sample+= disk_gap+L_Guide42+disk_gap+L_Guide43;
-  L_source_sample+= disk_gap+L_Guide44+disk_gap+L_Guide45;
-  L_source_sample+= mono_gap+L_Collimator+L_CollSample+0.025+0.0009;
+    L_source_sample = L_reactor_guide+L_gap+L_Guide1+L_Guide21+disk_gap;
+    L_source_sample+= L_Guide22+disk_gap+L_Guide23+L_Guide3+L_Guide41;
+    L_source_sample+= disk_gap+L_Guide42+disk_gap+L_Guide43;
+    L_source_sample+= disk_gap+L_Guide44+disk_gap+L_Guide45;
+    L_source_sample+= mono_gap+L_Collimator+L_CollSample+0.025+0.0009;
 
-  printf("Instrument: ILL_H16 (H16@ILL cold guide on VCS).\n  Total lenght Source - Sample = %f [m].\n\n",
+    printf("Instrument: ILL_H16 (H16@ILL cold guide on VCS).\n  Total lenght Source - Sample = %f [m].\n\n",
     L_source_sample);
 
-  // Alt Guide coating
-  alt_Guide_Qc    = 0.021745; // for m=1 alpha and W aren't used.
-  alt_Guide_Ro    = 0.995;
-  alt_Guide_alpha = 6.07;
-  alt_Guide_W     = 0.0023;
-  // New Guide and super-mirors
-  Guide_Qc    = 0.02275;
-  Guide_Ro    = 0.996;
-  Guide_alpha = 5.75;
-  Guide_W     = 0.00125;
-
+    // Alt Guide coating
+    alt_Guide_Qc    = 0.021745; // for m=1 alpha and W aren't used.
+    alt_Guide_Ro    = 0.995;
+    alt_Guide_alpha = 6.07;
+    alt_Guide_W     = 0.0023;
+    // New Guide and super-mirors
+    Guide_Qc    = 0.02275;
+    Guide_Ro    = 0.996;
+    Guide_alpha = 5.75;
+    Guide_W     = 0.00125;
 %}
 
 

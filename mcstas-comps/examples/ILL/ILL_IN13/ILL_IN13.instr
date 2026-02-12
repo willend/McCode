@@ -88,46 +88,46 @@ DEFINE INSTRUMENT ILL_IN13( RMV=0, RDV=4.6, RDH=0, TM=301, LMD=1.8, mos_ana=2, C
 DECLARE
 %{
 
-  /* Declaration of IN13 instrument parameters */
+    /* Declaration of IN13 instrument parameters */
 
-  /*temperature things for mono*/
-  double beta1=1.9406e-5, beta2=1.8744e-8, T0=301;
-  double d0 =  1.1115;
-
-
-  double DM;
-
-  /* Monochromator general parameters */
-
-  /*mono angle*/
-  double TH0 =-88.31; /* this is fixed. Bragg spot moves aside, and so does the deflector and spectrometer */
-  /*gap from guide exit/source-mono*/
-  double GM = 0.2;
-  /*nominal wavelength for IN13*/
-  double IN13lam; /* should be around 2.23 */
-  double IN13energy;
-  /*monochromator crystal mosaic spread*/
-  double CaF2mos = 2.5;
-
-  /* Deflector general parameters*/
-
-  /* deflector angle */
-  double dTH0;
+    /*temperature things for mono*/
+    double beta1=1.9406e-5, beta2=1.8744e-8, T0=301;
+    double d0 =  1.1115;
 
 
-  double LDS = 2.3; /* distance from deflector to sample */
-  double LSD = 0.25;/* sample to detector */
-  double LSA = 1.0; /* sample to analyser */
+    double DM;
 
-  /* Incident beam collimation is 2 slits. Slit distances and sizes can be set here. */
-  /* At other take-off angles this will need to be implemented as a function in below section. */
-  double defl_slit = 0.5;
-  double S1W = 0.1;
-  double S1H = 0.15;
-  double S2W = 0.03;
-  double S2H = 0.04;
+    /* Monochromator general parameters */
 
-  double RVA;            /* curvature of analyser (local approx) */
+    /*mono angle*/
+    double TH0 =-88.31; /* this is fixed. Bragg spot moves aside, and so does the deflector and spectrometer */
+    /*gap from guide exit/source-mono*/
+    double GM = 0.2;
+    /*nominal wavelength for IN13*/
+    double IN13lam; /* should be around 2.23 */
+    double IN13energy;
+    /*monochromator crystal mosaic spread*/
+    double CaF2mos = 2.5;
+
+    /* Deflector general parameters*/
+
+    /* deflector angle */
+    double dTH0;
+
+
+    double LDS = 2.3; /* distance from deflector to sample */
+    double LSD = 0.25;/* sample to detector */
+    double LSA = 1.0; /* sample to analyser */
+
+    /* Incident beam collimation is 2 slits. Slit distances and sizes can be set here. */
+    /* At other take-off angles this will need to be implemented as a function in below section. */
+    double defl_slit = 0.5;
+    double S1W = 0.1;
+    double S1H = 0.15;
+    double S2W = 0.03;
+    double S2H = 0.04;
+
+    double RVA;            /* curvature of analyser (local approx) */
 %}
 
 USERVARS %{
@@ -143,55 +143,55 @@ USERVARS %{
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  double L1;
-  double mGuide=2;
-  double Ki,Vi;
+    double L1;
+    double mGuide=2;
+    double Ki,Vi;
 
-  /* This expression calculates the d-spacing of a CaF2 crystal in function
-	  of the temperature x. Data found in Bee, Quasielastic Neutron Scattering,
-	  Hilger, 1988. For the nominal wavelength of 2.23A the value of TEM should be set
-	  to TEM= (gives d-spacing of 1.115A)
+    /* This expression calculates the d-spacing of a CaF2 crystal in function
+    of the temperature x. Data found in Bee, Quasielastic Neutron Scattering,
+    Hilger, 1988. For the nominal wavelength of 2.23A the value of TEM should be set
+    to TEM= (gives d-spacing of 1.115A)
     */
-  DM      = d0*(1+beta1*(TM-T0)+beta2/2*(TM-T0)*(TM-T0));
-  IN13lam = fabs(2*DM*sin(TH0*DEG2RAD));     /* should be around 2.23 */
-  dTH0    = asin(IN13lam/(2*1.607))*RAD2DEG; /* Defelector half take-off */
+    DM      = d0*(1+beta1*(TM-T0)+beta2/2*(TM-T0)*(TM-T0));
+    IN13lam = fabs(2*DM*sin(TH0*DEG2RAD));     /* should be around 2.23 */
+    dTH0    = asin(IN13lam/(2*1.607))*RAD2DEG; /* Defelector half take-off */
 
-  Ki         = 2*PI/IN13lam;
-  Vi         = K2V*Ki;
-  IN13energy = VS2E*Vi*Vi;
+    Ki         = 2*PI/IN13lam;
+    Vi         = K2V*Ki;
+    IN13energy = VS2E*Vi*Vi;
 
-  L1 = 0.15/( mGuide/4 * 0.1 * IN13lam * DEG2RAD ); /* divergence from guide */
+    L1 = 0.15/( mGuide/4 * 0.1 * IN13lam * DEG2RAD ); /* divergence from guide */
 
-  /* curvature radii: automatic setting from optical formulae */
-  if (RMV < 0) {
-    double L  = 1/(1/L1 + 1/(LMD+LDS));
-    RMV = 2*L*sin(DEG2RAD*TH0);
-  }
+    /* curvature radii: automatic setting from optical formulae */
+    if (RMV < 0) {
+        double L  = 1/(1/L1 + 1/(LMD+LDS));
+        RMV = 2*L*sin(DEG2RAD*TH0);
+    }
 
-  RMV = fabs(RMV)*(TH0 > 0 ? 1 : -1);
+    RMV = fabs(RMV)*(TH0 > 0 ? 1 : -1);
 
-  if (RDV < 0) {
-    double L =1/(1/(L1+LMD) + 1/LDS);
-    RDV = 2*L*sin(DEG2RAD*dTH0);
-  }
-  if (RDH < 0) {
-    double L =1/(1/(L1+LMD) + 1/LDS);
-    RDH = 2*L/sin(DEG2RAD*dTH0);
-  }
+    if (RDV < 0) {
+        double L =1/(1/(L1+LMD) + 1/LDS);
+        RDV = 2*L*sin(DEG2RAD*dTH0);
+    }
+    if (RDH < 0) {
+        double L =1/(1/(L1+LMD) + 1/LDS);
+        RDH = 2*L/sin(DEG2RAD*dTH0);
+    }
 
-  RDV = fabs(RDV)*(dTH0 > 0 ? 1 : -1);
-  RDH = fabs(RDH)*(dTH0 > 0 ? 1 : -1);
+    RDV = fabs(RDV)*(dTH0 > 0 ? 1 : -1);
+    RDH = fabs(RDH)*(dTH0 > 0 ? 1 : -1);
 
-  RVA = 1/((1/LSA)+(1/(LSA+LSD))); /* we use e.g. 20 cm from sample to detector */
+    RVA = 1/((1/LSA)+(1/(LSA+LSD))); /* we use e.g. 20 cm from sample to detector */
 
-  /* display some stuff */
-  MPI_MASTER(
+    /* display some stuff */
+    MPI_MASTER(
     printf ("%s: IN13 Thermal neutron backscattering spectrometer\n",
-      NAME_INSTRUMENT);
+    NAME_INSTRUMENT);
     printf ("  Monochromator CaF2(422) lambda=%3.2f [Angs] Ei=%g [meV] RMV=%g [m]\n",
-      IN13lam, IN13energy, RMV);
+    IN13lam, IN13energy, RMV);
     printf ("  Deflector PG(002): angle=%3.2f [deg] RDV=%g [m] RDH=%g [m]\n",dTH0, RDV, RDH);
-  );
+    );
 %}
 
 /* Here comes the TRACE section, where the actual      */

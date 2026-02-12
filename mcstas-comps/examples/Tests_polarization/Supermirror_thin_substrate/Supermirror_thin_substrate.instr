@@ -61,9 +61,9 @@ string Tracking="DetailTracking" )
  
 DECLARE
 %{
-	double W_Min, W_Max, src_x, src_y, det_mx, det_my, xx, yy, cosA, sinA, det_zoom_in_x, det_zoom_in_y, det_x, det_y, det_zoom_out_x, det_zoom_out_y;
-	double det_1D_x, det_1D_y;
-	double u;
+    double W_Min, W_Max, src_x, src_y, det_mx, det_my, xx, yy, cosA, sinA, det_zoom_in_x, det_zoom_in_y, det_x, det_y, det_zoom_out_x, det_zoom_out_y;
+    double det_1D_x, det_1D_y;
+    double u;
 %}
 
 
@@ -76,59 +76,58 @@ DECLARE
 INITIALIZE
 %{
 
-	u = 0.000001;
+    u = 0.000001;
 
-	W_Min = W_Centre - W_Half_Width;
-	W_Max = W_Centre + W_Half_Width;
-	
-	//geometry rotation about z-axis
-	cosA = cos(Rot_Angle_Third_In_Degree * M_PI / 180);
-	sinA = sin(Rot_Angle_Third_In_Degree * M_PI / 180);
-	
-	//rotate source accordingly
-	xx = cosA * src_x - sinA * src_y; 
-	yy = sinA * src_x + cosA * src_y;
-	src_x = fabs(xx); src_y = fabs(yy);
-	MPI_MASTER(printf("src=(%lg, %lg)\n", fabs(xx), fabs(yy));)
-	
-	//starting point is (0,1,0), before rotate about Z
-	det_mx = -sinA;
-	det_my =  cosA;
-	MPI_MASTER(printf("det_m=(%lg, %lg)\n", det_mx, det_my);)
-	
-	//rotate detectors accordingly
-	det_zoom_in_x = 0.01; det_zoom_in_y = 0.1;
-	xx = cosA * det_zoom_in_x - sinA * det_zoom_in_y; 
-	yy = sinA * det_zoom_in_x + cosA * det_zoom_in_y;
-	det_zoom_in_x = fabs(xx); det_zoom_in_y = fabs(yy);
-	MPI_MASTER(printf("det_zoom_in=(%lg, %lg)\n", fabs(xx), fabs(yy));)
-	
-	det_x = 0.06; det_y = 0.2;
-	xx = cosA * det_x - sinA * det_y; 
-	yy = sinA * det_x + cosA * det_y;
-	det_x = fabs(xx); det_y = fabs(yy);
-	MPI_MASTER(printf("det=(%lg, %lg)\n", fabs(xx), fabs(yy));)
-	
-	det_zoom_out_x = 0.3; det_zoom_out_y = 0.2;
-	xx = cosA * det_zoom_out_x - sinA * det_zoom_out_y; 
-	yy = sinA * det_zoom_out_x + cosA * det_zoom_out_y;
-	det_zoom_out_x = fabs(xx); det_zoom_out_y = fabs(yy);
-	MPI_MASTER(printf("det_zoom_out=(%lg, %lg)\n", fabs(xx), fabs(yy));)
-	
-	if ((int)floor(fabs((double)((int)floor(Rot_Angle_Third_In_Degree) % 360) / 90)) %2 == 0) { 
-		det_1D_x = 300; 
-		det_1D_y = 1; 
-	}
-	else { 
-		det_1D_x = 1; 
-		det_1D_y = 300; 
-	}
+    W_Min = W_Centre - W_Half_Width;
+    W_Max = W_Centre + W_Half_Width;
 
-	MPI_MASTER(printf("Rot_Angle_Third_In_Degree=%lg -> %d : det_1D=(%lg, %lg)\n", 
-						Rot_Angle_Third_In_Degree, 
-						(int)floor(fabs((double)((int)floor(Rot_Angle_Third_In_Degree) % 360) / 90)) %2, 
-						det_1D_x, det_1D_y);)
-	
+    //geometry rotation about z-axis
+    cosA = cos(Rot_Angle_Third_In_Degree * M_PI / 180);
+    sinA = sin(Rot_Angle_Third_In_Degree * M_PI / 180);
+
+    //rotate source accordingly
+    xx = cosA * src_x - sinA * src_y; 
+    yy = sinA * src_x + cosA * src_y;
+    src_x = fabs(xx); src_y = fabs(yy);
+    MPI_MASTER(printf("src=(%lg, %lg)\n", fabs(xx), fabs(yy));)
+
+    //starting point is (0,1,0), before rotate about Z
+    det_mx = -sinA;
+    det_my =  cosA;
+    MPI_MASTER(printf("det_m=(%lg, %lg)\n", det_mx, det_my);)
+
+    //rotate detectors accordingly
+    det_zoom_in_x = 0.01; det_zoom_in_y = 0.1;
+    xx = cosA * det_zoom_in_x - sinA * det_zoom_in_y; 
+    yy = sinA * det_zoom_in_x + cosA * det_zoom_in_y;
+    det_zoom_in_x = fabs(xx); det_zoom_in_y = fabs(yy);
+    MPI_MASTER(printf("det_zoom_in=(%lg, %lg)\n", fabs(xx), fabs(yy));)
+
+    det_x = 0.06; det_y = 0.2;
+    xx = cosA * det_x - sinA * det_y; 
+    yy = sinA * det_x + cosA * det_y;
+    det_x = fabs(xx); det_y = fabs(yy);
+    MPI_MASTER(printf("det=(%lg, %lg)\n", fabs(xx), fabs(yy));)
+
+    det_zoom_out_x = 0.3; det_zoom_out_y = 0.2;
+    xx = cosA * det_zoom_out_x - sinA * det_zoom_out_y; 
+    yy = sinA * det_zoom_out_x + cosA * det_zoom_out_y;
+    det_zoom_out_x = fabs(xx); det_zoom_out_y = fabs(yy);
+    MPI_MASTER(printf("det_zoom_out=(%lg, %lg)\n", fabs(xx), fabs(yy));)
+
+    if ((int)floor(fabs((double)((int)floor(Rot_Angle_Third_In_Degree) % 360) / 90)) %2 == 0) { 
+        det_1D_x = 300; 
+        det_1D_y = 1; 
+    }
+    else { 
+        det_1D_x = 1; 
+        det_1D_y = 300; 
+    }
+
+    MPI_MASTER(printf("Rot_Angle_Third_In_Degree=%lg -> %d : det_1D=(%lg, %lg)\n", 
+    Rot_Angle_Third_In_Degree, 
+    (int)floor(fabs((double)((int)floor(Rot_Angle_Third_In_Degree) % 360) / 90)) %2, 
+    det_1D_x, det_1D_y);)
 %}
 // End of INITIALIZE
 

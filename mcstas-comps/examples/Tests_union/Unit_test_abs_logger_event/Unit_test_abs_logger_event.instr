@@ -26,10 +26,10 @@ DEFINE INSTRUMENT Unit_test_abs_logger_event()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

@@ -30,7 +30,7 @@ USERVARS
 
 INITIALIZE
 %{
-  mcset_ncount((int)ceil(Ncount));
+    mcset_ncount((int)ceil(Ncount));
 %}
 
 TRACE

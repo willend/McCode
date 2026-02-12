@@ -49,7 +49,7 @@ COMPONENT Sample=Isotropic_Sqw(
 ) AT (0, 0, 0) RELATIVE Sample_pos
 EXTEND
 %{
-if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 /* detectors */

@@ -53,10 +53,10 @@ double det_dist = 0.005 // Distance between detector and sample center
 
 DECLARE 
 %{
-%}
+    %}
 
-INITIALIZE 
-%{
+    INITIALIZE 
+    %{
 %}
 
 TRACE 

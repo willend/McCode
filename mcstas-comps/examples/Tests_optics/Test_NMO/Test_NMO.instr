@@ -67,10 +67,10 @@ DEFINE INSTRUMENT Test_NMO(
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

@@ -73,114 +73,111 @@ DEFINE INSTRUMENT SAFARI_MPISI( source_lam_min=0.5, source_lam_max=2.0,
 
 DECLARE
 %{
-double hi_res, port_takeoff,chamber_window_rad;
-double mono_Si_type, mono_mosh, mono_mosv;
-double mono_dx, mono_dy, mono_dz;
-double mono_takeoff, mono_dtilt, mono_Rh;
-double inc_slit_rot, inc_slit_dx, inc_slit_to_cor;
-double inc_slit_width, inc_slit_height, inc_slit_sep;
-double mono_to_cor;
-double sample_dx, sample_dy, sample_dz, sample_dom;
-double det_takeoff, cor_to_det;
-double diff_slit_dx, diff_slit_to_cor;
-double diff_slit_width, diff_slit_height;
+    double hi_res, port_takeoff,chamber_window_rad;
+    double mono_Si_type, mono_mosh, mono_mosv;
+    double mono_dx, mono_dy, mono_dz;
+    double mono_takeoff, mono_dtilt, mono_Rh;
+    double inc_slit_rot, inc_slit_dx, inc_slit_to_cor;
+    double inc_slit_width, inc_slit_height, inc_slit_sep;
+    double mono_to_cor;
+    double sample_dx, sample_dy, sample_dz, sample_dom;
+    double det_takeoff, cor_to_det;
+    double diff_slit_dx, diff_slit_to_cor;
+    double diff_slit_width, diff_slit_height;
 
-double inc_slit_xmin, inc_slit_xmax, inc_slit_ymin, inc_slit_ymax;
-double inc_slit_xmin_h, inc_slit_xmax_h, inc_slit_ymin_w, inc_slit_ymax_w;
-double diff_slit_xmin, diff_slit_xmax, diff_slit_ymin, diff_slit_ymax;
-double wafer_d, start_wafer_pos, mono_turns, mono_Rh_req, mono_d, mono_q;
-double lam;
-double focal_dist;
-double as;
-int msw;
+    double inc_slit_xmin, inc_slit_xmax, inc_slit_ymin, inc_slit_ymax;
+    double inc_slit_xmin_h, inc_slit_xmax_h, inc_slit_ymin_w, inc_slit_ymax_w;
+    double diff_slit_xmin, diff_slit_xmax, diff_slit_ymin, diff_slit_ymax;
+    double wafer_d, start_wafer_pos, mono_turns, mono_Rh_req, mono_d, mono_q;
+    double lam;
+    double focal_dist;
+    double as;
+    int msw;
 
-double chamber_col_start, chamber_col_length;
+    double chamber_col_start, chamber_col_length;
 
-double from_col=1;
-double full_instrument;
-
-
+    double from_col=1;
+    double full_instrument;
 %}
 
 INITIALIZE
 %{
-printf ("\n------------------\n");
+    printf ("\n------------------\n");
 
-/* Constants */
-chamber_col_start=0.8615;   //from the diffraction center
-chamber_col_length=0.919;
-
-
-/* Incident slit */
-inc_slit_xmin = -inc_slit_width/2.0;
-inc_slit_xmax = inc_slit_width/2.0;
-inc_slit_ymin = -inc_slit_height/2.0;
-inc_slit_ymax = inc_slit_height/2.0;
-if (inc_slit_sep < 0) {      //Emperical formula. Linear dependance derived from measurements: sep=13.18mm when width=0.13mm; sep=4.18mm when width=4.95mm
-  inc_slit_sep= -1.86721992 * inc_slit_width + 0.0134227385;
-}
-printf ("Incident slit separation = %.4lf mm\n",inc_slit_sep*1000);
-
-if (inc_slit_sep == 0) {      //No gap, so horisonal and vertical slits lie ontop of each other and can have same dimensions
-  inc_slit_xmin_h = inc_slit_xmin;
-  inc_slit_xmax_h = inc_slit_xmax;
-  inc_slit_ymin_w = inc_slit_ymin;
-  inc_slit_ymax_w = inc_slit_ymax;
-} else {        //Perform some trig to be sure that none of the neutrons are accidentally cut of
-  double col_to_slit = (mono_to_cor-inc_slit_to_cor) - (mono_to_cor-chamber_col_start+chamber_col_length);
-  inc_slit_ymax_w = 1.01*(inc_slit_ymax + (0.023745 + inc_slit_ymax)*inc_slit_sep/col_to_slit);
-  if (inc_slit_ymax_w < inc_slit_ymax) inc_slit_ymax_w = inc_slit_ymax;
-  inc_slit_ymin_w = -inc_slit_ymax_w;
-  inc_slit_xmax_h = -1.01*(((0.01077+inc_slit_xmax)*inc_slit_sep/col_to_slit)-inc_slit_xmax);
-  if (inc_slit_xmax_h < inc_slit_xmax) inc_slit_xmax_h = inc_slit_xmax;
-  inc_slit_xmin_h = - inc_slit_xmax_h;
-}
-printf ("Height slit: width=%.4lfmm, height=%.4lfmm\n",2*inc_slit_xmax_h*1000, 2*inc_slit_ymax*1000);
-printf ("Width  slit: width=%.4lfmm, height=%.4lfmm\n",2*inc_slit_xmax*1000, 2*inc_slit_ymax_w*1000);
+    /* Constants */
+    chamber_col_start=0.8615;   //from the diffraction center
+    chamber_col_length=0.919;
 
 
-/* Diffracted slit */
-diff_slit_xmin = -diff_slit_width/2.0;
-diff_slit_xmax = diff_slit_width/2.0;
-diff_slit_ymin = -diff_slit_height/2.0;
-diff_slit_ymax = diff_slit_height/2.0;
+    /* Incident slit */
+    inc_slit_xmin = -inc_slit_width/2.0;
+    inc_slit_xmax = inc_slit_width/2.0;
+    inc_slit_ymin = -inc_slit_height/2.0;
+    inc_slit_ymax = inc_slit_height/2.0;
+    if (inc_slit_sep < 0) {      //Emperical formula. Linear dependance derived from measurements: sep=13.18mm when width=0.13mm; sep=4.18mm when width=4.95mm
+        inc_slit_sep= -1.86721992 * inc_slit_width + 0.0134227385;
+    }
+    printf ("Incident slit separation = %.4lf mm\n",inc_slit_sep*1000);
 
-/*
-PoiConst = 0.2;
-miu = 0.00004;
-F = 4.1534*0.01;
-D = 0.000725;*/
+    if (inc_slit_sep == 0) {      //No gap, so horisonal and vertical slits lie ontop of each other and can have same dimensions
+        inc_slit_xmin_h = inc_slit_xmin;
+        inc_slit_xmax_h = inc_slit_xmax;
+        inc_slit_ymin_w = inc_slit_ymin;
+        inc_slit_ymax_w = inc_slit_ymax;
+    } else {        //Perform some trig to be sure that none of the neutrons are accidentally cut of
+        double col_to_slit = (mono_to_cor-inc_slit_to_cor) - (mono_to_cor-chamber_col_start+chamber_col_length);
+        inc_slit_ymax_w = 1.01*(inc_slit_ymax + (0.023745 + inc_slit_ymax)*inc_slit_sep/col_to_slit);
+        if (inc_slit_ymax_w < inc_slit_ymax) inc_slit_ymax_w = inc_slit_ymax;
+        inc_slit_ymin_w = -inc_slit_ymax_w;
+        inc_slit_xmax_h = -1.01*(((0.01077+inc_slit_xmax)*inc_slit_sep/col_to_slit)-inc_slit_xmax);
+        if (inc_slit_xmax_h < inc_slit_xmax) inc_slit_xmax_h = inc_slit_xmax;
+        inc_slit_xmin_h = - inc_slit_xmax_h;
+    }
+    printf ("Height slit: width=%.4lfmm, height=%.4lfmm\n",2*inc_slit_xmax_h*1000, 2*inc_slit_ymax*1000);
+    printf ("Width  slit: width=%.4lfmm, height=%.4lfmm\n",2*inc_slit_xmax*1000, 2*inc_slit_ymax_w*1000);
 
-/* Monochromator */
-wafer_d = (11.89/13.0/1000);    //Wafer diameter. Total blade diameter (11.89mm) made up from 13 wafers
-start_wafer_pos = 6.0 * wafer_d;  //In order to have the middle waver situated at the centre of the port takeoff
 
-msw=(int)mono_Si_type;
-if (msw==422) mono_d = 1.10858;
-if (msw==400) mono_d = 1.35773;
-if (msw==311) mono_d = 1.63748;
-if (msw==511) mono_d = 1.04518;
-if (msw==111) mono_d = 3.135;
-if (msw==331) mono_d = 1.24594;
-if (msw==551) mono_d = 0.76049;
+    /* Diffracted slit */
+    diff_slit_xmin = -diff_slit_width/2.0;
+    diff_slit_xmax = diff_slit_width/2.0;
+    diff_slit_ymin = -diff_slit_height/2.0;
+    diff_slit_ymax = diff_slit_height/2.0;
 
-mono_q = 2*PI/mono_d;
-double mono_omega = fabs(mono_takeoff/2.0);
-lam=2.0*mono_d*sin(DEG2RAD*mono_omega);
-printf ("mono_Si_type = %i, mono_d=%.4lfA, mono_omega = %.2lfdeg, lambda = %.4lfA\n",msw,mono_d,mono_omega,lam);
+    /*
+    PoiConst = 0.2;
+    miu = 0.00004;
+    F = 4.1534*0.01;
+    D = 0.000725;*/
 
-/* Monochromator-sample distance*/
-mono_turns=(1005.5/mono_Rh)-13;    //emperical formula that equates the number of turns of the motor to the curvature. Taken from Multi-wafer silicon monochromator for stress machine at SAFARI, South Africa. Mihai Popovici
-as = -tan(2*DEG2RAD*mono_omega)/(tan(DEG2RAD*mono_omega));
-focal_dist = mono_Rh*(1-(0.5/as))*sin(DEG2RAD*mono_omega);
-printf ("Monochromator to focal point = %.4lfm (%.2lf turns)\n",focal_dist, mono_turns);
+    /* Monochromator */
+    wafer_d = (11.89/13.0/1000);    //Wafer diameter. Total blade diameter (11.89mm) made up from 13 wafers
+    start_wafer_pos = 6.0 * wafer_d;  //In order to have the middle waver situated at the centre of the port takeoff
 
-mono_Rh_req = mono_to_cor/((1-(0.5/as))*sin(DEG2RAD*mono_omega));
-mono_turns=(1005.5/mono_Rh_req)-13;    //emperical formula that equates the number of turns of the motor to the curvature. Taken from Multi-wafer silicon monochromator for stress machine at SAFARI, South Africa. Mihai Popovici
-printf ("To focus on COR at %.3lfm, let mono_Rh = %.4lfm (%.2lf turns)\n",mono_to_cor,mono_Rh_req, mono_turns);
+    msw=(int)mono_Si_type;
+    if (msw==422) mono_d = 1.10858;
+    if (msw==400) mono_d = 1.35773;
+    if (msw==311) mono_d = 1.63748;
+    if (msw==511) mono_d = 1.04518;
+    if (msw==111) mono_d = 3.135;
+    if (msw==331) mono_d = 1.24594;
+    if (msw==551) mono_d = 0.76049;
 
-printf ("------------------\n\n");
+    mono_q = 2*PI/mono_d;
+    double mono_omega = fabs(mono_takeoff/2.0);
+    lam=2.0*mono_d*sin(DEG2RAD*mono_omega);
+    printf ("mono_Si_type = %i, mono_d=%.4lfA, mono_omega = %.2lfdeg, lambda = %.4lfA\n",msw,mono_d,mono_omega,lam);
 
+    /* Monochromator-sample distance*/
+    mono_turns=(1005.5/mono_Rh)-13;    //emperical formula that equates the number of turns of the motor to the curvature. Taken from Multi-wafer silicon monochromator for stress machine at SAFARI, South Africa. Mihai Popovici
+    as = -tan(2*DEG2RAD*mono_omega)/(tan(DEG2RAD*mono_omega));
+    focal_dist = mono_Rh*(1-(0.5/as))*sin(DEG2RAD*mono_omega);
+    printf ("Monochromator to focal point = %.4lfm (%.2lf turns)\n",focal_dist, mono_turns);
+
+    mono_Rh_req = mono_to_cor/((1-(0.5/as))*sin(DEG2RAD*mono_omega));
+    mono_turns=(1005.5/mono_Rh_req)-13;    //emperical formula that equates the number of turns of the motor to the curvature. Taken from Multi-wafer silicon monochromator for stress machine at SAFARI, South Africa. Mihai Popovici
+    printf ("To focus on COR at %.3lfm, let mono_Rh = %.4lfm (%.2lf turns)\n",mono_to_cor,mono_Rh_req, mono_turns);
+
+    printf ("------------------\n\n");
 %}
 
 TRACE
@@ -496,62 +493,62 @@ SPLIT COMPONENT Sample = PowderN(
   /*EXTEND
   %{
     if (!SCATTERED) ABSORB;
-  %}*/
+    %}*/
 
- /*
-SPLIT COMPONENT Sample = Single_crystal(xwidth=0.01, yheight=0.01, zdepth=0.01,
-mosaic = 5, reflections="YBaCuO.lau")
-  AT (0,0,0) RELATIVE Sample_location
-  EXTEND
-  %{
+    /*
+    SPLIT COMPONENT Sample = Single_crystal(xwidth=0.01, yheight=0.01, zdepth=0.01,
+    mosaic = 5, reflections="YBaCuO.lau")
+    AT (0,0,0) RELATIVE Sample_location
+    EXTEND
+    %{
     if (!SCATTERED) ABSORB;
-  %}**/
+    %}**/
 
-/*COMPONENT PSD_After_Sample_location = PSD_monitor(
+    /*COMPONENT PSD_After_Sample_location = PSD_monitor(
     nx = 100, ny = 100, filename = "PSD_After_Sample_location",
     xmin = -0.2, xmax = 0.2, ymin = -0.2, ymax = 0.2)
-  AT (0, 0, 1) RELATIVE Sample_location */
+    AT (0, 0, 1) RELATIVE Sample_location */
 
-  COMPONENT DiffBeamStop = Beamstop(
-      xmin = -0.2,xmax = 0.2, ymin=-0.2, ymax=0.2)
-  AT (0, 0, mono_to_cor+0.4) RELATIVE Prim_axes
+    COMPONENT DiffBeamStop = Beamstop(
+    xmin = -0.2,xmax = 0.2, ymin=-0.2, ymax=0.2)
+    AT (0, 0, mono_to_cor+0.4) RELATIVE Prim_axes
 
-//**************************************************************************************************
-//Secondary Slit
-COMPONENT Det_axis = Arm(
+    //**************************************************************************************************
+    //Secondary Slit
+    COMPONENT Det_axis = Arm(
     )
-  AT (0, 0, 0) RELATIVE Center_of_rotation
-  ROTATED (0, det_takeoff, 0) RELATIVE Center_of_rotation
+    AT (0, 0, 0) RELATIVE Center_of_rotation
+    ROTATED (0, det_takeoff, 0) RELATIVE Center_of_rotation
 
 
-/*COMPONENT Diffracted_slit = Slit(
-      xmin = diff_slit_xmin, xmax = diff_slit_xmax, ymin = diff_slit_ymin, ymax = diff_slit_ymax)
-  AT (0, 0, diff_slit_to_cor) RELATIVE Det_axis
+    /*COMPONENT Diffracted_slit = Slit(
+    xmin = diff_slit_xmin, xmax = diff_slit_xmax, ymin = diff_slit_ymin, ymax = diff_slit_ymax)
+    AT (0, 0, diff_slit_to_cor) RELATIVE Det_axis
 
-COMPONENT PSD_After_Diffracted_slit = PSD_monitor(
+    COMPONENT PSD_After_Diffracted_slit = PSD_monitor(
     nx = 100, ny = 100, filename = "PSD_After_Diffracted_slit.out",
     xmin = inc_slit_xmin*1.1, xmax = inc_slit_xmax*1.1, ymin = inc_slit_ymin*1.1, ymax = inc_slit_ymax*1.1)
-  AT (0, 0, 0) RELATIVE Diffracted_slit */
+    AT (0, 0, 0) RELATIVE Diffracted_slit */
 
 
-//**************************************************************************************************
-//Detector
+    //**************************************************************************************************
+    //Detector
 
-/*COMPONENT PSD_4pi = PSD_monitor_4PI(radius=0.7, nx=101, ny=51,
-  filename="vanadium.psd")
-  AT (0,0,0) RELATIVE Det_axis*/
+    /*COMPONENT PSD_4pi = PSD_monitor_4PI(radius=0.7, nx=101, ny=51,
+    filename="vanadium.psd")
+    AT (0,0,0) RELATIVE Det_axis*/
 
 
 
-COMPONENT PSD_Detector = PSD_monitor(
+    COMPONENT PSD_Detector = PSD_monitor(
     nx = 300, ny = 100, filename = "PSD_Detector", xmin = -0.15,
     xmax = 0.15, ymin = -0.15, ymax = 0.15)
-  AT (0, 0, cor_to_det) RELATIVE Det_axis
+    AT (0, 0, cor_to_det) RELATIVE Det_axis
 
 
 
 
-FINALLY
-%{
+    FINALLY
+    %{
 %}
 END

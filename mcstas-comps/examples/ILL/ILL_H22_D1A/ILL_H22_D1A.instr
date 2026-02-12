@@ -59,52 +59,52 @@ DEFINE INSTRUMENT ILL_H22_D1A(lambda=1.911, dlambda=0.03, DM=0, RV=-1, string po
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double A1; /* rotation of monok and d-spacing */
-  double RV; /* vertical curvature of monochromator */
-  double verbose=1;
-  double L1=0.5, L2=1.25, L3=0.5;
+    double A1; /* rotation of monok and d-spacing */
+    double RV; /* vertical curvature of monochromator */
+    double verbose=1;
+    double L1=0.5, L2=1.25, L3=0.5;
 %}
 
 USERVARS
 %{
-  double flag_container;
-  double flag_sample;
-  double flag_env;
+    double flag_container;
+    double flag_sample;
+    double flag_env;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  double L;
-  double KI, Vi, EI;
+    double L;
+    double KI, Vi, EI;
 
-  A1 =122/2;
-  if (!lambda && DM)
+    A1 =122/2;
+    if (!lambda && DM)
     lambda=sin(A1*DEG2RAD)*2*DM;
-  else if (lambda && !DM)
+    else if (lambda && !DM)
     DM=lambda/2/sin(A1*DEG2RAD);
 
-  if (!lambda || !DM)
+    if (!lambda || !DM)
     exit(printf("%s: ERROR: wavelength and DM are unset. Exit.\n", NAME_INSTRUMENT));
 
-  L = L2; /* assume guide exit L1=Inf */
-  if (RV < 0) RV=2*L*sin(DEG2RAD*A1);
-  KI=2*PI/lambda;
-  Vi = K2V*fabs(KI);
-  EI = VS2E*Vi*Vi;
-  A1 *= -1;
+    L = L2; /* assume guide exit L1=Inf */
+    if (RV < 0) RV=2*L*sin(DEG2RAD*A1);
+    KI=2*PI/lambda;
+    Vi = K2V*fabs(KI);
+    EI = VS2E*Vi*Vi;
+    A1 *= -1;
 
-  if (verbose) {
-    printf("%s: Detailed DIF configuration\n", NAME_INSTRUMENT);
-    printf("* Incoming beam: lambda=%.4g [Angs] EI=%.4g [meV]  KI=%.4g [Angs-1] Vi=%g [m/s]\n",
-      lambda, EI, KI, Vi);
-    printf("* Monochromator:  DM=%.4g [Angs] RV=%.4g [m] %s, take-off A2=%.4g [deg]\n",
-      DM, RV, (!RV ? "flat" : "curved"), 2*A1);
-    printf("* Sample: %s in %s cylinder container\n", powder, container);
-  }
+    if (verbose) {
+        printf("%s: Detailed DIF configuration\n", NAME_INSTRUMENT);
+        printf("* Incoming beam: lambda=%.4g [Angs] EI=%.4g [meV]  KI=%.4g [Angs-1] Vi=%g [m/s]\n",
+        lambda, EI, KI, Vi);
+        printf("* Monochromator:  DM=%.4g [Angs] RV=%.4g [m] %s, take-off A2=%.4g [deg]\n",
+        DM, RV, (!RV ? "flat" : "curved"), 2*A1);
+        printf("* Sample: %s in %s cylinder container\n", powder, container);
+    }
 
-  RV = -fabs(RV);
+    RV = -fabs(RV);
 %}
 
 TRACE

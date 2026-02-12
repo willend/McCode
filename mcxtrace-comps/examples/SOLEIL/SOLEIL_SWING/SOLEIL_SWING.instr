@@ -54,48 +54,48 @@ DEFINE INSTRUMENT SOLEIL_SWING(E0=13, dE=0.1, dcm_theta=0,
 
 DECLARE
 %{
-  double dcm_gap;
-  double Lambda;
-  double Ki;
-  int    flag_sample_sphere;
+    double dcm_gap;
+    double Lambda;
+    double Ki;
+    int    flag_sample_sphere;
 %}
 
 USERVARS
 %{
-  int    flag_hfm;
-  int    flag_vfm;
+    int    flag_hfm;
+    int    flag_vfm;
 %}
 
 INITIALIZE
 %{
-  double DM= 5.4909;     // Si d-spacing for the Monochromator
-  double d = DM/sqrt(3); // <111> reflection |<111>|=3
-  dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
-   
-  if (!dcm_theta && E0) {
-    // n.lambda = 2 d sin(dcm_theta) = 2*PI/E2K / E0 with n=ORDER=1
-    double sin_theta = 2*PI/E2K/E0 / 2 / d;
-    if (fabs(sin_theta) < 1)
-      dcm_theta = asin(sin_theta)*RAD2DEG;
-  } else if (dcm_theta && !E0)
+    double DM= 5.4909;     // Si d-spacing for the Monochromator
+    double d = DM/sqrt(3); // <111> reflection |<111>|=3
+    dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
+
+    if (!dcm_theta && E0) {
+        // n.lambda = 2 d sin(dcm_theta) = 2*PI/E2K / E0 with n=ORDER=1
+        double sin_theta = 2*PI/E2K/E0 / 2 / d;
+        if (fabs(sin_theta) < 1)
+        dcm_theta = asin(sin_theta)*RAD2DEG;
+    } else if (dcm_theta && !E0)
     E0 = 2*PI/E2K / (2*d*sin(dcm_theta*DEG2RAD));
-  if (!dcm_theta || !E0 || dE <=0)
+    if (!dcm_theta || !E0 || dE <=0)
     exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
-  Ki     = E0*E2K;
-  Lambda = 2*PI/Ki;
-  MPI_MASTER(
+    Ki     = E0*E2K;
+    Lambda = 2*PI/Ki;
+    MPI_MASTER(
     printf("%s: E0=%g [keV] Ki=%g [1/Angs] Lambda=%g [Angs] Monochromator dcm_theta=%g [deg]\n", 
-      NAME_INSTRUMENT, E0, dcm_theta, Ki, Lambda);
+    NAME_INSTRUMENT, E0, dcm_theta, Ki, Lambda);
     if (!strlen(sample) || !strcmp(sample,"0") || !strcmp(sample,"NULL")) {
-      flag_sample_sphere=1;
-      printf("%s: Using ideal sample %s\n", NAME_INSTRUMENT, "Sphere colloid");
-      strcpy(sample, "6lyz.pdb"); // avoid stop at init of SAXSPDBFast
+        flag_sample_sphere=1;
+        printf("%s: Using ideal sample %s\n", NAME_INSTRUMENT, "Sphere colloid");
+        strcpy(sample, "6lyz.pdb"); // avoid stop at init of SAXSPDBFast
     } else {
-      flag_sample_sphere=0;
-      printf("%s: Using PDB sample %s\n", NAME_INSTRUMENT, sample);
+        flag_sample_sphere=0;
+        printf("%s: Using PDB sample %s\n", NAME_INSTRUMENT, sample);
     }
-  );
-  if (fabs(dE/E0)>0.1) dE = 3e-2*E0;
+    );
+    if (fabs(dE/E0)>0.1) dE = 3e-2*E0;
 %}
 
 TRACE

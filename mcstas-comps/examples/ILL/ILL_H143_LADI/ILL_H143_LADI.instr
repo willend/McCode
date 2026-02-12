@@ -56,38 +56,37 @@ DEFINE INSTRUMENT ILL_H143_LADI(lambda=3.2, dlambda=1, string reflections="leuci
 
 DECLARE
 %{
-  /* gaps and Al windows parameters */
-  double Al_Thickness = 0.002;
-  double gGap         = 0.001;
+    /* gaps and Al windows parameters */
+    double Al_Thickness = 0.002;
+    double gGap         = 0.001;
 
-  /* guide section parameters (total length/number of elements) */
-  double L_H14_1= 2.0;      /* length of elements */
-  double L_H14_2= 6.0/5;
-  double L_H14_3= 21.0/11;
-  double L_H143_1=30.0/15;
-  double L_H143_2=35.0/14;  /* +1m at end */
+    /* guide section parameters (total length/number of elements) */
+    double L_H14_1= 2.0;      /* length of elements */
+    double L_H14_2= 6.0/5;
+    double L_H14_3= 21.0/11;
+    double L_H143_1=30.0/15;
+    double L_H143_2=35.0/14;  /* +1m at end */
 
-  double Rh_H14_2,  Rh_H14_3;
-  double Rv_H143_1, Rv_H143_2;
+    double Rh_H14_2,  Rh_H14_3;
+    double Rv_H143_1, Rv_H143_2;
 %}
 
 USERVARS
 %{
-  double vel;
-  double eff;
+    double vel;
+    double eff;
 %}
 
 INITIALIZE
 %{
 
-  /* Element rotations = Element length / Curvature Radius * RAD2DEG */
-  Rh_H14_2  = L_H14_2 /2700.0*RAD2DEG;  /* 2.7 km horz curvature */
-  Rh_H14_3  = L_H14_3 /4000.0*RAD2DEG;  /* 4 km horz curvature */
-  Rv_H143_1 = -L_H143_1/2000*RAD2DEG;    /* 2 km vert curvature */
-  Rv_H143_2 = -L_H143_2/2000*RAD2DEG;    /* 2 km vert curvature */
+    /* Element rotations = Element length / Curvature Radius * RAD2DEG */
+    Rh_H14_2  = L_H14_2 /2700.0*RAD2DEG;  /* 2.7 km horz curvature */
+    Rh_H14_3  = L_H14_3 /4000.0*RAD2DEG;  /* 4 km horz curvature */
+    Rv_H143_1 = -L_H143_1/2000*RAD2DEG;    /* 2 km vert curvature */
+    Rv_H143_2 = -L_H143_2/2000*RAD2DEG;    /* 2 km vert curvature */
 
-  printf("Instrument: ILL_H143_LADI (LADI@H143 ILL cold guide on VCS).\n");
-
+    printf("Instrument: ILL_H143_LADI (LADI@H143 ILL cold guide on VCS).\n");
 %}
 
 TRACE

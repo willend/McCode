@@ -29,35 +29,35 @@ DEFINE INSTRUMENT Test_TOF_PSDmonitor_toQ(theta=0.91)
 
 DECLARE
 %{
-%}
+    %}
 
-USERVARS
-%{
-  double kix;
-  double kiy;
-  double kiz;
-  double kfx;
-  double kfy;
-  double kfz;
-  double qx;
-  double qy;
-  double qz;
-  double Q;
-  int measured;
+    USERVARS
+    %{
+        double kix;
+        double kiy;
+        double kiz;
+        double kfx;
+        double kfy;
+        double kfz;
+        double qx;
+        double qy;
+        double qz;
+        double Q;
+        int measured;
 %}
 
 INITIALIZE
 %{
-%}
+    %}
 
-TRACE
+    TRACE
 
-COMPONENT origin = Progress_bar()
-AT (0, 0, 0) RELATIVE ABSOLUTE
+    COMPONENT origin = Progress_bar()
+    AT (0, 0, 0) RELATIVE ABSOLUTE
 
-// insert components here (e.g. Insert -> Source -> ...)
+    // insert components here (e.g. Insert -> Source -> ...)
 
-COMPONENT Source = Source_simple(
+    COMPONENT Source = Source_simple(
     yheight=0.1, 
     xwidth=0.1, 
     target_index=2, 
@@ -65,11 +65,11 @@ COMPONENT Source = Source_simple(
     focus_yh=0.002, 
     lambda0=5, 
     dlambda=4.99)
-AT (0, 0, 0) RELATIVE PREVIOUS
-EXTEND %{
-	// 50 mu-s pulse
-	t=50e-6*rand01();
-	kix=vx; kiy=vy; kiz=vz;
+    AT (0, 0, 0) RELATIVE PREVIOUS
+    EXTEND %{
+        // 50 mu-s pulse
+        t=50e-6*rand01();
+        kix=vx; kiy=vy; kiz=vz;
         double Ki=V2K*sqrt((vx*vx)+(vy*vy)+(vz*vz));
         NORM(kix,kiy,kiz);
         kix=Ki*kix; kiy=Ki*kiy; kiz=Ki*kiz; 

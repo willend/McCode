@@ -49,14 +49,14 @@ DEFINE INSTRUMENT ISIS_Prisma2(TT=-30,PHA=22,PHA1=-3,PHA2=-2,PHA3=-1, PHA4=0,PHA
 
 DECLARE
 %{
-/* 30' mosaicity used on analysator */
-double prisma_ana_mosaic = 30;
-/* Q vector for bragg scattering with monochromator and analysator */
-double prisma_ana_q = 1.87325;
-double prisma_ana_r0 = 0.6;
-double focus_x,focus_z;
+    /* 30' mosaicity used on analysator */
+    double prisma_ana_mosaic = 30;
+    /* Q vector for bragg scattering with monochromator and analysator */
+    double prisma_ana_q = 1.87325;
+    double prisma_ana_r0 = 0.6;
+    double focus_x,focus_z;
 
-double apos1, apos2, apos3, apos4, apos5, apos6, apos7;
+    double apos1, apos2, apos3, apos4, apos5, apos6, apos7;
 %}
 
 USERVARS %{
@@ -65,19 +65,19 @@ USERVARS %{
 
 INITIALIZE
 %{
-  focus_x = 0.52 * sin(TT*DEG2RAD);
-  focus_z = 0.52 * cos(TT*DEG2RAD);
-  /* Rita-style analyser. */
-  {
-    double l = 0.0125;
-    apos1 = -3*l;
-    apos2 = -2*l;
-    apos3 = -1*l;
-    apos4 =  0*l;
-    apos5 =  1*l;
-    apos6 =  2*l;
-    apos7 =  3*l;
-  }
+    focus_x = 0.52 * sin(TT*DEG2RAD);
+    focus_z = 0.52 * cos(TT*DEG2RAD);
+    /* Rita-style analyser. */
+    {
+        double l = 0.0125;
+        apos1 = -3*l;
+        apos2 = -2*l;
+        apos3 = -1*l;
+        apos4 =  0*l;
+        apos5 =  1*l;
+        apos6 =  2*l;
+        apos7 =  3*l;
+    }
 %}
 
 TRACE

@@ -37,29 +37,29 @@ DEFINE INSTRUMENT Test_shells(FL=12, plate_zdepth=0.5, channel_yheight=1e-2, rad
 /* functions in C syntax. These may be used in the whole instrument. */
 USERVARS
 %{
-  int interacted;
+    int interacted;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-%}
-/* instrument is defined as a sequence of components.  */
-TRACE
+    %}
+    /* instrument is defined as a sequence of components.  */
+    TRACE
 
-/* The Arm() class component defines reference points and orientations  */
-/* in 3D space. Every component instance must have a unique name. Here, */
-/* Origin is used. This Arm() component is set to define the origin of  */
-/* our global coordinate system (AT (0,0,0) ABSOLUTE). It may be used   */
-/* for further RELATIVE reference, Other useful keywords are : ROTATED  */
-/* EXTEND GROUP PREVIOUS. Also think about adding an xray source !    */
-/* Progress_bar is an Arm displaying simulation progress.               */
-COMPONENT Origin = Progress_bar()
-AT (0,0,0) ABSOLUTE
-EXTEND
-%{
-  interacted=0;
+    /* The Arm() class component defines reference points and orientations  */
+    /* in 3D space. Every component instance must have a unique name. Here, */
+    /* Origin is used. This Arm() component is set to define the origin of  */
+    /* our global coordinate system (AT (0,0,0) ABSOLUTE). It may be used   */
+    /* for further RELATIVE reference, Other useful keywords are : ROTATED  */
+    /* EXTEND GROUP PREVIOUS. Also think about adding an xray source !    */
+    /* Progress_bar is an Arm displaying simulation progress.               */
+    COMPONENT Origin = Progress_bar()
+    AT (0,0,0) ABSOLUTE
+    EXTEND
+    %{
+        interacted=0;
 %}
 
 COMPONENT src = Source_div(
@@ -77,7 +77,7 @@ COMPONENT Shell_p_1 = Shell_p(
 WHEN (shell_type==0) AT(0,0,plate_zdepth) RELATIVE optics_centre
 EXTEND
 %{
-  if (SCATTERED)interacted+=SCATTERED;
+    if (SCATTERED)interacted+=SCATTERED;
 %}
 
 COMPONENT Shell_h_1 = Shell_h(
@@ -85,7 +85,7 @@ COMPONENT Shell_h_1 = Shell_h(
 WHEN(shell_type==1)AT(0,0,0) RELATIVE optics_centre
 EXTEND
 %{
-  if (SCATTERED)interacted+=SCATTERED;
+    if (SCATTERED)interacted+=SCATTERED;
 %}
 
 COMPONENT shell_c_1 = Shell_c(
@@ -93,17 +93,17 @@ COMPONENT shell_c_1 = Shell_c(
 WHEN(shell_type==2) AT(0,0,0) RELATIVE optics_centre
 EXTEND
 %{
-  if (SCATTERED)interacted+=SCATTERED;
+    if (SCATTERED)interacted+=SCATTERED;
 %}
 
 COMPONENT filter = Arm()
 AT(0,0,0) RELATIVE optics_centre
 EXTEND
 %{
-  /*filter rays wich have not reflected*/
-  if (!interacted){
-    ABSORB;
-  }
+    /*filter rays wich have not reflected*/
+    if (!interacted){
+        ABSORB;
+    }
 %}
 
 COMPONENT detector_post_optics = PSD_monitor(restore_xray=1,xwidth=radiusin*2*1.2, yheight=radiusin*2*1.2, nx=201, ny=101, filename="det_posto.dat")

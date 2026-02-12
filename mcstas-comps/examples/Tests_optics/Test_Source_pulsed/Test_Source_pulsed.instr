@@ -29,23 +29,23 @@ DEFINE INSTRUMENT Test_Source_pulsed(int source=1, Lmin=0.1, Lmax=10.1)
 
 DECLARE
 %{
-  double Lambda0, dLambda;
+    double Lambda0, dLambda;
 %}
 
 INITIALIZE
 %{
-  printf("%s: ", instrument_name);
-  switch (source) {
-  case 1:
-    printf("Using Source_pulsed for HBS thermal\n"); break;
-  case 2:
-    printf("Using Source_pulsed for HBS cold\n"); break;
-  case 3:
-    printf("Using Source_pulsed for HBS bispectral\n"); break;
-  }
-  printf("Studied wavelength range is [%g %g] AA\n", Lmin, Lmax);
-  dLambda=(Lmax-Lmin)/2;
-  Lambda0=(Lmax+Lmin)/2;
+    printf("%s: ", instrument_name);
+    switch (source) {
+        case 1:
+        printf("Using Source_pulsed for HBS thermal\n"); break;
+        case 2:
+        printf("Using Source_pulsed for HBS cold\n"); break;
+        case 3:
+        printf("Using Source_pulsed for HBS bispectral\n"); break;
+    }
+    printf("Studied wavelength range is [%g %g] AA\n", Lmin, Lmax);
+    dLambda=(Lmax-Lmin)/2;
+    Lambda0=(Lmax+Lmin)/2;
 %}
 
 TRACE

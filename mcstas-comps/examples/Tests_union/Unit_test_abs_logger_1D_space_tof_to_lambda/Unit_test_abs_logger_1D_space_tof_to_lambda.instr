@@ -36,10 +36,10 @@ DEFINE INSTRUMENT Unit_test_abs_logger_1D_space_tof_to_lambda()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

@@ -37,20 +37,20 @@ DEFINE INSTRUMENT Test_Magnetic_Constant(ROT_ANGLE=180, ONOFF=0)
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  const double LAMBDA       = 5.0; // AA
-  const double DLAMBDA      = 4.9; // AA
-  const double MAGNETLENGTH = 0.2; // m
-  double BVALUE;
+    const double LAMBDA       = 5.0; // AA
+    const double DLAMBDA      = 4.9; // AA
+    const double MAGNETLENGTH = 0.2; // m
+    double BVALUE;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  BVALUE = GetConstantField(MAGNETLENGTH, LAMBDA, ROT_ANGLE);
-  printf("By should be %f T, to be able to rotate a %f AA neutron\n"
-	 " %f degrees over a length of %f m\n",
-	 BVALUE, LAMBDA, ROT_ANGLE, MAGNETLENGTH);
+    BVALUE = GetConstantField(MAGNETLENGTH, LAMBDA, ROT_ANGLE);
+    printf("By should be %f T, to be able to rotate a %f AA neutron\n"
+    " %f degrees over a length of %f m\n",
+    BVALUE, LAMBDA, ROT_ANGLE, MAGNETLENGTH);
 %}
 
 /* Here comes the TRACE section, where the actual      */

@@ -31,15 +31,15 @@ DEFINE INSTRUMENT Test_Collimator_Radial(int Collimator=1, string Powder="Na2Ca3
 
 INITIALIZE
 %{
-  printf("\nTest_Collimator_Radial: ");
-  switch (Collimator) {
-  case 1:
-    printf("Using Collimator_Radial\n"); break;
-  case 2:
-    printf("Using Collimator_ROC\n"); break;
-  case 3:
-    printf("Using Exact_radial_coll\n"); break;
-  }
+    printf("\nTest_Collimator_Radial: ");
+    switch (Collimator) {
+        case 1:
+        printf("Using Collimator_Radial\n"); break;
+        case 2:
+        printf("Using Collimator_ROC\n"); break;
+        case 3:
+        printf("Using Exact_radial_coll\n"); break;
+    }
 %}
 
 TRACE

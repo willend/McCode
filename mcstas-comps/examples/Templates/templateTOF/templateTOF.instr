@@ -51,11 +51,11 @@ DEFINE INSTRUMENT templateTOF(E0=4.94, dE=0.24, dt=6.4e-6,
 
 DECLARE
 %{
-  /* monitoring sample env */
-  double vi;
-  char op[256];
-  double _dt0;
-  #pragma acc declare create(_dt0)
+    /* monitoring sample env */
+    double vi;
+    char op[256];
+    double _dt0;
+    #pragma acc declare create(_dt0)
 %}
 
 USERVARS %{
@@ -68,31 +68,31 @@ USERVARS %{
 
 INITIALIZE
 %{
-  vi=SE2V*sqrt(E0);
-  double ki=V2K*vi;
-  double t0=1.25/vi; // time from sample to det.
-  double lambda=2*PI/ki;
-  sprintf(op,   "energy limits=[%g %g] bins=50, theta limits=[5 175] bins=150, banana, parallel", 0.5*E0, 2*E0);
+    vi=SE2V*sqrt(E0);
+    double ki=V2K*vi;
+    double t0=1.25/vi; // time from sample to det.
+    double lambda=2*PI/ki;
+    sprintf(op,   "energy limits=[%g %g] bins=50, theta limits=[5 175] bins=150, banana, parallel", 0.5*E0, 2*E0);
 
-  printf("templateTOF: lambda=%g [Angs], k=%g [Angs-1], v=%g [m/s], E=%g [meV]. Time=[%g %g %g]\n",
+    printf("templateTOF: lambda=%g [Angs], k=%g [Angs-1], v=%g [m/s], E=%g [meV]. Time=[%g %g %g]\n",
     lambda,ki,vi, E0, t0*.75, t0, t0*1.5);
-  printf("templateTOF: sample is %s, with %s%s geometry.\n",
+    printf("templateTOF: sample is %s, with %s%s geometry.\n",
     coh, thickness ? "hollow " : "", yheight ? "cylindrical" : "spherical");
-  if (yheight && container_thickness)
+    if (yheight && container_thickness)
     printf("templateTOF: container is %s (outer cylinder)\n", container);
-  if (environment_thickness > 0)
+    if (environment_thickness > 0)
     printf("templateTOF: external environment is %s\n", environment);
-  dt0=dt;
-  if (environment_thickness > 0 && radius > environment_radius-environment_thickness)
+    dt0=dt;
+    if (environment_thickness > 0 && radius > environment_radius-environment_thickness)
     exit(printf("templateTOF: sample radius %g is larger than sample environment %g\n",
-      radius, environment_radius-environment_thickness));
-  if (container_thickness > 0 && environment_thickness > 0 && yheight > 0
-      && radius+container_thickness+0.0001 > environment_radius-environment_thickness)
+    radius, environment_radius-environment_thickness));
+    if (container_thickness > 0 && environment_thickness > 0 && yheight > 0
+    && radius+container_thickness+0.0001 > environment_radius-environment_thickness)
     exit(printf("templateTOF: sample container radius %g is larger than sample environment %g\n",
-      radius+container_thickness+0.0001, environment_radius-environment_thickness));
+    radius+container_thickness+0.0001, environment_radius-environment_thickness));
 
-  _dt0=dt0;
-  #pragma acc update device(_dt0)
+    _dt0=dt0;
+    #pragma acc update device(_dt0)
 %}
 
 TRACE
@@ -101,7 +101,7 @@ COMPONENT a1 = Progress_bar(percent=5)
   AT (0,0,0) ABSOLUTE
 EXTEND
 %{
- flag_single=flag_multi=flag_env=flag_container=0;
+    flag_single=flag_multi=flag_env=flag_container=0;
 %}
 
 /* thermal source */
@@ -133,7 +133,7 @@ COMPONENT Container_in=Isotropic_Sqw(
 AT (0, 0, 0) RELATIVE SampleIn
 EXTEND
 %{
-  if (SCATTERED) flag_container=1;
+    if (SCATTERED) flag_container=1;
 %}
 
 COMPONENT Sample_in=Isotropic_Sqw(
@@ -142,10 +142,10 @@ COMPONENT Sample_in=Isotropic_Sqw(
 ) AT (0, 0, 0) RELATIVE SampleIn
 EXTEND
 %{
-  if      (SCATTERED == 1) flag_single=(type == 'c' ? 1 : 2);
-  else if (SCATTERED >  1) flag_multi =(type == 'c' ? 1 : 2);
-  else                     flag_multi =flag_single=0;
-  t = randtriangle()*2*_dt0;  // we assume that in the real instrument, the chopper is close to sample
+    if      (SCATTERED == 1) flag_single=(type == 'c' ? 1 : 2);
+    else if (SCATTERED >  1) flag_multi =(type == 'c' ? 1 : 2);
+    else                     flag_multi =flag_single=0;
+    t = randtriangle()*2*_dt0;  // we assume that in the real instrument, the chopper is close to sample
 %}
 
 COMPONENT Container_out=COPY(Container_in)(concentric=0)
@@ -153,7 +153,7 @@ WHEN(yheight && container_thickness)
 AT (0, 0, 0) RELATIVE SampleIn
 EXTEND
 %{
-  if (SCATTERED) flag_container=1;
+    if (SCATTERED) flag_container=1;
 %}
 
 /* external shield */

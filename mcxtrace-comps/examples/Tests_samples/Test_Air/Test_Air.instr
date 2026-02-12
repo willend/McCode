@@ -28,26 +28,26 @@ DEFINE INSTRUMENT Test_Air(FRAC=0.5,E0=12.3984,dE_E=0.1, Lair=1, MXDIV=1, int AI
 
 DECLARE
 %{
-  double dE;
-  double L1;
-  double mxdiv;
+    double dE;
+    double L1;
+    double mxdiv;
 %}
 
 USERVARS
 %{
-  int scattered;
+    int scattered;
 %}
 
 INITIALIZE
 %{
-  dE=E0*dE_E/2.0;
+    dE=E0*dE_E/2.0;
 
-  L1=4;
-  if(MXDIV){
-    mxdiv=MXDIV;
-  }else{
-    mxdiv=atan(5e-2/(Lair/2.0));
-  }
+    L1=4;
+    if(MXDIV){
+        mxdiv=MXDIV;
+    }else{
+        mxdiv=atan(5e-2/(Lair/2.0));
+    }
 %}
 
 TRACE
@@ -56,7 +56,7 @@ COMPONENT origin = Progress_bar()
 AT (0, 0, 0) RELATIVE ABSOLUTE
 EXTEND
 %{
-  scattered=0;
+    scattered=0;
 %}
 // insert components here (e.g. Insert -> Source -> ...)
 COMPONENT source = Source_pt(E0=E0, dE=dE, focus_xw=1e-2, focus_yh=1e-2, dist=L1)

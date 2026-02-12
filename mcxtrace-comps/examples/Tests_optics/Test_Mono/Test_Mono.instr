@@ -47,33 +47,32 @@ DEFINE INSTRUMENT Test_Mono(int Mono=1, lambda=1.0, L1=10.0,OMM=14.2208,TTM=28.4
 
 DECLARE
 %{
-  double DM  = 3.1356 ; /* Monochromator d-spacing in Angs */
-			/* Si(111):           3.1356 */
-      /* PG002 Orders : 1st 3.355 2e 1.6775, 3e 1.1183 */
-  
-  /* This variable helps us switch on and off the different setups*/
-  double filterProb;
+    double DM  = 3.1356 ; /* Monochromator d-spacing in Angs */
+    /* Si(111):           3.1356 */
+    /* PG002 Orders : 1st 3.355 2e 1.6775, 3e 1.1183 */
+
+    /* This variable helps us switch on and off the different setups*/
+    double filterProb;
 %}
 /* end of DECLARE */
 
 INITIALIZE
 %{
-  int    ORDER = 1;
-  double Ki, mono_q, SM;
-  
-  /* SM : scattering at mono to the right (-1)/left(+1) */
-  SM = -1;
-  
-  mono_q = 2*PI*ORDER/DM;  /* Q mono in Angs-1 */
+    int    ORDER = 1;
+    double Ki, mono_q, SM;
 
-  Ki = 2*PI/lambda; 
-  
-  if (!TTM)
+    /* SM : scattering at mono to the right (-1)/left(+1) */
+    SM = -1;
+
+    mono_q = 2*PI*ORDER/DM;  /* Q mono in Angs-1 */
+
+    Ki = 2*PI/lambda; 
+
+    if (!TTM)
     TTM = asin(mono_q/2/Ki)*RAD2DEG*2*SM;
-    
-  if (!OMM)
-    OMM = TTM/2;
 
+    if (!OMM)
+    OMM = TTM/2;
 %}
 /* end of INITIALIZE */
 

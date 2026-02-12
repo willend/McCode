@@ -58,13 +58,13 @@ DEFINE INSTRUMENT Test_SANS( DistanceFromSourceToFirstPinhole=1.0, DistanceFromS
 
 DECLARE
 %{
-%}
+    %}
 
 
-INITIALIZE
-%{
-  if (Ncount>0)
-    mcset_ncount(Ncount);
+    INITIALIZE
+    %{
+        if (Ncount>0)
+        mcset_ncount(Ncount);
 %}
 
 

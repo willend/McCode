@@ -36,92 +36,92 @@ DEFINE INSTRUMENT Test_focus(src_lam=4.5, src_dlam=1.0,
 
 DECLARE
 %{
-	/* Source */
-	double src_w = 0.1, src_h = 0.1;
-	double src_E = -1.;
+    /* Source */
+    double src_w = 0.1, src_h = 0.1;
+    double src_E = -1.;
 
-	/* Monochromator */
-	double mono_mosaic = 20.;
-	double mono_d = 3.355;
-	double mono_dd = 1e-4;
-	int mono_slabs_h = 32, mono_slabs_v = 32;
-	double mono_width = 0.1, mono_height = 0.1, mono_depth = 0.005;
-	const char *mono_refl = "C_graphite.laz";
-	const char *mono_R = "HOPG.rfl", *mono_T = "HOPG.trm";
-	double mono_a[3], mono_b[3], mono_c[3];
-	double mono_angle = -1.;
+    /* Monochromator */
+    double mono_mosaic = 20.;
+    double mono_d = 3.355;
+    double mono_dd = 1e-4;
+    int mono_slabs_h = 32, mono_slabs_v = 32;
+    double mono_width = 0.1, mono_height = 0.1, mono_depth = 0.005;
+    const char *mono_refl = "C_graphite.laz";
+    const char *mono_R = "HOPG.rfl", *mono_T = "HOPG.trm";
+    double mono_a[3], mono_b[3], mono_c[3];
+    double mono_angle = -1.;
 
-	/* Distances */
-	double dist_src_mono = 1.;
-	double dist_mono_sample = 1.;
+    /* Distances */
+    double dist_src_mono = 1.;
+    double dist_mono_sample = 1.;
 
-	/* Detectors */
-	double mon_width = 0.25, mon_height = 0.25;
+    /* Detectors */
+    double mon_width = 0.25, mon_height = 0.25;
 
 
-	/* ------------------------------------------------------------------------ */
-	/* Helper functions */
-	double lam_to_k(double lam) {
-		return 2.*PI / lam;
-	}
+    /* ------------------------------------------------------------------------ */
+    /* Helper functions */
+    double lam_to_k(double lam) {
+        return 2.*PI / lam;
+    }
 
-	double lam_to_v(double lam) {
-		double k = lam_to_k(lam);
-		double p = HBAR * k*1e10;
-		return p / MNEUTRON;
-	}
+    double lam_to_v(double lam) {
+        double k = lam_to_k(lam);
+        double p = HBAR * k*1e10;
+        return p / MNEUTRON;
+    }
 
-	double lam_to_E(double lam) {
-		double v = lam_to_v(lam);
-		return v*v * VS2E;
-	}
+    double lam_to_E(double lam) {
+        double v = lam_to_v(lam);
+        return v*v * VS2E;
+    }
 
-	double bragg_angle(double lam, double d) {
-		double dS = lam / (2.*d);
-		return asin(dS) * 180. / PI;
-	}
+    double bragg_angle(double lam, double d) {
+        double dS = lam / (2.*d);
+        return asin(dS) * 180. / PI;
+    }
 
-	double foc_vert(double angle, double f) {
-		return 2.*f * fabs(sin(angle));
-	}
+    double foc_vert(double angle, double f) {
+        return 2.*f * fabs(sin(angle));
+    }
 
-	double foc_hori(double angle, double f) {
-		return 2.*f / fabs(sin(angle));
-	}
-	/* ------------------------------------------------------------------------ */
+    double foc_hori(double angle, double f) {
+        return 2.*f / fabs(sin(angle));
+    }
+    /* ------------------------------------------------------------------------ */
 %}
 
 
 INITIALIZE
 %{
-	/* crystal orientation */
-	mono_a[0] = +2.464; mono_a[1] = 0;     mono_a[2] = 0;
-	mono_b[0] = -1.232; mono_b[1] = 2.134; mono_b[2] = 0;
-	mono_c[0] = 0;      mono_c[1] = 0;     mono_c[2] = 6.711;
+    /* crystal orientation */
+    mono_a[0] = +2.464; mono_a[1] = 0;     mono_a[2] = 0;
+    mono_b[0] = -1.232; mono_b[1] = 2.134; mono_b[2] = 0;
+    mono_c[0] = 0;      mono_c[1] = 0;     mono_c[2] = 6.711;
 
-	/* energy & angle */
-	if(src_E < 0.)
-		src_E = lam_to_E(src_lam);
-	if(mono_angle < 0.)
-		mono_angle = bragg_angle(src_lam, mono_d);
+    /* energy & angle */
+    if(src_E < 0.)
+    src_E = lam_to_E(src_lam);
+    if(mono_angle < 0.)
+    mono_angle = bragg_angle(src_lam, mono_d);
 
-	/* negative values -> optimal monochromator curvatures */
-	if(mono_curvv < 0. || mono_curvh < 0.) {
-		/* focal length */
-		/*double f_inv = 1./dist_mono_sample + 1./dist_src_mono;*/
-		double f_inv = 1./dist_mono_sample + 0.; /* here: perfectly parallel beam from infinity */
+    /* negative values -> optimal monochromator curvatures */
+    if(mono_curvv < 0. || mono_curvh < 0.) {
+        /* focal length */
+        /*double f_inv = 1./dist_mono_sample + 1./dist_src_mono;*/
+        double f_inv = 1./dist_mono_sample + 0.; /* here: perfectly parallel beam from infinity */
 
-		if(mono_curvv < 0.)
-			mono_curvv = foc_vert(mono_angle/180.*PI, 1./f_inv);
-		if(mono_curvh < 0.)
-			mono_curvh = foc_hori(mono_angle/180.*PI, 1./f_inv);
-	}
+        if(mono_curvv < 0.)
+        mono_curvv = foc_vert(mono_angle/180.*PI, 1./f_inv);
+        if(mono_curvh < 0.)
+        mono_curvh = foc_hori(mono_angle/180.*PI, 1./f_inv);
+    }
 
-	printf("----------------------------------------\n");
-	printf("lambda = %f A, k = %f 1/A\n", src_lam, lam_to_k(src_lam));
-	printf("monochromator vfoc = %f m, hfoc = %f m, theta = %f deg, d = %f\n",
-		mono_curvv, mono_curvh, mono_angle, mono_d);
-	printf("----------------------------------------\n");
+    printf("----------------------------------------\n");
+    printf("lambda = %f A, k = %f 1/A\n", src_lam, lam_to_k(src_lam));
+    printf("monochromator vfoc = %f m, hfoc = %f m, theta = %f deg, d = %f\n",
+    mono_curvv, mono_curvh, mono_angle, mono_d);
+    printf("----------------------------------------\n");
 %}
 
 
@@ -144,8 +144,8 @@ COMPONENT Src = Source_simple(
 AT (0, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{
-	/* perfect collimation, parallel beam */
-	vx = vy = 0;
+    /* perfect collimation, parallel beam */
+    vx = vy = 0;
 %}
 
 
@@ -171,7 +171,7 @@ AT (0, 0, 0) RELATIVE mono_arm1
 ROTATED (0, 90, 0) RELATIVE mono_arm1
 EXTEND
 %{
-	if(!SCATTERED) ABSORB;
+    if(!SCATTERED) ABSORB;
 %}
 
 COMPONENT mono_ideal = Monochromator_curved(
@@ -185,7 +185,7 @@ WHEN(mono_ideal == 1)
 AT (0, 0, 0) RELATIVE mono_arm1
 EXTEND
 %{
-	if(!SCATTERED) ABSORB;
+    if(!SCATTERED) ABSORB;
 %}
 
 

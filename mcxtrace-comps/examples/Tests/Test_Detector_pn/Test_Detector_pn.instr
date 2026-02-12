@@ -32,42 +32,42 @@ DEFINE INSTRUMENT Test_Detector_pn(restore_flag=0, E0=12.4, DE=0.124)
 
 DECLARE
 %{	
-	char material1[]="Si.txt";
-	char material2[]="Pb.txt";
+    char material1[]="Si.txt";
+    char material2[]="Pb.txt";
 %}
 
 INITIALIZE
 %{
-%}
+    %}
 
-TRACE
+    TRACE
 
-COMPONENT origin = Progress_bar()
-AT (0, 0, 0) RELATIVE ABSOLUTE
+    COMPONENT origin = Progress_bar()
+    AT (0, 0, 0) RELATIVE ABSOLUTE
 
-COMPONENT source = Source_flat(xwidth=1e-3,yheight=1e-3, focus_xw=0.5e-2, focus_yh=0.45e-2,dist=1, E0=E0, dE=DE)
-AT(0,0,0) RELATIVE origin 
+    COMPONENT source = Source_flat(xwidth=1e-3,yheight=1e-3, focus_xw=0.5e-2, focus_yh=0.45e-2,dist=1, E0=E0, dE=DE)
+    AT(0,0,0) RELATIVE origin 
 
-COMPONENT psrc = PSD_monitor(restore_xray=restore_flag, filename="psrc", xwidth=1e-2, yheight=1e-2)
-AT(0,0,1) RELATIVE source
+    COMPONENT psrc = PSD_monitor(restore_xray=restore_flag, filename="psrc", xwidth=1e-2, yheight=1e-2)
+    AT(0,0,1) RELATIVE source
 
-COMPONENT detsrc1 = Detector_pn(restore_xray=restore_flag,filename="detsrc1", material_datafile=material1, xwidth=1e-2, yheight=1e-2,zdepth=1e-5)
-AT(0,0,0.1) RELATIVE psrc
+    COMPONENT detsrc1 = Detector_pn(restore_xray=restore_flag,filename="detsrc1", material_datafile=material1, xwidth=1e-2, yheight=1e-2,zdepth=1e-5)
+    AT(0,0,0.1) RELATIVE psrc
 
-COMPONENT detsrc2 = COPY(detsrc1)(filename="detsrc2", material_datafile=material2)
-AT(0,0,1e-4) RELATIVE detsrc1
+    COMPONENT detsrc2 = COPY(detsrc1)(filename="detsrc2", material_datafile=material2)
+    AT(0,0,1e-4) RELATIVE detsrc1
 
-COMPONENT pap = COPY(psrc)(filename="pap")
-AT(0,0,0.1) RELATIVE PREVIOUS
+    COMPONENT pap = COPY(psrc)(filename="pap")
+    AT(0,0,0.1) RELATIVE PREVIOUS
 
-COMPONENT detap1 = COPY(detsrc1)(filename="detap1")
-AT(0,0,0.1) RELATIVE pap 
+    COMPONENT detap1 = COPY(detsrc1)(filename="detap1")
+    AT(0,0,0.1) RELATIVE pap 
 
-COMPONENT detap2 = COPY(detsrc2)(filename="detap2")
-AT(0,0,1e-4) RELATIVE detap1
+    COMPONENT detap2 = COPY(detsrc2)(filename="detap2")
+    AT(0,0,1e-4) RELATIVE detap1
 
-FINALLY
-%{
+    FINALLY
+    %{
 %}
 
 END

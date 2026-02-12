@@ -65,12 +65,11 @@ USERVARS %{
 
 INITIALIZE
 %{
-  double arg=  12398.42*sqrt(3)/(2*5.4309*E0*1e3);
-  if (fabs(arg) > 1)
+    double arg=  12398.42*sqrt(3)/(2*5.4309*E0*1e3);
+    if (fabs(arg) > 1)
     exit(fprintf(stderr, "ERROR: Monochromator can not reach this energy (arg=%g > 1)\n",
-      arg));
-  calculated_angle = RAD2DEG*asin(arg);
-  
+    arg));
+    calculated_angle = RAD2DEG*asin(arg);
 %}
 
 TRACE

@@ -41,10 +41,10 @@
 DEFINE INSTRUMENT Test_Single_crystal_inelastic(E=10, DE=0.1, HDIV=0.5, VDIV=0.5, OM=0, TH=0, FI=0, string SQW="example.sqw4")
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

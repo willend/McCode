@@ -26,28 +26,28 @@ DEFINE INSTRUMENT template_simple(Par1=1)
 
 DECLARE
 %{
-%}
+    %}
 
-USERVARS
-%{
+    USERVARS
+    %{
 %}
 
 INITIALIZE
 %{
-%}
+    %}
 
-TRACE
+    TRACE
 
-COMPONENT origin = Progress_bar()
-AT (0, 0, 0) RELATIVE ABSOLUTE
+    COMPONENT origin = Progress_bar()
+    AT (0, 0, 0) RELATIVE ABSOLUTE
 
-// insert components here (e.g. Insert -> Source -> ...)
-
-
+    // insert components here (e.g. Insert -> Source -> ...)
 
 
-FINALLY
-%{
+
+
+    FINALLY
+    %{
 %}
 
 END

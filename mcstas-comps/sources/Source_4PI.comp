@@ -39,7 +39,7 @@ SETTING PARAMETERS (radius=0, flux=1e14, gauss=0, E0=0, dE=0, lambda0=0, dlambda
 
 DECLARE
 %{
-  double pmul;
+    double pmul;
 %}
 
 INITIALIZE %{
@@ -60,45 +60,45 @@ INITIALIZE %{
 
 TRACE
 %{
-  double r0, E, lambda, v;
-  // Initiate particle at random position within dim x dim x dim
-  r0=radius*rand01();
-  // Find random position within sphere
-  randvec_target_circle(&x, &y, &z, NULL, 0, 0, 1e-6,0);
-  x*=r0;
-  y*=r0;
-  z*=r0;
-  
-  // Pick random direction into 4PI
-  randvec_target_circle(&vx, &vy, &vz, NULL, 0, 0, 1e-6,0);
-  NORM(vx,vy,vz);
-  if(lambda0==0) {
-    if (!gauss) {
-      E=E0+dE*randpm1();              /*  Choose from uniform distribution */
-    } else {
-      E=E0+randnorm()*dE;
-    }
-    v=sqrt(E)*SE2V;
-  } else {
-    if (!gauss) {
-      lambda=lambda0+dlambda*randpm1();
-    } else {
-      lambda=lambda0+randnorm()*dlambda;
-    }
-    v = K2V*(2*PI/lambda);
-  }
+    double r0, E, lambda, v;
+    // Initiate particle at random position within dim x dim x dim
+    r0=radius*rand01();
+    // Find random position within sphere
+    randvec_target_circle(&x, &y, &z, NULL, 0, 0, 1e-6,0);
+    x*=r0;
+    y*=r0;
+    z*=r0;
 
-  vx*=v;
-  vy*=v;
-  vz*=v;
-  p = pmul;
+    // Pick random direction into 4PI
+    randvec_target_circle(&vx, &vy, &vz, NULL, 0, 0, 1e-6,0);
+    NORM(vx,vy,vz);
+    if(lambda0==0) {
+        if (!gauss) {
+            E=E0+dE*randpm1();              /*  Choose from uniform distribution */
+        } else {
+            E=E0+randnorm()*dE;
+        }
+        v=sqrt(E)*SE2V;
+    } else {
+        if (!gauss) {
+            lambda=lambda0+dlambda*randpm1();
+        } else {
+            lambda=lambda0+randnorm()*dlambda;
+        }
+        v = K2V*(2*PI/lambda);
+    }
+
+    vx*=v;
+    vy*=v;
+    vz*=v;
+    p = pmul;
 %}
 
 MCDISPLAY
 %{
-  /* A bit ugly; hard-coded dimensions. */
-  
-  sphere(0,0,0,radius);
+    /* A bit ugly; hard-coded dimensions. */
+
+    sphere(0,0,0,radius);
 %}
 
 END

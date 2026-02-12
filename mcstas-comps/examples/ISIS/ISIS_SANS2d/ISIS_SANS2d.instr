@@ -47,10 +47,10 @@ DEFINE INSTRUMENT ISIS_SANS2d(L1=3.926, A1w=0.030, A1h=0.02, S6=0.006, A2=0.006,
 /* F2409w3p5, cf run 5226, L1=4m, A1=30x20, S6=12, A2=12, 1.75-16.5 ang */
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

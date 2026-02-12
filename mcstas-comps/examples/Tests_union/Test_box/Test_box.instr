@@ -30,8 +30,8 @@ DEFINE INSTRUMENT Test_box()
 
 DECLARE
 %{
-int sample_1_index = 3;
-int sample_2_index = 4;
+    int sample_1_index = 3;
+    int sample_2_index = 4;
 %}
 
 USERVARS %{
@@ -108,8 +108,8 @@ AT(0,0,0) RELATIVE beam_center
 ROTATED(0,0,0) RELATIVE beam_center
 EXTEND
 %{
-	if (scattered_flag[sample_1_index] > 0) scattered_1 = 1; else scattered_1 = 0;
-	if (scattered_flag[sample_2_index] > 0) scattered_2 = 1; else scattered_2 = 0;
+    if (scattered_flag[sample_1_index] > 0) scattered_1 = 1; else scattered_1 = 0;
+    if (scattered_flag[sample_2_index] > 0) scattered_2 = 1; else scattered_2 = 0;
 %}
 
 
@@ -126,7 +126,7 @@ COMPONENT arm_1 = Arm()
   AT (0, 0, 0) RELATIVE beam_center
 EXTEND
 %{
-	if (scattered_1 + scattered_2 != 2) ABSORB;
+    if (scattered_1 + scattered_2 != 2) ABSORB;
 %}
 
 COMPONENT m4pi_both = PSD_monitor_4PI(radius=1, nx=180, ny=180, filename="Events_12") WHEN (scattered_1 && scattered_2)

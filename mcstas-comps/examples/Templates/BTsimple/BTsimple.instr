@@ -37,24 +37,24 @@ DEFINE INSTRUMENT BTsimple(lambda=10, dlambda=9.9, maxhd=3, maxvd=3, gw=0.1, gh=
 
 DECLARE
 %{	
-  /* Arrays for storing the calculated brilliance transfer */
-  DArray1d BT_N;
-  DArray1d BT_p;
-  DArray1d BT_p2;
+    /* Arrays for storing the calculated brilliance transfer */
+    DArray1d BT_N;
+    DArray1d BT_p;
+    DArray1d BT_p2;
 %}
 
 USERVARS
 %{
-  /* Variables for calculation of neutron divergence  */
-  double VertDiv;
-  double HorDiv;
+    /* Variables for calculation of neutron divergence  */
+    double VertDiv;
+    double HorDiv;
 %}
 
 INITIALIZE
 %{
-  BT_N = create_darr1d(Nbins);
-  BT_p = create_darr1d(Nbins);
-  BT_p2 = create_darr1d(Nbins);
+    BT_N = create_darr1d(Nbins);
+    BT_p = create_darr1d(Nbins);
+    BT_p2 = create_darr1d(Nbins);
 %}
 
 TRACE
@@ -141,52 +141,51 @@ AT (0,0,0) RELATIVE  PREVIOUS
 
 FINALLY
 %{
-/* This adds another "monitor" that measures BT_out / BT_in */
-/* In MPI-mode do the calculation on master only.           */
-#ifdef USE_MPI
-  if(mpi_node_rank == mpi_node_root) {
-#endif
-    int j;
-    double* tmpN;
-    double* tmpp1;
-    double* tmpp2;
-    double* tmpd1;
-    double* tmpd2;
-    tmpN =COMP_GETPAR(BT_out,L_N);
-    tmpp1=COMP_GETPAR(BT_in, L_p);
-    tmpp2=COMP_GETPAR(BT_out,L_p);
-    tmpd1=COMP_GETPAR(BT_in, L_p2);
-    tmpd2=COMP_GETPAR(BT_out,L_p2);
-    
-    for (j=0;j<Nbins;j++) {
-      BT_N[j]=tmpN[j];
-      if (tmpp1[j] != 0) {
-	BT_p[j]=tmpp2[j]/tmpp1[j];
-      } else {
-	BT_p[j]=0;
-      }
-      if ((tmpp1[j] != 0) && (tmpp2[j] != 0)) {
-	BT_p2[j]=sqrt((tmpd1[j]/tmpp1[j])*(tmpd1[j]/tmpp1[j])  + (tmpd2[j]/tmpp2[j])*(tmpd2[j]/tmpp2[j]));
-      } else
-	BT_p2[j]=0;
-    }
-#ifdef USE_MPI
-  }
-  // Non-master MPI nodes wait here before we write the file to disk
-  MPI_Barrier(MPI_COMM_WORLD);
-#endif
-  // we can not call the DETECTOR_OUT_1D as it transparently makes use of
-  // NAME_CURRENT_COMP and POS_A_CURRENT_COMP, which are set to match '_comp'
-  Rotation Rot;
-  rot_set_rotation(Rot,0,0,0);
-  mcdetector_out_1D(
-		    "Brilliance transfer",
-		    "Wavelength [AA]",
-		    "BT",
-		    "L", lambda-dlambda, lambda+dlambda, Nbins,
-		    &BT_N[0],&BT_p[0],&BT_p2[0],
-		    "Brilliance_transfer", "BTransfer", coords_set(0,0,0),Rot,9999);
+    /* This adds another "monitor" that measures BT_out / BT_in */
+    /* In MPI-mode do the calculation on master only.           */
+    #ifdef USE_MPI
+    if(mpi_node_rank == mpi_node_root) {
+        #endif
+        int j;
+        double* tmpN;
+        double* tmpp1;
+        double* tmpp2;
+        double* tmpd1;
+        double* tmpd2;
+        tmpN =COMP_GETPAR(BT_out,L_N);
+        tmpp1=COMP_GETPAR(BT_in, L_p);
+        tmpp2=COMP_GETPAR(BT_out,L_p);
+        tmpd1=COMP_GETPAR(BT_in, L_p2);
+        tmpd2=COMP_GETPAR(BT_out,L_p2);
 
+        for (j=0;j<Nbins;j++) {
+            BT_N[j]=tmpN[j];
+            if (tmpp1[j] != 0) {
+                BT_p[j]=tmpp2[j]/tmpp1[j];
+            } else {
+                BT_p[j]=0;
+            }
+            if ((tmpp1[j] != 0) && (tmpp2[j] != 0)) {
+                BT_p2[j]=sqrt((tmpd1[j]/tmpp1[j])*(tmpd1[j]/tmpp1[j])  + (tmpd2[j]/tmpp2[j])*(tmpd2[j]/tmpp2[j]));
+            } else
+            BT_p2[j]=0;
+        }
+        #ifdef USE_MPI
+    }
+    // Non-master MPI nodes wait here before we write the file to disk
+    MPI_Barrier(MPI_COMM_WORLD);
+    #endif
+    // we can not call the DETECTOR_OUT_1D as it transparently makes use of
+    // NAME_CURRENT_COMP and POS_A_CURRENT_COMP, which are set to match '_comp'
+    Rotation Rot;
+    rot_set_rotation(Rot,0,0,0);
+    mcdetector_out_1D(
+    "Brilliance transfer",
+    "Wavelength [AA]",
+    "BT",
+    "L", lambda-dlambda, lambda+dlambda, Nbins,
+    &BT_N[0],&BT_p[0],&BT_p2[0],
+    "Brilliance_transfer", "BTransfer", coords_set(0,0,0),Rot,9999);
 %}
 
 END

@@ -29,10 +29,10 @@ DEFINE INSTRUMENT Unit_test_conditional_standard()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

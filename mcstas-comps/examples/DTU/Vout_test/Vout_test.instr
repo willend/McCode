@@ -29,12 +29,12 @@ DEFINE INSTRUMENT Vout_test(string Voutfile="Vout_text.dat")
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-%}
+    %}
 
-/* The INITIALIZE section is executed when the simulation starts     */
-/* (C code). You may use them as component parameter values.         */
-INITIALIZE
-%{
+    /* The INITIALIZE section is executed when the simulation starts     */
+    /* (C code). You may use them as component parameter values.         */
+    INITIALIZE
+    %{
 %}
 
 /* Here comes the TRACE section, where the actual      */

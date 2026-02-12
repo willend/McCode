@@ -93,19 +93,19 @@ SHARE
 
 DECLARE
 %{
-  int Z;
-  double rho;
-  double At;
-  double f_rel;
-  double f_nt;
-  t_Table m_t;
-  t_Table f0_t;
-  double a2inv;
-  double b2inv;
-  double c2inv; /* 1/r^2 for physical ellipse */
-  double l_a2inv;
-  double l_b2inv;
-  double l_c2inv; /* 1/r^2 for lattice ellipse */
+    int Z;
+    double rho;
+    double At;
+    double f_rel;
+    double f_nt;
+    t_Table m_t;
+    t_Table f0_t;
+    double a2inv;
+    double b2inv;
+    double c2inv; /* 1/r^2 for physical ellipse */
+    double l_a2inv;
+    double l_b2inv;
+    double l_c2inv; /* 1/r^2 for lattice ellipse */
 %}
 
 INITIALIZE
@@ -118,9 +118,9 @@ INITIALIZE
         }
         char **header_parsed;
         header_parsed=Table_ParseHeader(m_t.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
-        if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
-        if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
-        if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
+    if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
+    if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
+    if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
     }else{
         fprintf(stderr,"Error(%s): No material file specified\n",NAME_CURRENT_COMP);
     }
@@ -151,7 +151,7 @@ TRACE
     double Thetah;			// (rad) angle between the Bragg planes and the reflected ray
     double DeltaTheta0;			// (rad) the center of the reflectivity curve is at asin(n*lambda/(2*d)) + DeltaTheta0
     double Rpi, Rsig, R;          // Reflectivity value calculated by DarwinReflectivity() function for each incoming photon
-    
+
     /* get the photon's kvector and energy */
     K=sqrt(kx*kx+ky*ky+kz*kz);
     E = K2E*K; /* use built-in constants for consistency */
@@ -189,10 +189,10 @@ TRACE
         } else {
             RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
         }
-#ifdef MCDEBUG
+        #ifdef MCDEBUG
         printf("%s: solving for crystal hit, l0=%f, l1=%f, x=(%f %f %f) doit=%d, hit0=%d, hit1=%d\n", NAME_CURRENT_COMP,
-            t0, t1, x, y, z, doit, hit0, hit1);
-#endif
+        t0, t1, x, y, z, doit, hit0, hit1);
+        #endif
         if ( doit ){
             SCATTER;
             xt=x; yt=y-y_b; zt=z; /* update shifted coordinates to intersection point */
@@ -204,18 +204,18 @@ TRACE
             /* compute angle of crystal planes based on lattice ellipse, not rotated by alpha */
             double l_grad_x, l_grad_y, l_grad_z;
             /* l_grad is the inner normal to the lattice ellipse at this point, assuming that at the center of the
-              mirror, the two ellipses coincide */
+            mirror, the two ellipses coincide */
             l_grad_x=-xt*l_a2inv; l_grad_y=-(y-lattice_y_b)*l_b2inv; l_grad_z=-zt*l_c2inv; NORM(l_grad_x, l_grad_y, l_grad_z);
 
             /* compute the sin of the angle in the y-z plane between the two ellipses, which is an adjustment to alpha */
             double sin_alpha_adjust=(grad_y*l_grad_z-grad_z*l_grad_y)/
-                sqrt((grad_y*grad_y+grad_z*grad_z)*(l_grad_y*l_grad_y+l_grad_z*l_grad_z));
+            sqrt((grad_y*grad_y+grad_z*grad_z)*(l_grad_y*l_grad_y+l_grad_z*l_grad_z));
             double delta_alpha=asin(sin_alpha_adjust);
 
-#ifdef MCDEBUG
+            #ifdef MCDEBUG
             printf("%s: gradient, sintheta, delta_alpha=(%f %f %f) %f %f\n", NAME_CURRENT_COMP,
-                grad_x, grad_y, grad_z, sintheta, delta_alpha*180/PI);
-#endif
+            grad_x, grad_y, grad_z, sintheta, delta_alpha*180/PI);
+            #endif
             /*Check which quadrant the k vector is in to determine sense of alpha. This to allow for hitting the crystal from behind.*/
             int quadrant;
             Thetain=asin(sintheta); /* this does not include any effect of strong curvature interacting with alpha! */
@@ -226,18 +226,18 @@ TRACE
             fpp = Table_Value(m_t,E,2);
 
             /* the mirror bending assumes that any off-axis cut angle alpha follows the bend in the y-z plane,
-                so the crystal is being bent along the same axis as the off-axis cut.
-                alpha is thus unaffected by the curved geometry.
+            so the crystal is being bent along the same axis as the off-axis cut.
+            alpha is thus unaffected by the curved geometry.
             */
 
             double alpha1=alpha+delta_alpha; /* the angle between the lattice planes and the surface, including curvature */
             /* check for 3rd & 1st quadrant hits, backward hit from above or forward hit from below and reverse sense of alpha */
             if( (ky<0 && kz<0) || (ky>0 && kz>0) ) alpha1=-alpha1;
             Mx_DarwinReflectivity(&Rpi , &Thetah, &Theta0, &DeltaTheta0, f00, f0h, fp, fpp, V, alpha1, h, k, l,
-                debye_waller_B, E, Thetain,1, crystal_type, structure_factor_scale_r, structure_factor_scale_i
+            debye_waller_B, E, Thetain,1, crystal_type, structure_factor_scale_r, structure_factor_scale_i
             );
             Mx_DarwinReflectivity(&Rsig, &Thetah, &Theta0, &DeltaTheta0, f00, f0h, fp, fpp, V, alpha1, h, k, l,
-                debye_waller_B, E, Thetain,2, crystal_type, structure_factor_scale_r, structure_factor_scale_i
+            debye_waller_B, E, Thetain,2, crystal_type, structure_factor_scale_r, structure_factor_scale_i
             );
 
             double pi_x, pi_y, pi_z, sig_x, sig_y, sig_z;
@@ -253,10 +253,10 @@ TRACE
             /* note that the code in DarwinReflectivity2 assumes +ive alpha decreases the angle from the planes */
             /* DarwinReflectivity returns Theta0, the incoming angle form the Bragg planes, and Thetah, the outgoing angle */
             /* we rotate the beam about the sigma axis by theta0+thetah */
-#ifdef MCDEBUG
+            #ifdef MCDEBUG
             printf("%s: Thetain, Theta0, Thetah, alpha, delta_alpha= %f %f %f %f %f\n", NAME_CURRENT_COMP,
-                Thetain*180/PI, Theta0*180/PI, Thetah*180/PI, alpha*180/PI, delta_alpha*180/PI);
-#endif
+            Thetain*180/PI, Theta0*180/PI, Thetah*180/PI, alpha*180/PI, delta_alpha*180/PI);
+            #endif
 
             double sth=sin(Theta0+Thetah), cth=cos(Theta0+Thetah);
             if(sig_x*pi_y*pi_z > 0) { /* backwards hit, rotate the other way */
@@ -276,11 +276,11 @@ TRACE
             ky=m[1][0]*kx0+m[1][1]*ky0+m[1][2]*kz0;
             kz=m[2][0]*kx0+m[2][1]*ky0+m[2][2]*kz0;
 
-#ifdef MCDEBUG
+            #ifdef MCDEBUG
             printf("%s matrix=\n%12.3f %12.3f %12.3f\n%12.3f %12.3f %12.3f\n%12.3f %12.3f %12.3f\n", NAME_CURRENT_COMP,
-                m[0][0],m[0][1],m[0][2],m[1][0],m[1][1],m[1][2],m[2][0],m[2][1],m[2][2]
+            m[0][0],m[0][1],m[0][2],m[1][0],m[1][1],m[1][2],m[2][0],m[2][1],m[2][2]
             );
-#endif
+            #endif
             /* resolve incoming polarization into sig and pi bits, and scale by sqrt(reflectivity) which is amplitude scale */
             double Esig=(Ex*sig_x+Ey*sig_y+Ez*sig_z), Epi=(Ex*pi_x+Ey*pi_y+Ez*pi_z);
             if(Esig==0 && Epi==0) { /* someone didn't set the polarization direction; set it now to a random value and it will propagate */
@@ -300,10 +300,10 @@ TRACE
             Ey=Epi*pi_y+Esig*sig_y;
             Ez=Epi*pi_z+Esig*sig_z;
             NORM(Ex, Ey, Ez);
-#ifdef MCDEBUG
+            #ifdef MCDEBUG
             printf("%s: k0, k1, e0, e1: (%g, %g, %g) (%g, %g, %g) (%g, %g, %g) (%g, %g, %g)\n", NAME_CURRENT_COMP,
             kx0, ky0, kz0, kx, ky, kz, Ex0, Ey0, Ez0, Ex, Ey, Ez);
-#endif
+            #endif
             /* apply Darwin reflectivity if not is supplied from outside*/
             if (!R0){
                 p*=R;
@@ -320,22 +320,22 @@ TRACE
 
 MCDISPLAY
 %{
-  int i,j,N=12;
-  double t,xx,yy,zz,xx0,yy0,zz0;
-  /* printf("plot params (%f %f %f) (%f %f %f) %f %f\n", x_a, y_b, z_c, a2, b2, c2, width, length); */
-  xx=width/2.0;
-  for (j=0;j<N;j++){
-    zz=j*length/(N-1)-length/2.0;
-    yy=-sqrt((1-zz*zz*c2inv)/b2inv);
-    if(j) multiline(5,
+    int i,j,N=12;
+    double t,xx,yy,zz,xx0,yy0,zz0;
+    /* printf("plot params (%f %f %f) (%f %f %f) %f %f\n", x_a, y_b, z_c, a2, b2, c2, width, length); */
+    xx=width/2.0;
+    for (j=0;j<N;j++){
+        zz=j*length/(N-1)-length/2.0;
+        yy=-sqrt((1-zz*zz*c2inv)/b2inv);
+        if(j) multiline(5,
         -xx,yy0+y_b,zz0,
-         xx,yy0+y_b,zz0,
-         xx, yy+y_b,zz,
+        xx,yy0+y_b,zz0,
+        xx, yy+y_b,zz,
         -xx, yy+y_b,zz,
         -xx,yy0+y_b,zz0); /* draw a rectangular slice of the mirror */
-    zz0=zz;
-    yy0=yy; 
-  }
+        zz0=zz;
+        yy0=yy; 
+    }
 %}
 
 END

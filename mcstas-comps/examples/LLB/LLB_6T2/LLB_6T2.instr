@@ -55,11 +55,11 @@ DECLARE
 
 INITIALIZE
 %{
-	/****************************************************************
-	*
-	*  SET Source parameters (thermal moderator)
-	*
-	****************************************************************/
+    /****************************************************************
+    *
+    *  SET Source parameters (thermal moderator)
+    *
+    ****************************************************************/
     sT1=313.;	sI1=8.05e12;
     sT2=60.; 	sI2=0.*0.55*0.697674e+13;
     sT3=20. ; 	sI3=0.*0.15*0.697674e+13;
@@ -67,17 +67,17 @@ INITIALIZE
     s_h=0.15;
 
     /****************************************************************
-	*
-	*  SET Distances and dimensions
-	*
-	****************************************************************/
+    *
+    *  SET Distances and dimensions
+    *
+    ****************************************************************/
     // Thermal moderator surface to barillet
     f_dist = 2.91;
 
     // Barillet in full opening configuration
     b_length = 0.695;
-	b_in_r   = 0.10/2.0;
-	b_out_r  = 0.12/2.0;
+    b_in_r   = 0.10/2.0;
+    b_out_r  = 0.12/2.0;
 
     // Barillet to Monochromator
     b2mon    = 0.75;
@@ -94,36 +94,36 @@ INITIALIZE
     col2samp = 1.2;
 
     /****************************************************************
-	*
-	*  SET Monochromators parameters
-	*
-	****************************************************************/
+    *
+    *  SET Monochromators parameters
+    *
+    ****************************************************************/
     // Cu Monochromator
     if(monok==1){
-    	monoc_d=1.278;
-    	monoc_ang=asin(lambda/(2.*monoc_d))*180./PI;
-    	dlambda0=lambda/5.;
-	}
+        monoc_d=1.278;
+        monoc_ang=asin(lambda/(2.*monoc_d))*180./PI;
+        dlambda0=lambda/5.;
+    }
     // Test mode for debugging purpose
     else if(monok==5){
-    	monoc_d=1e4;
-    	monoc_ang=20.;
-    	lambda=10;
-    	dlambda0=lambda;
+        monoc_d=1e4;
+        monoc_ang=20.;
+        lambda=10;
+        dlambda0=lambda;
     }
     // PG Monochromator
     else{
-    	monoc_d=3.355;
-    	monoc_ang=asin(lambda/(2*monoc_d))*180./PI;
-    	dlambda0=lambda/5.;
+        monoc_d=3.355;
+        monoc_ang=asin(lambda/(2*monoc_d))*180./PI;
+        dlambda0=lambda/5.;
     }
 
 
     /****************************************************************
-	*
-	*  DISPLAY Errors
-	*
-	****************************************************************/
+    *
+    *  DISPLAY Errors
+    *
+    ****************************************************************/
     fprintf(stderr,"Monoc_ang=%3.2f\n",monoc_ang);
     if((lambda>=2*monoc_d) || (lambda<0)) exit(printf("Lambda (%g [AA]) out of range (0 -> 6.7 [AA]).\n", lambda));
 
@@ -132,10 +132,10 @@ INITIALIZE
     if((gamma>140) || (gamma<-28)) exit(printf("gamma (%g [Deg]) out of range (-28 -> 140 deg.).\n", gamma));
 
     /****************************************************************
-	*
-	*  SET Misceanellous parameters
-	*
-	****************************************************************/
+    *
+    *  SET Misceanellous parameters
+    *
+    ****************************************************************/
     // radius of single counter collimator
     coll_det=0.01;
 %}

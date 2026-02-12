@@ -103,7 +103,6 @@ DECLARE
 
     int disp_row,DD;
     const int disp_col_offset=5;/*displacements start at this column*/
-
 %}
 
 USERVARS %{

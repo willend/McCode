@@ -39,12 +39,12 @@ DEFINE INSTRUMENT SimplePowderDIffractometer(lambda0=1, dlambda=0.005, coll=120,
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-double L1=3;
-double LC=1;
-double sample_radius=0.005;
-double sample_height=0.05;
-double al_thickness=0.002;
-char samplestring[128];
+    double L1=3;
+    double LC=1;
+    double sample_radius=0.005;
+    double sample_height=0.05;
+    double al_thickness=0.002;
+    char samplestring[128];
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
@@ -52,19 +52,17 @@ char samplestring[128];
 INITIALIZE
 %{
 
-if (sample==0) {
-  sprintf(samplestring,"Ni.laz");
-} else if (sample==1) {
-  sprintf(samplestring,"Fe.laz");
-} else if (sample==2) {
-  sprintf(samplestring,"SiO2_quartza.laz");
-} else if (sample==3) {
-  sprintf(samplestring,"C_diamond.laz");
-} else {
-  sprintf(samplestring,"NULL");
-}
-
-
+    if (sample==0) {
+        sprintf(samplestring,"Ni.laz");
+    } else if (sample==1) {
+        sprintf(samplestring,"Fe.laz");
+    } else if (sample==2) {
+        sprintf(samplestring,"SiO2_quartza.laz");
+    } else if (sample==3) {
+        sprintf(samplestring,"C_diamond.laz");
+    } else {
+        sprintf(samplestring,"NULL");
+    }
 %}
 
 /* Here comes the TRACE section, where the actual      */

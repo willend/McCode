@@ -38,31 +38,31 @@ DEPENDENCY " -DLOADPATH=GETPATH(data) @NEXUSFLAGS@ "
 
 DECLARE
 %{
-double samplewidth, sampleheight;
-double sourcewidth, sourceheight;
-double div_rad;
-char fullfile[256];
+    double samplewidth, sampleheight;
+    double sourcewidth, sourceheight;
+    double div_rad;
+    char fullfile[256];
 %}
 
 INITIALIZE
 %{
-// Calculate size of moderator from desired divergence:	
-div_rad = (divergence/2) * M_PI / 180.;
-sourcewidth = 2*distance*tan(div_rad);
-	printf("source width: %4.2f", sourcewidth);
-sourceheight = 0.01;
-samplewidth = 0.01;
-sampleheight = sourceheight;
-#define QUOTE(name) #name
-#define STR(macro) QUOTE(macro)
+    // Calculate size of moderator from desired divergence:	
+    div_rad = (divergence/2) * M_PI / 180.;
+    sourcewidth = 2*distance*tan(div_rad);
+    printf("source width: %4.2f", sourcewidth);
+    sourceheight = 0.01;
+    samplewidth = 0.01;
+    sampleheight = sourceheight;
+    #define QUOTE(name) #name
+    #define STR(macro) QUOTE(macro)
 
-#ifndef LOADPATH
-#define LOADPATH=/usr/share/mcstas/3.1/data
-#endif
+    #ifndef LOADPATH
+    #define LOADPATH=/usr/share/mcstas/3.1/data
+    #endif
 
-#define LOADPATH_ STR(LOADPATH)
-sprintf(fullfile,"%s/%s",LOADPATH_,filename);
-printf("Using the input file: %s\n", fullfile);
+    #define LOADPATH_ STR(LOADPATH)
+    sprintf(fullfile,"%s/%s",LOADPATH_,filename);
+    printf("Using the input file: %s\n", fullfile);
 %}
 
 TRACE

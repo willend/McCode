@@ -64,9 +64,9 @@ DEFINE INSTRUMENT DBD_IBM_Si_analyzer_BC(
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-#define MCDEBUGxx
-#include <math.h>
-#include <stdio.h>
+    #define MCDEBUGxx
+    #include <math.h>
+    #include <stdio.h>
     const double ge_a0=5.65791; /* angstroms */
     double ge_volume;
     const double si_d_220=1.920155714; /* angstroms */
@@ -95,14 +95,14 @@ INITIALIZE
     take_off_beam_height_scale=1.0/sin(take_off*PI/180.0);
 
     /*
-       For a Johansson optic with focal lengths a,b, x = a/b,
-       a sin(θa) = b sin(θb)
-       cos(θa) = (1 + x cos(2θ)) / sqrt(1 + x^2 + 2 x cos(2θ))
-       sin(θa) =       x sin(2θ) / sqrt(1 + x^2 + 2 x cos(2θ))
-       sin(θb) = sin(θa) / x
+    For a Johansson optic with focal lengths a,b, x = a/b,
+    a sin(θa) = b sin(θb)
+    cos(θa) = (1 + x cos(2θ)) / sqrt(1 + x^2 + 2 x cos(2θ))
+    sin(θa) =       x sin(2θ) / sqrt(1 + x^2 + 2 x cos(2θ))
+    sin(θb) = sin(θa) / x
 
-       and the tilt angle of the lattice alpha=θbragg-θa
-     */
+    and the tilt angle of the lattice alpha=θbragg-θa
+    */
 
     { /* make a local block for calculation scoping */
         double x= IBM_distance/focal_distance;

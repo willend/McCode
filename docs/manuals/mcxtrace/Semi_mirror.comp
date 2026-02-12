@@ -36,40 +36,40 @@ SETTING PARAMETERS (xwidth, yheight, reflectivity, frac_reflect)
 
 SHARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE
 %{
-  PROP_Z0;
-  if( x>-xwidth/2.0 && x<xwidth/2.0 && y>-yheight/2.0 && y<yheight/2.0){
-    double r;
-    r=rand01();
-    SCATTER;
-    if(r<frac_reflect){
-      vz=-vz;
-      p*=reflectivity/frac_reflect;
-      internal_color=1;
+    PROP_Z0;
+    if( x>-xwidth/2.0 && x<xwidth/2.0 && y>-yheight/2.0 && y<yheight/2.0){
+        double r;
+        r=rand01();
+        SCATTER;
+        if(r<frac_reflect){
+            vz=-vz;
+            p*=reflectivity/frac_reflect;
+            internal_color=1;
+        }else{
+            internal_color=0;
+            p*=(1-reflectivity)/(1-frac_reflect);
+        }
     }else{
-      internal_color=0;
-      p*=(1-reflectivity)/(1-frac_reflect);
+        RESTORE_XRAY(INDEX_CURRENT_COMP,x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p);
     }
-  }else{
-    RESTORE_XRAY(INDEX_CURRENT_COMP,x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p);
-  }
 %}
 
 MCDISPLAY
 %{
   
-  multiline(5, -xwidth/2.0, -yheight/2.0, 0.0,
-               xwidth/2.0, -yheight/2.0, 0.0,
-               xwidth/2.0, yheight/2.0, 0.0,
-               -xwidth/2.0, yheight/2.0, 0.0,
-               -xwidth/2.0, -yheight/2.0, 0.0);
+    multiline(5, -xwidth/2.0, -yheight/2.0, 0.0,
+    xwidth/2.0, -yheight/2.0, 0.0,
+    xwidth/2.0, yheight/2.0, 0.0,
+    -xwidth/2.0, yheight/2.0, 0.0,
+    -xwidth/2.0, -yheight/2.0, 0.0);
 %}
 
 END

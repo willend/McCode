@@ -39,46 +39,46 @@ DEFINE INSTRUMENT ISIS_LET(Ei = 3.7, dE=1.1, Ch3_speed=100, Ch5_speed=200,  Ch2_
 
 DECLARE
 %{
-double SE2K, v_foc, emin, emax, lam_min, lam_max, jitter=7e-7;
-double Ch1_speed, Ch2_speed=10, Ch2_offset=14500, Ch4_speed, Ch5_slit, snout_length;
-double L_Ch1=7.833, L_Ch2=8.200, L_Ch3=11.749, L_Ch4=15.664, L_Ch5=23.499;
-double L_sample=25, L2=3.5, Ch1_5_halfgap=0.005, smidge = 0.001;
+    double SE2K, v_foc, emin, emax, lam_min, lam_max, jitter=7e-7;
+    double Ch1_speed, Ch2_speed=10, Ch2_offset=14500, Ch4_speed, Ch5_slit, snout_length;
+    double L_Ch1=7.833, L_Ch2=8.200, L_Ch3=11.749, L_Ch4=15.664, L_Ch5=23.499;
+    double L_sample=25, L2=3.5, Ch1_5_halfgap=0.005, smidge = 0.001;
 %}
 
 INITIALIZE 
 %{
 
-// get chopper5 slit width and speeds from resolution setting
-if (strcmp(res,"HR") == 0){
-	Ch5_slit = 0.015;
-	Ch1_speed = Ch5_speed / 2;
-} else if (strcmp(res,"I") == 0){
-	Ch5_slit = 0.02;
-	Ch1_speed = Ch5_speed / 4;
-} else if (strcmp(res,"HF") == 0){
-	Ch5_slit = 0.028;
-	Ch1_speed = Ch5_speed / 4;
-} else {
-	printf("\n Need valid resolution option, 'HR', 'I' or 'HF'\n");
-}
+    // get chopper5 slit width and speeds from resolution setting
+    if (strcmp(res,"HR") == 0){
+        Ch5_slit = 0.015;
+        Ch1_speed = Ch5_speed / 2;
+    } else if (strcmp(res,"I") == 0){
+        Ch5_slit = 0.02;
+        Ch1_speed = Ch5_speed / 4;
+    } else if (strcmp(res,"HF") == 0){
+        Ch5_slit = 0.028;
+        Ch1_speed = Ch5_speed / 4;
+    } else {
+        printf("\n Need valid resolution option, 'HR', 'I' or 'HF'\n");
+    }
 
-// decide whether snout is in or out
-if (strcmp(snout,"out") == 0){
-	snout_length = 0.0;
-} else {
-	snout_length = 0.23;
-}
+    // decide whether snout is in or out
+    if (strcmp(snout,"out") == 0){
+        snout_length = 0.0;
+    } else {
+        snout_length = 0.23;
+    }
 
-SE2K	= SE2V * V2K;
-v_foc	= SE2V * sqrt(Ei);
-emax	= Ei*dE;
-emin	= Ei/dE;
-lam_min   	= 2 * PI / SE2K / sqrt(emax);
-lam_max 	= 2 * PI / SE2K / sqrt(emin);
+    SE2K	= SE2V * V2K;
+    v_foc	= SE2V * sqrt(Ei);
+    emax	= Ei*dE;
+    emin	= Ei/dE;
+    lam_min   	= 2 * PI / SE2K / sqrt(emax);
+    lam_max 	= 2 * PI / SE2K / sqrt(emin);
 
-printf("\nv_foc: %f", v_foc);
-printf("\nChopper 1 delay: %f\n", (L_Ch1 - Ch1_5_halfgap)/v_foc+pha_offset);
-printf("\nEnergy range: Emin = %f, Emax = %f\n", emin, emax);
+    printf("\nv_foc: %f", v_foc);
+    printf("\nChopper 1 delay: %f\n", (L_Ch1 - Ch1_5_halfgap)/v_foc+pha_offset);
+    printf("\nEnergy range: Emin = %f, Emax = %f\n", emin, emax);
 %}
 
 TRACE

@@ -47,24 +47,24 @@ DEFINE INSTRUMENT RTP_SANS(lambda=5, DM=3.355, dlambda=.2, Be_Filter_depth=.15, 
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double A1,L;
+    double A1,L;
 %}
 
 USERVARS
 %{
-  double mono_index;
+    double mono_index;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  /* monochromator rotation angle for Bragg reflection [deg] */
-  A1 = asin(lambda/2/DM)*RAD2DEG;
-  /* distance used for focusing [m] */
-  L  = 4;
+    /* monochromator rotation angle for Bragg reflection [deg] */
+    A1 = asin(lambda/2/DM)*RAD2DEG;
+    /* distance used for focusing [m] */
+    L  = 4;
 
-  printf("RTP_SANS: Monochromator take-off angle=%g [deg]\n", 2*A1);
+    printf("RTP_SANS: Monochromator take-off angle=%g [deg]\n", 2*A1);
 %}
 
 /* Here comes the TRACE section, where the actual      */

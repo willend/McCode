@@ -69,77 +69,75 @@ DEFINE INSTRUMENT ILL_H53_IN14(KI=1.55, QM=1.0, EN=0.0, verbose=1, WM=0.15, HM=0
 DECLARE
 
 %{
-/* guide coating parameters Klaus values*/
+    /* guide coating parameters Klaus values*/
 
-double gR0          = 1;
-double gQc          = 0.021;
-double gAlpha       = 2.33;
-double gW           = 2e-3;
-double gMvalue      = 1.2;
+    double gR0          = 1;
+    double gQc          = 0.021;
+    double gAlpha       = 2.33;
+    double gW           = 2e-3;
+    double gMvalue      = 1.2;
 
 
-/* ==================== Source description ==================== */
+    /* ==================== Source description ==================== */
 
-double EN;
-double D_EN;
-double EMIN, EMAX;
+    double EN;
+    double D_EN;
+    double EMIN, EMAX;
 
-double sLmbdMinS =  2.0;
-double sLmbdMaxS =  7.0;
-double sLmbdMinM =  0.0;
-double sLmbdMaxM = 20.0;
-double sLmbdMonoMin;
-double sLmbdMonoMax;
+    double sLmbdMinS =  2.0;
+    double sLmbdMaxS =  7.0;
+    double sLmbdMinM =  0.0;
+    double sLmbdMaxM = 20.0;
+    double sLmbdMonoMin;
+    double sLmbdMonoMax;
 
-double sT1=413.5,sI1=10.22e12,sT2=145.8,sI2=3.44e13,sT3=40.1 ,sI3=2.78e13;
+    double sT1=413.5,sI1=10.22e12,sT2=145.8,sI2=3.44e13,sT3=40.1 ,sI3=2.78e13;
 
-/* guide curvatures */
+    /* guide curvatures */
 
-double gRh          = 4000;
+    double gRh          = 4000;
 
-/* guide section parameters (total length/number of elements) */
+    /* guide section parameters (total length/number of elements) */
 
-double gH 	    = 0.12;
-double L_H53_COM    = 6.0  /4.0, Rh_H53_COM = 0;
-double L_H53_C1     = 3.5  /3.0, Rh_H53_C1  = 0;
-double L_H53_C2     = 9.5  /7.0, Rh_H53_C2  = 0;
-double L_H53_C3     = 3.0  /3.0, Rh_H53_C3  = 0;
-double L_H53_P1     = 6.0  /4.0, Rh_H53_P1  = 0;
-double L_H53_P2     = 7.5  /5.0, Rh_H53_P2  = 0;
-double L_H53_P3     = 7.5  /5.0, Rh_H53_P3  = 0;
-double L_H53_P4     = 7.5  /5.0, Rh_H53_P4  = 0;
+    double gH 	    = 0.12;
+    double L_H53_COM    = 6.0  /4.0, Rh_H53_COM = 0;
+    double L_H53_C1     = 3.5  /3.0, Rh_H53_C1  = 0;
+    double L_H53_C2     = 9.5  /7.0, Rh_H53_C2  = 0;
+    double L_H53_C3     = 3.0  /3.0, Rh_H53_C3  = 0;
+    double L_H53_P1     = 6.0  /4.0, Rh_H53_P1  = 0;
+    double L_H53_P2     = 7.5  /5.0, Rh_H53_P2  = 0;
+    double L_H53_P3     = 7.5  /5.0, Rh_H53_P3  = 0;
+    double L_H53_P4     = 7.5  /5.0, Rh_H53_P4  = 0;
 
-/* gaps and Al window parameters */
+    /* gaps and Al window parameters */
 
-double Al_Thickness = 0.002;
-double gGap         = 0.001;
+    double Al_Thickness = 0.002;
+    double gGap         = 0.001;
 
-/* wavelength for monochromator */
+    /* wavelength for monochromator */
 
-double lambda       = 6.271;
-double dlambda;
-
+    double lambda       = 6.271;
+    double dlambda;
 %}
 /* end of DECLARE */
 
 INITIALIZE
 %{
 
-/* element rotations = element length / curvature radius * RAD2DEG */
+    /* element rotations = element length / curvature radius * RAD2DEG */
 
-if (gRh) {
-  Rh_H53_C2  = L_H53_C2 /gRh*RAD2DEG;
-  Rh_H53_C3  = L_H53_C3 /gRh*RAD2DEG;
-  Rh_H53_P1  = L_H53_P1 /gRh*RAD2DEG;
-  Rh_H53_P2  = L_H53_P2 /gRh*RAD2DEG;
-  Rh_H53_P3  = L_H53_P3 /gRh*RAD2DEG;
-  Rh_H53_P4  = L_H53_P4 /gRh*RAD2DEG;
-}
+    if (gRh) {
+        Rh_H53_C2  = L_H53_C2 /gRh*RAD2DEG;
+        Rh_H53_C3  = L_H53_C3 /gRh*RAD2DEG;
+        Rh_H53_P1  = L_H53_P1 /gRh*RAD2DEG;
+        Rh_H53_P2  = L_H53_P2 /gRh*RAD2DEG;
+        Rh_H53_P3  = L_H53_P3 /gRh*RAD2DEG;
+        Rh_H53_P4  = L_H53_P4 /gRh*RAD2DEG;
+    }
 
-lambda=2*PI/KI;
-dlambda=lambda*0.015;
-printf("%s: Incoming wavelength lambda=%g [Angs]\n", NAME_INSTRUMENT, lambda);
-
+    lambda=2*PI/KI;
+    dlambda=lambda*0.015;
+    printf("%s: Incoming wavelength lambda=%g [Angs]\n", NAME_INSTRUMENT, lambda);
 %}
 /* end of INITIALIZE */
 

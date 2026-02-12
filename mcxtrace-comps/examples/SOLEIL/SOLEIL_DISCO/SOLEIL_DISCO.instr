@@ -68,7 +68,7 @@ INITIALIZE
     theta_calculated = RAD2DEG*asin(x_screw/164.61);
     order=1;
     if (theta_calculated<9){
-    order=-1;
+        order=-1;
     }
     period = 1/(1e3*number_lines_per_mm);    
 %}
@@ -99,30 +99,30 @@ COMPONENT ColdFinger = Mask(xwidth=0.3, yheight=7.5e-3,mask="coldfinger.mask") /
 AT (0,0,4.975) RELATIVE Source
 /*EXTEND
 %{ 
-	if (SCATTERED) ABSORB;
-%}*/
+    if (SCATTERED) ABSORB;
+    %}*/
 
-//____________________________________________________________  5.800 m : M1 cylindrical convex mirror (vertical deviation) / beam goes up / 22.5° / Si / r = -75 m
+    //____________________________________________________________  5.800 m : M1 cylindrical convex mirror (vertical deviation) / beam goes up / 22.5° / Si / r = -75 m
 
-COMPONENT M1_location = Arm()
-AT (0,0,5.800) RELATIVE Source
+    COMPONENT M1_location = Arm()
+    AT (0,0,5.800) RELATIVE Source
 
-COMPONENT M1_rotated = Arm()
-AT (0,0,0) RELATIVE PREVIOUS
-ROTATED (0,0,90) RELATIVE PREVIOUS
+    COMPONENT M1_rotated = Arm()
+    AT (0,0,0) RELATIVE PREVIOUS
+    ROTATED (0,0,90) RELATIVE PREVIOUS
 
-COMPONENT M1_x = Arm()
-AT (0,0,0) RELATIVE PREVIOUS
-ROTATED (90, 0, 0) RELATIVE PREVIOUS
+    COMPONENT M1_x = Arm()
+    AT (0,0,0) RELATIVE PREVIOUS
+    ROTATED (90, 0, 0) RELATIVE PREVIOUS
 
-// Mirror_curved is initially in the YZ plane
-COMPONENT M1 = Mirror_curved(
-  coating="Si_disco.dat", radius=-75, length=0.26, width=0.19)//radius=-0.1 to see the curve for testing purposes. length and width reversed.
-AT (0,0,0) RELATIVE PREVIOUS
-ROTATED (0, 0, -grazing_angle_one) RELATIVE PREVIOUS
-EXTEND
-%{ 
-	if (!SCATTERED) ABSORB;
+    // Mirror_curved is initially in the YZ plane
+    COMPONENT M1 = Mirror_curved(
+    coating="Si_disco.dat", radius=-75, length=0.26, width=0.19)//radius=-0.1 to see the curve for testing purposes. length and width reversed.
+    AT (0,0,0) RELATIVE PREVIOUS
+    ROTATED (0, 0, -grazing_angle_one) RELATIVE PREVIOUS
+    EXTEND
+    %{ 
+        if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT M1_takeoff = Arm()
@@ -162,7 +162,7 @@ AT (0,0,0) RELATIVE PREVIOUS
 ROTATED (0, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT M2_other_side_back = Arm()
@@ -196,7 +196,7 @@ AT (0,0,0) RELATIVE PREVIOUS
 ROTATED (0, grazing_angle_one, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT M3_takeoff = Arm()
@@ -219,7 +219,7 @@ AT (0, 0, 0) RELATIVE PREVIOUS
 ROTATED ( -grazing_angle_one, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT M4_takeoff = Arm()
@@ -259,7 +259,7 @@ AT (0, 0, 0) RELATIVE PREVIOUS
 ROTATED (grazing_angle_one, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT arm = Arm()
@@ -288,7 +288,7 @@ AT (0, 0, 0) RELATIVE PREVIOUS
 ROTATED (0, 0, -20.65) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT M52_takeoff = Arm()
@@ -327,7 +327,7 @@ AT (0,0,0) RELATIVE PREVIOUS
 ROTATED (-grazing_angle_one, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT M53_takeoff = Arm()
@@ -353,7 +353,7 @@ AT (0,0,0) RELATIVE PREVIOUS
 ROTATED (-grazing_angle_one, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT M54_takeoff = Arm()
@@ -383,7 +383,7 @@ AT (0, 0, 0) RELATIVE PREVIOUS
 ROTATED (-(90-4.5), 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT armm = Arm()
@@ -452,7 +452,7 @@ AT (0, 0, 0) RELATIVE PREVIOUS
 ROTATED (-(90-5), 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{ 
-	if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT arm2 = Arm()
@@ -505,31 +505,30 @@ FINALLY
 
     // If there is a scan, calculate the Wavelength(Angstroms) as a function of x_screw(mm).
     if(scan>=1){ 
-#ifdef USE_MPI
+        #ifdef USE_MPI
         //MPI_MASTER is equivalent to if(mpi_node_root>=mpi_node_rank){ //statement }
         //If DETECTOR_OUT_0D is inside of MPI_MASTER the program hangs forever. 
         //If outside it seems to work. Weird.
         MPI_MASTER(
-#endif
-	    MCDETECTOR w_monitor_var = COMP_GETPAR(w_monitor,detector); // We have to think in terms of wavelength, the sine drive mechanism was built to linearize the wavelength.
+        #endif
+        MCDETECTOR w_monitor_var = COMP_GETPAR(w_monitor,detector); // We have to think in terms of wavelength, the sine drive mechanism was built to linearize the wavelength.
         w_monitor_value = w_monitor_var.centerX;
         x_screw_var = x_screw;
         w_monitor_error = 0; //Forgot how to get rid of the error bar.  
         //For the error we could have dlambda = lambda*2*period*cos(phi)/L*dx_screw/x_screw, but we need to have dx_screw. Does it make sense for dx_screw to exist in an exact simulation?
         number_events_w_monitor = w_monitor_var.events;   
-                                                 
-#ifdef USE_MPI                  
+
+        #ifdef USE_MPI                  
         );
         //MPI_Barrier(MPI_COMM_WORLD);
-#endif  
+        #endif  
         //Adding a legend to the graph would be good, need to find out how to do that at a later date. todo            
         // This set of defines is to avoid getting a '.' in the component name
-	    Rotation Rot;
-	    rot_set_rotation(Rot,0,0,0);
-	mcdetector_out_0D("Wavelength(Ang) as a function of x_screw(mm)", number_events_w_monitor, w_monitor_value, w_monitor_error, "Wavelength", coords_set(0,0,0),Rot,9999);
+        Rotation Rot;
+        rot_set_rotation(Rot,0,0,0);
+        mcdetector_out_0D("Wavelength(Ang) as a function of x_screw(mm)", number_events_w_monitor, w_monitor_value, w_monitor_error, "Wavelength", coords_set(0,0,0),Rot,9999);
 
     }
-
 %}
 
 

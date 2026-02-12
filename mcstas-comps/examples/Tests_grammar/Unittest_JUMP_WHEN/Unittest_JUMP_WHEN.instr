@@ -33,17 +33,17 @@ DEFINE INSTRUMENT Unittest_JUMP_WHEN(int jumps=10, Pp0=0)
 
 DECLARE
 %{
-%}
+    %}
 
-USERVARS
-%{
-  int doJump;
-  int numJump;
+    USERVARS
+    %{
+        int doJump;
+        int numJump;
 %}
 
 INITIALIZE
 %{
-  Pp0=1.0/mcget_ncount();
+    Pp0=1.0/mcget_ncount();
 %}
 
 TRACE

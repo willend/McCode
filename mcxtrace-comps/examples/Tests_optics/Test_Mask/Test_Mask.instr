@@ -32,20 +32,20 @@ DEFINE INSTRUMENT Test_Mask(invert=0)
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  char filename[255];
+    char filename[255];
 %}
 
 USERVARS
 %{
-  double maskpixel;
+    double maskpixel;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  /*write a test mask to a temporary file*/
-  sprintf(filename,"Test_Mask_input_file.mask");
+    /*write a test mask to a temporary file*/
+    sprintf(filename,"Test_Mask_input_file.mask");
 %}
 
 /* Here comes the TRACE section, where the actual      */
@@ -77,7 +77,7 @@ COMPONENT maske = Mask(
 AT(0,0,1e-6) RELATIVE PREVIOUS
 EXTEND
 %{
-  maskpixel=maskval;
+    maskpixel=maskval;
 %}
 
 COMPONENT psd1 = COPY(psd0) (filename="psd1")

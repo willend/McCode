@@ -36,7 +36,7 @@ DECLARE %{
 /* (C code). You may use them as component parameter values.         */
 INITIALIZE
 %{
-  DirectBeam = directbeam;
+    DirectBeam = directbeam;
 %}
 
 /* Here comes the TRACE section, where the actual      */

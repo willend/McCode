@@ -80,145 +80,145 @@ DEPENDENCY "-DMCPLPATH=GETPATH(data)"
 DECLARE
 %{
 
-  char optSGV1[256];
-  char optSGV2[256]; 
-  double col_ang,col_angv,col_h1,col_h2,col_rad,col_len,col_d;
-  int col_ns;
-  double mask_w,mask_dist,mask_h; 
-  double det_th1,det_Linst,det_th2,det_t0,det_d1,det_d2,det_Lc,det_rad;
-  double det_mod_dt, det_mod_twidth; 
-  int det_modulation;
-  char dhklTable[256];    
-  double Lmin, Lmax, Emin, Emax;
- 
-  // perform r = m*v
-  void MXV(Rotation m, double v[3], double r[3]) 
-  {
+    char optSGV1[256];
+    char optSGV2[256]; 
+    double col_ang,col_angv,col_h1,col_h2,col_rad,col_len,col_d;
+    int col_ns;
+    double mask_w,mask_dist,mask_h; 
+    double det_th1,det_Linst,det_th2,det_t0,det_d1,det_d2,det_Lc,det_rad;
+    double det_mod_dt, det_mod_twidth; 
+    int det_modulation;
+    char dhklTable[256];    
+    double Lmin, Lmax, Emin, Emax;
+
+    // perform r = m*v
+    void MXV(Rotation m, double v[3], double r[3]) 
+    {
         int i,j,k;
-		for (i=0;i<3;i++) {   
-			r[i]=0;  
-			for (j=0;j<3;j++) { 
-				r[i] += m[i][j]*v[j];
-			}
-		}
-  };
-  Rotation smi;
-  int filt;
-  double tof;
-  #pragma acc declare create(smi,filt,tof)
+        for (i=0;i<3;i++) {   
+            r[i]=0;  
+            for (j=0;j<3;j++) { 
+                r[i] += m[i][j]*v[j];
+            }
+        }
+    };
+    Rotation smi;
+    int filt;
+    double tof;
+    #pragma acc declare create(smi,filt,tof)
 %}
 
 USERVARS
 %{
-  double scX;
-  double scY;
-  double scZ;
-  double scP;
+    double scX;
+    double scY;
+    double scZ;
+    double scP;
 %}
 
 INITIALIZE
 %{
-double hm = 2*PI*K2V; // h/m_n
-printf("Using the input file: %s\n", input);
-printf("Using the sample file: %s\n", pwdfile);
+    double hm = 2*PI*K2V; // h/m_n
+    printf("Using the input file: %s\n", input);
+    printf("Using the sample file: %s\n", pwdfile);
 
-/*
-----------------------------
-Set instrument parameters
-----------------------------
-*/ 
-double Linst=158; // source - sample distance
+    /*
+    ----------------------------
+    Set instrument parameters
+    ----------------------------
+    */ 
+    double Linst=158; // source - sample distance
 
 
-/* Collimator (ENGIN-X system) 
---------------------------------*/
-const double cold[5]={0.100, 0.160, 0.310, 0.410, 0.490};  
-col_ang=30; // horizontal angle
-col_angv=30; // vertical angle
-col_d=0.0001;
-col_ns=160;
-col_len=0.35;
-// select distance according to width, allowed values 0.5, 1, 2, 3, 4
-if (colw==0.5) {
-	col_rad=cold[0];
-} else if (colw==1) { 
-	col_rad=cold[1];
-} else if (colw==2) {
-	col_rad=cold[2];
-} else if (colw==3) {
-	col_rad=cold[3];
-} else if (colw==4) {
-	col_rad=cold[4];
-} else { 
-	printf("WARNING: invalid collmator width (%g), selecting 2 mm.\n", colw);
-	col_rad=cold[2];
-}
+    /* Collimator (ENGIN-X system) 
+    --------------------------------*/
+    const double cold[5]={0.100, 0.160, 0.310, 0.410, 0.490};  
+        col_ang=30; // horizontal angle
+        col_angv=30; // vertical angle
+        col_d=0.0001;
+        col_ns=160;
+        col_len=0.35;
+        // select distance according to width, allowed values 0.5, 1, 2, 3, 4
+        if (colw==0.5) {
+            col_rad=cold[0];
+        } else if (colw==1) { 
+            col_rad=cold[1];
+        } else if (colw==2) {
+            col_rad=cold[2];
+        } else if (colw==3) {
+            col_rad=cold[3];
+        } else if (colw==4) {
+            col_rad=cold[4];
+        } else { 
+            printf("WARNING: invalid collmator width (%g), selecting 2 mm.\n", colw);
+            col_rad=cold[2];
+        }
 
-// calculate height (add max. sample height 2 cm)
-col_h1=0.02+2*col_rad*tan(col_angv*DEG2RAD/2);
-col_h2=0.02+2*(col_rad+col_len)*tan(col_angv*DEG2RAD/2);
-printf("INFO: Collimator radius=%g, height=%g -> %g\n",col_rad,col_h1,col_h2);
+        // calculate height (add max. sample height 2 cm)
+        col_h1=0.02+2*col_rad*tan(col_angv*DEG2RAD/2);
+        col_h2=0.02+2*(col_rad+col_len)*tan(col_angv*DEG2RAD/2);
+        printf("INFO: Collimator radius=%g, height=%g -> %g\n",col_rad,col_h1,col_h2);
 
-// mask before collimator
-mask_w=2*col_rad*fabs(tan(col_ang*0.5*DEG2RAD));
-mask_h=col_h1; 
-mask_dist=col_rad*cos(col_ang*0.5*DEG2RAD)-0.01;
+        // mask before collimator
+        mask_w=2*col_rad*fabs(tan(col_ang*0.5*DEG2RAD));
+        mask_h=col_h1; 
+        mask_dist=col_rad*cos(col_ang*0.5*DEG2RAD)-0.01;
 
-/* Detector parameters 
---------------------------------*/
-// angular range
-det_th1=75;
-det_th2=105;
-// detection radius
-det_rad=2;
-// distance from the source to the detector
-det_Linst=Linst+det_rad;
-// distance moderator - pulse chopper
-det_Lc=lc;
-// chopper delay
-det_t0=lc/(hm/lam0);
-// dhkl range
-det_d1=0.8;
-det_d2=2.4;
+        /* Detector parameters 
+        --------------------------------*/
+        // angular range
+        det_th1=75;
+        det_th2=105;
+        // detection radius
+        det_rad=2;
+        // distance from the source to the detector
+        det_Linst=Linst+det_rad;
+        // distance moderator - pulse chopper
+        det_Lc=lc;
+        // chopper delay
+        det_t0=lc/(hm/lam0);
+        // dhkl range
+        det_d1=0.8;
+        det_d2=2.4;
 
-/* Modulation parameters 
---------------------------------*/
-det_modulation=modul;
-det_mod_dt=1/mod_frq;
-det_mod_twidth=mod_twidth;
+        /* Modulation parameters 
+        --------------------------------*/
+        det_modulation=modul;
+        det_mod_dt=1/mod_frq;
+        det_mod_twidth=mod_twidth;
 
-/* Sample settings 
---------------------------------*/
-// d0 table for modulation mode
-sprintf(dhklTable,"dhkl.tab");
-// set sample orientation
-Rotation sm;
-rot_set_rotation(sm, 0.0,omega*DEG2RAD,chi*DEG2RAD); 
-rot_transpose(sm, smi);
-tof=det_Linst/hm*lam0*1e6; // tof in [us]
-filt=only_event;
+        /* Sample settings 
+        --------------------------------*/
+        // d0 table for modulation mode
+        sprintf(dhklTable,"dhkl.tab");
+        // set sample orientation
+        Rotation sm;
+        rot_set_rotation(sm, 0.0,omega*DEG2RAD,chi*DEG2RAD); 
+        rot_transpose(sm, smi);
+        tof=det_Linst/hm*lam0*1e6; // tof in [us]
+        filt=only_event;
 
-#pragma acc update device(smi,tof,filt)
+        #pragma acc update device(smi,tof,filt)
 
-/* 2D plot of the sampling gauge volume, in mm*/
-sprintf(optSGV2,"user1 bins=201 limits=[-5,5], user2 bins=201 limits=[-5,5]");
-/* 2D plot of the sampling gauge volume, in mm*/
-sprintf(optSGV1,"user1 bins=201 limits=[-5,5]");
+        /* 2D plot of the sampling gauge volume, in mm*/
+        sprintf(optSGV2,"user1 bins=201 limits=[-5,5], user2 bins=201 limits=[-5,5]");
+        /* 2D plot of the sampling gauge volume, in mm*/
+        sprintf(optSGV1,"user1 bins=201 limits=[-5,5]");
 
-/* Calculate MCPL_input parameters 
------------------------------------*/
-double L2E;
-Lmin = lam0 - 0.5*dlam;
-Lmax = lam0 + 0.5*dlam;
-L2E = pow(2*PI*K2V,2)*VS2E;
-Emin = L2E/pow(Lmax,2);
-Emax = L2E/pow(Lmin,2);
+        /* Calculate MCPL_input parameters 
+        -----------------------------------*/
+        double L2E;
+        Lmin = lam0 - 0.5*dlam;
+        Lmax = lam0 + 0.5*dlam;
+        L2E = pow(2*PI*K2V,2)*VS2E;
+        Emin = L2E/pow(Lmax,2);
+        Emax = L2E/pow(Lmin,2);
 
-/* Messages 
---------------------------------*/
-printf("Chopper delay = %g, mod_period = %g [ms]\n", det_t0*1000, det_mod_dt*1000);
-printf("Mean ToF [ms] = %g\n", tof/1000);
-printf("Selected energy range: %g to %g meV\n", Emin, Emax);
+        /* Messages 
+        --------------------------------*/
+        printf("Chopper delay = %g, mod_period = %g [ms]\n", det_t0*1000, det_mod_dt*1000);
+        printf("Mean ToF [ms] = %g\n", tof/1000);
+        printf("Selected energy range: %g to %g meV\n", Emin, Emax);
 %}
 
 TRACE

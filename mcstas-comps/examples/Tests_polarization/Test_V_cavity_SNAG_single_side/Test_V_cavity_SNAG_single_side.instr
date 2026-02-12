@@ -52,20 +52,18 @@ DEFINE INSTRUMENT Test_V_cavity_SNAG_single_side(Lam=7.0, dLam=6.0,
 DECLARE  
 %{  
 
-  double ldm;  
-  double ldx;  
-  double D_W; 
-  double D_H; 
-  
+    double ldm;  
+    double ldx;  
+    double D_W; 
+    double D_H; 
 %}  
 INITIALIZE  
 %{  
 
-ldm = Lam-dLam;  
-ldx = Lam+dLam;  
-D_W = 1.2*W; 
-D_H = 1.2*H; 
-
+    ldm = Lam-dLam;  
+    ldx = Lam+dLam;  
+    D_W = 1.2*W; 
+    D_H = 1.2*H; 
 %}  
 
 TRACE  

@@ -36,21 +36,21 @@ DEPENDENCY "-L. -lhellowrap"
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
 INITIALIZE
 %{
-#include "hellowrap.h"
-  sayHi(something);
+    #include "hellowrap.h"
+    sayHi(something);
 %}
 
 TRACE
 %{
-%}
+    %}
 
-MCDISPLAY
-%{
-  /* A bit ugly; hard-coded dimensions. */
-  
-  line(0,0,0,0.2,0,0);
-  line(0,0,0,0,0.2,0);
-  line(0,0,0,0,0,0.2);
+    MCDISPLAY
+    %{
+        /* A bit ugly; hard-coded dimensions. */
+
+        line(0,0,0,0.2,0,0);
+        line(0,0,0,0,0.2,0);
+        line(0,0,0,0,0,0.2);
 %}
 
 END

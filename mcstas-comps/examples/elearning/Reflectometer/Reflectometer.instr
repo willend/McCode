@@ -76,12 +76,12 @@ DEFINE INSTRUMENT Reflectometer(
 
 DECLARE
 %{
-double blocktranslation;
+    double blocktranslation;
 %}
 
 INITIALIZE
 %{
-blocktranslation = -slittranslation;
+    blocktranslation = -slittranslation;
 %}
 
 // Begin instrument

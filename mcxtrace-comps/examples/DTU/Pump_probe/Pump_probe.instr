@@ -35,12 +35,12 @@ DEFINE INSTRUMENT Pump_probe(excitation_prob=0.2, Dt=100e-9, PMN=0, PMX=45)
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-%}
+    %}
 
-/* The INITIALIZE section is executed when the simulation starts     */
-/* (C code). You may use them as component parameter values.         */
-INITIALIZE
-%{
+    /* The INITIALIZE section is executed when the simulation starts     */
+    /* (C code). You may use them as component parameter values.         */
+    INITIALIZE
+    %{
 %}
 
 /* Here comes the TRACE section, where the actual      */
@@ -86,7 +86,7 @@ COMPONENT sample=Molecule_2state(
 AT(0,0,0) RELATIVE sample_pos
 EXTEND
 %{
-  if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT psd4pi=PSD_monitor_4PI(

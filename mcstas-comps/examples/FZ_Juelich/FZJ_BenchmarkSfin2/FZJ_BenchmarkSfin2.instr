@@ -52,9 +52,9 @@ bandwidth for detector distances:
 
 DECLARE
 %{
-%}
-INITIALIZE
-%{
+    %}
+    INITIALIZE
+    %{
 %}
 TRACE
 

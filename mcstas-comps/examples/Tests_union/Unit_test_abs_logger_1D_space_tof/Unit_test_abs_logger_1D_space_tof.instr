@@ -28,10 +28,10 @@ DEFINE INSTRUMENT Unit_test_abs_logger_1D_space_tof()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

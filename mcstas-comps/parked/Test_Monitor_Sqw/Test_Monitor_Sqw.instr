@@ -113,70 +113,69 @@ DEFINE INSTRUMENT Test_Monitor_Sqw( beam_wavelength_Angs=2, beam_resolution_meV=
 
 DECLARE
 %{
-/* flags for detector */
- int flag_sample;      /* sample                scatt 1:coh, -1:inc, other multiple*/
- int flag_env;         /* container/environment scatt */
+    /* flags for detector */
+    int flag_sample;      /* sample                scatt 1:coh, -1:inc, other multiple*/
+    int flag_env;         /* container/environment scatt */
 
- double dt0, t0, bins=100;
- double Ei=0, vi;
- double env_radius, det_radius;
+    double dt0, t0, bins=100;
+    double Ei=0, vi;
+    double env_radius, det_radius;
 
- char options_nM[1024];
- char options_nD[1024];
-
+    char options_nM[1024];
+    char options_nD[1024];
 %}
 
 INITIALIZE
 %{
-  double ki=2*PI/beam_wavelength_Angs;      /* wavevector [Angs-1] */
+    double ki=2*PI/beam_wavelength_Angs;      /* wavevector [Angs-1] */
 
-  vi=ki*K2V;                                /* velocity   [m/s] */
-  t0=sample_detector_distance_m/vi;         /* elastic travel time sample-detector (in-plane) [s] */
-  Ei=VS2E*vi*vi;                            /* incident energy [meV] */
+    vi=ki*K2V;                                /* velocity   [m/s] */
+    t0=sample_detector_distance_m/vi;         /* elastic travel time sample-detector (in-plane) [s] */
+    Ei=VS2E*vi*vi;                            /* incident energy [meV] */
 
-  env_radius = environment_radius_m;        /* copied for the EXTEND blocks where INSTR parameters are not available */
-  det_radius = sample_detector_distance_m;
+    env_radius = environment_radius_m;        /* copied for the EXTEND blocks where INSTR parameters are not available */
+    det_radius = sample_detector_distance_m;
 
-  /* compute the time spread at detector for the elastic line
-   * set it for the incoming beam: dt = 1/2 t dE/E */
-  /* time uncertainty for sample_detector_distance_m due to beam_resolution_meV */
-  dt0 = 0.5*t0*beam_resolution_meV/Ei;
+    /* compute the time spread at detector for the elastic line
+    * set it for the incoming beam: dt = 1/2 t dE/E */
+    /* time uncertainty for sample_detector_distance_m due to beam_resolution_meV */
+    dt0 = 0.5*t0*beam_resolution_meV/Ei;
 
-  /* compute the number of tubes along the cylindrical detector, for 1 inch tubes */
-  bins = ceil((sample_detector_distance_m*(140+30)*PI/180)/2.54e-2);
+    /* compute the number of tubes along the cylindrical detector, for 1 inch tubes */
+    bins = ceil((sample_detector_distance_m*(140+30)*PI/180)/2.54e-2);
 
-  /* display some information for the user */
-  printf("%s: lambda=%g [Angs], k=%g [Angs-1], v=%g [m/s], E=%g [meV]. Time=[%g %g %g]\n",
+    /* display some information for the user */
+    printf("%s: lambda=%g [Angs], k=%g [Angs-1], v=%g [m/s], E=%g [meV]. Time=[%g %g %g]\n",
     NAME_CURRENT_COMP, beam_wavelength_Angs,ki,vi, Ei, t0*.75, t0, t0*1.5);
 
-  if (sample_radius_m > 0)
+    if (sample_radius_m > 0)
     printf("%s: sample is %s, with %s%s geometry.\n",
-      NAME_CURRENT_COMP,
-      sample_coh, sample_thickness_m ? "hollow " : "",
-      sample_height_m ? "cylindrical" : "spherical");
+    NAME_CURRENT_COMP,
+    sample_coh, sample_thickness_m ? "hollow " : "",
+    sample_height_m ? "cylindrical" : "spherical");
 
-  printf("%s: detector is cylindrical with radius=%g [m] height=%g [m] and %g tubes [1 inch]\n",
+    printf("%s: detector is cylindrical with radius=%g [m] height=%g [m] and %g tubes [1 inch]\n",
     NAME_CURRENT_COMP, sample_detector_distance_m, detector_height_m, bins);
 
-  /* monitor settings with explicit limits, so that we can use MPI */
-  sprintf(options_nM, "user1 limits=[0 %g] user2 limits=[%g %g]", 3*ki, -2*Ei, 4*Ei);
-  sprintf(options_nD, "angle limits=[-30 140], time limits=[%g %g]", 0.5*t0, 2*t0);
+    /* monitor settings with explicit limits, so that we can use MPI */
+    sprintf(options_nM, "user1 limits=[0 %g] user2 limits=[%g %g]", 3*ki, -2*Ei, 4*Ei);
+    sprintf(options_nD, "angle limits=[-30 140], time limits=[%g %g]", 0.5*t0, 2*t0);
 
-  /* test for input arguments */
-  if (sample_height_m > 0 && container_thickness_m > 0 && container)
+    /* test for input arguments */
+    if (sample_height_m > 0 && container_thickness_m > 0 && container)
     printf("%s: container is %s (outer cylinder)\n", NAME_CURRENT_COMP, container);
 
-  if (environment_thickness_m > 0 && environment)
+    if (environment_thickness_m > 0 && environment)
     printf("%s: external environment is %s\n", NAME_CURRENT_COMP, environment);
 
-  if (environment_thickness_m > 0 && sample_radius_m > environment_radius_m-environment_thickness_m)
+    if (environment_thickness_m > 0 && sample_radius_m > environment_radius_m-environment_thickness_m)
     exit(printf("%s: ERROR: sample radius %g [m] is larger than sample environment %g [m]\n",
-      NAME_CURRENT_COMP, sample_radius_m, environment_radius_m-environment_thickness_m));
+    NAME_CURRENT_COMP, sample_radius_m, environment_radius_m-environment_thickness_m));
 
-  if (container_thickness_m > 0 && environment_thickness_m > 0 && sample_height_m > 0
-      && sample_radius_m+container_thickness_m+0.0001 > environment_radius_m-environment_thickness_m)
+    if (container_thickness_m > 0 && environment_thickness_m > 0 && sample_height_m > 0
+    && sample_radius_m+container_thickness_m+0.0001 > environment_radius_m-environment_thickness_m)
     exit(printf("%s: ERROR: sample container radius %g [m] is larger than sample environment %g [m]\n",
-      NAME_CURRENT_COMP, sample_radius_m+container_thickness_m+0.0001, environment_radius_m-environment_thickness_m));
+    NAME_CURRENT_COMP, sample_radius_m+container_thickness_m+0.0001, environment_radius_m-environment_thickness_m));
 %}
 
 TRACE
@@ -185,7 +184,7 @@ COMPONENT a1 = Progress_bar(percent=5)
   AT (0,0,0) ABSOLUTE
 EXTEND
 %{
- flag_sample=flag_env=0;
+    flag_sample=flag_env=0;
 %}
 
 /* neutron source =========================================================== */
@@ -233,7 +232,7 @@ WHEN(container && sample_height_m > 0 && container_thickness_m > 0)
 AT (0, 0, 0) RELATIVE SamplePos
 EXTEND
 %{
-  if (SCATTERED) flag_env++;
+    if (SCATTERED) flag_env++;
 %}
 
 COMPONENT Sample_in=Isotropic_Sqw(
@@ -243,8 +242,7 @@ WHEN(sample_radius_m > 0)
 AT (0, 0, 0) RELATIVE SamplePos
 EXTEND
 %{
-  flag_sample=SCATTERED*(VarSqw.type == 'c' ? 1 : -1);
-
+    flag_sample=SCATTERED*(VarSqw.type == 'c' ? 1 : -1);
 %}
 
 COMPONENT Container_out=COPY(Container_in)(concentric=0)
@@ -252,7 +250,7 @@ WHEN(container && sample_height_m > 0 && container_thickness_m > 0)
 AT (0, 0, 0) RELATIVE SamplePos
 EXTEND
 %{
-  if (SCATTERED) flag_env++;
+    if (SCATTERED) flag_env++;
 %}
 
 /* external shield */

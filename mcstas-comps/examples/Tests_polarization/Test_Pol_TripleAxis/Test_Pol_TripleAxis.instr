@@ -39,55 +39,55 @@ DEFINE INSTRUMENT Test_Pol_TripleAxis(int OPTION=0, LAMBDA=2.0, MOZ=40)
 
 DECLARE
 %{
-  double DM  = 3.3539; /* Monochromator d-spacing in Angs */
-                       /* PG002 Orders : 1st 3.355 2e 1.6775, 3e 1.1183 */
+    double DM  = 3.3539; /* Monochromator d-spacing in Angs */
+    /* PG002 Orders : 1st 3.355 2e 1.6775, 3e 1.1183 */
 
-  /* to compute */
-  double A1,A2;
-  double A3,A4;
-  double A5,A6;
-  double mono_q, Ei;
+    /* to compute */
+    double A1,A2;
+    double A3,A4;
+    double A5,A6;
+    double mono_q, Ei;
 
-  /* This variable helps us switch on and of the spin flipper*/
-  double filterProb;
+    /* This variable helps us switch on and of the spin flipper*/
+    double filterProb;
 %}
 /* end of DECLARE */
 
 INITIALIZE
 %{
-  int    ORDER = 1;
-  double vi, Ki, Kf;
-  int    SM, SS, SA;
+    int    ORDER = 1;
+    double vi, Ki, Kf;
+    int    SM, SS, SA;
 
-  if(OPTION<-1 || OPTION>1) {
+    if(OPTION<-1 || OPTION>1) {
 
-    printf("OPTION %d not permitted.", OPTION);
-    exit(1);
-  }
+        printf("OPTION %d not permitted.", OPTION);
+        exit(1);
+    }
 
-  /* SM : scattering at mono to the right (-1)/left(+1) */
-  /* SS : scattering at sample to the right (-1)/left(+1) */
-  /* SA : scattering at analyser to the right (-1)/left(+1) */
-  SM = 1; SS = -1; SA = 1;
+    /* SM : scattering at mono to the right (-1)/left(+1) */
+    /* SS : scattering at sample to the right (-1)/left(+1) */
+    /* SA : scattering at analyser to the right (-1)/left(+1) */
+    SM = 1; SS = -1; SA = 1;
 
-  mono_q = 2*PI*ORDER/DM;  /* Q mono in Angs-1 */
+    mono_q = 2*PI*ORDER/DM;  /* Q mono in Angs-1 */
 
-  Ki = 2*PI/LAMBDA;
-  vi = K2V*fabs(Ki);
-  Ei = VS2E*vi*vi;
+    Ki = 2*PI/LAMBDA;
+    vi = K2V*fabs(Ki);
+    Ei = VS2E*vi*vi;
 
-  Kf=Ki;
+    Kf=Ki;
 
-  A2 = asin(mono_q/2/Ki)*RAD2DEG*2;
-  A6 = asin(mono_q/2/Kf)*RAD2DEG*2;
-  A4 = A2;
+    A2 = asin(mono_q/2/Ki)*RAD2DEG*2;
+    A6 = asin(mono_q/2/Kf)*RAD2DEG*2;
+    A4 = A2;
 
-  A2 *= SM;   /* A1 : mono theta (crystal) */
-  A1 = A2/2;  /* A2 : mono 2 theta (arm to sample) */
-  A4 *= SS;   /* A3 : sample theta */
-  A3 = A4/2;  /* A4 : sample 2 theta (arm to analyser) */
-  A6 *= SA;   /* A5 : analyser theta (crystal) */
-  A5 = A6/2;  /* A6 : analyser 2 theta (arm to Dector) */
+    A2 *= SM;   /* A1 : mono theta (crystal) */
+    A1 = A2/2;  /* A2 : mono 2 theta (arm to sample) */
+    A4 *= SS;   /* A3 : sample theta */
+    A3 = A4/2;  /* A4 : sample 2 theta (arm to analyser) */
+    A6 *= SA;   /* A5 : analyser theta (crystal) */
+    A5 = A6/2;  /* A6 : analyser 2 theta (arm to Dector) */
   %}
 /* end of INITIALIZE */
 

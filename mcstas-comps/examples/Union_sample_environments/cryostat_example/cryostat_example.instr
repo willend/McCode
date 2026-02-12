@@ -38,9 +38,9 @@ DEFINE INSTRUMENT Cryostat_example(stick_displacement=0)
 
 DECLARE
 %{
-%}
+    %}
 
-USERVARS %{
+    USERVARS %{
 %}
 
 INITIALIZE

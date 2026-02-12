@@ -30,25 +30,25 @@ DEFINE INSTRUMENT Template_DCM(E0=0, dE=0.2,theta=9.17)
 
 DECLARE
 %{
-  double dcm_gap;
+    double dcm_gap;
 %}
 
 INITIALIZE
 %{
-   double DM= 5.4909;     // Si d-spacing
-   double d = DM/sqrt(3); // <111> reflection |<111>|=3
-   dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
-   
-   if (!theta && E0) {
-     // n.lambda = 2 d sin(theta) = 2*PI/E2K / E0 with n=ORDER=1
-     double sin_theta = 2*PI/E2K/E0 / 2 / d;
-     if (fabs(sin_theta) < 1)
-       theta = asin(sin_theta)*RAD2DEG;
-   } else if (theta && !E0)
-     E0 = 2*PI/E2K / (2*d*sin(theta*DEG2RAD));
-   if (!theta || !E0 || dE <=0)
-     exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
-   printf("%s: Monochromator theta=%g [deg] E0=%g [keV]\n", NAME_INSTRUMENT, theta, E0);
+    double DM= 5.4909;     // Si d-spacing
+    double d = DM/sqrt(3); // <111> reflection |<111>|=3
+    dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
+
+    if (!theta && E0) {
+        // n.lambda = 2 d sin(theta) = 2*PI/E2K / E0 with n=ORDER=1
+        double sin_theta = 2*PI/E2K/E0 / 2 / d;
+        if (fabs(sin_theta) < 1)
+        theta = asin(sin_theta)*RAD2DEG;
+    } else if (theta && !E0)
+    E0 = 2*PI/E2K / (2*d*sin(theta*DEG2RAD));
+    if (!theta || !E0 || dE <=0)
+    exit(fprintf(stderr, "%s: ERROR: Monochromator can not reflect E0=%g +/- %g [keV]. Aborting.\n", NAME_INSTRUMENT, E0, dE));
+    printf("%s: Monochromator theta=%g [deg] E0=%g [keV]\n", NAME_INSTRUMENT, theta, E0);
 %}
 
 TRACE

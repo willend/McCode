@@ -63,21 +63,21 @@ SETTING PARAMETERS (radius=0)
 
 SHARE
 %{
-%}
+    %}
 
-DECLARE
-%{
+    DECLARE
+    %{
 %}
 
 INITIALIZE
 %{
-  /* */
+    /* */
 %}
 
 
 TRACE
 %{
-  /* component Circle does nothing */
+    /* component Circle does nothing */
 %}
 
 MCDISPLAY

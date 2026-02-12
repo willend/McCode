@@ -169,351 +169,348 @@ DEFINE INSTRUMENT RITA_II( ITAR=1.0,L0=4.045,BPL=0.97,BPH=1.03, MONO_N=1,MONOFOR
 
 DECLARE
 %{
-/* The following is from RITA2front, Kim Lefmann / Linda Udby */
+    /* The following is from RITA2front, Kim Lefmann / Linda Udby */
 
 
-/* Static values... */
-double l0,lmin,lmax;
-double emini,emaxi;
-double eminf,emaxf;
-double nefchan;
-double neichan;
-double lI,KI,KF;
+    /* Static values... */
+    double l0,lmin,lmax;
+    double emini,emaxi;
+    double eminf,emaxf;
+    double nefchan;
+    double neichan;
+    double lI,KI,KF;
 
-/* Internal variable for SPLIT repetitions */
-int SPLITREP;
-int SPLITMREP;
-int SPLITAREP;
-#pragma acc declare create (SPLITREP,SPLITMREP,SPLITAREP)
-/* Guide element parameters*/
-double angleGuideCurved;
-double R = 0.88;
-double R0 = 0.995;
-double Qc = 0.0217;
-double W = 0;
-double  M= 2.15;
-double ALPHA;
+    /* Internal variable for SPLIT repetitions */
+    int SPLITREP;
+    int SPLITMREP;
+    int SPLITAREP;
+    #pragma acc declare create (SPLITREP,SPLITMREP,SPLITAREP)
+    /* Guide element parameters*/
+    double angleGuideCurved;
+    double R = 0.88;
+    double R0 = 0.995;
+    double Qc = 0.0217;
+    double W = 0;
+    double  M= 2.15;
+    double ALPHA;
 
-/* Monochromator material parameters */
-double mono_q = 1.87325;
-double mono_r0 = 0.8;
-double DM;      /*d-spacing monochromator*/
-double mono_mosaic_h;
-double mono_mosaic_v;
-/* Monochromator curvature parmeters */
-//double u,v;
-double dms;  /* Target vector for focusing */
-double tx,tz;    /* Target vector for focusing */
-double sintm,sinta;
-double rv; /* Mono focusing parameter */
-/* Monochromator geometrical parameters */
-/* Size of monochromator blades are hard-coded in the component*/
-double mono_d = 0.026;  /* Distance between mono blades. From drawings */
-double dmc; /* Distance monochromator to front of collimator. Was 0.32 from Stine */
-double rmh = 0.58; /* Radius of monohousing. Measured 2008/11/05 */
-double lc = 0.198; /*Length of monocollimator. Measured 2008/11/05*/
+    /* Monochromator material parameters */
+    double mono_q = 1.87325;
+    double mono_r0 = 0.8;
+    double DM;      /*d-spacing monochromator*/
+    double mono_mosaic_h;
+    double mono_mosaic_v;
+    /* Monochromator curvature parmeters */
+    //double u,v;
+    double dms;  /* Target vector for focusing */
+    double tx,tz;    /* Target vector for focusing */
+    double sintm,sinta;
+    double rv; /* Mono focusing parameter */
+    /* Monochromator geometrical parameters */
+    /* Size of monochromator blades are hard-coded in the component*/
+    double mono_d = 0.026;  /* Distance between mono blades. From drawings */
+    double dmc; /* Distance monochromator to front of collimator. Was 0.32 from Stine */
+    double rmh = 0.58; /* Radius of monohousing. Measured 2008/11/05 */
+    double lc = 0.198; /*Length of monocollimator. Measured 2008/11/05*/
 
-/* RITA Monitor efficiency 1.7e-5 */
-double EFF = 1.7e-5;
-
-
-/* Sample parameters */
-double d_sample_slit = 0.35; /* Measured 2008/11/05, was 25 cm from Stine */
-double d_sample_filter = 0.51; /*To centre of filter. Measured 2008/11/05, was to filter front 25 cm from Stine */
-double dsa = 1.195;  /* distance sample-analyzer (m). Was 1.256 from Stine */
-double dsb ; /*distance sample to blade, depends on analyser rack postion*/
-double dmv = 1.00; /* distance monochromator to virtual out */
-//double dvs = 0.67; /* distance virtual in to sample. dmv+dvs=1.67=rmh+1.09. Ma15 setting */
-double dvs = 0.54; /* distance virtual in to sample. dmv+dvs=1.54 */
-double is_incoh;/* Random number pr. neutron event for incoherent V scattering */
-/* Filenames for the sample comps: */
-char *PowderFile;
-char *SingleXFile;
-
-/* Analyser material parameters*/
-double ana_mosaic_h;
-double ana_mosaic_v;
-double ana_q = 1.87325;
-double ana_r0 = 0.8;
-double DA;    /* d-spacing analyser*/
-/*Analyser geometrical parameters */
-double ana_d = 0.025;  /* Width of analyser blades. From drawings */
-double ana_h = 0.15;   /* Height of analyser blades. From drawings */
-double dad = 0.338;  /* distance analyzer to detector front (m) */
-double dadw = 0.3595; //= 0.3595;  /* distance analyzer to detector wire (m) */
-double wan = 0.024;  /* width of analyzer blades , by ruler (m) */
-double RR; //  = 0.3008; /* ratio of dadw and dsa*/
-//double DA4; /*angle between blades*/
-double A5; /* scattering angle for flat analyser*/
-/* Declarations for 'Coarse Collimator' at the PSD detector surface */
-int EntrySlit;
-int ExitSlit;
-double BladeThickness = 0.007;// detector coll after 2006, from drawings
-double WindowSize = 0.025;
-double BladeLength = 0.179;// detector coll after 2006, from drawings
-double BladeHeight = 0.272;// detector coll after 2006, from drawings
-//double BladeThickness = 0.002;// detector coll before 2006
-//double BladeLength = 0.180;// detector coll before 2006
-//double BladeHeight = 0.250;// detector coll before 2006
-double FirstWindowSizeL;
-double FirstWindowSizeR;
-double deltaL;
-int coarse;
-
-/* Detector parameters */
-//double det_width = 0.2735;/* was 0.3 from Stine*/
-double det_width = 0.275;
-double det_height =0.5;
-double PSF = 0.0074/2.35;// FWHM=0.0074m, measured by C. Bahl NIMB 246, 452.
-/* Electronic Window positions in the PSD */
-int XwinMin[10];
-int YwinMin[10];
-int XwinMax[10];
-int YwinMax[10];
-#pragma acc declare create (XwinMin,YwinMin,XwinMax,YwinMax)
+    /* RITA Monitor efficiency 1.7e-5 */
+    double EFF = 1.7e-5;
 
 
+    /* Sample parameters */
+    double d_sample_slit = 0.35; /* Measured 2008/11/05, was 25 cm from Stine */
+    double d_sample_filter = 0.51; /*To centre of filter. Measured 2008/11/05, was to filter front 25 cm from Stine */
+    double dsa = 1.195;  /* distance sample-analyzer (m). Was 1.256 from Stine */
+    double dsb ; /*distance sample to blade, depends on analyser rack postion*/
+    double dmv = 1.00; /* distance monochromator to virtual out */
+    //double dvs = 0.67; /* distance virtual in to sample. dmv+dvs=1.67=rmh+1.09. Ma15 setting */
+    double dvs = 0.54; /* distance virtual in to sample. dmv+dvs=1.54 */
+    double is_incoh;/* Random number pr. neutron event for incoherent V scattering */
+    /* Filenames for the sample comps: */
+    char *PowderFile;
+    char *SingleXFile;
+
+    /* Analyser material parameters*/
+    double ana_mosaic_h;
+    double ana_mosaic_v;
+    double ana_q = 1.87325;
+    double ana_r0 = 0.8;
+    double DA;    /* d-spacing analyser*/
+    /*Analyser geometrical parameters */
+    double ana_d = 0.025;  /* Width of analyser blades. From drawings */
+    double ana_h = 0.15;   /* Height of analyser blades. From drawings */
+    double dad = 0.338;  /* distance analyzer to detector front (m) */
+    double dadw = 0.3595; //= 0.3595;  /* distance analyzer to detector wire (m) */
+    double wan = 0.024;  /* width of analyzer blades , by ruler (m) */
+    double RR; //  = 0.3008; /* ratio of dadw and dsa*/
+    //double DA4; /*angle between blades*/
+    double A5; /* scattering angle for flat analyser*/
+    /* Declarations for 'Coarse Collimator' at the PSD detector surface */
+    int EntrySlit;
+    int ExitSlit;
+    double BladeThickness = 0.007;// detector coll after 2006, from drawings
+    double WindowSize = 0.025;
+    double BladeLength = 0.179;// detector coll after 2006, from drawings
+    double BladeHeight = 0.272;// detector coll after 2006, from drawings
+    //double BladeThickness = 0.002;// detector coll before 2006
+    //double BladeLength = 0.180;// detector coll before 2006
+    //double BladeHeight = 0.250;// detector coll before 2006
+    double FirstWindowSizeL;
+    double FirstWindowSizeR;
+    double deltaL;
+    int coarse;
+
+    /* Detector parameters */
+    //double det_width = 0.2735;/* was 0.3 from Stine*/
+    double det_width = 0.275;
+    double det_height =0.5;
+    double PSF = 0.0074/2.35;// FWHM=0.0074m, measured by C. Bahl NIMB 246, 452.
+    /* Electronic Window positions in the PSD */
+    int XwinMin[10];
+    int YwinMin[10];
+    int XwinMax[10];
+    int YwinMax[10];
+    #pragma acc declare create (XwinMin,YwinMin,XwinMax,YwinMax)
 
 
-/* BEGIN declaring stuff for the HKL calculator adapted from templateTAS */
-  struct sample_struct {
-    double as, bs, cs; // Lattice parameters
-    double aa, bb, cc; // Lattice angles
-    double ax, ay, az; // First scattering plane vector
-    double bx, by, bz; // Second scattering plane vector
-  } sample;
 
-  struct machine_hkl_struct {
-    double dm, da;     // Mono and ana d-spacings
-    double sm, ss, sa; // Mono, sample, ana angle signs
-    double ki, kf, ei, ef; // Initial and Final wavevectors and energies
-    double qh, qk, ql, en; // Momentum transfer and energy transfer in sample
-  } machine_hkl;
 
-  struct machine_real_struct {
-    double a1,a2,a3,a4,a5,a6;
-    double da4,aa5;
-    double c1,c2,c3,c4,c5,c6,c7,c8,c9;
-    double rmh, rmv, rah, rav;
-    double qm, qs, qt[3];
-    char   message[256];
-  } machine_real;
+    /* BEGIN declaring stuff for the HKL calculator adapted from templateTAS */
+    struct sample_struct {
+        double as, bs, cs; // Lattice parameters
+        double aa, bb, cc; // Lattice angles
+        double ax, ay, az; // First scattering plane vector
+        double bx, by, bz; // Second scattering plane vector
+    } sample;
 
-  struct machine_real_struct qhkl2angles(
+    struct machine_hkl_struct {
+        double dm, da;     // Mono and ana d-spacings
+        double sm, ss, sa; // Mono, sample, ana angle signs
+        double ki, kf, ei, ef; // Initial and Final wavevectors and energies
+        double qh, qk, ql, en; // Momentum transfer and energy transfer in sample
+    } machine_hkl;
+
+    struct machine_real_struct {
+        double a1,a2,a3,a4,a5,a6;
+        double da4,aa5;
+        double c1,c2,c3,c4,c5,c6,c7,c8,c9;
+        double rmh, rmv, rah, rav;
+        double qm, qs, qt[3];
+        char   message[256];
+    } machine_real;
+
+    struct machine_real_struct qhkl2angles(
     struct sample_struct      sample,
     struct machine_hkl_struct machine_hkl,
     struct machine_real_struct machine_real) {
 
-      /* code from TASMAD/t_rlp.F:SETRLP */
-      double qhkl[3];
-      double alpha[3];
-      double a[3];
-      double aspv[3][2];
-      double cosa[3], sina[3];
-      double cosb[3], sinb[3];
-      double b[3], c[3], s[4][4];
-      double vv[3][3], bb[3][3];
-      double arg, cc;
-      int i,j,k,l,m,n;
-      char liquid_case=1;
-      /* transfered parameters to local arrays */
-      qhkl[0]   = machine_hkl.qh; /* HKL target */
-      qhkl[1]   = machine_hkl.qk;
-      qhkl[2]   = machine_hkl.ql;
-      alpha[0]  = sample.aa; /* cell angles */
-      alpha[1]  = sample.bb;
-      alpha[2]  = sample.cc;
-      a[0]      = sample.as; /* cell parameters */
-      a[1]      = sample.bs;
-      a[2]      = sample.cs;
-      aspv[0][0]= sample.ax; /* cell axis A */
-      aspv[1][0]= sample.ay;
-      aspv[2][0]= sample.az;
-      aspv[0][1]= sample.bx; /* cell axis B */
-      aspv[1][1]= sample.by;
-      aspv[2][1]= sample.bz;
+        /* code from TASMAD/t_rlp.F:SETRLP */
+        double qhkl[3];
+        double alpha[3];
+        double a[3];
+        double aspv[3][2];
+        double cosa[3], sina[3];
+        double cosb[3], sinb[3];
+        double b[3], c[3], s[4][4];
+        double vv[3][3], bb[3][3];
+        double arg, cc;
+        int i,j,k,l,m,n;
+        char liquid_case=1;
+        /* transfered parameters to local arrays */
+        qhkl[0]   = machine_hkl.qh; /* HKL target */
+        qhkl[1]   = machine_hkl.qk;
+        qhkl[2]   = machine_hkl.ql;
+        alpha[0]  = sample.aa; /* cell angles */
+        alpha[1]  = sample.bb;
+        alpha[2]  = sample.cc;
+        a[0]      = sample.as; /* cell parameters */
+        a[1]      = sample.bs;
+        a[2]      = sample.cs;
+        aspv[0][0]= sample.ax; /* cell axis A */
+        aspv[1][0]= sample.ay;
+        aspv[2][0]= sample.az;
+        aspv[0][1]= sample.bx; /* cell axis B */
+        aspv[1][1]= sample.by;
+        aspv[2][1]= sample.bz;
 
-      /* default return values */
-      strcpy(machine_real.message, "");
-      machine_real.a3 = machine_real.a4 = 0;
-      machine_real.a1 = machine_real.a5 = 0;
+        /* default return values */
+        strcpy(machine_real.message, "");
+        machine_real.a3 = machine_real.a4 = 0;
+        machine_real.a1 = machine_real.a5 = 0;
 
-      /* if using HKL positioning in crystal (QM = 0) */
-      if (machine_real.qm <= 0) {
-        liquid_case = 0;
-        /* compute reciprocal cell */
-        for (i=0; i< 3; i++)
-          if (a[i] <=0) sprintf(machine_real.message, "Lattice parameters a[%i]=%g", i, a[i]);
-          else {
-            a[i]    /= 2*PI;
-            alpha[i]*= DEG2RAD;
-            cosa[i]  = cos(alpha[i]);
-            sina[i]  = sin(alpha[i]);
-          }
-        cc = cosa[0]*cosa[0]+cosa[1]*cosa[1]+cosa[2]*cosa[2]; /* nprm */
-        cc = 1 + 2*cosa[0]*cosa[1]*cosa[2] - cc;
-        if (cc <= 0) sprintf(machine_real.message, "Lattice angles (AA,BB,CC) cc=%g", cc);
-        else cc = sqrt(cc);
+        /* if using HKL positioning in crystal (QM = 0) */
+        if (machine_real.qm <= 0) {
+            liquid_case = 0;
+            /* compute reciprocal cell */
+            for (i=0; i< 3; i++)
+            if (a[i] <=0) sprintf(machine_real.message, "Lattice parameters a[%i]=%g", i, a[i]);
+            else {
+                a[i]    /= 2*PI;
+                alpha[i]*= DEG2RAD;
+                cosa[i]  = cos(alpha[i]);
+                sina[i]  = sin(alpha[i]);
+            }
+            cc = cosa[0]*cosa[0]+cosa[1]*cosa[1]+cosa[2]*cosa[2]; /* nprm */
+            cc = 1 + 2*cosa[0]*cosa[1]*cosa[2] - cc;
+            if (cc <= 0) sprintf(machine_real.message, "Lattice angles (AA,BB,CC) cc=%g", cc);
+            else cc = sqrt(cc);
 
-        if (strlen(machine_real.message)) return machine_real;
+            if (strlen(machine_real.message)) return machine_real;
 
-        /* compute bb */
-        j=1; k=2;
-        for (i=0; i<3; i++) {
-          b[i] = sina[i]/(a[i]*cc);
-          cosb[i] = (cosa[j]*cosa[k] - cosa[i])/(sina[j]*sina[k]);
-          sinb[i] = sqrt(1 - cosb[i]*cosb[i]);
-          j=k; k=i;
-        }
+            /* compute bb */
+            j=1; k=2;
+            for (i=0; i<3; i++) {
+                b[i] = sina[i]/(a[i]*cc);
+                cosb[i] = (cosa[j]*cosa[k] - cosa[i])/(sina[j]*sina[k]);
+                sinb[i] = sqrt(1 - cosb[i]*cosb[i]);
+                j=k; k=i;
+            }
 
-        bb[0][0] = b[0];
-        bb[1][0] = 0;
-        bb[2][0] = 0;
-        bb[0][1] = b[1]*cosb[2];
-        bb[1][1] = b[1]*sinb[2];
-        bb[2][1] = 0;
-        bb[0][2] = b[2]*cosb[1];
-        bb[1][2] =-b[2]*sinb[1]*cosa[0];
-        bb[2][2] = 1/a[2];
+            bb[0][0] = b[0];
+            bb[1][0] = 0;
+            bb[2][0] = 0;
+            bb[0][1] = b[1]*cosb[2];
+            bb[1][1] = b[1]*sinb[2];
+            bb[2][1] = 0;
+            bb[0][2] = b[2]*cosb[1];
+            bb[1][2] =-b[2]*sinb[1]*cosa[0];
+            bb[2][2] = 1/a[2];
 
-        /* compute vv */
-        for (k=0; k< 3; k++)
-          for (i=0; i< 3; i++) vv[k][i] = 0;
+            /* compute vv */
+            for (k=0; k< 3; k++)
+            for (i=0; i< 3; i++) vv[k][i] = 0;
 
-        for (k=0; k< 2; k++)
-          for (i=0; i< 3; i++)
+            for (k=0; k< 2; k++)
+            for (i=0; i< 3; i++)
             for (j=0; j< 3; j++)
-              vv[k][i] += bb[i][j]*aspv[j][k];
+            vv[k][i] += bb[i][j]*aspv[j][k];
 
-        for (m=2; m>=1; m--)
-          for (n=0; n<3; n++) {
-            i = (int)fmod(m+1,3); j= (int)fmod(m+2,3);
-            k = (int)fmod(n+1,3); l= (int)fmod(n+2,3);
-            vv[m][n]=vv[i][k]*vv[j][l]-vv[i][l]*vv[j][k];
-          }
+            for (m=2; m>=1; m--)
+            for (n=0; n<3; n++) {
+                i = (int)fmod(m+1,3); j= (int)fmod(m+2,3);
+                k = (int)fmod(n+1,3); l= (int)fmod(n+2,3);
+                vv[m][n]=vv[i][k]*vv[j][l]-vv[i][l]*vv[j][k];
+            }
 
-        for (i=0; i< 3; i++) { /* compute norm(vv) */
-          c[i]=0;
-          for (j=0; j< 3; j++)
-            c[i] += vv[i][j]*vv[i][j];
-          if (c[i]>0) c[i] =  sqrt(c[i]);
-          else {
-            sprintf(machine_real.message, "Vectors A and B, c[%i]=%g", i, c[i]);
-            return machine_real;
-          }
-        }
+            for (i=0; i< 3; i++) { /* compute norm(vv) */
+                c[i]=0;
+                for (j=0; j< 3; j++)
+                c[i] += vv[i][j]*vv[i][j];
+                if (c[i]>0) c[i] =  sqrt(c[i]);
+                else {
+                    sprintf(machine_real.message, "Vectors A and B, c[%i]=%g", i, c[i]);
+                    return machine_real;
+                }
+            }
 
-        for (i=0; i< 3; i++) /* normalize vv */
-          for (j=0; j< 3; j++)
+            for (i=0; i< 3; i++) /* normalize vv */
+            for (j=0; j< 3; j++)
             vv[j][i] /= c[j];
 
-        for (i=0; i< 3; i++) /* compute S */
-          for (j=0; j< 3; j++) {
-            s[i][j] = 0;
-            for (k=0; k< 3; k++)
-              s[i][j] += vv[i][k]*bb[k][j];
-          }
-        s[3][3]=1;
-        for (i=0;  i< 3;  i++)  s[3][i]=s[i][3]=0;
+            for (i=0; i< 3; i++) /* compute S */
+            for (j=0; j< 3; j++) {
+                s[i][j] = 0;
+                for (k=0; k< 3; k++)
+                s[i][j] += vv[i][k]*bb[k][j];
+            }
+            s[3][3]=1;
+            for (i=0;  i< 3;  i++)  s[3][i]=s[i][3]=0;
 
-        /* compute q modulus and transverse component */
-        machine_real.qs = 0;
-        for (i=0; i< 3; i++) {
-          machine_real.qt[i] = 0;
-          for (j=0; j< 3; j++) machine_real.qt[i] += qhkl[j]*s[i][j];
-          machine_real.qs += machine_real.qt[i]*machine_real.qt[i];
+            /* compute q modulus and transverse component */
+            machine_real.qs = 0;
+            for (i=0; i< 3; i++) {
+                machine_real.qt[i] = 0;
+                for (j=0; j< 3; j++) machine_real.qt[i] += qhkl[j]*s[i][j];
+                machine_real.qs += machine_real.qt[i]*machine_real.qt[i];
+            }
+            if (machine_real.qs > 0) machine_real.qm = sqrt(machine_real.qs);
+            else sprintf(machine_real.message, "Q modulus too small QM^2=%g", machine_real.qs);
+        } else {
+            machine_real.qs = machine_real.qm*machine_real.qm;
         }
-        if (machine_real.qs > 0) machine_real.qm = sqrt(machine_real.qs);
-        else sprintf(machine_real.message, "Q modulus too small QM^2=%g", machine_real.qs);
-      } else {
-        machine_real.qs = machine_real.qm*machine_real.qm;
-      }
-      /* end if  qm <= 0 ********************************************* */
+        /* end if  qm <= 0 ********************************************* */
 
-      /* positioning of monochromator and analyser */
-      arg = PI/machine_hkl.dm/machine_hkl.ki;
-      if (fabs(arg > 1))
+        /* positioning of monochromator and analyser */
+        arg = PI/machine_hkl.dm/machine_hkl.ki;
+        if (fabs(arg > 1))
         sprintf(machine_real.message, "Monochromator can not reach this KI. arg=%g", arg);
-      else {
-        if (machine_hkl.dm <= 0 || machine_hkl.ki <= 0)
-          strcpy(machine_real.message, "Monochromator DM=0 or KI=0.");
-        else
-          machine_real.a1 = asin(arg)*RAD2DEG;
-        machine_real.a1 *= machine_hkl.sm;
-      }
-      machine_real.a2=2*machine_real.a1;
+        else {
+            if (machine_hkl.dm <= 0 || machine_hkl.ki <= 0)
+            strcpy(machine_real.message, "Monochromator DM=0 or KI=0.");
+            else
+            machine_real.a1 = asin(arg)*RAD2DEG;
+            machine_real.a1 *= machine_hkl.sm;
+        }
+        machine_real.a2=2*machine_real.a1;
 
-      arg = PI/machine_hkl.da/machine_hkl.kf;
-      if (fabs(arg > 1))
+        arg = PI/machine_hkl.da/machine_hkl.kf;
+        if (fabs(arg > 1))
         sprintf(machine_real.message, "Analyzer can not reach this KF. arg=%g",arg);
-      else {
-        if (machine_hkl.da <= 0 || machine_hkl.kf <= 0)
-          strcpy(machine_real.message, "Analyzer DA=0 or KF=0.");
-        else
-          machine_real.a5 = asin(arg)*RAD2DEG;
-        machine_real.a5 *= machine_hkl.sa;
-      }
-      machine_real.a6=2*machine_real.a5;
-      if (strlen(machine_real.message)) return machine_real;
+        else {
+            if (machine_hkl.da <= 0 || machine_hkl.kf <= 0)
+            strcpy(machine_real.message, "Analyzer DA=0 or KF=0.");
+            else
+            machine_real.a5 = asin(arg)*RAD2DEG;
+            machine_real.a5 *= machine_hkl.sa;
+        }
+        machine_real.a6=2*machine_real.a5;
+        if (strlen(machine_real.message)) return machine_real;
 
 
-      /* code from TASMAD/t_conv.F:SAM_CASE */
-      arg = (machine_hkl.ki*machine_hkl.ki + machine_hkl.kf*machine_hkl.kf - machine_real.qs)
-          / (2*machine_hkl.ki*machine_hkl.kf);
-      if (fabs(arg) < 1)
+        /* code from TASMAD/t_conv.F:SAM_CASE */
+        arg = (machine_hkl.ki*machine_hkl.ki + machine_hkl.kf*machine_hkl.kf - machine_real.qs)
+        / (2*machine_hkl.ki*machine_hkl.kf);
+        if (fabs(arg) < 1)
         machine_real.a4 = RAD2DEG*acos(arg);
-      else
+        else
         sprintf(machine_real.message, "Q modulus too big. Can not close triangle. arg=%g", arg);
-      machine_real.a4 *= machine_hkl.ss;
+        machine_real.a4 *= machine_hkl.ss;
 
-      if (!liquid_case) { /* compute a3 in crystals */
-        machine_real.a3 =
+        if (!liquid_case) { /* compute a3 in crystals */
+            machine_real.a3 =
             -atan2(machine_real.qt[1],machine_real.qt[0])
             -acos( (machine_hkl.kf*machine_hkl.kf-machine_real.qs-machine_hkl.ki*machine_hkl.ki)
-                  /(-2*machine_real.qm*machine_hkl.ki) );
-        machine_real.a3 *= RAD2DEG*(machine_real.a4 > 0 ? 1 : -1 );
-  //machine_real.a3 = machine_real.a3 -90;// Add by PW & LU
+            /(-2*machine_real.qm*machine_hkl.ki) );
+            machine_real.a3 *= RAD2DEG*(machine_real.a4 > 0 ? 1 : -1 );
+            //machine_real.a3 = machine_real.a3 -90;// Add by PW & LU
 
 
-      }
+        }
 
-/* Analyser angles */
-/* Angle of the analyser rack aa5 */
-RR = dadw/dsa;
-machine_real.aa5 = -RAD2DEG*(acos((sin(DEG2RAD*machine_real.a6)-(cos(DEG2RAD*machine_real.a6)+RR)*sqrt(RR*RR+2*RR*cos(DEG2RAD*machine_real.a6)))/(1+RR*RR+2*RR*cos(DEG2RAD*machine_real.a6)))); // From Bahl et al. , NIMB 226 (2004)
-/*printf("(RITA Analyzer Rack Angle: AA5=%.4g[deg])\n", machine_real.aa5);*/
-/*A4 angle between blades */
-dsb = sqrt(dsa*dsa + ana_d*ana_d - 2*dsa*ana_d*cos(DEG2RAD*machine_real.aa5));
- machine_real.da4 = RAD2DEG*asin(ana_d*sin(DEG2RAD*abs(machine_real.aa5))/dsb);
-//machine_real.da4 = RAD2DEG*atan(ana_d*cos(DEG2RAD*machine_real.aa5)/dsa);
-printf("(RITA Analyzer Angle between blades: DA4=%.4g[deg])\n", machine_real.da4);
-/*Blade angle rotation */
- machine_real.c1= -machine_real.aa5+machine_real.a5-(1-5)*machine_real.da4;
- machine_real.c2= -machine_real.aa5+machine_real.a5-(2-5)*machine_real.da4;
- machine_real.c3= -machine_real.aa5+machine_real.a5-(3-5)*machine_real.da4;
- machine_real.c4= -machine_real.aa5+machine_real.a5-(4-5)*machine_real.da4;
- machine_real.c5= -machine_real.aa5+machine_real.a5-(5-5)*machine_real.da4;
- machine_real.c6= -machine_real.aa5+machine_real.a5-(6-5)*machine_real.da4;
- machine_real.c7= -machine_real.aa5+machine_real.a5-(7-5)*machine_real.da4;
- machine_real.c8= -machine_real.aa5+machine_real.a5-(8-5)*machine_real.da4;
- machine_real.c9= -machine_real.aa5+machine_real.a5-(9-5)*machine_real.da4;
+        /* Analyser angles */
+        /* Angle of the analyser rack aa5 */
+        RR = dadw/dsa;
+        machine_real.aa5 = -RAD2DEG*(acos((sin(DEG2RAD*machine_real.a6)-(cos(DEG2RAD*machine_real.a6)+RR)*sqrt(RR*RR+2*RR*cos(DEG2RAD*machine_real.a6)))/(1+RR*RR+2*RR*cos(DEG2RAD*machine_real.a6)))); // From Bahl et al. , NIMB 226 (2004)
+        /*printf("(RITA Analyzer Rack Angle: AA5=%.4g[deg])\n", machine_real.aa5);*/
+        /*A4 angle between blades */
+        dsb = sqrt(dsa*dsa + ana_d*ana_d - 2*dsa*ana_d*cos(DEG2RAD*machine_real.aa5));
+        machine_real.da4 = RAD2DEG*asin(ana_d*sin(DEG2RAD*abs(machine_real.aa5))/dsb);
+        //machine_real.da4 = RAD2DEG*atan(ana_d*cos(DEG2RAD*machine_real.aa5)/dsa);
+        printf("(RITA Analyzer Angle between blades: DA4=%.4g[deg])\n", machine_real.da4);
+        /*Blade angle rotation */
+        machine_real.c1= -machine_real.aa5+machine_real.a5-(1-5)*machine_real.da4;
+        machine_real.c2= -machine_real.aa5+machine_real.a5-(2-5)*machine_real.da4;
+        machine_real.c3= -machine_real.aa5+machine_real.a5-(3-5)*machine_real.da4;
+        machine_real.c4= -machine_real.aa5+machine_real.a5-(4-5)*machine_real.da4;
+        machine_real.c5= -machine_real.aa5+machine_real.a5-(5-5)*machine_real.da4;
+        machine_real.c6= -machine_real.aa5+machine_real.a5-(6-5)*machine_real.da4;
+        machine_real.c7= -machine_real.aa5+machine_real.a5-(7-5)*machine_real.da4;
+        machine_real.c8= -machine_real.aa5+machine_real.a5-(8-5)*machine_real.da4;
+        machine_real.c9= -machine_real.aa5+machine_real.a5-(9-5)*machine_real.da4;
 
-    return machine_real;
-  }
-/* END declaring stuff for the HKL calculator adapted from templateTAS */
-
-
-
+        return machine_real;
+    }
+    /* END declaring stuff for the HKL calculator adapted from templateTAS */
 %}
 /* end of DECLARE */
 
 USERVARS
 %{
-  /* Order of scattering from the monochromator */
-  double Mono_order;
-  int AnaBlade;
-  int BinX;
-  int BinY;
+    /* Order of scattering from the monochromator */
+    double Mono_order;
+    int AnaBlade;
+    int BinX;
+    int BinY;
 %}
 
 

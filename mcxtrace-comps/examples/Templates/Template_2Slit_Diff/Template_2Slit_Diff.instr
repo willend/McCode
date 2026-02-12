@@ -33,7 +33,7 @@ DEFINE INSTRUMENT Template_2Slit_Diff(SLITW=1e-6, SLITSEP=4e-6)
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-  double slit_offset;
+    double slit_offset;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */

@@ -66,57 +66,56 @@ DECLARE
 %{
 
 
- double L_g1,L_g2,L_g3,L_g4,L_g5,L_g6,L_g7,L_g8,L_g9,L_g10,L_g11,L_g12;
- double w_g1,w_g2,w_g3,w_g4,w_g5,w_g6,w_g7,w_g8,w_g9,w_g10,w_g11,w_g12;
- double h_g1,h_g2, h_g3, h_g4, h_g5, h_g6, h_g7, h_g8, h_g9, h_g10, h_g11, h_g12; 
-
+    double L_g1,L_g2,L_g3,L_g4,L_g5,L_g6,L_g7,L_g8,L_g9,L_g10,L_g11,L_g12;
+    double w_g1,w_g2,w_g3,w_g4,w_g5,w_g6,w_g7,w_g8,w_g9,w_g10,w_g11,w_g12;
+    double h_g1,h_g2, h_g3, h_g4, h_g5, h_g6, h_g7, h_g8, h_g9, h_g10, h_g11, h_g12; 
 %}
 
 /* any C code here is executed when the simulation starts */
 INITIALIZE
 %{
 
-/* guide lengths  */
-L_g1=1.87;
-L_g2=1.53;
-L_g3=5.50;
-L_g4=7.50;
-L_g5=3.00;
-L_g6=0.45;
-L_g7=6.50;
-L_g8=1.5;
-L_g9=1;
-L_g10=5.75;
-L_g11=3.5;
-L_g12=5;
+    /* guide lengths  */
+    L_g1=1.87;
+    L_g2=1.53;
+    L_g3=5.50;
+    L_g4=7.50;
+    L_g5=3.00;
+    L_g6=0.45;
+    L_g7=6.50;
+    L_g8=1.5;
+    L_g9=1;
+    L_g10=5.75;
+    L_g11=3.5;
+    L_g12=5;
 
-/* guide widths */
-w_g1=0.06;
-w_g2=0.06;
-w_g3=0.06;
-w_g4=0.06;
-w_g5=0.06;
-w_g6=0.06;
-w_g7=0.06;
-w_g8=0.06;
-w_g9=0.06;
-w_g10=0.06;
-w_g11=0.06;
-w_g12=0.06;
+    /* guide widths */
+    w_g1=0.06;
+    w_g2=0.06;
+    w_g3=0.06;
+    w_g4=0.06;
+    w_g5=0.06;
+    w_g6=0.06;
+    w_g7=0.06;
+    w_g8=0.06;
+    w_g9=0.06;
+    w_g10=0.06;
+    w_g11=0.06;
+    w_g12=0.06;
 
-/*guide heights */
-h_g1=0.125;
-h_g2=0.125;
-h_g3=0.125;
-h_g4=0.125;
-h_g5=0.125;
-h_g6=0.125;
-h_g7=0.125;
-h_g8=0.125;
-h_g9=0.125;
-h_g10=0.125;
-h_g11=0.125;
-h_g12=0.125;
+    /*guide heights */
+    h_g1=0.125;
+    h_g2=0.125;
+    h_g3=0.125;
+    h_g4=0.125;
+    h_g5=0.125;
+    h_g6=0.125;
+    h_g7=0.125;
+    h_g8=0.125;
+    h_g9=0.125;
+    h_g10=0.125;
+    h_g11=0.125;
+    h_g12=0.125;
 %}
 
 /* in the TRACE section, the instrument is defined as a sequence of components. */

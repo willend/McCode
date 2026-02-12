@@ -34,31 +34,29 @@ DEFINE INSTRUMENT Test_grating_reflect(E0=1, dE=0.1, angle_grating_norm=88, numb
 DECLARE
 %{
 
-double period;
-double angle_order_grating;
-double sign;
-double angle_grating_norm_pos;
-
+    double period;
+    double angle_order_grating;
+    double sign;
+    double angle_grating_norm_pos;
 %}
 
 INITIALIZE
 %{
 
-sign=1; //sign is here to take into account the ray arriving on the other side of the norm. Test angle_grating_norm=-88 for example.
+    sign=1; //sign is here to take into account the ray arriving on the other side of the norm. Test angle_grating_norm=-88 for example.
 
-period = 1/(1e3*number_lines_per_mm);
-fprintf(stdout,"Grating period: %g \n", period);
+    period = 1/(1e3*number_lines_per_mm);
+    fprintf(stdout,"Grating period: %g \n", period);
 
-angle_grating_norm_pos = angle_grating_norm;
+    angle_grating_norm_pos = angle_grating_norm;
 
-if(angle_grating_norm<0){
-  angle_grating_norm_pos = -angle_grating_norm;
-  sign=-1;
-}
+    if(angle_grating_norm<0){
+        angle_grating_norm_pos = -angle_grating_norm;
+        sign=-1;
+    }
 
-angle_order_grating = RAD2DEG*asin(-(12.39842/(E0))/1e10*order/period+sin(DEG2RAD*angle_grating_norm_pos));
-fprintf(stdout,"Angle for order %g is %g degrees \n", order, angle_order_grating);
-
+    angle_order_grating = RAD2DEG*asin(-(12.39842/(E0))/1e10*order/period+sin(DEG2RAD*angle_grating_norm_pos));
+    fprintf(stdout,"Angle for order %g is %g degrees \n", order, angle_order_grating);
 %}
 
 TRACE

@@ -26,10 +26,10 @@ DEFINE INSTRUMENT Test_pol_ideal(xory=1)
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

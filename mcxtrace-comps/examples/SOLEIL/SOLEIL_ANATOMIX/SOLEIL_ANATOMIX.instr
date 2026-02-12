@@ -81,15 +81,15 @@ DECLARE
 INITIALIZE
 %{
     if (Emono==0) Emono=E0;
-    
+
     if (E0-dE < Emono && Emono < E0+dE) {
-    
-      double arg=12398.42*sqrt(3)/(2*5.4309*Emono*1e3);
-      if (fabs(arg) > 1)
+
+        double arg=12398.42*sqrt(3)/(2*5.4309*Emono*1e3);
+        if (fabs(arg) > 1)
         exit(printf("%s: ERROR: Monochromator can not reach this energy.\n", NAME_INSTRUMENT));
-      calculated_angle = RAD2DEG*asin(arg);
+        calculated_angle = RAD2DEG*asin(arg);
     } else {
-      exit(printf("%s: ERROR: Monochromator energy is outside the Undulator bandwidth.\n", NAME_INSTRUMENT));
+        exit(printf("%s: ERROR: Monochromator energy is outside the Undulator bandwidth.\n", NAME_INSTRUMENT));
     }
 %}
 

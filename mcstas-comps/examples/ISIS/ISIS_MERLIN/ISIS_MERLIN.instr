@@ -46,8 +46,8 @@ E_foc=80.0,nu_hz=200.0,int type=3)
 
 DECLARE
 %{
-double slit_curv,num_slits,width,len;
-double lam,phase_time,t_det,t_fer;
+    double slit_curv,num_slits,width,len;
+    double lam,phase_time,t_det,t_fer;
 %}
 
 // #include <math.h>
@@ -55,34 +55,34 @@ double lam,phase_time,t_det,t_fer;
 INITIALIZE 
 %{ 
 
-if (type==1)
-  {slit_curv=1/0.82;
-   num_slits=55;
-   width=0.00114;
-   len=0.099;
-   fprintf(stderr,"MERLIN b chopper selected");
-  }
-if (type==2)
-  {slit_curv=1/1.3;
-   num_slits=28;
-   width=0.00228;
-   len=0.099;
-   fprintf(stderr,"MERLIN Sloppy selected selected");
-  }
-if (type==3)
-  {slit_curv=0;
-   num_slits=350;
-   width=0.0002;
-   len=0.01;
-   fprintf(stderr,"Merlin Gd selected selected");
-  }
+    if (type==1)
+    {slit_curv=1/0.82;
+        num_slits=55;
+        width=0.00114;
+        len=0.099;
+        fprintf(stderr,"MERLIN b chopper selected");
+    }
+    if (type==2)
+    {slit_curv=1/1.3;
+        num_slits=28;
+        width=0.00228;
+        len=0.099;
+        fprintf(stderr,"MERLIN Sloppy selected selected");
+    }
+    if (type==3)
+    {slit_curv=0;
+        num_slits=350;
+        width=0.0002;
+        len=0.01;
+        fprintf(stderr,"Merlin Gd selected selected");
+    }
 
-/* calculate opening time of the fermi chopper at 10m from moderator*/
-phase_time = (2.28e-3*10.0/sqrt(E_foc));
-printf("\nphase_time: %f\n\n",phase_time);
-t_det=1.43*phase_time;
-t_fer=1.02*phase_time;
-lam = sqrt(81.81/E_foc);
+    /* calculate opening time of the fermi chopper at 10m from moderator*/
+    phase_time = (2.28e-3*10.0/sqrt(E_foc));
+    printf("\nphase_time: %f\n\n",phase_time);
+    t_det=1.43*phase_time;
+    t_fer=1.02*phase_time;
+    lam = sqrt(81.81/E_foc);
 %}
 
 TRACE

@@ -27,16 +27,16 @@ DEFINE INSTRUMENT Test_GROUP(SLITW=1e-6,SIGNI=1)
 
 DECLARE
 %{
-  double slit_offset;
-  double signi;
-  #pragma acc declare create(slit_offset,signi)
+    double slit_offset;
+    double signi;
+    #pragma acc declare create(slit_offset,signi)
 %}
 
 INITIALIZE
 %{
-  slit_offset=4e-6;
-  signi=SIGNI;
-  #pragma acc update device(slit_offset,signi)
+    slit_offset=4e-6;
+    signi=SIGNI;
+    #pragma acc update device(slit_offset,signi)
 %}
 
 TRACE
@@ -56,12 +56,12 @@ COMPONENT source = Source_simple(
 AT (0, 0, 0) RELATIVE PREVIOUS
 EXTEND
 %{
-  x=signi*slit_offset;
-  y=0;
-  z=0;
-  double v=sqrt(vx*vx+vy*vy+vz*vz);
-  vx=vy=0;
-  vz=v;
+    x=signi*slit_offset;
+    y=0;
+    z=0;
+    double v=sqrt(vx*vx+vy*vy+vz*vz);
+    vx=vy=0;
+    vz=v;
 %}
 
 COMPONENT s1 = Slit(

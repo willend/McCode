@@ -43,33 +43,33 @@ DEFINE INSTRUMENT TAS1_C1_Tilt(PHM=-37.077,TTM=-74,C1=30,OMC1=5.5)
 
 DECLARE
 %{
-/* Mosaicity used on monochromator and analysator */
-double tas1_mono_mosaic = 45; /* Measurements indicate its really 45' */
-/* Q vector for bragg scattering with monochromator and analysator */
-double tas1_mono_q = 2*1.87325; /* Fake 2nd order scattering for 20meV */
-double tas1_mono_r0 = 0.6;
+    /* Mosaicity used on monochromator and analysator */
+    double tas1_mono_mosaic = 45; /* Measurements indicate its really 45' */
+    /* Q vector for bragg scattering with monochromator and analysator */
+    double tas1_mono_q = 2*1.87325; /* Fake 2nd order scattering for 20meV */
+    double tas1_mono_r0 = 0.6;
 
-/* Collimators */
-double OMC1_d;
+    /* Collimators */
+    double OMC1_d;
 
-double mpos0, mpos1, mpos2, mpos3, mpos4, mpos5, mpos6, mpos7;
-double mrot0, mrot1, mrot2, mrot3, mrot4, mrot5, mrot6, mrot7;
+    double mpos0, mpos1, mpos2, mpos3, mpos4, mpos5, mpos6, mpos7;
+    double mrot0, mrot1, mrot2, mrot3, mrot4, mrot5, mrot6, mrot7;
 %}
 
 INITIALIZE
 %{
-  double d = 0.0125;    /* 12.5 mm between slab centers. */
-  double phi = 0.5443;    /* Rotation between adjacent slabs. */
-  mpos0 = -3.5*d; mrot0 = -3.5*phi;
-  mpos1 = -2.5*d; mrot1 = -2.5*phi;
-  mpos2 = -1.5*d; mrot2 = -1.5*phi;
-  mpos3 = -0.5*d; mrot3 = -0.5*phi;
-  mpos4 =  0.5*d; mrot4 =  0.5*phi;
-  mpos5 =  1.5*d; mrot5 =  1.5*phi;
-  mpos6 =  2.5*d; mrot6 =  2.5*phi;
-  mpos7 =  3.5*d; mrot7 =  3.5*phi;
+    double d = 0.0125;    /* 12.5 mm between slab centers. */
+    double phi = 0.5443;    /* Rotation between adjacent slabs. */
+    mpos0 = -3.5*d; mrot0 = -3.5*phi;
+    mpos1 = -2.5*d; mrot1 = -2.5*phi;
+    mpos2 = -1.5*d; mrot2 = -1.5*phi;
+    mpos3 = -0.5*d; mrot3 = -0.5*phi;
+    mpos4 =  0.5*d; mrot4 =  0.5*phi;
+    mpos5 =  1.5*d; mrot5 =  1.5*phi;
+    mpos6 =  2.5*d; mrot6 =  2.5*phi;
+    mpos7 =  3.5*d; mrot7 =  3.5*phi;
 
-  OMC1_d = OMC1/60.0;
+    OMC1_d = OMC1/60.0;
 %}
 
 TRACE

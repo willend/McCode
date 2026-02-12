@@ -29,10 +29,10 @@ DEFINE INSTRUMENT Unit_test_conditional_PSD()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

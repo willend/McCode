@@ -28,7 +28,7 @@ DEFINE INSTRUMENT Test_mirror_parabolic(D=1,MM=1)
 
 USERVARS
 %{
-  int bounce;
+    int bounce;
 %}
 
 
@@ -44,7 +44,7 @@ COMPONENT source = Source_div(
 AT (0, 0, 0) RELATIVE origin
 EXTEND
 %{
-  //y=mcipYH;
+    //y=mcipYH;
 %}
 
 
@@ -54,8 +54,8 @@ WHEN(MM==1) AT(0,0,5) RELATIVE origin
 ROTATED (-90,0,0) RELATIVE origin
 EXTEND
 %{
-  //printf("%g %g\n",focusx,focusz);
-  bounce=SCATTERED;
+    //printf("%g %g\n",focusx,focusz);
+    bounce=SCATTERED;
 %}
 
 COMPONENT det_a = Arm()

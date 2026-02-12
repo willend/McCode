@@ -36,10 +36,10 @@ DEFINE INSTRUMENT JJ_SAXS(pin2_pos=0.2, pin3_pos=0.4, optic_L=0.1, sample_pos=0.
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE
@@ -67,7 +67,7 @@ AT(0,0,0) RELATIVE optic_arm
 ROTATED(0,2.75,0) RELATIVE optic_arm
 EXTEND
 %{
-  if (!SCATTERED) ABSORB;
+    if (!SCATTERED) ABSORB;
 %}
 
 COMPONENT beam_tube_axis=Arm()

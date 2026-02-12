@@ -35,10 +35,10 @@ DEFINE INSTRUMENT Test_grating_trans(E0=1, dE=0.001, GD=1, Rx=0, Ry=0,Rz=0, int 
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

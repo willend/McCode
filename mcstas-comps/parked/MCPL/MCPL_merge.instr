@@ -36,12 +36,12 @@ DEFINE INSTRUMENT MCPL_merge(string fout="output", string f0="NULL", string f1="
 
 DECLARE
 %{
-  long long unsigned int ncount_set;
+    long long unsigned int ncount_set;
 %}
 
 INITIALIZE
 %{
-  ncount_set=0;
+    ncount_set=0;
 %}
 
 TRACE

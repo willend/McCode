@@ -29,10 +29,10 @@ DEFINE INSTRUMENT Test_Pol_Guide_Vmirror(int polariserIn=1)
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
   %}
 
 /* Here comes the TRACE section, where the actual      */

@@ -97,21 +97,21 @@ SHARE
 
 DECLARE
 %{
-  int Z;
-  double rho;
-  double At;
-  double f_rel;
-  double f_nt;
-  t_Table m_t;
-  t_Table f0_t;
-  double a2inv;
-  double b2inv;
-  double c2inv; /* 1/r^2 for physical ellipse */
-  double l_a2inv;
-  double l_b2inv;
-  double l_c2inv; /* 1/r^2 for lattice ellipse */
-  double cos_alpha0;
-  double sin_alpha0;
+    int Z;
+    double rho;
+    double At;
+    double f_rel;
+    double f_nt;
+    t_Table m_t;
+    t_Table f0_t;
+    double a2inv;
+    double b2inv;
+    double c2inv; /* 1/r^2 for physical ellipse */
+    double l_a2inv;
+    double l_b2inv;
+    double l_c2inv; /* 1/r^2 for lattice ellipse */
+    double cos_alpha0;
+    double sin_alpha0;
 %}
 
 INITIALIZE
@@ -124,9 +124,9 @@ INITIALIZE
         }
         char **header_parsed;
         header_parsed=Table_ParseHeader(m_t.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
-        if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
-        if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
-        if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
+    if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
+    if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
+    if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
     }else{
         fprintf(stderr,"Error(%s): No material file specified\n",NAME_CURRENT_COMP);
     }
@@ -149,9 +149,9 @@ INITIALIZE
     sin_alpha0=sin(alpha);
 
     if (verbose){
-      printf("INFO (%s): curve=(%.5f %.5f %.5f) lcurve=(%.3f %.5f %.5f)\n\n",NAME_CURRENT_COMP,
-          a2inv, b2inv, c2inv, l_a2inv, l_b2inv, l_c2inv);
-      printf("INFO (%s): initialized\n",NAME_CURRENT_COMP);
+        printf("INFO (%s): curve=(%.5f %.5f %.5f) lcurve=(%.3f %.5f %.5f)\n\n",NAME_CURRENT_COMP,
+        a2inv, b2inv, c2inv, l_a2inv, l_b2inv, l_c2inv);
+        printf("INFO (%s): initialized\n",NAME_CURRENT_COMP);
     }
 %}
 
@@ -168,7 +168,7 @@ TRACE
     //double DeltaTheta0;			// (rad) the center of the reflectivity curve is at asin(n*lambda/(2*d)) + DeltaTheta0
     //double Rpi, Rsig;
     double R;          // Reflectivity value calculated by Mx_DarwinReflectivity() function for each incoming photon
-    
+
     /* get the photon's kvector and energy */
     K=sqrt(kx*kx+ky*ky+kz*kz);
     E = K2E*K; /* use built-in constants for consistency */
@@ -176,208 +176,207 @@ TRACE
     kxu = kx; kyu = ky; kzu = kz;
     NORM(kxu,kyu,kzu);
     double k0hat[3]={kxu,kyu,kzu};
-    /* printf("incoming kx,ky,kz, Ex, Ey, Ez, k.E: %f %f %f %g %g %g %g\n", kx,ky,kz,Ex,Ey,Ez, kxu*Ex+kyu*Ey+kzu*Ez); */
+        /* printf("incoming kx,ky,kz, Ex, Ey, Ez, k.E: %f %f %f %g %g %g %g\n", kx,ky,kz,Ex,Ey,Ez, kxu*Ex+kyu*Ey+kzu*Ez); */
 
-    #ifdef MCDEBUG
-    printf("%s: starting trace, k0hat=(%.5f %.5f %.5f)\n", NAME_CURRENT_COMP,
-        k0hat[0], k0hat[1], k0hat[2]);
-    #endif
-
-    /* this intersection code copied from Mirror_elliptic.comp, with coordinates modified */
-    double A,B,C, xt, yt, zt;
-    double t0,t1;
-    /*an offset to the mirror parameters perhaps*/
-
-    xt=x;
-    zt=z;
-    /*the reference point is on the ellipsoid surface such that the ellipsoid mass lies on the positive y-side of the zy-plane*/
-    yt=y-y_b;
-
-    C=xt*xt*a2inv + yt*yt*b2inv + zt*zt*c2inv -1;
-    B=2*(kxu*xt*a2inv + kyu*yt*b2inv + kzu*zt*c2inv);
-    A=kxu*kxu*a2inv + kyu*kyu*b2inv + kzu*kzu*c2inv;
-
-    if(solve_2nd_order(&t0,&t1,A,B,C)){
-        double xx0, xx1, yy0, yy1, zz0, zz1; /* we will have to tentatively propagate twice to see which surface we hit */
-        xx0=x+kxu*t0; yy0=y+kyu*t0; zz0=z+kzu*t0;
-        xx1=x+kxu*t1; yy1=y+kyu*t1; zz1=z+kzu*t1;
-
-        /*Check if we hit the mirror and whether the hit it is in front of the ray.
-         * This does not account for mirror curvature */
-        int hit0=(fabs(xx0)<width/2.0) && (fabs(zz0)<length/2.0) && t0>0;
-        int hit1=(fabs(xx1)<width/2.0) && (fabs(zz1)<length/2.0) && t1>0;
-        int doit=hit0 || hit1;
-        if(hit0 && !hit1) PROP_DL(t0); /* only one intersection actually on mirror */
-        else if (hit1 && !hit0) PROP_DL(t1); /* other intersection */
-        else if (hit0 && hit1) { /* both, take first strike (which may be back of mirror) */
-            PROP_DL(t0<t1?t0:t1);	
-        } else {
-            RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
-        }
         #ifdef MCDEBUG
-        printf("%s: solving for crystal hit, l0=%f, l1=%f, x=(%f %f %f) doit=%d, hit0=%d, hit1=%d\n", NAME_CURRENT_COMP,
-            t0, t1, x, y, z, doit, hit0, hit1);
+        printf("%s: starting trace, k0hat=(%.5f %.5f %.5f)\n", NAME_CURRENT_COMP,
+        k0hat[0], k0hat[1], k0hat[2]);
         #endif
-        if ( doit ){
-            SCATTER;
-            xt=x; yt=y-y_b; zt=z; /* update shifted coordinates to intersection point */
-            double grad_x, grad_y, grad_z;
-            /* grad is the outer normal to the surface at this point on surface presumed to be concave */
+
+        /* this intersection code copied from Mirror_elliptic.comp, with coordinates modified */
+        double A,B,C, xt, yt, zt;
+        double t0,t1;
+        /*an offset to the mirror parameters perhaps*/
+
+        xt=x;
+        zt=z;
+        /*the reference point is on the ellipsoid surface such that the ellipsoid mass lies on the positive y-side of the zy-plane*/
+        yt=y-y_b;
+
+        C=xt*xt*a2inv + yt*yt*b2inv + zt*zt*c2inv -1;
+        B=2*(kxu*xt*a2inv + kyu*yt*b2inv + kzu*zt*c2inv);
+        A=kxu*kxu*a2inv + kyu*kyu*b2inv + kzu*kzu*c2inv;
+
+        if(solve_2nd_order(&t0,&t1,A,B,C)){
+            double xx0, xx1, yy0, yy1, zz0, zz1; /* we will have to tentatively propagate twice to see which surface we hit */
+            xx0=x+kxu*t0; yy0=y+kyu*t0; zz0=z+kzu*t0;
+            xx1=x+kxu*t1; yy1=y+kyu*t1; zz1=z+kzu*t1;
+
+            /*Check if we hit the mirror and whether the hit it is in front of the ray.
+            * This does not account for mirror curvature */
+            int hit0=(fabs(xx0)<width/2.0) && (fabs(zz0)<length/2.0) && t0>0;
+            int hit1=(fabs(xx1)<width/2.0) && (fabs(zz1)<length/2.0) && t1>0;
+            int doit=hit0 || hit1;
+            if(hit0 && !hit1) PROP_DL(t0); /* only one intersection actually on mirror */
+            else if (hit1 && !hit0) PROP_DL(t1); /* other intersection */
+            else if (hit0 && hit1) { /* both, take first strike (which may be back of mirror) */
+                PROP_DL(t0<t1?t0:t1);	
+            } else {
+                RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+            }
+            #ifdef MCDEBUG
+            printf("%s: solving for crystal hit, l0=%f, l1=%f, x=(%f %f %f) doit=%d, hit0=%d, hit1=%d\n", NAME_CURRENT_COMP,
+            t0, t1, x, y, z, doit, hit0, hit1);
+            #endif
+            if ( doit ){
+                SCATTER;
+                xt=x; yt=y-y_b; zt=z; /* update shifted coordinates to intersection point */
+                double grad_x, grad_y, grad_z;
+                /* grad is the outer normal to the surface at this point on surface presumed to be concave */
             double nhat[3]={-xt*a2inv, -yt*b2inv, -zt*c2inv}; NORM(nhat[0], nhat[1], nhat[2]);
 
-            /* compute angle of crystal planes based on lattice ellipse, need to include rotation still! */
-            double l_grad_x, l_grad_y, l_grad_z;
-            /* l_grad is the outer normal to the lattice ellipse at this point, assuming that at the center of the
-              mirror, the two ellipses coincide */
+                /* compute angle of crystal planes based on lattice ellipse, need to include rotation still! */
+                double l_grad_x, l_grad_y, l_grad_z;
+                /* l_grad is the outer normal to the lattice ellipse at this point, assuming that at the center of the
+                mirror, the two ellipses coincide */
             double alpha_v[3]={ -xt*l_a2inv, -(y-lattice_y_b)*l_b2inv, -zt*l_c2inv}; NORM(alpha_v[0], alpha_v[1], alpha_v[2]);
-            /* rotate the curvature-induced asymmetry by the global asymmetry alpha around the x-axis */
-            double ay=alpha_v[1]*cos_alpha0-alpha_v[2]*sin_alpha0;
-            double az=alpha_v[2]*cos_alpha0+alpha_v[1]*sin_alpha0;
-            alpha_v[1]=ay; alpha_v[2]=az;
+                /* rotate the curvature-induced asymmetry by the global asymmetry alpha around the x-axis */
+                double ay=alpha_v[1]*cos_alpha0-alpha_v[2]*sin_alpha0;
+                double az=alpha_v[2]*cos_alpha0+alpha_v[1]*sin_alpha0;
+                alpha_v[1]=ay; alpha_v[2]=az;
 
-            double d=cbrt(V)/(sqrt(h*h+k*k+l*l));/*this is valid only for cubic structures*/
-            f00 = Z;
-            f0h = Table_Value(f0_t,1/(2*d),Z);
-            fp  = Table_Value(m_t,E,1)-Z;
-            fpp = Table_Value(m_t,E,2);
+                double d=cbrt(V)/(sqrt(h*h+k*k+l*l));/*this is valid only for cubic structures*/
+                f00 = Z;
+                f0h = Table_Value(f0_t,1/(2*d),Z);
+                fp  = Table_Value(m_t,E,1)-Z;
+                fpp = Table_Value(m_t,E,2);
 
-            double Rsig, Rpi;
-            double kh[3], sig_axis[3], pi_axis[3];
-            int fail;
-            
-            double complex chi0, chih;
-            double k0mag, hscale, thetaB;
+                double Rsig, Rpi;
+                double kh[3], sig_axis[3], pi_axis[3];
+                int fail;
 
-            Mx_CubicCrystalChi(&chi0, &chih, &k0mag, &hscale, &thetaB,
-                         f00, f0h, fp, fpp, V, h, k, l,
-                         debye_waller_B, E,
-                         crystal_type,structure_factor_scale_r,structure_factor_scale_i);
-            if(thetaB==0){
-              if(verbose){
-                fprintf(stderr,"WARNING (%s): reflection [%d %d %d] is inaccessible for E= %g keV. Terminating photon,\n",NAME_CURRENT_COMP,h,k,l,E);
-                ABSORB;
-              }
+                double complex chi0, chih;
+                double k0mag, hscale, thetaB;
+
+                Mx_CubicCrystalChi(&chi0, &chih, &k0mag, &hscale, &thetaB,
+                f00, f0h, fp, fpp, V, h, k, l,
+                debye_waller_B, E,
+                crystal_type,structure_factor_scale_r,structure_factor_scale_i);
+                if(thetaB==0){
+                    if(verbose){
+                        fprintf(stderr,"WARNING (%s): reflection [%d %d %d] is inaccessible for E= %g keV. Terminating photon,\n",NAME_CURRENT_COMP,h,k,l,E);
+                        ABSORB;
+                    }
+                }
+                fail=Mx_DarwinReflectivityBC(&Rsig, &Rpi, kh, // these are the return values
+                k0hat, nhat, alpha_v,
+                chi0, chih, chih, k0mag, hscale, thetaB
+                );
+
+                cross(sig_axis, k0hat, kh, 1); /* kin x kout is sigma direction */
+                /* sig_axis is the sigma direction, as returned by Bragg_Geometry inside DarwinReflectivityBT */
+                /* pi is a vector perpendicular to k_in and sig i.e. the direction of pi polarization incoming */
+                cross(pi_axis, k0hat, sig_axis, 1);
+
+                /* update outgoing direction vector kx, ky, kz = kh, fully scaled outgoing k vector */
+                kx=kh[0]; ky=kh[1]; kz=kh[2];
+
+                /* resolve incoming polarization into sig and pi bits, and scale by sqrt(reflectivity) which is amplitude scale */
+                double Esig=(Ex*sig_axis[0]+Ey*sig_axis[1]+Ez*sig_axis[2]);
+                double Epi= (Ex* pi_axis[0]+Ey* pi_axis[1]+Ez* pi_axis[2]);
+                if(Esig==0 && Epi==0) { /* someone didn't set the polarization direction; set it now to a random value and it will propagate */
+                    double psi=rand01()*PI/2;
+                    Esig=cos(psi); Epi=sin(psi);
+                }
+                Esig=Esig*sqrt(Rsig);
+                Epi=Epi*sqrt(Rpi);
+                R=Esig*Esig+Epi*Epi; /* projected reflectivity, squared back to intensity */
+
+                double pi1_axis[3];
+                /* pi1 is now a vector perpendicular to k_out and sig i.e. the direction of pi polarization outgoing */
+                cross(pi1_axis, kh, sig_axis,1);
+
+                /* a linear combination of these is still perpendicular to k, but has the correct polarization weighting */
+                Ex=Epi*pi1_axis[0]+Esig*sig_axis[0];
+                Ey=Epi*pi1_axis[1]+Esig*sig_axis[1];
+                Ez=Epi*pi1_axis[2]+Esig*sig_axis[2];
+                NORM(Ex, Ey, Ez);
+
+                #ifdef MCDEBUG
+                fprintf(stderr,"Bent Crystal: %s: Rsig=%.4g Rpi=%.4g "
+                " k0=(%.8f, %.8f, %.8f), nhat=(%.8f, %.8f, %.8f) alpha=(%.8f, %.8f, %.8f), "
+                " kout=(%.8f, %.8f, %.8f) "
+                " axis=(%.8f, %.8f, %.8f) E=(%.4f, %.4f, %.4f) \n",
+                NAME_CURRENT_COMP, Rsig, Rpi, 
+                k0hat[0], k0hat[1], k0hat[2], nhat[0], nhat[1], nhat[2],
+                alpha_v[0], alpha_v[1], alpha_v[2],
+                kh[0], kh[1], kh[2], 
+                sig_axis[0], sig_axis[1], sig_axis[2], Ex, Ey, Ez);
+                #endif      
+                /* apply Darwin reflectivity if not is supplied from outside*/
+                if (!R0){
+                    p*=R;
+                }else{
+                    p*=R0;
+                }
+                /*catch dead rays*/
+                if (p==0) ABSORB;
+            } else {
+                RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
             }
-            fail=Mx_DarwinReflectivityBC(&Rsig, &Rpi, kh, // these are the return values
-                  k0hat, nhat, alpha_v,
-                  chi0, chih, chih, k0mag, hscale, thetaB
-              );
-
-            cross(sig_axis, k0hat, kh, 1); /* kin x kout is sigma direction */
-            /* sig_axis is the sigma direction, as returned by Bragg_Geometry inside DarwinReflectivityBT */
-            /* pi is a vector perpendicular to k_in and sig i.e. the direction of pi polarization incoming */
-            cross(pi_axis, k0hat, sig_axis, 1);
-
-            /* update outgoing direction vector kx, ky, kz = kh, fully scaled outgoing k vector */
-            kx=kh[0]; ky=kh[1]; kz=kh[2];
-
-            /* resolve incoming polarization into sig and pi bits, and scale by sqrt(reflectivity) which is amplitude scale */
-            double Esig=(Ex*sig_axis[0]+Ey*sig_axis[1]+Ez*sig_axis[2]);
-            double Epi= (Ex* pi_axis[0]+Ey* pi_axis[1]+Ez* pi_axis[2]);
-            if(Esig==0 && Epi==0) { /* someone didn't set the polarization direction; set it now to a random value and it will propagate */
-                double psi=rand01()*PI/2;
-                Esig=cos(psi); Epi=sin(psi);
-            }
-            Esig=Esig*sqrt(Rsig);
-            Epi=Epi*sqrt(Rpi);
-            R=Esig*Esig+Epi*Epi; /* projected reflectivity, squared back to intensity */
-
-            double pi1_axis[3];
-            /* pi1 is now a vector perpendicular to k_out and sig i.e. the direction of pi polarization outgoing */
-            cross(pi1_axis, kh, sig_axis,1);
-
-            /* a linear combination of these is still perpendicular to k, but has the correct polarization weighting */
-            Ex=Epi*pi1_axis[0]+Esig*sig_axis[0];
-            Ey=Epi*pi1_axis[1]+Esig*sig_axis[1];
-            Ez=Epi*pi1_axis[2]+Esig*sig_axis[2];
-            NORM(Ex, Ey, Ez);
-
-#ifdef MCDEBUG
-            fprintf(stderr,"Bent Crystal: %s: Rsig=%.4g Rpi=%.4g "
-                    " k0=(%.8f, %.8f, %.8f), nhat=(%.8f, %.8f, %.8f) alpha=(%.8f, %.8f, %.8f), "
-                    " kout=(%.8f, %.8f, %.8f) "
-                    " axis=(%.8f, %.8f, %.8f) E=(%.4f, %.4f, %.4f) \n",
-                    NAME_CURRENT_COMP, Rsig, Rpi, 
-                    k0hat[0], k0hat[1], k0hat[2], nhat[0], nhat[1], nhat[2],
-                    alpha_v[0], alpha_v[1], alpha_v[2],
-                    kh[0], kh[1], kh[2], 
-                    sig_axis[0], sig_axis[1], sig_axis[2], Ex, Ey, Ez);
-#endif      
-            /* apply Darwin reflectivity if not is supplied from outside*/
-            if (!R0){
-                p*=R;
-            }else{
-                p*=R0;
-            }
-            /*catch dead rays*/
-            if (p==0) ABSORB;
-        } else {
-            RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
         }
-    }
-#ifdef MCDEBUG
-    fflush(NULL); // make sure all error messages are in order!
-#endif
-
+        #ifdef MCDEBUG
+        fflush(NULL); // make sure all error messages are in order!
+        #endif
 %}
 
 
 MCDISPLAY
 %{
-  int i,j,N=12, M=12;
-  double aa,bb,cc;
-  double vmax,vmin,umax,umin;
-  magnify("");
-#ifdef MCDEBUG
-  printf("Bent Crystal(%s): plot params (%f %f %f) (%f %f %f) %f %f\n", NAME_CURRENT_COMP,
+    int i,j,N=12, M=12;
+    double aa,bb,cc;
+    double vmax,vmin,umax,umin;
+    magnify("");
+    #ifdef MCDEBUG
+    printf("Bent Crystal(%s): plot params (%f %f %f) (%f %f %f) %f %f\n", NAME_CURRENT_COMP,
     x_a, y_b, z_c, a2inv, b2inv, c2inv, width, length);
-  fflush(NULL);
-#endif
+    fflush(NULL);
+    #endif
 
-  /*use the circumference of the ellipse/4 = the the ratio between that and the crystal length/2 should be reasonably close to umax/pi_2*/
-  /*according to Ramanujan 1914*/
-  double Pv=M_PI*(3*(z_c+y_b)- sqrt( (3*z_c+y_b)*(z_c+3*y_b)));
-  double Pu=M_PI*(3*(x_a+y_b)- sqrt( (3*x_a+y_b)*(x_a+3*y_b)));
+    /*use the circumference of the ellipse/4 = the the ratio between that and the crystal length/2 should be reasonably close to umax/pi_2*/
+    /*according to Ramanujan 1914*/
+    double Pv=M_PI*(3*(z_c+y_b)- sqrt( (3*z_c+y_b)*(z_c+3*y_b)));
+    double Pu=M_PI*(3*(x_a+y_b)- sqrt( (3*x_a+y_b)*(x_a+3*y_b)));
 
-  vmax = length/2.0 /(Pv/4.0) * M_PI_2;
-  vmin=-vmax;
+    vmax = length/2.0 /(Pv/4.0) * M_PI_2;
+    vmin=-vmax;
 
-  umax = width/2.0 /(Pu/4.0) * M_PI_2;
-  umin=-umax;
+    umax = width/2.0 /(Pu/4.0) * M_PI_2;
+    umin=-umax;
 
-  for (j=0;j<N;j++){
-      double v0,v1;
-      v0=j*(vmax-vmin)/N + vmin;
-      v1=(j+1)*(vmax-vmin)/N + vmin;
+    for (j=0;j<N;j++){
+        double v0,v1;
+        v0=j*(vmax-vmin)/N + vmin;
+        v1=(j+1)*(vmax-vmin)/N + vmin;
 
-      for (i=0;i<M;i++){
-          double u0,u1;
-          u0=i*(umax-umin)/M + umin;
-          u1=(i+1)*(umax-umin)/M + umin;
-          double nx,ny,nz,l0,l1;
-          double x[4],y[4],z[4];
-          /*assuming 0,0,0 is inside are inside the ellisoid*/
-          nx=cos(v0)*sin(u0);ny=cos(v0)*cos(u0);nz=sin(v0);
-          ellipsoid_intersect(&l0,&l1, 0,0,0, nx,ny,nz, x_a,y_b,z_c, NULL);
-          x[0]=nx*l1; y[0]=ny*l1; z[0]=nz*l1;
+        for (i=0;i<M;i++){
+            double u0,u1;
+            u0=i*(umax-umin)/M + umin;
+            u1=(i+1)*(umax-umin)/M + umin;
+            double nx,ny,nz,l0,l1;
+            double x[4],y[4],z[4];
+            /*assuming 0,0,0 is inside are inside the ellisoid*/
+            nx=cos(v0)*sin(u0);ny=cos(v0)*cos(u0);nz=sin(v0);
+            ellipsoid_intersect(&l0,&l1, 0,0,0, nx,ny,nz, x_a,y_b,z_c, NULL);
+            x[0]=nx*l1; y[0]=ny*l1; z[0]=nz*l1;
 
-          nx=cos(v0)*sin(u1);ny=cos(v0)*cos(u1);nz=sin(v0);
-          ellipsoid_intersect(&l0,&l1, 0,0,0, nx,ny,nz, x_a,y_b,z_c, NULL);
-          x[1]=nx*l1; y[1]=ny*l1; z[1]=nz*l1;
+            nx=cos(v0)*sin(u1);ny=cos(v0)*cos(u1);nz=sin(v0);
+            ellipsoid_intersect(&l0,&l1, 0,0,0, nx,ny,nz, x_a,y_b,z_c, NULL);
+            x[1]=nx*l1; y[1]=ny*l1; z[1]=nz*l1;
 
-          nx=cos(v1)*sin(u1);ny=cos(v1)*cos(u1);nz=sin(v1);
-          ellipsoid_intersect(&l0,&l1, 0,0,0, nx,ny,nz, x_a,y_b,z_c, NULL);
-          x[2]=nx*l1; y[2]=ny*l1; z[2]=nz*l1;
+            nx=cos(v1)*sin(u1);ny=cos(v1)*cos(u1);nz=sin(v1);
+            ellipsoid_intersect(&l0,&l1, 0,0,0, nx,ny,nz, x_a,y_b,z_c, NULL);
+            x[2]=nx*l1; y[2]=ny*l1; z[2]=nz*l1;
 
-          nx=cos(v1)*sin(u0);ny=cos(v1)*cos(u0);nz=sin(v1);
-          ellipsoid_intersect(&l0,&l1, 0,0,0, nx,ny,nz, x_a,y_b,z_c, NULL);
-          x[3]=nx*l1; y[3]=ny*l1; z[3]=nz*l1;
+            nx=cos(v1)*sin(u0);ny=cos(v1)*cos(u0);nz=sin(v1);
+            ellipsoid_intersect(&l0,&l1, 0,0,0, nx,ny,nz, x_a,y_b,z_c, NULL);
+            x[3]=nx*l1; y[3]=ny*l1; z[3]=nz*l1;
 
-          multiline(5, x[0],y_b-y[0],z[0], x[1],y_b-y[1],z[1], x[2],y_b-y[2],z[2], x[3],y_b-y[3],z[3], x[0],y_b-y[0],z[0]);
-      }
-  }
+            multiline(5, x[0],y_b-y[0],z[0], x[1],y_b-y[1],z[1], x[2],y_b-y[2],z[2], x[3],y_b-y[3],z[3], x[0],y_b-y[0],z[0]);
+        }
+    }
 
-  line(0.,y_b,0., 0., y_b-cos_alpha0*(width+length)/2.0, sin_alpha0*(width+length)/2.0); // display alpha vector
+    line(0.,y_b,0., 0., y_b-cos_alpha0*(width+length)/2.0, sin_alpha0*(width+length)/2.0); // display alpha vector
 %}
 
 END

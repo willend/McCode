@@ -44,10 +44,10 @@ DEFINE INSTRUMENT SEMSANS_Delft(L0=2.165, DL=0.02, By=4.68e-3, AnaSign=1)
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

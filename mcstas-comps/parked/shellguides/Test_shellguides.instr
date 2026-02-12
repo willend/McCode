@@ -56,11 +56,10 @@ DECLARE
 %{
 
 
-%}
+    %}
 
-INITIALIZE
-%{
-
+    INITIALIZE
+    %{
 %}
 
 TRACE

@@ -29,8 +29,8 @@ DEPENDENCY " @NEXUSFLAGS@ "
 
 USERVARS
 %{
-int multi_flag;
-int single_flag;
+    int multi_flag;
+    int single_flag;
 %}
 
 TRACE
@@ -48,8 +48,8 @@ COMPONENT sampleMantid = Incoherent(radius=0.002,
   AT (0, 0, 1) RELATIVE sourceMantid
 EXTEND
 %{
-if (SCATTERED == 1) single_flag =1 ;
-if (SCATTERED > 1) multi_flag =1 ;
+    if (SCATTERED == 1) single_flag =1 ;
+    if (SCATTERED > 1) multi_flag =1 ;
 %}
 
 COMPONENT nD_Mantid_0 = Monitor_nD(

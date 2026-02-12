@@ -36,54 +36,53 @@ DEFINE INSTRUMENT HZB_FLEX(kI=1.55, kF=1.55, wVS=0.03, tilt=0, SA=-1, A3=0, A4=7
 DECLARE
 %{
 
-// unit conversions
-double m_n=1.674928e-27;     // in kg
-double hbar=1.054572e-34;    // in J sec
-double meV_to_SI=1.6022e-22; // conversion
-double SI_to_meV=6.2414e21;
+    // unit conversions
+    double m_n=1.674928e-27;     // in kg
+    double hbar=1.054572e-34;    // in J sec
+    double meV_to_SI=1.6022e-22; // conversion
+    double SI_to_meV=6.2414e21;
 
-// guide coating properties
-double MGUIDE=3.2;
-double W_para = 0.0025;
-double R0_para = 0.99;
-double Qc_para = 0.0217;
-double alpha_para=3.90;
+    // guide coating properties
+    double MGUIDE=3.2;
+    double W_para = 0.0025;
+    double R0_para = 0.99;
+    double Qc_para = 0.0217;
+    double alpha_para=3.90;
 
-// curved guide properties
-double LGUIDE_1=18.65;
-double LGUIDE_2=17.8;
-double beta_guide_1, s_guide_1;
-double beta_guide_2, s_guide_2;
+    // curved guide properties
+    double LGUIDE_1=18.65;
+    double LGUIDE_2=17.8;
+    double beta_guide_1, s_guide_1;
+    double beta_guide_2, s_guide_2;
 
-// monochromator properties
-double RMH, RMV, rho_MH, rho_MV;
-double lambdaI, EI;
+    // monochromator properties
+    double RMH, RMV, rho_MH, rho_MV;
+    double lambdaI, EI;
 
-// analyser properties
-// double RAH, RAV, rho_AH, rho_AV;
-// rho_AV=1.00 for kf=0.952
-// rho_AV=1.23 for kf=1.55
-// rho_AV=1.40 for kf=2.62
-// rho_AV=1.97 for kf=3.696
-double RAH, rho_AV=1.23, RAV;
-double lambdaF, EF;
+    // analyser properties
+    // double RAH, RAV, rho_AH, rho_AV;
+    // rho_AV=1.00 for kf=0.952
+    // rho_AV=1.23 for kf=1.55
+    // rho_AV=1.40 for kf=2.62
+    // rho_AV=1.97 for kf=3.696
+    double RAH, rho_AV=1.23, RAV;
+    double lambdaF, EF;
 
-// angles
-double A1, A2, A5, A6;
+    // angles
+    double A1, A2, A5, A6;
 
-// distances
-double L1=1.75;
-double L2=2.2; // This is an actual variable in the real experiment
-// double L3=1.10;
-// double L4=1.00;
+    // distances
+    double L1=1.75;
+    double L2=2.2; // This is an actual variable in the real experiment
+    // double L3=1.10;
+    // double L4=1.00;
 
 
-//velocity selector frequency
-double SelFreq;
+    //velocity selector frequency
+    double SelFreq;
 
-// monitor/source properties
-double dlambdaI,dkI,dEI,l_min,l_max,e_min,e_max;
-
+    // monitor/source properties
+    double dlambdaI,dkI,dEI,l_min,l_max,e_min,e_max;
 %}
 
 /* The INITIALIZE section is executed when the simulation starts     */
@@ -91,78 +90,78 @@ double dlambdaI,dkI,dEI,l_min,l_max,e_min,e_max;
 INITIALIZE
 %{
 
-int    SM=-1;      // monochromator scattering sense is always negative
-int    SS=+1;
-// int    SA=-1;
-double DM = 3.355; // PG 002 monochromator d-spacing in inv AA
-double DA = 3.355; // PG 002 analyser d-spacing in inv AA
+    int    SM=-1;      // monochromator scattering sense is always negative
+    int    SS=+1;
+    // int    SA=-1;
+    double DM = 3.355; // PG 002 monochromator d-spacing in inv AA
+    double DA = 3.355; // PG 002 analyser d-spacing in inv AA
 
-/* -------calculate spectrometer angles and monochromator/analyser curvatures-------*/
-// ----- monochromator
-  A1 = SM*RAD2DEG*asin(PI/(DM*kI));
-  A2 = 2*A1;
+    /* -------calculate spectrometer angles and monochromator/analyser curvatures-------*/
+    // ----- monochromator
+    A1 = SM*RAD2DEG*asin(PI/(DM*kI));
+    A2 = 2*A1;
 
-//  RMH = L2/sin(A1*DEG2RAD);
-  RMH = (L1+L2)/(2*sin(A1*DEG2RAD)); //additional factor done by RTP
-//  rho_MH=1/RMH;
-if (Mono_flatswitch == 1) RMH = 0.0;
-
-
+    //  RMH = L2/sin(A1*DEG2RAD);
+    RMH = (L1+L2)/(2*sin(A1*DEG2RAD)); //additional factor done by RTP
+    //  rho_MH=1/RMH;
+    if (Mono_flatswitch == 1) RMH = 0.0;
 
 
-//  RMV = 2*L2*sin(A1*DEG2RAD);
-  RMV = (L1+L2)*sin(A1*DEG2RAD); //Facotr intropduced by RTP
-//  rho_MV=1/RMV;
-
-  printf("monochromator angles are:\n A1=%7.3f, A2=%7.3f [deg]\n",A1,A2);
-  printf("radius of curvature RMH=%7.3f [m]\nradius of curvature RMV=%7.3f [m] \n",RMH,RMV);
-
-//  printf("curvature rhoMH=%7.3f [m^-1]\ncurvature rhoMV=%7.3f [m] \n",rho_MH,rho_MV);
-
-// ----- sample
-//  A3 = 0;
-//  A4 = 70;
-
-printf("sample angles are:\n A3=%7.3f, A4=%7.3f [deg]\n",A3,A4);
-
-// ----- analyser
-  A5 = SA*RAD2DEG*asin(PI/(DA*kF));
-  A6 = 2*A5;
-  RAH = (L3+L4)/(2*sin(A5*DEG2RAD)); //Additional factor multiplied by RTP
-  RAV = SA*1/rho_AV;
-//  RAV should be (L3+L4)*sin(A5*DEG2RAD) but above equation gives better focusing for these specific conditions of kf=1.55 and the divergence...
-  printf("analyser angles are:\n A5=%7.3f, A6=%7.3f [deg]\n",A5,A6);
-  printf("radius of curvature RAH=%7.3f [m]\nradius of curvature RAV=%7.3f [m] \n",RAH,RAV);
-
-/* ------------------------------calculate EI, lambdaI and so on ------------------*/
-  lambdaI=2*PI/kI;  // in AA
-  EI=SI_to_meV*hbar*hbar*kI*kI*1e20/2/m_n;
-
-  SelFreq = 3956.06/(lambdaI*(360/(19.7+(2.1*tilt)))*0.25);
-//  empirical formulas for source emmitance to save time on simulations!
-//  1st attempt: linear
-//  dlambdaI=0.01*(7-lambdaI)*lambdaI;
-//  2nd attempt, 1/x, better one:
-//  dlambdaI=((0.082/(lambdaI+0.4))-0.002)*lambdaI;
-//  3rd attempt, 6th order polynomial, even better (with enough parameters we can model an elephant):
- dlambdaI = (1.75004E-05*pow(lambdaI,6) - 5.13903E-04*pow(lambdaI,5) + 6.04404E-03*pow(lambdaI,4) - 3.66989E-02*pow(lambdaI,3) + 1.22399E-01*pow(lambdaI,2) - 2.19626E-01*lambdaI + 2.0E-01)*lambdaI;
-
-  l_min=lambdaI-dlambdaI;
-  l_max=lambdaI+dlambdaI;
-  e_min=81.81/l_max/l_max;
-  e_max=81.81/l_min/l_min;
-
-  printf("velocity selector frequency is %7.3f [Hz]\n",SelFreq);
-  printf("lambda=%7.3f [A]\nkI=%7.3f [A^-1] \nEI=%7.3f [meV]\n",lambdaI,kI,EI);
-  printf("Maxwellian source forced to emit only between l_min=%7.3f and l_max=%7.3f [A] in order to save simulation time\n",l_min,l_max);
-  printf("correspondingly, the energy monitors at sample position are detecting between %7.3f and %7.3f [meV]\n",e_min,e_max);
 
 
-// guide properties
-  beta_guide_1=LGUIDE_1/2800*180/PI;
-  beta_guide_2=LGUIDE_2/2800*180/PI;
-  s_guide_1 = 2800-sqrt(2800*2800-LGUIDE_1*LGUIDE_1);
-  s_guide_2 = 2800-sqrt(2800*2800-LGUIDE_2*LGUIDE_2);
+    //  RMV = 2*L2*sin(A1*DEG2RAD);
+    RMV = (L1+L2)*sin(A1*DEG2RAD); //Facotr intropduced by RTP
+    //  rho_MV=1/RMV;
+
+    printf("monochromator angles are:\n A1=%7.3f, A2=%7.3f [deg]\n",A1,A2);
+    printf("radius of curvature RMH=%7.3f [m]\nradius of curvature RMV=%7.3f [m] \n",RMH,RMV);
+
+    //  printf("curvature rhoMH=%7.3f [m^-1]\ncurvature rhoMV=%7.3f [m] \n",rho_MH,rho_MV);
+
+    // ----- sample
+    //  A3 = 0;
+    //  A4 = 70;
+
+    printf("sample angles are:\n A3=%7.3f, A4=%7.3f [deg]\n",A3,A4);
+
+    // ----- analyser
+    A5 = SA*RAD2DEG*asin(PI/(DA*kF));
+    A6 = 2*A5;
+    RAH = (L3+L4)/(2*sin(A5*DEG2RAD)); //Additional factor multiplied by RTP
+    RAV = SA*1/rho_AV;
+    //  RAV should be (L3+L4)*sin(A5*DEG2RAD) but above equation gives better focusing for these specific conditions of kf=1.55 and the divergence...
+    printf("analyser angles are:\n A5=%7.3f, A6=%7.3f [deg]\n",A5,A6);
+    printf("radius of curvature RAH=%7.3f [m]\nradius of curvature RAV=%7.3f [m] \n",RAH,RAV);
+
+    /* ------------------------------calculate EI, lambdaI and so on ------------------*/
+    lambdaI=2*PI/kI;  // in AA
+    EI=SI_to_meV*hbar*hbar*kI*kI*1e20/2/m_n;
+
+    SelFreq = 3956.06/(lambdaI*(360/(19.7+(2.1*tilt)))*0.25);
+    //  empirical formulas for source emmitance to save time on simulations!
+    //  1st attempt: linear
+    //  dlambdaI=0.01*(7-lambdaI)*lambdaI;
+    //  2nd attempt, 1/x, better one:
+    //  dlambdaI=((0.082/(lambdaI+0.4))-0.002)*lambdaI;
+    //  3rd attempt, 6th order polynomial, even better (with enough parameters we can model an elephant):
+    dlambdaI = (1.75004E-05*pow(lambdaI,6) - 5.13903E-04*pow(lambdaI,5) + 6.04404E-03*pow(lambdaI,4) - 3.66989E-02*pow(lambdaI,3) + 1.22399E-01*pow(lambdaI,2) - 2.19626E-01*lambdaI + 2.0E-01)*lambdaI;
+
+    l_min=lambdaI-dlambdaI;
+    l_max=lambdaI+dlambdaI;
+    e_min=81.81/l_max/l_max;
+    e_max=81.81/l_min/l_min;
+
+    printf("velocity selector frequency is %7.3f [Hz]\n",SelFreq);
+    printf("lambda=%7.3f [A]\nkI=%7.3f [A^-1] \nEI=%7.3f [meV]\n",lambdaI,kI,EI);
+    printf("Maxwellian source forced to emit only between l_min=%7.3f and l_max=%7.3f [A] in order to save simulation time\n",l_min,l_max);
+    printf("correspondingly, the energy monitors at sample position are detecting between %7.3f and %7.3f [meV]\n",e_min,e_max);
+
+
+    // guide properties
+    beta_guide_1=LGUIDE_1/2800*180/PI;
+    beta_guide_2=LGUIDE_2/2800*180/PI;
+    s_guide_1 = 2800-sqrt(2800*2800-LGUIDE_1*LGUIDE_1);
+    s_guide_2 = 2800-sqrt(2800*2800-LGUIDE_2*LGUIDE_2);
 %}
 
 /* Here comes the TRACE section, where the actual      */

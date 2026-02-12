@@ -35,12 +35,12 @@ DEFINE INSTRUMENT Test_Pol_Tabled(string MF="flipfield.dat", zdepth=1, string in
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-%}
+    %}
 
-/* The INITIALIZE section is executed when the simulation starts     */
-/* (C code). You may use them as component parameter values.         */
-INITIALIZE
-%{
+    /* The INITIALIZE section is executed when the simulation starts     */
+    /* (C code). You may use them as component parameter values.         */
+    INITIALIZE
+    %{
 %}
 
 /* Here comes the TRACE section, where the actual      */

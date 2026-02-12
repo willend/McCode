@@ -38,12 +38,12 @@ DEFINE INSTRUMENT Simple_1shell(FL=12, plate_zdepth=0.5, channel_yheight=1e-2,
 /* functions in C syntax. These may be used in the whole instrument. */
 DECLARE
 %{
-%}
+    %}
 
-/* The INITIALIZE section is executed when the simulation starts     */
-/* (C code). You may use them as component parameter values.         */
-INITIALIZE
-%{
+    /* The INITIALIZE section is executed when the simulation starts     */
+    /* (C code). You may use them as component parameter values.         */
+    INITIALIZE
+    %{
 %}
 /* instrument is defined as a sequence of components.  */
 TRACE
@@ -59,35 +59,35 @@ COMPONENT Origin = Progress_bar()
 AT (0,0,0) ABSOLUTE
 EXTEND
 %{
-%}
+    %}
 
-COMPONENT src = Source_div(
+    COMPONENT src = Source_div(
     radius=radius_p,yheight=0, xwidth=0,focus_aw=0,focus_ah=0,E0=5,dE=1)
-AT(0,0,0) RELATIVE Origin
+    AT(0,0,0) RELATIVE Origin
 
-COMPONENT detector_pre_optics = PSD_monitor(restore_xray=1, xwidth=radius_p*2*1.2, yheight=radius_p*2*1.2, nx=101, ny=51, filename="det_preo.dat")
-AT(0,0,1) RELATIVE Origin
+    COMPONENT detector_pre_optics = PSD_monitor(restore_xray=1, xwidth=radius_p*2*1.2, yheight=radius_p*2*1.2, nx=101, ny=51, filename="det_preo.dat")
+    AT(0,0,1) RELATIVE Origin
 
-COMPONENT optics_centre = Arm()
-AT(0,0,1) RELATIVE Origin
+    COMPONENT optics_centre = Arm()
+    AT(0,0,1) RELATIVE Origin
 
-COMPONENT Shell_p_1 = Shell_p(
+    COMPONENT Shell_p_1 = Shell_p(
     radius_p=radius_p, radius_m=radius_m, zdepth=plate_zdepth, Z0=FL, yheight=channel_yheight, R_d=1)
-AT(0,0,0) RELATIVE optics_centre
+    AT(0,0,0) RELATIVE optics_centre
 
-COMPONENT midopdet = PSD_monitor(
+    COMPONENT midopdet = PSD_monitor(
     restore_xray=1,xwidth=radius_m*2*1.2,yheight=radius_m*2*1.2,nx=201,ny=201, filename="midop.dat")
-AT(0,0,0) RELATIVE optics_centre
+    AT(0,0,0) RELATIVE optics_centre
 
-COMPONENT Shell_h_1 = Shell_h(
+    COMPONENT Shell_h_1 = Shell_h(
     radius_m=radius_m, radius_h=radius_h, zdepth=plate_zdepth, Z0=FL, yheight=channel_yheight, R_d=1)
-  AT(0,0,0) RELATIVE optics_centre
-EXTEND
-%{
-  /*filter off rays wich have not reflected*/
-  if (kx==0 && ky==0){
-    ABSORB;
-  }
+    AT(0,0,0) RELATIVE optics_centre
+    EXTEND
+    %{
+        /*filter off rays wich have not reflected*/
+        if (kx==0 && ky==0){
+            ABSORB;
+        }
 %}
 
 COMPONENT detector_post_optics = PSD_monitor(restore_xray=1,xwidth=radius_h*2*1.2, yheight=radius_h*2*1.2, nx=201, ny=101, filename="det_posto.dat")

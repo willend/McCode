@@ -27,7 +27,7 @@ DEFINE INSTRUMENT MCPL_filter_radius(string MCPLfile="my.mcpl.gz", radius=2.5)
 
 USERVARS
 %{
-  double Radius;
+    double Radius;
 %}
 
 TRACE

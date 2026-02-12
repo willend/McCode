@@ -36,9 +36,9 @@
 DEFINE INSTRUMENT Test_TOFRes_sample(Chop_W1=0.1, Chop_ph1=0.0009, Chop_W2=0.2, Chop_ph2=0.003, Chop_W3=0.1, Chop_ph3=0.006, TIME_BIN=10000, BIN_WIDTH=10, TWOTHETA=60)
 DECLARE
 %{
-%}
-INITIALIZE
-%{
+    %}
+    INITIALIZE
+    %{
 %}
 TRACE
 

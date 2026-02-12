@@ -27,10 +27,10 @@ DEFINE INSTRUMENT Unit_test_logger_2D_kf_time()
 
 DECLARE
 %{
-%}
+    %}
 
-INITIALIZE
-%{
+    INITIALIZE
+    %{
 %}
 
 TRACE

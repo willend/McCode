@@ -38,8 +38,7 @@ DEFINE INSTRUMENT Template_Johann_spec(L=0.2, r_Row=0.5, theta_inc=78.5 ,dtheta_
 
 DECLARE
 %{
-   double theta_s,theta_d;
-
+    double theta_s,theta_d;
 %}
 
 INITIALIZE
@@ -48,7 +47,7 @@ INITIALIZE
     theta_d=theta_inc*2;
 
     if (!phi_s){
-      phi_s=L/(2*r_Row);
+        phi_s=L/(2*r_Row);
     }
 %}
 

@@ -58,103 +58,103 @@ SETTING PARAMETERS (int ndiv=20, string filename=0,
 
 DECLARE
 %{
-  DArray1d Div_N;
-  DArray1d Div_p;
-  DArray1d Div_p2;
+    DArray1d Div_N;
+    DArray1d Div_p;
+    DArray1d Div_p2;
 %}
 
 INITIALIZE
 %{
-  int i;
+    int i;
 
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+    if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
+    if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
 
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("Error(%s): Div1D_monitor: Null detection area !\n"
-                 "(xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-        NAME_CURRENT_COMP);
-    exit(-1);
-  }
+        if ((xmin >= xmax) || (ymin >= ymax)) {
+            printf("Error(%s): Div1D_monitor: Null detection area !\n"
+            "(xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+            exit(-1);
+        }
 
-  Div_N = create_darr1d(ndiv);
-  Div_p = create_darr1d(ndiv);
-  Div_p2 = create_darr1d(ndiv);
-  for (i=0; i<ndiv; i++){
-    Div_N[i] = 0;
-    Div_p[i] = 0;
-    Div_p2[i] = 0;
-  }
+        Div_N = create_darr1d(ndiv);
+        Div_p = create_darr1d(ndiv);
+        Div_p2 = create_darr1d(ndiv);
+        for (i=0; i<ndiv; i++){
+            Div_N[i] = 0;
+            Div_p[i] = 0;
+            Div_p2[i] = 0;
+        }
 
-  // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+        // Use instance name for monitor output if no input was given
+        if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-  int i;
-  double div;
+    int i;
+    double div;
 
-  PROP_Z0;
-  if (x>xmin && x<xmax && y>ymin && y<ymax)
-  {
-    if (!vertical){
-      div = RAD2DEG*atan2(vx,vz);
-    }else{
-      div = RAD2DEG*atan2(vy,vz);
+    PROP_Z0;
+    if (x>xmin && x<xmax && y>ymin && y<ymax)
+    {
+        if (!vertical){
+            div = RAD2DEG*atan2(vx,vz);
+        }else{
+            div = RAD2DEG*atan2(vy,vz);
+        }
+        if (div < (double)maxdiv && div > -(double)maxdiv){
+            i = floor((div + (double)maxdiv)*ndiv/(2.0*(double)maxdiv));
+
+            double p2 = p*p;
+            #pragma acc atomic
+            Div_N[i] = Div_N[i] + 1;
+
+            #pragma acc atomic
+            Div_p[i] = Div_p[i] + p;
+
+            #pragma acc atomic
+            Div_p2[i] = Div_p2[i] + p2;
+
+            SCATTER;
+        }
     }
-    if (div < (double)maxdiv && div > -(double)maxdiv){
-      i = floor((div + (double)maxdiv)*ndiv/(2.0*(double)maxdiv));
-
-      double p2 = p*p;
-      #pragma acc atomic
-      Div_N[i] = Div_N[i] + 1;
-
-      #pragma acc atomic
-      Div_p[i] = Div_p[i] + p;
-
-      #pragma acc atomic
-      Div_p2[i] = Div_p2[i] + p2;
-
-      SCATTER;
+    if (restore_neutron) {
+        RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
     }
-  }
-  if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
-  }
 %}
 
 SAVE
 %{
-  if(!nowritefile){
-    if (!vertical){
-      DETECTOR_OUT_1D(
-        "Horizontal divergence monitor","horizontal divergence [deg]",
-        "Intensity","divergence", -maxdiv, maxdiv, ndiv,
-        &Div_N[0],&Div_p[0],&Div_p2[0],filename);
-    }else{
-      DETECTOR_OUT_1D(
-        "Vertical divergence monitor","vertical divergence [deg]",
-        "Intensity","divergence", -maxdiv, maxdiv, ndiv,
-        &Div_N[0],&Div_p[0],&Div_p2[0],filename);
+    if(!nowritefile){
+        if (!vertical){
+            DETECTOR_OUT_1D(
+            "Horizontal divergence monitor","horizontal divergence [deg]",
+            "Intensity","divergence", -maxdiv, maxdiv, ndiv,
+            &Div_N[0],&Div_p[0],&Div_p2[0],filename);
+        }else{
+            DETECTOR_OUT_1D(
+            "Vertical divergence monitor","vertical divergence [deg]",
+            "Intensity","divergence", -maxdiv, maxdiv, ndiv,
+            &Div_N[0],&Div_p[0],&Div_p2[0],filename);
+        }
     }
-  }
 %}
 
 FINALLY
 %{
-  destroy_darr1d(Div_N);
-  destroy_darr1d(Div_p);
-  destroy_darr1d(Div_p2);
+    destroy_darr1d(Div_N);
+    destroy_darr1d(Div_p);
+    destroy_darr1d(Div_p2);
 %}
 
 MCDISPLAY
 %{
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-      (double)xmax, (double)ymin, 0.0,
-      (double)xmax, (double)ymax, 0.0,
-      (double)xmin, (double)ymax, 0.0,
-      (double)xmin, (double)ymin, 0.0);
+    multiline(5, (double)xmin, (double)ymin, 0.0,
+    (double)xmax, (double)ymin, 0.0,
+    (double)xmax, (double)ymax, 0.0,
+    (double)xmin, (double)ymax, 0.0,
+    (double)xmin, (double)ymin, 0.0);
 %}
 
 

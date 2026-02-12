@@ -47,7 +47,7 @@ COMPONENT monitor = Monitor_nD(xwidth=1,yheight=1,options="x y, all bins=300")
 
 EXTEND
 %{
-	if(SCATTERED) ABSORB;
+    if(SCATTERED) ABSORB;
 %}
 
 END

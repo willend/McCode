@@ -44,13 +44,13 @@ SETTING PARAMETERS (zdepth=0.1, xwidth=0.01, radius, radius_o,R0=0,string coatin
 
 SHARE
 %{
-  #include <complex.h>
-  %include "read_table-lib" 
-  %include "reflectivity-lib"
-  struct potholestruct {
+    #include <complex.h>
+    %include "read_table-lib" 
+    %include "reflectivity-lib"
+    struct potholestruct {
         double e_min,e_max,e_step,theta_min,theta_max,theta_step;
         int use_reflec_table;
-  };
+    };
 %}
 
 DECLARE
@@ -71,9 +71,9 @@ INITIALIZE
             exit(fprintf(stderr,"Error: %s: cannot read file %s\n",NAME_CURRENT_COMP, coating));
         }
         header_parsed = Table_ParseHeader(tp->header,
-                "e_min=","e_max=","e_step=","theta_min=","theta_max=","theta_step=",NULL);
+        "e_min=","e_max=","e_step=","theta_min=","theta_max=","theta_step=",NULL);
         if (header_parsed[0] && header_parsed[1] && header_parsed[2] &&
-                header_parsed[3] && header_parsed[4] && header_parsed[5])
+        header_parsed[3] && header_parsed[4] && header_parsed[5])
         {
             prms.e_min=strtod(header_parsed[0],NULL);
             prms.e_max=strtod(header_parsed[1],NULL);
@@ -110,7 +110,7 @@ TRACE
 %{
     int status;
     double l0,l1,l2,l3,tx,ty,tz;
-    
+
     do {
         /*TODO check the permutation of coordinates and the actual position of the cylinder.*/
         status= cylinder_intersect(&l0,&l1,x,z,y-radius,kx,kz,ky, radius, zdepth);
@@ -123,24 +123,24 @@ TRACE
         do {
             /*this to do a test propagation*/
             double op[12];
-	    op[0]=x; op[1]=y; op[2]=z; op[3]=kx; op[4]=ky; op[5]=kz; op[6]=phi; op[7]=t; op[8]=Ex; op[9]=Ey; op[10]=Ez; op[12]=p;
+            op[0]=x; op[1]=y; op[2]=z; op[3]=kx; op[4]=ky; op[5]=kz; op[6]=phi; op[7]=t; op[8]=Ex; op[9]=Ey; op[10]=Ez; op[12]=p;
             mcPROP_DL(l1);
             (tx)=x;(ty)=y; (tz)=z;
-	    x=op[0]; y=op[1]; z=op[2]; kx=op[3]; ky=op[4]; kz=op[5]; phi=op[6]; t=op[7]; Ex=op[8]; Ey=op[9]; Ez=op[10]; p=op[12];
+            x=op[0]; y=op[1]; z=op[2]; kx=op[3]; ky=op[4]; kz=op[5]; phi=op[6]; t=op[7]; Ex=op[8]; Ey=op[9]; Ez=op[10]; p=op[12];
         }while(0);
         /*check mirror limits of intersectio point.*/
         if(tz<-zdepth/2.0 || tz>zdepth/2.0) break;
         /*check if the width is OK*/
         double xmax=acos(xwidth/(2.0*radius))*radius;
         if(tx<-xmax || tx>xmax) break;
-        
+
         status=ellipsoid_intersect(&l2,&l3,x,y-radius,z,kx,ky,kz,radius,radius,radius_o+radius,NULL);
         if (!status) break;
         if(l3<0) break; /*This shouldn't be possible*/        
         /*the mirror is indeed hit*/
         PROP_DL(l3);
         SCATTER;
-        
+
         double nx,ny,nz;
         nx=2*x/(radius*radius);
         ny=2*(y-radius)/(radius*radius);/*ellipsoid is displaced to put Origin on the surface*/
@@ -150,7 +150,7 @@ TRACE
         /*By definition the normal vector points out from the ellipsoid*/
         double s=scalar_prod(kx,ky,kz,nx,ny,nz);
         double k=sqrt(scalar_prod(kx,ky,kz,kx,ky,kz)); 
-         
+
         kx=kx-2*s*nx;
         ky=ky-2*s*ny;
         kz=kz-2*s*nz;
@@ -164,7 +164,7 @@ TRACE
             R=Table_Value2d(reflec_table,fabs((e-prms.e_min)/prms.e_step), fabs(((theta-prms.theta_min)/prms.theta_step)));
             p*=R;
             /*update phase - as an approximation turn by 180 deg.*/
-	    phi+=M_PI;
+            phi+=M_PI;
         }else{
             p*=R0;
         }
@@ -176,71 +176,70 @@ TRACE
 
 MCDISPLAY
 %{
-  //See parametric equation used for the 3D view here: https://en.wikipedia.org/wiki/Torus#Geometry or here:https://web.maths.unsw.edu.au/~rsw/Torus/index.php
-  //Because the code above doesn't actually reproduce a torus exactly but uses a cylinder and an ellipsoid to construct the toroidal mirror (to avoid solving quartic equations),
-  //there's a slight mismatch between the 3D view (exact torus) and the actual toroidal mirror coded above.
-  
-  double x0,y0,z0,x1,y1,z1,theta,phi,phi_total,theta_total,theta_beginning,phi_beginning,theta_end,phi_end;
-  //int N=50; too many points, makes the 3D matlab viewer bug
-  int N=10;     
-  
-  phi_total = RAD2DEG*(zdepth/(radius+radius_o));//degrees
-  theta_total = RAD2DEG*(xwidth/radius);
-  
-  //fix theta=0 and phi=180 degrees respectively
-  theta=0;
-  phi=180;
-  
-  //then start at the beginning of the theta or phi range in order to map the flat surface (xwidth, zdepth) on the torus.
-  theta_beginning=theta-(theta_total/2);
-  phi_beginning=phi-(phi_total/2);
-   
-  theta_end = theta+(theta_total/2);
-  phi_end = phi+(phi_total/2);
-  
-  theta = theta_beginning;
-  phi = phi_beginning;  
-  
-  while (theta<=theta_end){
-      phi=180-(phi_total/2);
-      x0=radius*sin(DEG2RAD*theta);
-      y0=(radius_o+radius*cos(DEG2RAD*theta))*cos(DEG2RAD*phi)+(radius_o+radius);
-      z0=(radius_o+radius*cos(DEG2RAD*theta))*sin(DEG2RAD*phi);
-      while (phi<=phi_end){
-          x1=radius*sin(DEG2RAD*theta);
-          y1=(radius_o+radius*cos(DEG2RAD*theta))*cos(DEG2RAD*phi)+(radius_o+radius);
-          z1=(radius_o+radius*cos(DEG2RAD*theta))*sin(DEG2RAD*phi);      
-          line(x0,y0,z0,x1,y1,z1);   
-          x0=x1;
-          y0=y1; 
-          z0=z1; 
-          phi+=phi_total/N;
-          
-      }
-      theta+=theta_total/N;
-  }  
-   
-  theta = theta_beginning;
-  phi = phi_beginning;  
-  
-  while (phi<=phi_end){
-      theta=-(theta_total/2);
-      x0=radius*sin(DEG2RAD*theta);
-      y0=(radius_o+radius*cos(DEG2RAD*theta))*cos(DEG2RAD*phi)+(radius_o+radius);
-      z0=(radius_o+radius*cos(DEG2RAD*theta))*sin(DEG2RAD*phi);
-      while (theta<=theta_end){
-          x1=radius*sin(DEG2RAD*theta);
-          y1=(radius_o+radius*cos(DEG2RAD*theta))*cos(DEG2RAD*phi)+(radius_o+radius);
-          z1=(radius_o+radius*cos(DEG2RAD*theta))*sin(DEG2RAD*phi);      
-          line(x0,y0,z0,x1,y1,z1);   
-          x0=x1;
-          y0=y1; 
-          z0=z1; 
-          theta+=theta_total/N;
-      }
-      phi+=phi_total/N;
-  }
-   
+    //See parametric equation used for the 3D view here: https://en.wikipedia.org/wiki/Torus#Geometry or here:https://web.maths.unsw.edu.au/~rsw/Torus/index.php
+    //Because the code above doesn't actually reproduce a torus exactly but uses a cylinder and an ellipsoid to construct the toroidal mirror (to avoid solving quartic equations),
+    //there's a slight mismatch between the 3D view (exact torus) and the actual toroidal mirror coded above.
+
+    double x0,y0,z0,x1,y1,z1,theta,phi,phi_total,theta_total,theta_beginning,phi_beginning,theta_end,phi_end;
+    //int N=50; too many points, makes the 3D matlab viewer bug
+    int N=10;     
+
+    phi_total = RAD2DEG*(zdepth/(radius+radius_o));//degrees
+    theta_total = RAD2DEG*(xwidth/radius);
+
+    //fix theta=0 and phi=180 degrees respectively
+    theta=0;
+    phi=180;
+
+    //then start at the beginning of the theta or phi range in order to map the flat surface (xwidth, zdepth) on the torus.
+    theta_beginning=theta-(theta_total/2);
+    phi_beginning=phi-(phi_total/2);
+
+    theta_end = theta+(theta_total/2);
+    phi_end = phi+(phi_total/2);
+
+    theta = theta_beginning;
+    phi = phi_beginning;  
+
+    while (theta<=theta_end){
+        phi=180-(phi_total/2);
+        x0=radius*sin(DEG2RAD*theta);
+        y0=(radius_o+radius*cos(DEG2RAD*theta))*cos(DEG2RAD*phi)+(radius_o+radius);
+        z0=(radius_o+radius*cos(DEG2RAD*theta))*sin(DEG2RAD*phi);
+        while (phi<=phi_end){
+            x1=radius*sin(DEG2RAD*theta);
+            y1=(radius_o+radius*cos(DEG2RAD*theta))*cos(DEG2RAD*phi)+(radius_o+radius);
+            z1=(radius_o+radius*cos(DEG2RAD*theta))*sin(DEG2RAD*phi);      
+            line(x0,y0,z0,x1,y1,z1);   
+            x0=x1;
+            y0=y1; 
+            z0=z1; 
+            phi+=phi_total/N;
+
+        }
+        theta+=theta_total/N;
+    }  
+
+    theta = theta_beginning;
+    phi = phi_beginning;  
+
+    while (phi<=phi_end){
+        theta=-(theta_total/2);
+        x0=radius*sin(DEG2RAD*theta);
+        y0=(radius_o+radius*cos(DEG2RAD*theta))*cos(DEG2RAD*phi)+(radius_o+radius);
+        z0=(radius_o+radius*cos(DEG2RAD*theta))*sin(DEG2RAD*phi);
+        while (theta<=theta_end){
+            x1=radius*sin(DEG2RAD*theta);
+            y1=(radius_o+radius*cos(DEG2RAD*theta))*cos(DEG2RAD*phi)+(radius_o+radius);
+            z1=(radius_o+radius*cos(DEG2RAD*theta))*sin(DEG2RAD*phi);      
+            line(x0,y0,z0,x1,y1,z1);   
+            x0=x1;
+            y0=y1; 
+            z0=z1; 
+            theta+=theta_total/N;
+        }
+        phi+=phi_total/N;
+    }
 %}
 
 

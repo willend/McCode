@@ -36,49 +36,49 @@ DEFINE INSTRUMENT Focal_pt_monitor(Rcurve=100e-6)
 
 DECLARE
 %{
-%}
+    %}
 
-USERVARS
-%{
-  double fz;
+    USERVARS
+    %{
+        double fz;
 %}
 
 INITIALIZE
 %{
-%}
+    %}
 
-TRACE
+    TRACE
 
-COMPONENT origin = Progress_bar()
-AT (0, 0, 0) RELATIVE ABSOLUTE
+    COMPONENT origin = Progress_bar()
+    AT (0, 0, 0) RELATIVE ABSOLUTE
 
-COMPONENT source = Source_pt(
+    COMPONENT source = Source_pt(
     focus_xw=1e-8, focus_yh=1e-4, dist=20, E0=10, dE=0.2, gauss=1)
-AT(0,0,0) RELATIVE origin
-COMPONENT lens = Lens_simple(f=0,radius=0.5e-4,material_datafile="Be.txt", N=1, r=Rcurve)
-AT(0,0,20) RELATIVE source
+    AT(0,0,0) RELATIVE origin
+    COMPONENT lens = Lens_simple(f=0,radius=0.5e-4,material_datafile="Be.txt", N=1, r=Rcurve)
+    AT(0,0,20) RELATIVE source
 
-COMPONENT fpt0 = Arm()
-AT(0,0,2e-3) RELATIVE lens
-EXTEND
-%{
-    PROP_Z0;
-    /*Compute where the focal point is along the z-axis
-      i.e. compute the least distance btw. ray and z-axis*/
-    double ux,uy,uz,n1x,n1y,n1z;
-    double g,h,s1,s2;
-    vec_prod(ux,uy,uz, kx,ky,kz,0, 0, 1);
-    NORM(ux,uy,uz);
-    /*The point along the z-axis which intersects the plane formed by translating the ray trajectory
-      along a vector normal to both z-axis and k, is the point we seek.*/
-    /*That plane is defined by its normal: n1 = k x u */
-    /*The intesection is therefore: (0,0,0) + [ ((x,y,0)-O).n1) / (0,0,1).n1 ] (0,0,1),where n1=k x u*/
-    vec_prod(n1x,n1y,n1z, kx,ky,kz, ux,uy,uz);
-    /*numerator*/
-    g=scalar_prod(x,y,0,n1x,n1y,n1z);
-    /*denominator*/
-    h=scalar_prod(0,0,1,n1x,n1y,n1z);
-    fz=g/h;
+    COMPONENT fpt0 = Arm()
+    AT(0,0,2e-3) RELATIVE lens
+    EXTEND
+    %{
+        PROP_Z0;
+        /*Compute where the focal point is along the z-axis
+        i.e. compute the least distance btw. ray and z-axis*/
+        double ux,uy,uz,n1x,n1y,n1z;
+        double g,h,s1,s2;
+        vec_prod(ux,uy,uz, kx,ky,kz,0, 0, 1);
+        NORM(ux,uy,uz);
+        /*The point along the z-axis which intersects the plane formed by translating the ray trajectory
+        along a vector normal to both z-axis and k, is the point we seek.*/
+        /*That plane is defined by its normal: n1 = k x u */
+        /*The intesection is therefore: (0,0,0) + [ ((x,y,0)-O).n1) / (0,0,1).n1 ] (0,0,1),where n1=k x u*/
+        vec_prod(n1x,n1y,n1z, kx,ky,kz, ux,uy,uz);
+        /*numerator*/
+        g=scalar_prod(x,y,0,n1x,n1y,n1z);
+        /*denominator*/
+        h=scalar_prod(0,0,1,n1x,n1y,n1z);
+        fz=g/h;
 %}
 
 COMPONENT fpt = Monitor_nD(
