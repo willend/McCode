@@ -37,6 +37,29 @@ def find_files(root: Path) -> List[Path]:
                 files.append(Path(dirpath) / fn)
     return files
 
+
+def _indent_middle_lines(core: str, indent_str: str, indent_blank_lines: bool) -> str:
+    """
+    Add `indent_str` to all lines of `core` except the first and last lines.
+    `core` must not have leading/trailing newlines (strip them before calling).
+    If there are fewer than 3 lines, there are no 'middle' lines to indent.
+    """
+    if not indent_str:
+        return core
+
+    lines = core.splitlines()
+    if len(lines) < 3:
+        return core
+
+    for i in range(1, len(lines) - 1):
+        if not indent_blank_lines and lines[i].strip() == '':
+            continue
+        lines[i] = indent_str + lines[i]
+
+    return "\n".join(lines)
+
+
+
 def run_clang_format_file_style(code: str, clang_path: str, assume_filename: Path) -> str:
     """
     Run clang-format with -style=file so it picks up the repository .clang-format.
@@ -51,7 +74,9 @@ def run_clang_format_file_style(code: str, clang_path: str, assume_filename: Pat
         raise RuntimeError(f'clang-format failed for {assume_filename}:\n{err.strip()}')
     return out
 
-def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool = False) -> Tuple[bool, str]:
+
+def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool = False,
+                 ) -> Tuple[bool, str]:
     """
     Returns (changed, err_msg).
     """
@@ -65,24 +90,25 @@ def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool
         trailing = m.group(3)
 
         try:
-            
             formatted_inner = run_clang_format_file_style(
                 inner,
                 clang_path=clang_path,
-                assume_filename=style_file   # force clang-format to use the script's style file
+                assume_filename=style_file  # force clang-format to use the script's style file
             )
-
         except Exception as e:
             raise RuntimeError(f'Formatting failed for {path}: {e}')
 
-        # Strip outer newlines, but DO NOT add extra indent anymore
+        # Strip only outer newlines; keep content as-is for first/last lines
         core = formatted_inner.strip('\n')
+
+        # Apply variable indentation to middle lines only
+        core = _indent_middle_lines(core, indent_str="  ", indent_blank_lines=True)
 
         # If clang-format produced nothing meaningful, keep empty
         if core == '':
             result = leading + "\n" + trailing.lstrip("\n")
         else:
-            # Preserve delimiters on their own lines
+            # Preserve delimiters on their own lines and ensure a newline before trailing
             result = leading + core + "\n" + trailing.lstrip("\n")
 
         if result != m.group(0):
