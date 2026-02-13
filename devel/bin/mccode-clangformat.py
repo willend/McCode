@@ -3,9 +3,8 @@
 mccode-clangformat.py
 
 Traverse a McCode checkout, find .instr and .comp files, reformat C-like code
-only inside %{  %} sections to a recommended clang-style indentation, keeping
-delimiters on their own lines and treating block contents as first-level code
-(i.e., add one extra indent level inside the block).
+only inside %{  %} sections using clang-format with repository .clang-format
+style, keeping delimiters on their own lines.
 
 Usage:
     python mccode-clangformat.py [--repo PATH] [--clang-format PATH] [--check]
@@ -22,19 +21,13 @@ from typing import List, Tuple
 # ---- Config ----
 FILE_EXTS = ('.instr', '.comp')
 BACKUP_SUFFIX = '.orig'
-INDENT_WIDTH = 4
-CLANG_STYLE = """
-BasedOnStyle: Google
-IndentWidth: 4
-UseTab: Never
-BreakBeforeBraces: Attach
-ColumnLimit: 80
-DerivePointerAlignment: false
-PointerAlignment: Left
-"""
 
 # Match a %{ on its own line then capture inner until a %} on its own line.
-BLOCK_RE = re.compile(r'(^[ \t]*%\{\s*\n)(.*?)(\n[ \t]*%\}[ \t]*$)', re.DOTALL | re.MULTILINE)
+BLOCK_RE = re.compile(
+    r'(^[ \t]*%[\s]*\{\s*\n)(.*?)(\n[ \t]*%\}[ \t]*$)',
+    re.DOTALL | re.MULTILINE
+)
+
 
 def find_files(root: Path) -> List[Path]:
     files = []
@@ -44,145 +37,57 @@ def find_files(root: Path) -> List[Path]:
                 files.append(Path(dirpath) / fn)
     return files
 
-def simple_reindent_c(code: str, indent_width: int = INDENT_WIDTH) -> str:
-    out_lines = []
-    indent_level = 0
-    in_block_comment = False
-    for line in code.splitlines():
-        raw = line.rstrip('\n')
-        stripped = raw.lstrip()
-        if stripped == '':
-            out_lines.append('')
-            continue
-
-        n = len(raw)
-        first_nonspace = None
-        for idx,ch in enumerate(raw):
-            if not ch.isspace():
-                first_nonspace = idx
-                break
-
-        j = 0
-        local_in_block_comment = in_block_comment
-        reduce_before = 0
-        increase_after = 0
-        state_in_string = False
-        string_char = ''
-        escape = False
-        while j < n:
-            ch = raw[j]
-            if local_in_block_comment:
-                if raw.startswith('*/', j):
-                    local_in_block_comment = False
-                    j += 2
-                    continue
-                j += 1
-                continue
-            if raw.startswith('//', j):
-                break
-            if raw.startswith('/*', j):
-                local_in_block_comment = True
-                j += 2
-                continue
-            if state_in_string:
-                if escape:
-                    escape = False
-                elif ch == '\\':
-                    escape = True
-                elif ch == string_char:
-                    state_in_string = False
-                    string_char = ''
-                j += 1
-                continue
-            else:
-                if ch == '"' or ch == "'":
-                    state_in_string = True
-                    string_char = ch
-                    j += 1
-                    continue
-                if ch == '}':
-                    if first_nonspace is not None and j == first_nonspace:
-                        reduce_before += 1
-                    else:
-                        reduce_before += 1
-                    j += 1
-                    continue
-                if ch == '{':
-                    increase_after += 1
-                    j += 1
-                    continue
-                j += 1
-
-        use_level = max(indent_level - reduce_before, 0)
-        new_leading = ' ' * (use_level * indent_width)
-        out_lines.append(new_leading + stripped)
-        indent_level = use_level + increase_after
-        in_block_comment = local_in_block_comment
-
-    if code.endswith('\n'):
-        return '\n'.join(out_lines) + '\n'
-    else:
-        return '\n'.join(out_lines)
-
-def run_clang_format(code: str, clang_path: str) -> str:
-    p = subprocess.Popen([clang_path, '-style', CLANG_STYLE], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+def run_clang_format_file_style(code: str, clang_path: str, assume_filename: Path) -> str:
+    """
+    Run clang-format with -style=file so it picks up the repository .clang-format.
+    """
+    cmd = [clang_path, '-style', 'file', '-assume-filename', str(assume_filename)]
+    p = subprocess.Popen(
+        cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, text=True
+    )
     out, err = p.communicate(code)
     if p.returncode != 0:
-        raise RuntimeError(f'clang-format failed: {err.strip()}')
+        raise RuntimeError(f'clang-format failed for {assume_filename}:\n{err.strip()}')
     return out
 
-def add_extra_indent(formatted: str, extra_indent: int = INDENT_WIDTH) -> str:
+def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool = False) -> Tuple[bool, str]:
     """
-    Add extra_indent spaces to each non-blank line of formatted block.
-    Preserve blank lines as empty.
+    Returns (changed, err_msg).
     """
-    lines = formatted.splitlines()
-    out = []
-    prefix = ' ' * extra_indent
-    for ln in lines:
-        if ln.strip() == '':
-            out.append('')
-        else:
-            out.append(prefix + ln)
-    if formatted.endswith('\n'):
-        return '\n'.join(out) + '\n'
-    else:
-        return '\n'.join(out)
-
-def process_file(path: Path, clang_path: str = None, check_only: bool = False) -> Tuple[bool, str]:
     text = path.read_text(encoding='utf-8')
     changed = False
 
     def repl(m: re.Match) -> str:
         nonlocal changed
-        leading = m.group(1)  # "%{" line incl newline
+        leading = m.group(1)
         inner = m.group(2)
-        trailing = m.group(3)  # newline + "%}" line
-        inner_for_format = inner
+        trailing = m.group(3)
+
         try:
-            if clang_path:
-                formatted_inner = run_clang_format(inner_for_format, clang_path)
-            else:
-                formatted_inner = simple_reindent_c(inner_for_format, indent_width=INDENT_WIDTH)
+            
+            formatted_inner = run_clang_format_file_style(
+                inner,
+                clang_path=clang_path,
+                assume_filename=style_file   # force clang-format to use the script's style file
+            )
+
         except Exception as e:
-            raise RuntimeError(f'Formatting failed: {e}')
-        # Strip surrounding newlines from formatted core, then add one newline boundaries so delimiters stay on own lines
+            raise RuntimeError(f'Formatting failed for {path}: {e}')
+
+        # Strip outer newlines, but DO NOT add extra indent anymore
         core = formatted_inner.strip('\n')
-        # Apply extra indent (treat block as first-level code)
+
+        # If clang-format produced nothing meaningful, keep empty
         if core == '':
-            indented_core = ''
+            result = leading + "\n" + trailing.lstrip("\n")
         else:
-            indented_core = add_extra_indent(core + '\n', extra_indent=INDENT_WIDTH)
-            # add_extra_indent returns trailing newline; remove last newline to control later
-            indented_core = indented_core.rstrip('\n')
-        # Build result: leading already includes '%{' and its newline; we want exactly:
-        # leading + indented_core + '\n' + trailing.lstrip('\n')
-        if indented_core == '':
-            result = leading + '\n' + trailing.lstrip('\n')
-        else:
-            result = leading + indented_core + '\n' + trailing.lstrip('\n')
+            # Preserve delimiters on their own lines
+            result = leading + core + "\n" + trailing.lstrip("\n")
+
         if result != m.group(0):
             changed = True
+
         return result
 
     try:
@@ -197,12 +102,20 @@ def process_file(path: Path, clang_path: str = None, check_only: bool = False) -
         if not bak.exists():
             shutil.copy2(path, bak)
         path.write_text(new_text, encoding='utf-8')
+
     return changed, ''
 
+def ensure_clang_format(clang_path_arg: str | None) -> str:
+    if clang_path_arg:
+        return clang_path_arg
+    return 'clang-format'
+
 def main():
-    ap = argparse.ArgumentParser(description='Adapt indentation in McCode %{ %} blocks (delims on own lines, block is first-level).')
+    ap = argparse.ArgumentParser(
+        description='Format code inside McCode %{ %} blocks using repository .clang-format'
+    )
     ap.add_argument('--repo', '-r', default='.', help='Repo path (default: current dir)')
-    ap.add_argument('--clang-format', '-c', default=None, help='Path to clang-format (optional)')
+    ap.add_argument('--clang-format', '-c', default=None, help='Path to clang-format executable')
     ap.add_argument('--check', action='store_true', help="Check only; don't write files")
     args = ap.parse_args()
 
@@ -210,6 +123,28 @@ def main():
     if not root.exists():
         print(f'Repo path not found: {root}', file=sys.stderr)
         sys.exit(2)
+    
+    # Warn if no .clang-format file is found in this repo tree
+    
+    # Determine the directory containing this script (…/McCode/devel/)
+    script_dir = Path(__file__).resolve().parent.parent
+    style_file = script_dir / "clang-format"
+    print(style_file)
+
+    # Require .clang-format to exist right next to this script
+    if not style_file.exists():
+        print(f"ERROR: Expected .clang-format file in {script_dir}, but none was found.", file=sys.stderr)
+        sys.exit(2)
+
+    if style_file is None:
+        print("WARNING: No .clang-format file found in this repository. "
+            "clang-format will use its built-in default style.",
+            file=sys.stderr)
+    else:
+        print(f"Using style file: {style_file}")
+
+
+    clang_path = ensure_clang_format(args.clang_format)
 
     files = find_files(root)
     if not files:
@@ -218,14 +153,20 @@ def main():
 
     any_changed = False
     failures = []
+
     for f in files:
         try:
-            changed, msg = process_file(f, clang_path=args.clang_format, check_only=args.check)
+            changed, msg = process_file(
+                f, clang_path=clang_path, style_file=style_file, check_only=args.check
+            )
             if msg:
                 failures.append(msg)
             if changed:
                 any_changed = True
                 print(f'Changed: {f}')
+        except FileNotFoundError:
+            failures.append('clang-format executable not found.')
+            break
         except Exception as e:
             failures.append(f'Error processing {f}: {e}')
 
@@ -238,11 +179,10 @@ def main():
     if any_changed:
         if args.check:
             print('Files would be changed.')
-            sys.exit(0)
-        print('Done.')
+        else:
+            print('Done.')
     else:
         print('No changes necessary.')
 
 if __name__ == '__main__':
     main()
-
