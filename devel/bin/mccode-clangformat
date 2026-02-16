@@ -24,8 +24,8 @@ BACKUP_SUFFIX = '.orig'
 
 # Match a %{ on its own line then capture inner until a %} on its own line.
 BLOCK_RE = re.compile(
-    r'(^[\s]*%\{[\s]*\n)(.*?)(\n[\s]*%\}[\s]*$)',
-    re.DOTALL | re.MULTILINE
+    r'(^[ \t]*%\{[ \t]*\r?\n)((?:[^\r\n]*\r?\n)*?)(^[ \t]*%\}[ \t]*\r?$)',
+    re.MULTILINE
 )
 
 
@@ -120,11 +120,21 @@ def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool
 
     def repl(m: re.Match) -> str:
         nonlocal changed
-        leading = m.group(1)
+        # groups now:
+        # m.group(1) == opening line including its trailing newline (indent + '%{' + newline)
+        # m.group(2) == inner content, a sequence of full lines (each ends with newline), possibly empty
+        # m.group(3) == closing line including its trailing newline (indent + '%}' + optional CRLF)
+        opening = m.group(1)
         inner = m.group(2)
-        trailing = m.group(3)
+        closing = m.group(3)
 
-        # We'll feed clang-format only the non-'%' lines, preserving '%' lines.
+        # If inner is empty or contains only blank lines or lines starting with '%', leave block unchanged.
+        lines = inner.splitlines()
+        has_non_percent = any((ln.strip() != '' and not ln.lstrip().startswith('%')) for ln in lines)
+        if not has_non_percent:
+            return m.group(0)  # return the exact original match, untouched
+
+        # Format only non-'%' lines, preserving '%' lines verbatim.
         try:
             formatted_inner = _format_preserving_percent_lines(
                 inner,
@@ -134,27 +144,34 @@ def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool
         except Exception as e:
             raise RuntimeError(f'Formatting failed for {path}: {e}')
 
-        # Preserve exact content lines from clang-format, but remove a single
-        # trailing newline so we can control delimiter placement below.
+        # formatted_inner is a sequence of lines; ensure we do not alter surrounding spacing.
+        # Remove exactly one trailing newline if present so we can control placement before closing.
         if formatted_inner.endswith('\n'):
             formatted_core = formatted_inner[:-1]
+            trailing_nl = '\n'
         else:
             formatted_core = formatted_inner
+            trailing_nl = ''
 
-        # Apply variable indentation (preserves per-line endings)
+        # Indent formatted core per-line (preserving per-line endings)
         core = _indent_lines(formatted_core, indent_str="  ", indent_blank_lines=False)
 
-        # If clang-format produced nothing meaningful, keep empty
+        # Reassemble: opening already contains its newline; closing contains its newline.
+        # We must not alter any text outside the original matched span.
         if core == '':
-            result = leading + trailing.lstrip("\n")
+            result = opening + closing
         else:
-            # Preserve delimiters on their own lines and ensure a newline before trailing
-            result = leading + core + "\n" + trailing.lstrip("\n")
+            # core may already contain its own trailing newlines; ensure exactly one newline before closing
+            result = opening + core
+            # if core does not end with a newline, add one to separate from closing line
+            if not result.endswith('\n'):
+                result += '\n'
+            result += closing
 
         if result != m.group(0):
             changed = True
-
         return result
+
 
     try:
         new_text = BLOCK_RE.sub(repl, text)
