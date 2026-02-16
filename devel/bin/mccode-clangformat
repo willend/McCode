@@ -73,7 +73,7 @@ def run_clang_format_file_style(code: str, clang_path: str, assume_filename: Pat
 
 def _format_preserving_percent_lines(inner: str, clang_path: str, style_file: Path) -> str:
     """
-    Format inner text with clang-format but skip lines that start with '%'.
+    Format inner text with clang-format but skip lines that start with '%' or '#'.
     Keeps original line endings.
     """
     lines = inner.splitlines(True)  # preserve endings
@@ -99,8 +99,8 @@ def _format_preserving_percent_lines(inner: str, clang_path: str, style_file: Pa
         buffer.clear()
 
     for L in lines:
-        if L.lstrip().startswith('%'):
-            # flush any accumulated non-% lines, then append this % line unchanged
+        if L.lstrip().startswith('%') or L.lstrip().startswith('#'):
+            # flush any accumulated non-% / non-# lines, then append such lines unchanged
             flush_buffer()
             out_parts.append(L.lstrip())
         else:
