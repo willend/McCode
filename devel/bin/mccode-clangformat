@@ -24,7 +24,7 @@ BACKUP_SUFFIX = '.orig'
 
 # Match a %{ on its own line then capture inner until a %} on its own line.
 BLOCK_RE = re.compile(
-    r'(^[ \t]*%[\s]*\{\s*\n)(.*?)(\n[ \t]*%\}[ \t]*$)',
+    r'(^[\s]*%\{[\s]*\n)(.*?)(\n[\s]*%\}[\s]*$)',
     re.DOTALL | re.MULTILINE
 )
 
@@ -38,26 +38,22 @@ def find_files(root: Path) -> List[Path]:
     return files
 
 
-def _indent_middle_lines(core: str, indent_str: str, indent_blank_lines: bool) -> str:
+def _indent_lines(core: str, indent_str: str, indent_blank_lines: bool) -> str:
     """
-    Add `indent_str` to all lines of `core` except the first and last lines.
-    `core` must not have leading/trailing newlines (strip them before calling).
-    If there are fewer than 3 lines, there are no 'middle' lines to indent.
+    Add `indent_str` to all lines of `core`. `core` may contain trailing newlines;
+    those are preserved. We operate per-line using splitlines(True).
     """
     if not indent_str:
         return core
 
-    lines = core.splitlines()
-    if len(lines) < 3:
-        return core
+    lines = core.splitlines(True)  # keep line endings
 
-    for i in range(1, len(lines) - 1):
+    for i in range(0, len(lines)):
         if not indent_blank_lines and lines[i].strip() == '':
             continue
         lines[i] = indent_str + lines[i]
 
-    return "\n".join(lines)
-
+    return ''.join(lines)
 
 
 def run_clang_format_file_style(code: str, clang_path: str, assume_filename: Path) -> str:
@@ -75,6 +71,45 @@ def run_clang_format_file_style(code: str, clang_path: str, assume_filename: Pat
     return out
 
 
+def _format_preserving_percent_lines(inner: str, clang_path: str, style_file: Path) -> str:
+    """
+    Format inner text with clang-format but skip lines that start with '%'.
+    Keeps original line endings.
+    """
+    lines = inner.splitlines(True)  # preserve endings
+    out_parts = []
+    buffer = []
+
+    def flush_buffer():
+        if not buffer:
+            return
+        chunk = ''.join(buffer)
+        # strip only a single trailing newline so clang-format output is normalized
+        if chunk.endswith('\n'):
+            chunk_in = chunk[:-1]
+            trailing_nl = '\n'
+        else:
+            chunk_in = chunk
+            trailing_nl = ''
+        formatted = run_clang_format_file_style(chunk_in, clang_path=clang_path, assume_filename=style_file)
+        # clang-format usually emits a trailing newline; strip one to maintain control
+        if formatted.endswith('\n'):
+            formatted = formatted[:-1]
+        out_parts.append(formatted + trailing_nl)
+        buffer.clear()
+
+    for L in lines:
+        if L.lstrip().startswith('%'):
+            # flush any accumulated non-% lines, then append this % line unchanged
+            flush_buffer()
+            out_parts.append(L.lstrip())
+        else:
+            buffer.append(L)
+
+    flush_buffer()
+    return ''.join(out_parts)
+
+
 def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool = False,
                  ) -> Tuple[bool, str]:
     """
@@ -89,24 +124,29 @@ def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool
         inner = m.group(2)
         trailing = m.group(3)
 
+        # We'll feed clang-format only the non-'%' lines, preserving '%' lines.
         try:
-            formatted_inner = run_clang_format_file_style(
+            formatted_inner = _format_preserving_percent_lines(
                 inner,
                 clang_path=clang_path,
-                assume_filename=style_file  # force clang-format to use the script's style file
+                style_file=style_file
             )
         except Exception as e:
             raise RuntimeError(f'Formatting failed for {path}: {e}')
 
-        # Strip only outer newlines; keep content as-is for first/last lines
-        core = formatted_inner.strip('\n')
+        # Preserve exact content lines from clang-format, but remove a single
+        # trailing newline so we can control delimiter placement below.
+        if formatted_inner.endswith('\n'):
+            formatted_core = formatted_inner[:-1]
+        else:
+            formatted_core = formatted_inner
 
-        # Apply variable indentation to middle lines only
-        core = _indent_middle_lines(core, indent_str="  ", indent_blank_lines=True)
+        # Apply variable indentation (preserves per-line endings)
+        core = _indent_lines(formatted_core, indent_str="  ", indent_blank_lines=False)
 
         # If clang-format produced nothing meaningful, keep empty
         if core == '':
-            result = leading + "\n" + trailing.lstrip("\n")
+            result = leading + trailing.lstrip("\n")
         else:
             # Preserve delimiters on their own lines and ensure a newline before trailing
             result = leading + core + "\n" + trailing.lstrip("\n")
@@ -212,3 +252,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
