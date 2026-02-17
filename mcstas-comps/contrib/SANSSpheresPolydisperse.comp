@@ -46,103 +46,103 @@ DEFINE COMPONENT SANSSpheresPolydisperse
 
 DECLARE
 %{
-	// Declarations	
-	double Prefactor;
-	double Absorption;
-	double q;
-	double NumberDensity;
+  // Declarations
+  double Prefactor;
+  double Absorption;
+  double q;
+  double NumberDensity;
 %}
 
 INITIALIZE
 %{
-	// Rescale concentration into number of aggregates per m^3 times 10^-4
-	NumberDensity = Concentration * 6.02214129e19;
+  // Rescale concentration into number of aggregates per m^3 times 10^-4
+  NumberDensity = Concentration * 6.02214129e19;
 
-	// Computations
-	if (!xwidth || !yheight || !zdepth) {
-		printf("%s: Sample has no volume, check parameters!\n", NAME_CURRENT_COMP);
-	}
+  // Computations
+  if (!xwidth || !yheight || !zdepth) {
+    printf ("%s: Sample has no volume, check parameters!\n", NAME_CURRENT_COMP);
+  }
 
-	Prefactor = NumberDensity * pow(4.0 / 3.0 * PI * pow(R, 3), 2) * pow(DeltaRho, 2);
+  Prefactor = NumberDensity * pow (4.0 / 3.0 * PI * pow (R, 3), 2) * pow (DeltaRho, 2);
 
-	Absorption = AbsorptionCrosssection;
+  Absorption = AbsorptionCrosssection;
 %}
 
 TRACE
 %{
-	// Declarations	
-	double t0; 
-	double t1;
-	double l_full;
-	double l;
-	double l1;
-	double Formfactor;
-	double SolidAngle;
-	double qx; 
-	double qy; 
-	double qz;
-	double v;
-	double dt;
-	double vx_i;
-	double vy_i;
-	double vz_i;
-	char Intersect = 0;
-	
-	// Set radius if polydisperse spheres
-	R = R + randnorm()*dR;
-	
-	// Computation
-	Intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
+  // Declarations
+  double t0;
+  double t1;
+  double l_full;
+  double l;
+  double l1;
+  double Formfactor;
+  double SolidAngle;
+  double qx;
+  double qy;
+  double qz;
+  double v;
+  double dt;
+  double vx_i;
+  double vy_i;
+  double vz_i;
+  char Intersect = 0;
 
-	if (Intersect) {
+  // Set radius if polydisperse spheres
+  R = R + randnorm () * dR;
 
-		if (t0 < 0.0) {
-			fprintf(stderr, "Neutron already inside sample %s - absorbing...\n", NAME_CURRENT_COMP);
-			ABSORB;
-    	}
+  // Computation
+  Intersect = box_intersect (&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
 
-		// Compute properties of neutron
-		v = sqrt(pow(vx, 2) + pow(vy, 2) + pow(vz, 2));
-		l_full = v * (t1 - t0);
-		dt = rand01() * (t1 - t0) + t0;
-		PROP_DT(dt);                     
-	    l = v * (dt - t0);
+  if (Intersect) {
 
-		// Store properties of incoming neutron
-		vx_i = vx;
-		vy_i = vy;
-		vz_i = vz;
+    if (t0 < 0.0) {
+      fprintf (stderr, "Neutron already inside sample %s - absorbing...\n", NAME_CURRENT_COMP);
+      ABSORB;
+    }
 
-		// Generate new direction of neutron
-		randvec_target_circle(&vx, &vy, &vz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
+    // Compute properties of neutron
+    v = sqrt (pow (vx, 2) + pow (vy, 2) + pow (vz, 2));
+    l_full = v * (t1 - t0);
+    dt = rand01 () * (t1 - t0) + t0;
+    PROP_DT (dt);
+    l = v * (dt - t0);
 
-		NORM(vx, vy, vz);
+    // Store properties of incoming neutron
+    vx_i = vx;
+    vy_i = vy;
+    vz_i = vz;
 
-		vx *= v;
-		vy *= v;
-		vz *= v;
+    // Generate new direction of neutron
+    randvec_target_circle (&vx, &vy, &vz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
 
-		// Compute q
-		qx = V2K * (vx_i - vx);
-		qy = V2K * (vy_i - vy);
-		qz = V2K * (vz_i - vz);
+    NORM (vx, vy, vz);
 
-		q = sqrt(pow(qx, 2) + pow(qy, 2) + pow(qz, 2));
+    vx *= v;
+    vy *= v;
+    vz *= v;
 
-		// Compute scattering
-		l1 = v * t1;
+    // Compute q
+    qx = V2K * (vx_i - vx);
+    qy = V2K * (vy_i - vy);
+    qz = V2K * (vz_i - vz);
 
-		Formfactor = 3.0 * (sin(q * R) - q * R * cos(q * R)) / pow(q * R, 3);
+    q = sqrt (pow (qx, 2) + pow (qy, 2) + pow (qz, 2));
 
-		p *= l_full * SolidAngle / (4.0 * PI) * Prefactor * pow(Formfactor, 2) * exp(- Absorption * (l + l1) / v);
+    // Compute scattering
+    l1 = v * t1;
 
-		SCATTER;
-	}
+    Formfactor = 3.0 * (sin (q * R) - q * R * cos (q * R)) / pow (q * R, 3);
+
+    p *= l_full * SolidAngle / (4.0 * PI) * Prefactor * pow (Formfactor, 2) * exp (-Absorption * (l + l1) / v);
+
+    SCATTER;
+  }
 %}
 
 MCDISPLAY
 %{
-	box(0, 0, 0, xwidth, yheight, zdepth,0, 0, 1, 0);
+  box (0, 0, 0, xwidth, yheight, zdepth, 0, 0, 1, 0);
 %}
 
 END

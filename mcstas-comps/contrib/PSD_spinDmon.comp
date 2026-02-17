@@ -53,68 +53,67 @@ SETTING PARAMETERS (int nx=90, int ny=90, string filename=0,
 
 DECLARE
   %{
-    DArray2d PSD_N;
-    DArray2d PSD_p;
-    DArray2d PSD_p2;
+  DArray2d PSD_N;
+  DArray2d PSD_p;
+  DArray2d PSD_p2;
   %}
 INITIALIZE
   %{
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
-
-  if ((xmin >= xmax) || (ymin >= ymax)){
-    printf("PSD_monitor: %s: Null detection area !\n"
-           "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-    NAME_CURRENT_COMP);
-    exit(0);
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
   }
 
-  PSD_N = create_darr2d(nx, ny);
-  PSD_p = create_darr2d(nx, ny);
-  PSD_p2 = create_darr2d(nx, ny);
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("PSD_monitor: %s: Null detection area !\n"
+            "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
+
+  PSD_N = create_darr2d (nx, ny);
+  PSD_p = create_darr2d (nx, ny);
+  PSD_p2 = create_darr2d (nx, ny);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-    int i,j;
+  int i, j;
 
-    if (sy > 0)
-     {SCATTER;}
-    else
-    {
-     PROP_Z0;
-     if (x>xmin && x<xmax && y>ymin && y<ymax)
-     {
-       i = floor((x - xmin)*nx/(xmax - xmin));
-       j = floor((y - ymin)*ny/(ymax - ymin));
-       double p2 = p*p;
-       #pragma acc atomic
-       PSD_N[i][j]  = PSD_N[i][j] +1;
-       #pragma acc atomic
-       PSD_p[i][j]  = PSD_p[i][j] + p;
-       #pragma acc atomic
-       PSD_p2[i][j] = PSD_p2[i][j] + p2;
-    
-       SCATTER;
-     }
-     if (restore_neutron) {
-       RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+  if (sy > 0) {
+    SCATTER;
+  } else {
+    PROP_Z0;
+    if (x > xmin && x < xmax && y > ymin && y < ymax) {
+      i = floor ((x - xmin) * nx / (xmax - xmin));
+      j = floor ((y - ymin) * ny / (ymax - ymin));
+      double p2 = p * p;
+      #pragma acc atomic
+      PSD_N[i][j] = PSD_N[i][j] + 1;
+      #pragma acc atomic
+      PSD_p[i][j] = PSD_p[i][j] + p;
+      #pragma acc atomic
+      PSD_p2[i][j] = PSD_p2[i][j] + p2;
+
+      SCATTER;
     }
-   }
+    if (restore_neutron) {
+      RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    }
+  }
 %}
 SAVE
 %{
-    DETECTOR_OUT_2D(
-        "PSD monitor",
-        "X position [cm]",
-        "Y position [cm]",
-        xmin*100.0, xmax*100.0, ymin*100.0, ymax*100.0,
-        nx, ny,
-        &PSD_N[0][0],&PSD_p[0][0],&PSD_p2[0][0],
-        filename);
+  DETECTOR_OUT_2D ("PSD monitor", "X position [cm]", "Y position [cm]", xmin * 100.0, xmax * 100.0, ymin * 100.0, ymax * 100.0, nx, ny, &PSD_N[0][0],
+                   &PSD_p[0][0], &PSD_p2[0][0], filename);
 %}
 
 FINALLY %{
@@ -125,12 +124,9 @@ FINALLY %{
 
 MCDISPLAY
 %{
-  magnify("xy");
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+  magnify ("xy");
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END

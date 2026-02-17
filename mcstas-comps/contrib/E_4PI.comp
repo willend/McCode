@@ -55,29 +55,29 @@ DECLARE
 INITIALIZE
 %{
 
-  PSD_N = create_darr1d(ne);
-  PSD_p = create_darr1d(ne);
-  PSD_p2 = create_darr1d(ne);
-  
+  PSD_N = create_darr1d (ne);
+  PSD_p = create_darr1d (ne);
+  PSD_p2 = create_darr1d (ne);
+
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 TRACE
 %{
   double t0, t1, phi, theta, E;
-  int i,j,k;
+  int i, j, k;
 
-  if(sphere_intersect(&t0, &t1, x, y, z, vx, vy, vz, radius) && t1 > 0)
-  {
-    if(t0 < 0)
+  if (sphere_intersect (&t0, &t1, x, y, z, vx, vy, vz, radius) && t1 > 0) {
+    if (t0 < 0)
       t0 = t1;
     /* t0 is now time of intersection with the sphere. */
-    PROP_DT(t0);
+    PROP_DT (t0);
 
-    E=VS2E*(vx*vx+vy*vy+vz*vz);
-    if(E<=Emax && E>=Emin) {
-      k = floor((E - Emin)*ne/(Emax - Emin));
-      double p2 = p*p;
+    E = VS2E * (vx * vx + vy * vy + vz * vz);
+    if (E <= Emax && E >= Emin) {
+      k = floor ((E - Emin) * ne / (Emax - Emin));
+      double p2 = p * p;
       #pragma acc atomic
       PSD_N[k] = PSD_N[k] + 1;
       #pragma acc atomic
@@ -88,19 +88,13 @@ TRACE
     SCATTER;
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-  DETECTOR_OUT_1D(
-    "4Pi Energy monitor",
-    "E_F [meV]","Intensity","E",
-    Emin, Emax,
-    ne,
-    &PSD_N[0],&PSD_p[0],&PSD_p2[0],
-    filename);
+  DETECTOR_OUT_1D ("4Pi Energy monitor", "E_F [meV]", "Intensity", "E", Emin, Emax, ne, &PSD_N[0], &PSD_p[0], &PSD_p2[0], filename);
 %}
 
 FINALLY %{
@@ -111,10 +105,10 @@ FINALLY %{
 
 MCDISPLAY
 %{
-  magnify("");
-  circle("xy",0,0,0,radius);
-  circle("xz",0,0,0,radius);
-  circle("yz",0,0,0,radius);
+  magnify ("");
+  circle ("xy", 0, 0, 0, radius);
+  circle ("xz", 0, 0, 0, radius);
+  circle ("yz", 0, 0, 0, radius);
 %}
 
 END

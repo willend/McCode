@@ -61,51 +61,47 @@ DECLARE INHERIT ViewModISIS EXTEND
 %{
   double xwidth;
   double yheight;
-  double focus_xw; 
+  double focus_xw;
   double focus_yh;
 %}
 
 INITIALIZE
 %{
-  xwidth=modXsize;
-  yheight=modZsize;
-  focus_xw=xw;
-  focus_yh=yh;
+  xwidth = modXsize;
+  yheight = modZsize;
+  focus_xw = xw;
+  focus_yh = yh;
 
   /* READ IN THE ENERGY FILE */
   FILE* Tfile;
 
-  Nsim=mcget_ncount();  // Number of points requested.
+  Nsim = mcget_ncount (); // Number of points requested.
 
-  Tfile=openFile(Face);	              // Get open file
-  rtE0=convertEnergy(E0);
-  rtE1=convertEnergy(E1);
-  orderEnergy(&rtE0,&rtE1);
+  Tfile = openFile (Face); // Get open file
+  rtE0 = convertEnergy (E0);
+  rtE1 = convertEnergy (E1);
+  orderEnergy (&rtE0, &rtE1);
 
-  readHtable(Tfile,rtE0,rtE1, &TS, modPosition, xwidth, yheight, verbose);
-  fclose(Tfile);
-  // Below pragma was needed with PGI 19.x, compilation fails with NVC 20.7 
-  //#pragma acc declare create( TS )
+  readHtable (Tfile, rtE0, rtE1, &TS, modPosition, xwidth, yheight, verbose);
+  fclose (Tfile);
+  // Below pragma was needed with PGI 19.x, compilation fails with NVC 20.7
+  // #pragma acc declare create( TS )
   /**********************************************************************/
 
-  Tnpts=0;
-  Ncount=0;
+  Tnpts = 0;
+  Ncount = 0;
 
-  fprintf(stderr,"Face == %s \n",Face);
-  fprintf(stderr,"Number of Energy Points == %d\n",TS.nEnergy);
-  if (dist<0)
-    {
-      dist=TS.rdumMid;
-      fprintf(stderr,"Setting distance to moderator surface == %g\n",
-	      dist);
-    }
+  fprintf (stderr, "Face == %s \n", Face);
+  fprintf (stderr, "Number of Energy Points == %d\n", TS.nEnergy);
+  if (dist < 0) {
+    dist = TS.rdumMid;
+    fprintf (stderr, "Setting distance to moderator surface == %g\n", dist);
+  }
   /* Do solid angle correction */
-  angleArea= strArea(TS, focus_xw, focus_yh, dist);
-  // Below pragma was needed with PGI 19.x, compilation fails with NVC 20.7 
-  //#pragma acc update host( TS )
-  fprintf(stderr,"Totals:: %g %d %d \n",TS.Total,TS.nEnergy,TS.nTime);
-
-
+  angleArea = strArea (TS, focus_xw, focus_yh, dist);
+  // Below pragma was needed with PGI 19.x, compilation fails with NVC 20.7
+  // #pragma acc update host( TS )
+  fprintf (stderr, "Totals:: %g %d %d \n", TS.Total, TS.nEnergy, TS.nTime);
 %}
 
 TRACE INHERIT ViewModISIS
