@@ -21,6 +21,7 @@ from typing import List, Tuple
 # ---- Config ----
 FILE_EXTS = ('.instr', '.comp')
 BACKUP_SUFFIX = '.orig'
+PRE_ESCAPE='//__ESC__PRE'
 
 # Match a %{ on its own line then capture inner until a %} on its own line.
 BLOCK_RE = re.compile(
@@ -74,17 +75,33 @@ def run_clang_format_file_style(code: str, clang_path: str, assume_filename: Pat
         raise RuntimeError(f'clang-format failed for {assume_filename}:\n{err.strip()}')
     return out
 
+def _escape_precompiler_line(s: str) -> str:
+    """
+    Prefix lines that start with optional whitespace followed by % or #
+    with a PRE_ESCAPE='//__ESC__PRE' (c++ style comment) so that clang-format 
+    will treat them as normal comments to indent.
+    Example: "  %foo" -> "  //__ESC__PRE%foo"
+    """
+    return re.sub(r'^([ \t]*)([%#])', lambda m: m.group(1) + PRE_ESCAPE + m.group(2), s, flags=re.MULTILINE)
+
+def _unescape_precompiler_line(s: str) -> str:
+    """
+    Remove the escape/comment prefix previously added.
+    """
+    return s.replace(PRE_ESCAPE, '')
+
 
 def _format_preserving_percent_lines(inner: str, clang_path: str, style_file: Path) -> str:
     """
-    Format inner text with clang-format but skip lines that start with '%' or '#'.
+    Format inner text with clang-format by escaping lines that start with '%' or '#'.
     Keeps original line endings.
     """
     lines = inner.splitlines(True)  # preserve endings
     out_parts = []
+    final_parts = []
     buffer = []
 
-    def flush_buffer():
+    def clang_format_buffer():
         if not buffer:
             return
         chunk = ''.join(buffer)
@@ -103,15 +120,14 @@ def _format_preserving_percent_lines(inner: str, clang_path: str, style_file: Pa
         buffer.clear()
 
     for L in lines:
-        if L.lstrip().startswith('%') or L.lstrip().startswith('#'):
-            # flush any accumulated non-% / non-# lines, then append such lines unchanged
-            flush_buffer()
-            out_parts.append(L.lstrip())
-        else:
-            buffer.append(L)
+        buffer.append(_escape_precompiler_line(L))
 
-    flush_buffer()
-    return ''.join(out_parts)
+    clang_format_buffer()
+
+    for L in out_parts:
+        final_parts.append(_unescape_precompiler_line(L))
+
+    return ''.join(final_parts)
 
 
 def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool = False,
