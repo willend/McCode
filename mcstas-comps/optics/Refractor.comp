@@ -153,166 +153,165 @@ SHARE
 %{
 
 
-%include "read_table-lib"
-%include "interoff-lib"
-%include "ref-lib"
-
+  %include "read_table-lib"
+  %include "interoff-lib"
+  %include "ref-lib"
 
   /* wrappers to intersection routines which also return the normal vector */
-  int box_intersect_n(double *t0, double *t1,
-    double x, double y, double z,
-    double vx, double vy, double vz,
-    double dx, double dy, double dz,
-    double *nx, double *ny, double *nz) {
+  int
+  box_intersect_n (double* t0, double* t1, double x, double y, double z, double vx, double vy, double vz, double dx, double dy, double dz, double* nx, double* ny,
+                   double* nz) {
 
-    double dt=0;
-    int    intersect = box_intersect(t0, t1, x,y,z, vx,vy,vz, dx,dy,dz);
+    double dt = 0;
+    int intersect = box_intersect (t0, t1, x, y, z, vx, vy, vz, dx, dy, dz);
     /* determine normal vector depending on hit face */
     if (intersect) {
       dt = *t0 <= 0 || *t0 > *t1 ? *t1 : *t0;
-      if (dt < 0) intersect = 0;
+      if (dt < 0)
+        intersect = 0;
     }
     if (intersect && dx && dy && dz) {
-      x += vx*dt; y += vy*dt; z += vz*dt;
+      x += vx * dt;
+      y += vy * dt;
+      z += vz * dt;
       /* determine hit face: difference to plane is closest to 0 */
-      *nx = trunc(2.002*x/dx);
-      *ny = trunc(2.002*y/dy);
-      *nz = trunc(2.002*z/dz);
+      *nx = trunc (2.002 * x / dx);
+      *ny = trunc (2.002 * y / dy);
+      *nz = trunc (2.002 * z / dz);
     }
-    return(intersect);
+    return (intersect);
   } // box_intersect_n
 
   /* sphere: when radius < 0 we always use the further intersection point to determine the normal vector */
-  int sphere_intersect_n(double *t0, double *t1,
-    double x, double y, double z,
-    double vx, double vy, double vz,
-    double r,
-    double *nx, double *ny, double *nz) {
+  int
+  sphere_intersect_n (double* t0, double* t1, double x, double y, double z, double vx, double vy, double vz, double r, double* nx, double* ny, double* nz) {
 
-    double dt=0;
-    int    intersect = sphere_intersect(t0, t1, x,y,z, vx,vy,vz, r);
+    double dt = 0;
+    int intersect = sphere_intersect (t0, t1, x, y, z, vx, vy, vz, r);
     if (intersect) {
-      if (r >0) /* First intersection in positive time */
+      if (r > 0) /* First intersection in positive time */
         dt = *t0 <= 0 || *t0 > *t1 ? *t1 : *t0;
-      else      /* always second intersection */
+      else /* always second intersection */
         dt = *t1;
-      if (dt < 0) intersect = 0;
+      if (dt < 0)
+        intersect = 0;
     }
     if (intersect && r) {
       /* must propagate locally to determine normal vector. */
-      x += vx*dt; y += vy*dt; z += vz*dt;
-      *nx  = x;
-      *ny  = y;
-      *nz  = z;
+      x += vx * dt;
+      y += vy * dt;
+      z += vz * dt;
+      *nx = x;
+      *ny = y;
+      *nz = z;
     }
-    return(intersect);
+    return (intersect);
   } // sphere_intersect_n
 
-  int cylinder_intersect_n(double *t0, double *t1,
-    double x, double y, double z,
-    double vx, double vy, double vz,
-    double r, double h,
-    double *nx, double *ny, double *nz) {
+  int
+  cylinder_intersect_n (double* t0, double* t1, double x, double y, double z, double vx, double vy, double vz, double r, double h, double* nx, double* ny,
+                        double* nz) {
 
-    double dt=0;
-    int    intersect = cylinder_intersect(t0, t1,
-      x,y,z, vx,vy,vz, r,h);
+    double dt = 0;
+    int intersect = cylinder_intersect (t0, t1, x, y, z, vx, vy, vz, r, h);
     if (intersect) {
-      if (r >0) /* First intersection in positive time */
+      if (r > 0) /* First intersection in positive time */
         dt = *t0 <= 0 || *t0 > *t1 ? *t1 : *t0;
-      else      /* always second intersection */
+      else /* always second intersection */
         dt = *t1;
-      if (dt < 0) intersect = 0;
+      if (dt < 0)
+        intersect = 0;
     }
     if (intersect && r) {
       /* must propagate locally to determine normal vector */
-      x += vx*dt; z += vz*dt;
-      *nx  = x;
-      *ny  = 0; /* cylinder is vertical */
-      *nz  = z;
+      x += vx * dt;
+      z += vz * dt;
+      *nx = x;
+      *ny = 0; /* cylinder is vertical */
+      *nz = z;
     }
-    return(intersect);
+    return (intersect);
   } // cylinder_intersect_n
 
-// two sphere separated with a given thickness
-int lens_sphere_intersect_n(double *t0, double *t1,
-double x, double y, double z,
-double vx, double vy, double vz,
-double r, double dz,
-double *nx, double *ny, double *nz) {
+  // two sphere separated with a given thickness
+  int
+  lens_sphere_intersect_n (double* t0, double* t1, double x, double y, double z, double vx, double vy, double vz, double r, double dz, double* nx, double* ny,
+                           double* nz) {
     /* two spherical lenses, concave, with given radius, thickness=zdepth at meniscus,
        plus cross section=xwidth*yheight */
-    int    intersect1 = 0, intersect2 = 0;
-    double nx1=0,nx2=0,ny1=0,ny2=0,nz1=0,nz2=0;
-    double t2=0,t3=0;
+    int intersect1 = 0, intersect2 = 0;
+    double nx1 = 0, nx2 = 0, ny1 = 0, ny2 = 0, nz1 = 0, nz2 = 0;
+    double t2 = 0, t3 = 0;
 
-    *t0=*t1=0;
+    *t0 = *t1 = 0;
 
-    intersect1 = sphere_intersect_n(t0, t1, x,y,z+r+dz/2,
-      vx,vy,vz, -r, &nx1,&ny1,&nz1); /* -r: use the further intersection with sphere */
+    intersect1 = sphere_intersect_n (t0, t1, x, y, z + r + dz / 2, vx, vy, vz, -r, &nx1, &ny1, &nz1); /* -r: use the further intersection with sphere */
 
-    intersect2 = sphere_intersect_n(&t2, &t3, x,y,z-r-dz/2,
-      vx,vy,vz, r, &nx2,&ny2,&nz2);
+    intersect2 = sphere_intersect_n (&t2, &t3, x, y, z - r - dz / 2, vx, vy, vz, r, &nx2, &ny2, &nz2);
 
     /* usual case with 4 intersections: return t1 and t2 */
     if (intersect1 || intersect2) {
-      if (intersect1) *t0=*t1;
-      if (intersect2) *t1= t2;
+      if (intersect1)
+        *t0 = *t1;
+      if (intersect2)
+        *t1 = t2;
     }
 
     if (!intersect1 && !intersect2)
-      return(0);
+      return (0);
 
     if (!intersect1 || !intersect2) {
       if (!intersect1) {
         /* intersection with the 2st sphere: return t2 and some other external
            intersection (container box entrance) t0 */
-        intersect1 = box_intersect_n(t0,&t3, x,y,z, vx,vy,vz,
-          2*r, 2*r, 2*r+dz, &nx1,&ny1,&nz1);
+        intersect1 = box_intersect_n (t0, &t3, x, y, z, vx, vy, vz, 2 * r, 2 * r, 2 * r + dz, &nx1, &ny1, &nz1);
       } else {
         /* intersection with the 1st sphere: return t1 and some other external
            intersection (container box exit) t3 */
-        intersect2 = box_intersect_n(&t2,t1, x,y,z, vx,vy,vz,
-          2*r, 2*r, 2*r+dz, &nx2,&ny2,&nz2);
+        intersect2 = box_intersect_n (&t2, t1, x, y, z, vx, vy, vz, 2 * r, 2 * r, 2 * r + dz, &nx2, &ny2, &nz2);
       }
     }
 
     /* the normal vector corresponds to the first forward intersection */
     if (intersect1 || intersect2) {
       if (*t0 < 0) {
-        *nx = nx2; *ny = ny2; *nz = nz2;
+        *nx = nx2;
+        *ny = ny2;
+        *nz = nz2;
       } else {
-        *nx = nx1; *ny = ny1; *nz = nz1;
+        *nx = nx1;
+        *ny = ny1;
+        *nz = nz1;
       }
     }
 
     /* no intersection: use intersection with container box */
-    return(intersect1+intersect2);
+    return (intersect1 + intersect2);
   } // lens_sphere_intersect_n
-  
+
   /* Surface_wavyness: function to rotate normal vector around axis for roughness
    *                 with specified tilt angle (rad)
    * RETURNS: rotated nx,ny,nz coordinates
    */
- #pragma acc routine
- void Surface_wavyness(double *nx, double *ny, double *nz, double tilt, _class_particle *_particle)
-  {
-    double nt_x, nt_y, nt_z;  /* transverse vector */
-    double n1_x, n1_y, n1_z;  /* normal vector (tmp) */
+  #pragma acc routine
+  void
+  Surface_wavyness (double* nx, double* ny, double* nz, double tilt, _class_particle* _particle) {
+    double nt_x, nt_y, nt_z; /* transverse vector */
+    double n1_x, n1_y, n1_z; /* normal vector (tmp) */
 
     /* normal vector n_z = [ 0,1,0], n_t = n x n_z; */
-    vec_prod(nt_x,nt_y,nt_z, *nx,*ny,*nz, 0,1,0);
+    vec_prod (nt_x, nt_y, nt_z, *nx, *ny, *nz, 0, 1, 0);
 
     /* rotate n with angle wav_z around n_t -> n1 */
-    tilt  /= (sqrt(8*log(2)))*randnorm();
-    rotate(n1_x,n1_y,n1_z, *nx,*ny,*nz, tilt, nt_x,nt_y,nt_z);
+    tilt /= (sqrt (8 * log (2))) * randnorm ();
+    rotate (n1_x, n1_y, n1_z, *nx, *ny, *nz, tilt, nt_x, nt_y, nt_z);
 
     /* rotate n1 with angle phi around n -> nt */
-    rotate(nt_x,nt_y,nt_z, n1_x,n1_y,n1_z, 2*PI*rand01(), *nx,*ny,*nz);
+    rotate (nt_x, nt_y, nt_z, n1_x, n1_y, n1_z, 2 * PI * rand01 (), *nx, *ny, *nz);
 
-    *nx=nt_x;
-    *ny=nt_y;
-    *nz=nt_z;
+    *nx = nt_x;
+    *ny = nt_y;
+    *nz = nt_z;
   }
 %}
 
@@ -329,57 +328,57 @@ DECLARE
 
 INITIALIZE
 %{
-  mean_n=0; events=0;
-  theta1=0; theta2=0;
+  mean_n = 0;
+  events = 0;
+  theta1 = 0;
+  theta2 = 0;
   /* set geometry from input geometry parameters */
-  if (!geometry || !strlen(geometry) || !strcmp(geometry, "NULL") || !strcmp(geometry, "0")) {
-    if (radius && yheight && !xwidth)                  strcpy(geometry, "cylinder");
-    else if (xwidth && yheight && zdepth && !radius)   strcpy(geometry, "box");
-    else if (radius && !yheight && !xwidth && !zdepth) strcpy(geometry, "sphere");
-  } else if (radius && zdepth && !strcmp(geometry, "lens_sphere")) {
+  if (!geometry || !strlen (geometry) || !strcmp (geometry, "NULL") || !strcmp (geometry, "0")) {
+    if (radius && yheight && !xwidth)
+      strcpy (geometry, "cylinder");
+    else if (xwidth && yheight && zdepth && !radius)
+      strcpy (geometry, "box");
+    else if (radius && !yheight && !xwidth && !zdepth)
+      strcpy (geometry, "sphere");
+  } else if (radius && zdepth && !strcmp (geometry, "lens_sphere")) {
     /* NOP: OK */
-  } else if (strcmp(geometry, "NULL") && strcmp(geometry, "0") && xwidth && yheight && zdepth) {
+  } else if (strcmp (geometry, "NULL") && strcmp (geometry, "0") && xwidth && yheight && zdepth) {
     #ifndef USE_OFF
-    fprintf(stderr,"Error: You are attempting to use an OFF geometry without -DUSE_OFF. You will need to recompile with that define set!\n");
-    exit(-1);
+    fprintf (stderr, "Error: You are attempting to use an OFF geometry without -DUSE_OFF. You will need to recompile with that define set!\n");
+    exit (-1);
     #else
     /* off/ply case */
-    if (!off_init(geometry, xwidth, yheight, zdepth, 0, &offdata))
-      exit(printf("Refractor: %s: FATAL: invalid OFF/PLY geometry specification for file '%s'.\n",
-      NAME_CURRENT_COMP, geometry));
+    if (!off_init (geometry, xwidth, yheight, zdepth, 0, &offdata))
+      exit (printf ("Refractor: %s: FATAL: invalid OFF/PLY geometry specification for file '%s'.\n", NAME_CURRENT_COMP, geometry));
     #endif
-  }
-  else exit(printf("Refractor: %s: FATAL: invalid geometry specification.\n"
-                   "  Check geometry,xwidth,yheight,zdepth,radius\n",
-      NAME_CURRENT_COMP));
+  } else
+    exit (printf ("Refractor: %s: FATAL: invalid geometry specification.\n"
+                  "  Check geometry,xwidth,yheight,zdepth,radius\n",
+                  NAME_CURRENT_COMP));
 
   /* compute refraction parameters, if needed */
-  if (density==0 || weight<=0)
-    exit(printf("Refractor: %s: FATAL: invalid material density or molar weight: density=%g weight=%g\n",
-      NAME_CURRENT_COMP, density, weight));
-  rho= fabs(density)*6.02214179*1e23*1e-24/weight; /* per at/Angs^3 */
-  if (sigma_coh==0)
-    exit(printf("Refractor: %s: FATAL: invalid material coherent cross section: sigma_coh=%g\n",
-      NAME_CURRENT_COMP, sigma_coh));
-  bc=sqrt(fabs(sigma_coh)*100/4/PI)*1e-5;      /* bound coherent scattering length */
-  if (sigma_coh<0) bc *= -1;
+  if (density == 0 || weight <= 0)
+    exit (printf ("Refractor: %s: FATAL: invalid material density or molar weight: density=%g weight=%g\n", NAME_CURRENT_COMP, density, weight));
+  rho = fabs (density) * 6.02214179 * 1e23 * 1e-24 / weight; /* per at/Angs^3 */
+  if (sigma_coh == 0)
+    exit (printf ("Refractor: %s: FATAL: invalid material coherent cross section: sigma_coh=%g\n", NAME_CURRENT_COMP, sigma_coh));
+  bc = sqrt (fabs (sigma_coh) * 100 / 4 / PI) * 1e-5; /* bound coherent scattering length */
+  if (sigma_coh < 0)
+    bc *= -1;
 
   /* use bulk to compute reflectivity critical angle/wavevector */
-  if (Qc <=0)
-    Qc = 4*sqrt(PI*rho*fabs(bc));
-  MPI_MASTER(
-  printf("Refractor: %s: rho.bc=%g [10-6 Angs-2] Qc=%g [Angs-1]. geometry=%s\n",
-    NAME_CURRENT_COMP, rho*bc*1e6, Qc, geometry);
-  );
+  if (Qc <= 0)
+    Qc = 4 * sqrt (PI * rho * fabs (bc));
+  MPI_MASTER (printf ("Refractor: %s: rho.bc=%g [10-6 Angs-2] Qc=%g [Angs-1]. geometry=%s\n", NAME_CURRENT_COMP, rho * bc * 1e6, Qc, geometry););
 %}
 
 TRACE
 %{
-  int    intersect = 0;
-  int    iterations= 0;
-  char   event[256];
+  int intersect = 0;
+  int iterations = 0;
+  char event[256];
 
-  theta1=theta2=0;
+  theta1 = theta2 = 0;
 
   #ifdef OPENACC
   #ifdef USE_OFF
@@ -388,269 +387,287 @@ TRACE
   #else
   #define thread_offdata offdata
   #endif
-  
+
   do {
-    double nx=0, ny=0, nz=0;
-    double t0=0, t1=0, dt=0;
+    double nx = 0, ny = 0, nz = 0;
+    double t0 = 0, t1 = 0, dt = 0;
 
     intersect = 0;
     iterations++;
     #ifndef OPENACC
-    strcpy(event, "                                               ");
+    strcpy (event, "                                               ");
     #endif
     /* determine intersection times and normal vector with geometry */
-    if (!strcmp(geometry, "sphere")) {
-      intersect = sphere_intersect_n(&t0, &t1, x,y,z, vx,vy,vz,
-        radius, &nx,&ny,&nz);
-    } else if (!strcmp(geometry, "lens_sphere")) {
-      intersect = lens_sphere_intersect_n(&t0, &t1, x,y,z, vx,vy,vz,
-        radius, zdepth, &nx,&ny,&nz);
-    } else if (!strcmp(geometry, "cylinder")) {
-      intersect = cylinder_intersect_n(&t0, &t1, x,y,z, vx,vy,vz,
-        radius, yheight, &nx,&ny,&nz);
-    } else if (!strcmp(geometry, "box")) {
-      intersect = box_intersect_n(&t0, &t1, x,y,z, vx,vy,vz,
-        xwidth, yheight, zdepth, &nx,&ny,&nz);
+    if (!strcmp (geometry, "sphere")) {
+      intersect = sphere_intersect_n (&t0, &t1, x, y, z, vx, vy, vz, radius, &nx, &ny, &nz);
+    } else if (!strcmp (geometry, "lens_sphere")) {
+      intersect = lens_sphere_intersect_n (&t0, &t1, x, y, z, vx, vy, vz, radius, zdepth, &nx, &ny, &nz);
+    } else if (!strcmp (geometry, "cylinder")) {
+      intersect = cylinder_intersect_n (&t0, &t1, x, y, z, vx, vy, vz, radius, yheight, &nx, &ny, &nz);
+    } else if (!strcmp (geometry, "box")) {
+      intersect = box_intersect_n (&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth, &nx, &ny, &nz);
     }
     #ifdef USE_OFF
-    else if (geometry && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
+    else if (geometry && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
       Coords n0, n1;
-      intersect = off_intersect(&t0, &t1, &n0, &n1, x, y, z, vx, vy, vz, 0, 0, 0, thread_offdata );
+      intersect = off_intersect (&t0, &t1, &n0, &n1, x, y, z, vx, vy, vz, 0, 0, 0, thread_offdata);
       if (intersect) {
-        coords_get(t0 <= 0 || t0 > t1 ? n1 : n0, &nx, &ny, &nz);
+        coords_get (t0 <= 0 || t0 > t1 ? n1 : n0, &nx, &ny, &nz);
       }
     }
     #endif
 
     if (intersect) {
-      if (t1 < t0) { double tmp=t0; t0=t1; t1=tmp; }
+      if (t1 < t0) {
+        double tmp = t0;
+        t0 = t1;
+        t1 = tmp;
+      }
       dt = t0 <= 1e-10 ? t1 : t0; /* full propagation time inside geometry */
-      if (dt < 0) dt=0;
+      if (dt < 0)
+        dt = 0;
     }
-    if (dt<=0) break;
+    if (dt <= 0)
+      break;
     #ifndef OPENACC
-    strcpy(event, "none");
+    strcpy (event, "none");
     #endif
     if (verbose)
-    printf("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=(intersect) %s\n",
-      NAME_CURRENT_COMP, __LINE__, mcget_run_num(), iterations, geometry, intersect, t0,t1, dt, event);
+      printf ("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=(intersect) %s\n", NAME_CURRENT_COMP, __LINE__, mcget_run_num (),
+              iterations, geometry, intersect, t0, t1, dt, event);
 
     /* scattering/absorption in bulk, refraction/reflection at interface */
     if (intersect) {
-      char   scatter_me=0, refract_me=0;
-      double my_t=0, d_path=0;
-      double v=0,lambda=0;
-      char   inbulk = t0 < 0 && t1 > 0;
+      char scatter_me = 0, refract_me = 0;
+      double my_t = 0, d_path = 0;
+      double v = 0, lambda = 0;
+      char inbulk = t0 < 0 && t1 > 0;
 
       /* when density is given negative, we assume bulk refractive material is
          'outside' or 'before' the shape */
-      if (density < 0) inbulk = !inbulk;
+      if (density < 0)
+        inbulk = !inbulk;
 
-      v      = sqrt(vx*vx+vy*vy+vz*vz);
-      if (!v) ABSORB;
-      lambda = 3956.0032/v;
-      d_path = v*dt;         /* full length in material */
+      v = sqrt (vx * vx + vy * vy + vz * vz);
+      if (!v)
+        ABSORB;
+      lambda = 3956.0032 / v;
+      d_path = v * dt; /* full length in material */
 
       /* compute probability to scatter/absorb inside bulk */
       if (inbulk) { /* scatter inside bulk */
-        double ws     = 0;
-        double p_trans= 0, p_scatt=0, mc_trans=0, mc_scatt=0;
-        int    flag   = 0;
+        double ws = 0;
+        double p_trans = 0, p_scatt = 0, mc_trans = 0, mc_scatt = 0;
+        int flag = 0;
         double my_a_v = (rho * 100 * sigma_abs);
-        double my_a   = my_a_v*2200/v;
-        double my_s   = rho * 100 *(sigma_inc+sigma_coh);
+        double my_a = my_a_v * 2200 / v;
+        double my_s = rho * 100 * (sigma_inc + sigma_coh);
 
         my_t = my_a + my_s;
-        ws   = my_s/my_t;  /* (inc+coh)/(inc+coh+abs) */
+        ws = my_s / my_t; /* (inc+coh)/(inc+coh+abs) */
 
         /* Proba of transmission along length d_path */
-        p_trans = exp(-my_t*d_path);
+        p_trans = exp (-my_t * d_path);
         p_scatt = 1 - p_trans;
 
         flag = 0; /* flag used for propagation to exit point before ending */
         /* are we next to the exit ? probably no scattering (avoid rounding errors) */
-        if (my_s*d_path <= 4e-7) {
-          flag = 1;           /* No interaction before the exit */
+        if (my_s * d_path <= 4e-7) {
+          flag = 1; /* No interaction before the exit */
         }
 
         /* force a given fraction of the beam to scatter */
-        if (p_interact>0 && p_interact<=1) {
+        if (p_interact > 0 && p_interact <= 1) {
           /* we force a portion of the beam to interact */
           /* This is used to improve statistics on single scattering (and multiple) */
-          mc_trans = 1-p_interact;
+          mc_trans = 1 - p_interact;
         } else {
           mc_trans = p_trans; /* 1 - p_scatt */
         }
 
         mc_scatt = 1 - mc_trans; /* portion of beam to scatter (or force to) */
-        if (mc_scatt <= 0 || mc_scatt>1) flag=1;
+        if (mc_scatt <= 0 || mc_scatt > 1)
+          flag = 1;
 
         /* MC choice: Interaction or transmission ? */
-        scatter_me = !flag && ws && p_scatt && mc_scatt > 0 && (mc_scatt >= 1 || rand01() < mc_scatt);
+        scatter_me = !flag && ws && p_scatt && mc_scatt > 0 && (mc_scatt >= 1 || rand01 () < mc_scatt);
 
         /* account for absorption and retain scattered fraction */
         /* we have chosen portion mc_scatt of beam instead of p_scatt, so we compensate */
         if (scatter_me)
-          p *= ws * fabs(p_scatt/mc_scatt);
+          p *= ws * fabs (p_scatt / mc_scatt);
         else if (p_trans && mc_trans)
-          p *= fabs(p_trans/mc_trans);  /* attenuate beam by portion which is scattered (and left along) */
+          p *= fabs (p_trans / mc_trans); /* attenuate beam by portion which is scattered (and left along) */
 
         if (verbose)
-        printf("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=(inbulk) %s scatter_me=%i\n",
-          NAME_CURRENT_COMP, __LINE__, mcget_run_num(), iterations, geometry, intersect, t0,t1, dt, event, scatter_me);
+          printf ("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=(inbulk) %s scatter_me=%i\n", NAME_CURRENT_COMP, __LINE__,
+                  mcget_run_num (), iterations, geometry, intersect, t0, t1, dt, event, scatter_me);
       } /* if inbulk */
 
       /* handle absorption and scattering in material */
       /* req: my_t, d_path, focus_ah, focus_aw */
       if (p_scatter && scatter_me) {
-        double dl=0, solid_angle=0;
-        double vx2=0, vy2=0, vz2=0;
+        double dl = 0, solid_angle = 0;
+        double vx2 = 0, vy2 = 0, vz2 = 0;
 
-        if (my_t*d_path < 1e-6){
+        if (my_t * d_path < 1e-6) {
           /* For very weak scattering, use simple uniform sampling of scattering
              point to avoid rounding errors. */
-          dl = rand0max(d_path); /* length */
+          dl = rand0max (d_path); /* length */
         } else {
-          double a = rand0max((1 - exp(-my_t*d_path)));
-          dl = -log(1 - a) / my_t; /* length */
+          double a = rand0max ((1 - exp (-my_t * d_path)));
+          dl = -log (1 - a) / my_t; /* length */
         }
 
-        PROP_DT(dl/v); dt = 0;  // we propagate in the bulk
+        PROP_DT (dl / v);
+        dt = 0;  // we propagate in the bulk
         SCATTER; /* 1 */
 
         /* scatter randomly in cone to take into account material sigma */
-        randvec_target_circle(&vx2, &vy2, &vz2,
-          &solid_angle, vx,vy,vz, focus_scatter*DEG2RAD);
-        vx=vx2; vy=vy2; vz=vz2;
+        randvec_target_circle (&vx2, &vy2, &vz2, &solid_angle, vx, vy, vz, focus_scatter * DEG2RAD);
+        vx = vx2;
+        vy = vy2;
+        vz = vz2;
 
         if (solid_angle) {
-          p *= solid_angle/4/PI;
-          NORM(vx, vy, vz);
-          vx*=v; vy*=v; vz*=v; /* scattering is elastic */
+          p *= solid_angle / 4 / PI;
+          NORM (vx, vy, vz);
+          vx *= v;
+          vy *= v;
+          vz *= v; /* scattering is elastic */
         }
         /* force to recompute intersection with new neutron direction/position */
         refract_me = 0;
-	#ifndef OPENACC
-        strcpy(event, "scatter");
-	#endif
+        #ifndef OPENACC
+        strcpy (event, "scatter");
+        #endif
         if (verbose)
-        printf("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=(scatter) %s\n",
-          NAME_CURRENT_COMP, __LINE__, mcget_run_num(), iterations, geometry, intersect, t0,t1, dl/v, event);
+          printf ("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=(scatter) %s\n", NAME_CURRENT_COMP, __LINE__, mcget_run_num (),
+                  iterations, geometry, intersect, t0, t1, dl / v, event);
 
       } else {
         refract_me = 1;
       } /* if scatter */
 
-      if ((p_refract||p_reflect) && refract_me) { // refract or reflect on the surface
-        double n=0; /* refractive index */
-        double n1=0, n2=0;
+      if ((p_refract || p_reflect) && refract_me) { // refract or reflect on the surface
+        double n = 0;                               /* refractive index */
+        double n1 = 0, n2 = 0;
 
-        double q=0, R=0;
-        double par[]  = {R0, Qc, 6.0, 1.0, 1.0/300.0};
-
+        double q = 0, R = 0;
+        double par[] = { R0, Qc, 6.0, 1.0, 1.0 / 300.0 };
 
         /* propagate to surface */
-        PROP_DT(dt); dt=0;
-        SCATTER; SCATTER; /* 2 */
+        PROP_DT (dt);
+        dt = 0;
+        SCATTER;
+        SCATTER; /* 2 */
 
         /* compute refraction index */
-        n   = sqrt(1-(lambda*lambda*rho*bc/PI));
+        n = sqrt (1 - (lambda * lambda * rho * bc / PI));
         mean_n += n;
         events++;
 
         /* compute incoming angle */
-        if (inbulk) { n1=n; n2=1; } /* from bulk to void */
-        else        { n1=1; n2=n; } /* from void to bulk */
+        if (inbulk) {
+          n1 = n;
+          n2 = 1;
+        } /* from bulk to void */
+        else {
+          n1 = 1;
+          n2 = n;
+        } /* from void to bulk */
 
         /* compute reflectivity */
-        q = fabs(2*vz*V2Q);
+        q = fabs (2 * vz * V2Q);
 
         /* Reflectivity (see component Guide). */
-        StdReflecFunc(q, par, &R);
+        StdReflecFunc (q, par, &R);
 
         /* tilt normal vector for roughness, in cone theta_RMS */
-        NORM(nx,ny,nz);
+        NORM (nx, ny, nz);
         /* cone angle from RMS roughness = atan(2*RMS/lambda) */
-        if (RMS>0) Surface_wavyness(&nx, &ny, &nz, atan(2*RMS/lambda), _particle);
+        if (RMS > 0)
+          Surface_wavyness (&nx, &ny, &nz, atan (2 * RMS / lambda), _particle);
 
         /* Snell-Descartes formula for refraction n1 sin(theta1) = n2 sin(theta2) */
         /*   https://en.wikipedia.org/wiki/Snell's_law                            */
-        Coords N = coords_set(nx,ny,nz);  // normal vector to surface
-        Coords V = coords_set(vx,vy,vz);  // incoming velocity
-        Coords I = coords_scale(V, 1/v);  // normalised ray = v/|v|
+        Coords N = coords_set (nx, ny, nz); // normal vector to surface
+        Coords V = coords_set (vx, vy, vz); // incoming velocity
+        Coords I = coords_scale (V, 1 / v); // normalised ray = v/|v|
 
         // theta1: incident angle to the surface normal
-        double cos_theta1 = -coords_sp(N,I); // cos(theta1) = -N.I
+        double cos_theta1 = -coords_sp (N, I); // cos(theta1) = -N.I
 
-        if (fabs(cos_theta1) > 1) ABSORB; // should never occur...
-        theta1 = acos(cos_theta1)*RAD2DEG;
+        if (fabs (cos_theta1) > 1)
+          ABSORB; // should never occur...
+        theta1 = acos (cos_theta1) * RAD2DEG;
 
         // reflected ray: probability R
         // reflected beam:     I + 2cos(theta1).N
-        Coords I_reflect = coords_add(I, coords_scale(N, 2*cos_theta1));
+        Coords I_reflect = coords_add (I, coords_scale (N, 2 * cos_theta1));
         // reflected velocity: I_reflect.v
-        Coords V_reflect = coords_scale(I_reflect, v);
+        Coords V_reflect = coords_scale (I_reflect, v);
 
         // compute refracted angle theta2...
-        double sqr_cos_theta2 = 1-(n1/n2)*(n1/n2)*(1-cos_theta1*cos_theta1);
+        double sqr_cos_theta2 = 1 - (n1 / n2) * (n1 / n2) * (1 - cos_theta1 * cos_theta1);
 
         // now choose which one to use, and compute outgoing velocity
         if (0 < sqr_cos_theta2 && sqr_cos_theta2 < 1) {
           // refraction is possible
 
           // theta2: refracted angle to the surface normal
-          double cos_theta2= sqrt(sqr_cos_theta2);
+          double cos_theta2 = sqrt (sqr_cos_theta2);
 
           // select reflection (or refraction) from Monte-Carlo choice with probability R
           // in this case we expect R to be small (q > Qc)
-          if (p_reflect && 0 < R && R < 1 && rand01() < R) {
+          if (p_reflect && 0 < R && R < 1 && rand01 () < R) {
             // choose reflection from MC
             theta2 = theta1;
-            coords_get(V_reflect, &vx, &vy, &vz);
-	    #ifndef OPENACC
-            strcpy(event, "reflect");
-	    #endif
+            coords_get (V_reflect, &vx, &vy, &vz);
+            #ifndef OPENACC
+            strcpy (event, "reflect");
+            #endif
           } else if (p_refract) {
             // compute refracted ray
-            theta2 = acos(cos_theta2)*RAD2DEG;
+            theta2 = acos (cos_theta2) * RAD2DEG;
 
-            Coords I_refract = coords_add(coords_scale(I, n1/n2),
-                                          coords_scale(N, n1/n2*cos_theta1 + (cos_theta1  < 0 ? cos_theta2 : -cos_theta2) ));
-            Coords V_refract = coords_scale(I_refract, v);
+            Coords I_refract = coords_add (coords_scale (I, n1 / n2), coords_scale (N, n1 / n2 * cos_theta1 + (cos_theta1 < 0 ? cos_theta2 : -cos_theta2)));
+            Coords V_refract = coords_scale (I_refract, v);
 
-            coords_get(V_refract, &vx, &vy, &vz);
-	    #ifndef OPENACC
-            strcpy(event, "refract");
-	    #endif
+            coords_get (V_refract, &vx, &vy, &vz);
+            #ifndef OPENACC
+            strcpy (event, "refract");
+            #endif
             SCATTER; /* 3 */
           }
         } else if (p_reflect) {
           // only reflection: below total reflection
           theta2 = theta1;
-          if (0 < R && R < 1) p *= R; // should be R0
-          coords_get(V_reflect, &vx, &vy, &vz);
-	  #ifndef OPENACC
-          strcpy(event, "reflect");
-	  #endif
+          if (0 < R && R < 1)
+            p *= R; // should be R0
+          coords_get (V_reflect, &vx, &vy, &vz);
+          #ifndef OPENACC
+          strcpy (event, "reflect");
+          #endif
         }
 
         /* propagate by a small time so that we leave the surface */
-        PROP_DT(1e-9);
+        PROP_DT (1e-9);
 
         if (verbose)
-        printf("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=(reflect/refract) %s theta1=%g theta2=%g 1-n=%g |xy|=%g nz=%g\n",
-          NAME_CURRENT_COMP, __LINE__, mcget_run_num(), iterations, geometry, intersect, t0,t1, dt, event,
-          theta1, theta2, 1-n, sqrt(x*x+y*y), nz);
+          printf ("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=(reflect/refract) %s theta1=%g theta2=%g 1-n=%g |xy|=%g nz=%g\n",
+                  NAME_CURRENT_COMP, __LINE__, mcget_run_num (), iterations, geometry, intersect, t0, t1, dt, event, theta1, theta2, 1 - n, sqrt (x * x + y * y),
+                  nz);
       } /* if reflect/refract */
 
     } /* if intersect */
-    else break;
+    else
+      break;
 
     if (verbose)
-    printf("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=%s\n",
-      NAME_CURRENT_COMP, __LINE__, mcget_run_num(), iterations, geometry, intersect, t0,t1, dt, event);
-  } while (intersect && iterations<100);
-
+      printf ("%s:%i: [neutron=%li iteration=%i] intersect %s=%i t0=%g t1=%g dt=%g event=%s\n", NAME_CURRENT_COMP, __LINE__, mcget_run_num (), iterations,
+              geometry, intersect, t0, t1, dt, event);
+  } while (intersect && iterations < 100);
 %}
 
 FINALLY %{
@@ -676,41 +693,41 @@ FINALLY %{
 MCDISPLAY
 %{
   /* show geometry */
-  if (!strcmp(geometry, "sphere")) {
-    circle("xy", 0, 0, 0, radius);
-    circle("xz", 0, 0, 0, radius);
-    circle("yz", 0, 0, 0, radius);
-  } else if (!strcmp(geometry, "cylinder")) {
-    circle("xz", 0,  yheight/2.0, 0, radius);
-    circle("xz", 0, -yheight/2.0, 0, radius);
-    line(-radius, -yheight/2.0, 0, -radius, +yheight/2.0, 0);
-    line(+radius, -yheight/2.0, 0, +radius, +yheight/2.0, 0);
-    line(0, -yheight/2.0, -radius, 0, +yheight/2.0, -radius);
-    line(0, -yheight/2.0, +radius, 0, +yheight/2.0, +radius);
-  } else if (!strcmp(geometry, "box")) {
-    box(0,0,0, xwidth, yheight, zdepth,0, 0, 1, 0);
-  } else if (!strcmp(geometry, "lens_sphere")) {
+  if (!strcmp (geometry, "sphere")) {
+    circle ("xy", 0, 0, 0, radius);
+    circle ("xz", 0, 0, 0, radius);
+    circle ("yz", 0, 0, 0, radius);
+  } else if (!strcmp (geometry, "cylinder")) {
+    circle ("xz", 0, yheight / 2.0, 0, radius);
+    circle ("xz", 0, -yheight / 2.0, 0, radius);
+    line (-radius, -yheight / 2.0, 0, -radius, +yheight / 2.0, 0);
+    line (+radius, -yheight / 2.0, 0, +radius, +yheight / 2.0, 0);
+    line (0, -yheight / 2.0, -radius, 0, +yheight / 2.0, -radius);
+    line (0, -yheight / 2.0, +radius, 0, +yheight / 2.0, +radius);
+  } else if (!strcmp (geometry, "box")) {
+    box (0, 0, 0, xwidth, yheight, zdepth, 0, 0, 1, 0);
+  } else if (!strcmp (geometry, "lens_sphere")) {
     // sphere: x^2+y^2+z^2=radius. In 2D: radius^2=z^2+r^2
     int index;
-    for (index=0; index<=3; index++) {
-      double z=radius*(index == 3 ? 0.95 : index/3.0);
-      double r=sqrt(radius*radius-z*z);
-      circle("xy", 0, 0, z-(radius+zdepth/2), r);
-      circle("xy", 0, 0,-z+(radius+zdepth/2), r);
+    for (index = 0; index <= 3; index++) {
+      double z = radius * (index == 3 ? 0.95 : index / 3.0);
+      double r = sqrt (radius * radius - z * z);
+      circle ("xy", 0, 0, z - (radius + zdepth / 2), r);
+      circle ("xy", 0, 0, -z + (radius + zdepth / 2), r);
     }
-    box(0,0,0, 2*radius, 2*radius, 2*radius+zdepth,0, 0, 1, 0);
-  } else if (!strcmp(geometry, "lens_parabola")) {
+    box (0, 0, 0, 2 * radius, 2 * radius, 2 * radius + zdepth, 0, 0, 1, 0);
+  } else if (!strcmp (geometry, "lens_parabola")) {
     // parabola: z  = (x^2+y^2)/4/radius. In 2D: z = r^2/4/radius
     int index;
-    for (index=0; index<=3; index++) {
-      double z=radius*(index == 3 ? 0.95 : index/3.0);
-      double r=sqrt(z*4*radius);
-      circle("xy", 0, 0,-z-(zdepth/2), r);
-      circle("xy", 0, 0, z+(zdepth/2), r);
+    for (index = 0; index <= 3; index++) {
+      double z = radius * (index == 3 ? 0.95 : index / 3.0);
+      double r = sqrt (z * 4 * radius);
+      circle ("xy", 0, 0, -z - (zdepth / 2), r);
+      circle ("xy", 0, 0, z + (zdepth / 2), r);
     }
-    box(0,0,0, 4*radius, 4*radius, 2*radius+zdepth,0, 0, 1, 0);
-  } else if (geometry && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
-    off_display(offdata);
+    box (0, 0, 0, 4 * radius, 4 * radius, 2 * radius + zdepth, 0, 0, 1, 0);
+  } else if (geometry && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
+    off_display (offdata);
   }
 %}
 END

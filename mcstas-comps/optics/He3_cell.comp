@@ -55,102 +55,102 @@ DECLARE
 INITIALIZE
 %{
   if (radius && !xwidth && !yheight && length) {
-    geom=0; // Cylindrical geometry
+    geom = 0; // Cylindrical geometry
   } else if (radius && !xwidth && !yheight && !length) {
-    geom=1; // Spherical geometry
+    geom = 1; // Spherical geometry
   } else if (!radius && xwidth && yheight && length) {
     // Box geometry
-    geom=2;
+    geom = 2;
   } else {
-    fprintf(stderr,"You are runnning He3_cell component %s with a mixed cylindrical/box shape geometry, this is not supported!\n",_comp->_name);
-    exit(-1);
+    fprintf (stderr, "You are runnning He3_cell component %s with a mixed cylindrical/box shape geometry, this is not supported!\n", _comp->_name);
+    exit (-1);
   }
 %}
 
 TRACE
 %{
 
-  double t0,t1;        /* time that neutron enters and leaves gas (s) */
-  double v,lambda;      /* neutron velocity and wavelength (ms-1, Anstroms) */
-  double l_full;       /* path length of neutron through gas (m) */
-  double dt0;          /* time neutron spends in the gas (s) */
-  double opacity;      /* opacity of the gas for this neutron (dimless) */
-  double omega;        /* angle through which polarisation precesses
-                          over the path through the cell (radians) */
-  double px,py,pz;     /* auxilliary vector polarisation (-1 to +1) */
-  double bnx,bny,bnz;  /* normal vector parallel to the magnetic field*/
+  double t0, t1;        /* time that neutron enters and leaves gas (s) */
+  double v, lambda;     /* neutron velocity and wavelength (ms-1, Anstroms) */
+  double l_full;        /* path length of neutron through gas (m) */
+  double dt0;           /* time neutron spends in the gas (s) */
+  double opacity;       /* opacity of the gas for this neutron (dimless) */
+  double omega;         /* angle through which polarisation precesses
+                           over the path through the cell (radians) */
+  double px, py, pz;    /* auxilliary vector polarisation (-1 to +1) */
+  double bnx, bny, bnz; /* normal vector parallel to the magnetic field*/
 
-  const double gyro = 1.832e8; /*absolute value of the gyromagnetic ratio of the neutron (1/(s.T))*/
+  const double gyro = 1.832e8;  /*absolute value of the gyromagnetic ratio of the neutron (1/(s.T))*/
   const double opac_cnv = 7.33; /*opacity conversion factor to express opacity in (bar.m.angstrom)*/
 
   int intersect;
 
   if (!geom) {
     // Cylindrical geometry
-      /* calculate the intersection times with the volume of gas, if the neutron
-	 goes through the cell, continue with calculation otherwise all done.
-	 Note that y and z are swapped - this is because the cylindrical axis of
-	 a 3He cell lies along the beam. */
-    intersect=cylinder_intersect(&t0,&t1,x,z,y,vx,vz,vy,radius,length);
-  } else if (geom==1) {
+    /* calculate the intersection times with the volume of gas, if the neutron
+       goes through the cell, continue with calculation otherwise all done.
+       Note that y and z are swapped - this is because the cylindrical axis of
+       a 3He cell lies along the beam. */
+    intersect = cylinder_intersect (&t0, &t1, x, z, y, vx, vz, vy, radius, length);
+  } else if (geom == 1) {
     // Spherical geometry
-    intersect=sphere_intersect(&t0,&t1,x,y,z,vx,vy,vz,radius);
-  } else if (geom==2) {
+    intersect = sphere_intersect (&t0, &t1, x, y, z, vx, vy, vz, radius);
+  } else if (geom == 2) {
     // Box geometry
-    intersect=box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,length);
+    intersect = box_intersect (&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, length);
   }
-  
-  if(intersect)
-  {
+
+  if (intersect) {
     /* Calculate the neutron velocity and wavelength */
-    v=sqrt(vx*vx+vy*vy+vz*vz);
-    lambda=2*PI/(V2K*v);
+    v = sqrt (vx * vx + vy * vy + vz * vz);
+    lambda = 2 * PI / (V2K * v);
 
     /* Calculate the path length of the neutron through the gas */
-    dt0=t1-t0;
-    l_full=v*dt0;
+    dt0 = t1 - t0;
+    l_full = v * dt0;
 
     /* Calculate the opacity of the cell for the path length travelled */
-    opacity=pressure*l_full*lambda*opac_cnv;
+    opacity = pressure * l_full * lambda * opac_cnv;
 
     /* propagate the polarisation accross the cell (assuming a constant
        magnetic field).  The actual interaction point is not taken into account
        as only the parallel and perpendicular components are important. */
 
-    omega=dt0*gyro*sqrt(bx*bx+by*by+bz*bz);
-    rotate(px,py,pz,sx,sy,sz,omega,bx,by,bz);
-    sx=px;
-    sy=py;
-    sz=pz;
+    omega = dt0 * gyro * sqrt (bx * bx + by * by + bz * bz);
+    rotate (px, py, pz, sx, sy, sz, omega, bx, by, bz);
+    sx = px;
+    sy = py;
+    sz = pz;
 
     /* adjust the neutron weight according to spin state relative to the
        3He nuclei - antiparallel spins are as good as absorbed, whereas parallel
        spins are transmitted (depending upon degree of polarisation of gas */
-    bnx=bx;bny=by;bnz=bz;
-    NORM(bnx,bny,bnz);
-    double pm1=scalar_prod(sx,sy,sz,bnx,bny,bnz);
-    double phiu,phid,T, Tup,Tdown;
+    bnx = bx;
+    bny = by;
+    bnz = bz;
+    NORM (bnx, bny, bnz);
+    double pm1 = scalar_prod (sx, sy, sz, bnx, bny, bnz);
+    double phiu, phid, T, Tup, Tdown;
 
-    phiu=((pm1)+1)/2.0;
-    phid=(1-(pm1))/2.0;
-    Tup=exp(-opacity*(1.0-p3he));
-    Tdown=exp(-opacity*(1.0+p3he));
+    phiu = ((pm1) + 1) / 2.0;
+    phid = (1 - (pm1)) / 2.0;
+    Tup = exp (-opacity * (1.0 - p3he));
+    Tdown = exp (-opacity * (1.0 + p3he));
 
-    p*=phiu*Tup + phid*Tdown;
+    p *= phiu * Tup + phid * Tdown;
 
     /*set the outgoing polarization vector without touching the part perpendicular
       to the polarisation of the gas .
       Perpendicular comp: P_=S - P// = S - (S.b_n)b_n
       Parallel comp: P// = Pn bn, where Pn is the polarisation efficiency.*/
-    px=sx - pm1*bnx;
-    py=sy - pm1*bny;
-    pz=sz - pm1*bnz;
+    px = sx - pm1 * bnx;
+    py = sy - pm1 * bny;
+    pz = sz - pm1 * bnz;
 
-
-    double Pn=(Tup-Tdown)/(Tup+Tdown);
-    sx=px + Pn*bnx;
-    sy=py + Pn*bny;
-    sz=pz + Pn*bnz;
+    double Pn = (Tup - Tdown) / (Tup + Tdown);
+    sx = px + Pn * bnx;
+    sy = py + Pn * bny;
+    sz = pz + Pn * bnz;
 
     SCATTER;
   }
@@ -159,16 +159,16 @@ TRACE
 MCDISPLAY
 %{
   if (!geom) {
-    circle("xy",0.0,0.0,-length/2.0,radius);
-    circle("xy",0.0,0.0,length/2.0,radius);
-    line(0.0,radius,-length/2.0,0.0,radius,length/2.0);
-    line(radius,0.0,-length/2.0,radius,0.0,length/2.0);
-    line(0.0,-radius,-length/2.0,0.0,-radius,length/2.0);
-    line(-radius,0.0,-length/2.0,-radius,0.0,length/2.0);
-  } else if(geom==1) {
-    sphere(0,0,0,radius);
-  } else if(geom==2) {
-    box(0,0,0,xwidth,yheight,length,0,0,0,1);
+    circle ("xy", 0.0, 0.0, -length / 2.0, radius);
+    circle ("xy", 0.0, 0.0, length / 2.0, radius);
+    line (0.0, radius, -length / 2.0, 0.0, radius, length / 2.0);
+    line (radius, 0.0, -length / 2.0, radius, 0.0, length / 2.0);
+    line (0.0, -radius, -length / 2.0, 0.0, -radius, length / 2.0);
+    line (-radius, 0.0, -length / 2.0, -radius, 0.0, length / 2.0);
+  } else if (geom == 1) {
+    sphere (0, 0, 0, radius);
+  } else if (geom == 2) {
+    box (0, 0, 0, xwidth, yheight, length, 0, 0, 0, 1);
   }
 %}
 

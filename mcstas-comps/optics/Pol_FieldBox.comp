@@ -51,52 +51,58 @@ DECLARE
 INITIALIZE
 %{
   /*constant magnetic field in the box*/
-  Bprms[0]=Bx;Bprms[1]=By;Bprms[2]=Bz;
+  Bprms[0] = Bx;
+  Bprms[1] = By;
+  Bprms[2] = Bz;
 %}
 
 
 
 TRACE
 %{
-    int hit;
-    double t0,t1;
-    if (hit=box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,zdepth)){
-        if(t0>0) PROP_DT(t0);
-        double phi_prec;
-        if(t1-t0>0){
-          PROP_DT(t1-t0);
-          /*do the precession "manually"*/
-          phi_prec= fmod(sqrt(Bx*Bx+ By*By+ Bz*Bz) * (t1-t0)*mc_pol_omegaL, 2*PI);
-          double sx_i,sy_i,sz_i;
-          sx_i=sx;sy_i=sy;sz_i=sz;
-          rotate(sx, sy, sz, sx_i,sy_i,sz_i, phi_prec, Bx, By, Bz);
-        }
+  int hit;
+  double t0, t1;
+  if (hit = box_intersect (&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth)) {
+    if (t0 > 0)
+      PROP_DT (t0);
+    double phi_prec;
+    if (t1 - t0 > 0) {
+      PROP_DT (t1 - t0);
+      /*do the precession "manually"*/
+      phi_prec = fmod (sqrt (Bx * Bx + By * By + Bz * Bz) * (t1 - t0) * mc_pol_omegaL, 2 * PI);
+      double sx_i, sy_i, sz_i;
+      sx_i = sx;
+      sy_i = sy;
+      sz_i = sz;
+      rotate (sx, sy, sz, sx_i, sy_i, sz_i, phi_prec, Bx, By, Bz);
     }
-
+  }
 %}
 
 MCDISPLAY
 %{
   const int nDash = 10;
-  double xw_2,yh_2,zd_2;
-  xw_2=xwidth/2.0;yh_2=yheight/2.0;zd_2=zdepth/2.0;
+  double xw_2, yh_2, zd_2;
+  xw_2 = xwidth / 2.0;
+  yh_2 = yheight / 2.0;
+  zd_2 = zdepth / 2.0;
   /*entrance*/
-  dashed_line(-xw_2, -yh_2, +zd_2,  xw_2, -yh_2, -zd_2, nDash);
-  dashed_line(-xw_2, -yh_2, +zd_2, -xw_2,  yh_2, +zd_2, nDash);
-  dashed_line( xw_2,  yh_2, -zd_2, -xw_2,  yh_2, +zd_2, nDash);
-  dashed_line( xw_2,  yh_2, -zd_2,  xw_2, -yh_2, -zd_2, nDash);
+  dashed_line (-xw_2, -yh_2, +zd_2, xw_2, -yh_2, -zd_2, nDash);
+  dashed_line (-xw_2, -yh_2, +zd_2, -xw_2, yh_2, +zd_2, nDash);
+  dashed_line (xw_2, yh_2, -zd_2, -xw_2, yh_2, +zd_2, nDash);
+  dashed_line (xw_2, yh_2, -zd_2, xw_2, -yh_2, -zd_2, nDash);
 
   /*exit*/
-  dashed_line(-xw_2, -yh_2, zdepth+zd_2,  xw_2, -yh_2, zdepth-zd_2, nDash);
-  dashed_line(-xw_2, -yh_2, zdepth+zd_2, -xw_2,  yh_2, zdepth+zd_2, nDash);
-  dashed_line( xw_2,  yh_2, zdepth-zd_2, -xw_2,  yh_2, zdepth+zd_2, nDash);
-  dashed_line( xw_2,  yh_2, zdepth-zd_2,  xw_2, -yh_2, zdepth-zd_2, nDash);
+  dashed_line (-xw_2, -yh_2, zdepth + zd_2, xw_2, -yh_2, zdepth - zd_2, nDash);
+  dashed_line (-xw_2, -yh_2, zdepth + zd_2, -xw_2, yh_2, zdepth + zd_2, nDash);
+  dashed_line (xw_2, yh_2, zdepth - zd_2, -xw_2, yh_2, zdepth + zd_2, nDash);
+  dashed_line (xw_2, yh_2, zdepth - zd_2, xw_2, -yh_2, zdepth - zd_2, nDash);
 
   /*4 lines to make a box*/
-  dashed_line(-xw_2, -yh_2, +zd_2, -xw_2, -yh_2, zdepth+zd_2, nDash);
-  dashed_line(-xw_2,  yh_2, +zd_2, -xw_2,  yh_2, zdepth+zd_2, nDash);
-  dashed_line( xw_2, -yh_2, -zd_2,  xw_2, -yh_2, zdepth-zd_2, nDash);
-  dashed_line( xw_2,  yh_2, -zd_2,  xw_2,  yh_2, zdepth-zd_2, nDash);
+  dashed_line (-xw_2, -yh_2, +zd_2, -xw_2, -yh_2, zdepth + zd_2, nDash);
+  dashed_line (-xw_2, yh_2, +zd_2, -xw_2, yh_2, zdepth + zd_2, nDash);
+  dashed_line (xw_2, -yh_2, -zd_2, xw_2, -yh_2, zdepth - zd_2, nDash);
+  dashed_line (xw_2, yh_2, -zd_2, xw_2, yh_2, zdepth - zd_2, nDash);
 %}
 
 END
