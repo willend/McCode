@@ -230,9 +230,9 @@ def main():
     
     # Warn if no .clang-format file is found in this repo tree
     
-    # Determine the directory containing this script (…/McCode/devel/)
-    script_dir = Path(__file__).resolve().parent.parent
-    style_file = script_dir / "clang-format"
+    # Determine top-level McCode directory
+    script_dir = Path(__file__).resolve().parent.parent.parent
+    style_file = script_dir / ".clang-format"
     print(style_file)
 
     # Require .clang-format to exist right next to this script
