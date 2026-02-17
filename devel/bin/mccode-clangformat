@@ -29,12 +29,16 @@ BLOCK_RE = re.compile(
 )
 
 
-def find_files(root: Path) -> List[Path]:
+def find_files(root: Path, pattern: str) -> List[Path]:
     files = []
     for dirpath, _, filenames in os.walk(root):
         for fn in filenames:
-            if fn.endswith(FILE_EXTS):
-                files.append(Path(dirpath) / fn)
+            if pattern:
+                if fn.endswith(FILE_EXTS) and pattern in fn:
+                    files.append(Path(dirpath) / fn)
+            else:
+                if fn.endswith(FILE_EXTS):
+                    files.append(Path(dirpath) / fn)
     return files
 
 
@@ -198,6 +202,7 @@ def main():
         description='Format code inside McCode %{ %} blocks using repository .clang-format'
     )
     ap.add_argument('--repo', '-r', default='.', help='Repo path (default: current dir)')
+    ap.add_argument('--file', '-f', default=None, help='Only process files matching this label')
     ap.add_argument('--clang-format', '-c', default=None, help='Path to clang-format executable')
     ap.add_argument('--check', action='store_true', help="Check only; don't write files")
     args = ap.parse_args()
@@ -229,7 +234,7 @@ def main():
 
     clang_path = ensure_clang_format(args.clang_format)
 
-    files = find_files(root)
+    files = find_files(root,args.file)
     if not files:
         print('No .instr or .comp files found.', file=sys.stderr)
         sys.exit(1)
