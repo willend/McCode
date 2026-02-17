@@ -59,22 +59,29 @@ DECLARE
 
 INITIALIZE
 %{
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
-
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("PSDlin_monitor: %s: Null detection area !\n"
-           "ERROR           (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-           NAME_CURRENT_COMP);
-    exit(0);
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
   }
 
-  PSDlin_N = create_darr1d(nbins);
-  PSDlin_p = create_darr1d(nbins);
-  PSDlin_p2 = create_darr1d(nbins);
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("PSDlin_monitor: %s: Null detection area !\n"
+            "ERROR           (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
+
+  PSDlin_N = create_darr1d (nbins);
+  PSDlin_p = create_darr1d (nbins);
+  PSDlin_p2 = create_darr1d (nbins);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
@@ -82,21 +89,20 @@ TRACE
   int i;
 
   PROP_Z0;
-  if (x>xmin && x<xmax && y>ymin && y<ymax){ 
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
     /* Bin number */
-    if (!vertical){
-      i = floor(nbins*(x-xmin)/(xmax-xmin));
-    }else{
-      i = floor(nbins*(y-ymin)/(ymax-ymin));
+    if (!vertical) {
+      i = floor (nbins * (x - xmin) / (xmax - xmin));
+    } else {
+      i = floor (nbins * (y - ymin) / (ymax - ymin));
     }
-    if((i >= nbins) || (i<0))
-    {
-      printf("ERROR: (%s) wrong positioning in linear PSD. i= %i \n",NAME_CURRENT_COMP,i);
-      exit(1);
+    if ((i >= nbins) || (i < 0)) {
+      printf ("ERROR: (%s) wrong positioning in linear PSD. i= %i \n", NAME_CURRENT_COMP, i);
+      exit (1);
     }
-    double p2 = p*p;
+    double p2 = p * p;
     #pragma acc atomic
-    PSDlin_N[i] = PSDlin_N[i] +1;
+    PSDlin_N[i] = PSDlin_N[i] + 1;
     #pragma acc atomic
     PSDlin_p[i] = PSDlin_p[i] + p;
     #pragma acc atomic
@@ -104,39 +110,32 @@ TRACE
     SCATTER;
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  if (!vertical){
-    DETECTOR_OUT_1D(
-        "Linear PSD monitor","x-Position [m]","Intensity","x", xmin, xmax, nbins,
-        &PSDlin_N[0],&PSDlin_p[0],&PSDlin_p2[0],filename);
-  }else{
-    DETECTOR_OUT_1D(
-        "Linear PSD monitor","y-Position [m]","Intensity","y", ymin, ymax, nbins,
-        &PSDlin_N[0],&PSDlin_p[0],&PSDlin_p2[0],filename);
+  if (!nowritefile) {
+    if (!vertical) {
+      DETECTOR_OUT_1D ("Linear PSD monitor", "x-Position [m]", "Intensity", "x", xmin, xmax, nbins, &PSDlin_N[0], &PSDlin_p[0], &PSDlin_p2[0], filename);
+    } else {
+      DETECTOR_OUT_1D ("Linear PSD monitor", "y-Position [m]", "Intensity", "y", ymin, ymax, nbins, &PSDlin_N[0], &PSDlin_p[0], &PSDlin_p2[0], filename);
+    }
   }
-}
 %}
 
 FINALLY
 %{
-  destroy_darr1d(PSDlin_N);
-  destroy_darr1d(PSDlin_p);
-  destroy_darr1d(PSDlin_p2);
+  destroy_darr1d (PSDlin_N);
+  destroy_darr1d (PSDlin_p);
+  destroy_darr1d (PSDlin_p2);
 %}
 
 MCDISPLAY
 %{
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END

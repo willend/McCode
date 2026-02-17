@@ -62,16 +62,20 @@ DECLARE
 
 INITIALIZE
 %{
-  int i,j;
+  int i, j;
 
-  TOF_N = create_darr2d(nQ, ny);
-  TOF_p = create_darr2d(nQ, ny);
-  TOF_p2 = create_darr2d(nQ, ny);
+  TOF_N = create_darr2d (nQ, ny);
+  TOF_p = create_darr2d (nQ, ny);
+  TOF_p2 = create_darr2d (nQ, ny);
 
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
+  }
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
@@ -80,63 +84,57 @@ TRACE
   double cyl_t0, cyl_t1, dt, phi;
   double E, Q;
 
-  if(!cylinder_intersect(&cyl_t0, &cyl_t1, x,y,z,vx,vy,vz, radius, yheight))
-   /* No hit */
+  if (!cylinder_intersect (&cyl_t0, &cyl_t1, x, y, z, vx, vy, vz, radius, yheight))
+    /* No hit */
     ABSORB;
-  if(cyl_t0>0)  /* Neutron hits cylinder from the outside */
+  if (cyl_t0 > 0) /* Neutron hits cylinder from the outside */
     ABSORB;
   dt = cyl_t1;
-  PROP_DT(dt);
-  if(y>=yheight/2 || y<= -yheight/2)
-    ABSORB;  /* Neutron hits cylinder ends; no detectors here */
+  PROP_DT (dt);
+  if (y >= yheight / 2 || y <= -yheight / 2)
+    ABSORB; /* Neutron hits cylinder ends; no detectors here */
 
-  E = VS2E*(L_flight/(t-T_zero))*(L_flight/(t-T_zero));
+  E = VS2E * (L_flight / (t - T_zero)) * (L_flight / (t - T_zero));
 
-  j = floor((y - ymin)*ny/(ymax - ymin));
+  j = floor ((y - ymin) * ny / (ymax - ymin));
 
-  Q=2*sqrt(E/2.072)*sin(theta);
+  Q = 2 * sqrt (E / 2.072) * sin (theta);
 
-  i = floor((Q-Qmin)*nQ/(Qmax-Qmin));
-  
-  if (i>=0 && i<nQ && j>=0 && j<ny) {
-    double p2 = p*p;
+  i = floor ((Q - Qmin) * nQ / (Qmax - Qmin));
+
+  if (i >= 0 && i < nQ && j >= 0 && j < ny) {
+    double p2 = p * p;
     #pragma acc atomic
-    TOF_N[i][j] = TOF_N[i][j]+1;
+    TOF_N[i][j] = TOF_N[i][j] + 1;
     #pragma acc atomic
-    TOF_p[i][j] = TOF_p[i][j]+p;
+    TOF_p[i][j] = TOF_p[i][j] + p;
     #pragma acc atomic
-    TOF_p2[i][j] = TOF_p2[i][j]+p2;
+    TOF_p2[i][j] = TOF_p2[i][j] + p2;
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  DETECTOR_OUT_2D(
-      "Cylindrical TOF2E PSD monitor",
-      "TOF2Q [Ang^-1]",
-      "Y position [cm]",
-      Qmin, Qmax, ymin*100.0, ymax*100.0,
-      nQ, ny,
-      &TOF_N[0][0],&TOF_p[0][0],&TOF_p2[0][0],
-      filename);
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_2D ("Cylindrical TOF2E PSD monitor", "TOF2Q [Ang^-1]", "Y position [cm]", Qmin, Qmax, ymin * 100.0, ymax * 100.0, nQ, ny, &TOF_N[0][0],
+                     &TOF_p[0][0], &TOF_p2[0][0], filename);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(TOF_N);
-  destroy_darr2d(TOF_p);
-  destroy_darr2d(TOF_p2);
+  destroy_darr2d (TOF_N);
+  destroy_darr2d (TOF_p);
+  destroy_darr2d (TOF_p2);
 %}
 
 MCDISPLAY
 %{
-  magnify("y");
-  circle("xz", 0,0,0,radius);
+  magnify ("y");
+  circle ("xz", 0, 0, 0, radius);
 %}
 
 END

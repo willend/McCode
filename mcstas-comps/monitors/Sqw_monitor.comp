@@ -67,107 +67,111 @@ DECLARE
 INITIALIZE
 %{
   /* Make checks for limits on qa, qb, w grid */
-  M_N=create_darr2d(nE,nq);
-  M_p=create_darr2d(nE,nq);
-  M_p2=create_darr2d(nE,nq);
-  
-  dE=(Emax-Emin)/(1.0*nE-1);
+  M_N = create_darr2d (nE, nq);
+  M_p = create_darr2d (nE, nq);
+  M_p2 = create_darr2d (nE, nq);
+
+  dE = (Emax - Emin) / (1.0 * nE - 1);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 TRACE
   %{
-    int i,j;
-    double rvx,rvy,rvz;
-    double Ei,Ef,E,Ki,Kf;
-    double qx,qy,qz;
-    double q,qq;
-    double kix,kiy,kiz;
-    double kfx,kfy,kfz;
-    double t0,t1;
-    double phi;
-    int detect=1;
-    
-    int fail;
-    rvx = particle_getvar(_particle,vix,&fail); if(fail) rvx=0;
-    rvy = particle_getvar(_particle,viy,&fail); if(fail) rvy=0;
-    rvz = particle_getvar(_particle,viz,&fail); if(fail) rvz=0;
-    
-    /* If initial state is with v=(0,0,0), detect nothing */
-    if (!(rvx==0 && rvy==0 && rvz==0)) {
-      Ei = VS2E*(rvx*rvx + rvy*rvy + rvz*rvz);
-      Ef = VS2E*(  vx*vx +  vy*vy +    vz*vz);
-      E=Ef-Ei;
-      
-      /* calculate k vectors and momentum transfer*/
-      kix=rvx;
-      kiy=rvy;
-      kiz=rvz;
-      kfx=vx;
-      kfy=vy;
-      kfz=vz;
-      NORM(kix, kiy, kiz);
-      NORM(kfx, kfy, kfz);
-      
-      /* K-vector lengths */
-      Ki=V2K*sqrt((rvx*rvx)+(rvy*rvy)+(rvz*rvz));
-      Kf=V2K*sqrt((vx*vx)+(vy*vy)+(vz*vz));
-      kix=Ki*kix; kiy=Ki*kiy; kiz=Ki*kiz; 
-      kfx=Kf*kfx; kfy=Kf*kfy; kfz=Kf*kfz; 
-      
-      qx=kfx-kix;
-      qy=kfy-kiy;
-      qz=kfz-kiz;
-      
-      qq = sqrt(qx*qx+qy*qy+qz*qz);
-      
-      /* Check if we should detect or not */
-      if (detect) {
-	if (radius && yheight) {
-	  if (cylinder_intersect(&t0, &t1, x, y, z, vx, vy, vz, radius, yheight) == 1) {
-	    if (t0<0 && t1>0) {
-	      PROP_DT(t1);
-	    } else {
-	      detect=0;
-	    }
-	  } else {
-	    detect=0;
-	  }
-	}
+  int i, j;
+  double rvx, rvy, rvz;
+  double Ei, Ef, E, Ki, Kf;
+  double qx, qy, qz;
+  double q, qq;
+  double kix, kiy, kiz;
+  double kfx, kfy, kfz;
+  double t0, t1;
+  double phi;
+  int detect = 1;
+
+  int fail;
+  rvx = particle_getvar (_particle, vix, &fail);
+  if (fail)
+    rvx = 0;
+  rvy = particle_getvar (_particle, viy, &fail);
+  if (fail)
+    rvy = 0;
+  rvz = particle_getvar (_particle, viz, &fail);
+  if (fail)
+    rvz = 0;
+
+  /* If initial state is with v=(0,0,0), detect nothing */
+  if (!(rvx == 0 && rvy == 0 && rvz == 0)) {
+    Ei = VS2E * (rvx * rvx + rvy * rvy + rvz * rvz);
+    Ef = VS2E * (vx * vx + vy * vy + vz * vz);
+    E = Ef - Ei;
+
+    /* calculate k vectors and momentum transfer*/
+    kix = rvx;
+    kiy = rvy;
+    kiz = rvz;
+    kfx = vx;
+    kfy = vy;
+    kfz = vz;
+    NORM (kix, kiy, kiz);
+    NORM (kfx, kfy, kfz);
+
+    /* K-vector lengths */
+    Ki = V2K * sqrt ((rvx * rvx) + (rvy * rvy) + (rvz * rvz));
+    Kf = V2K * sqrt ((vx * vx) + (vy * vy) + (vz * vz));
+    kix = Ki * kix;
+    kiy = Ki * kiy;
+    kiz = Ki * kiz;
+    kfx = Kf * kfx;
+    kfy = Kf * kfy;
+    kfz = Kf * kfz;
+
+    qx = kfx - kix;
+    qy = kfy - kiy;
+    qz = kfz - kiz;
+
+    qq = sqrt (qx * qx + qy * qy + qz * qz);
+
+    /* Check if we should detect or not */
+    if (detect) {
+      if (radius && yheight) {
+        if (cylinder_intersect (&t0, &t1, x, y, z, vx, vy, vz, radius, yheight) == 1) {
+          if (t0 < 0 && t1 > 0) {
+            PROP_DT (t1);
+          } else {
+            detect = 0;
+          }
+        } else {
+          detect = 0;
+        }
       }
-      
-      /* Check if we are within the selected q/e range */
-      if (detect && qq <= qmax && qq>=qmin && E<= Emax && E>=Emin) {
-	i = floor((qq - qmin)*nq/(qmax - qmin));
-	j = floor((E - Emin)*nE/(Emax - Emin));
-	
-	double p2 = p*p;
-	
-        #pragma acc atomic
-        M_N[i][j] = M_N[i][j] + 1 ;
-        #pragma acc atomic
-        M_p[i][j] = M_p[i][j] + p;
-        #pragma acc atomic
-        M_p2[i][j] = M_p2[i][j] + p2;
- 
-        SCATTER;
-      }
-      RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
-    } 
+    }
+
+    /* Check if we are within the selected q/e range */
+    if (detect && qq <= qmax && qq >= qmin && E <= Emax && E >= Emin) {
+      i = floor ((qq - qmin) * nq / (qmax - qmin));
+      j = floor ((E - Emin) * nE / (Emax - Emin));
+
+      double p2 = p * p;
+
+      #pragma acc atomic
+      M_N[i][j] = M_N[i][j] + 1;
+      #pragma acc atomic
+      M_p[i][j] = M_p[i][j] + p;
+      #pragma acc atomic
+      M_p2[i][j] = M_p2[i][j] + p2;
+
+      SCATTER;
+    }
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+  }
 %}
 
 SAVE
 %{
   if (!nowritefile) {
-    DETECTOR_OUT_2D(
-      "q vs E monitor",
-      "q [AA^-1]",
-      "E [meV]",
-      qmin, qmax, Emin, Emax,
-      nq, nE,
-      &M_N[0][0],&M_p[0][0],&M_p2[0][0],
-      filename);
+    DETECTOR_OUT_2D ("q vs E monitor", "q [AA^-1]", "E [meV]", qmin, qmax, Emin, Emax, nq, nE, &M_N[0][0], &M_p[0][0], &M_p2[0][0], filename);
   }
 %}
 

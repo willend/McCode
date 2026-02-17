@@ -61,81 +61,74 @@ DECLARE
 
 INITIALIZE
 %{
-  PSD_N = create_darr2d(nx, ny);
-  PSD_p = create_darr2d(nx, ny);
-  PSD_p2 = create_darr2d(nx, ny);
+  PSD_N = create_darr2d (nx, ny);
+  PSD_p = create_darr2d (nx, ny);
+  PSD_p2 = create_darr2d (nx, ny);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
   double t0, t1, phi, theta;
-  int i,j;
+  int i, j;
 
-  if(sphere_intersect(&t0, &t1, x, y, z, vx, vy, vz, radius) && t1 > 0)
-  {
-    if(t0 < 0)
+  if (sphere_intersect (&t0, &t1, x, y, z, vx, vy, vz, radius) && t1 > 0) {
+    if (t0 < 0)
       t0 = t1;
     /* t0 is now time of intersection with the sphere. */
-    mcPROP_DT(t0);
-    phi = atan2(x,z);
-    i = floor(nx*(phi/(2*PI)+0.5));
-    if(i >= nx)
-      i = nx-1;                      /* Special case for phi = PI. */
-    else if(i < 0)
+    mcPROP_DT (t0);
+    phi = atan2 (x, z);
+    i = floor (nx * (phi / (2 * PI) + 0.5));
+    if (i >= nx)
+      i = nx - 1; /* Special case for phi = PI. */
+    else if (i < 0)
       i = 0;
-    theta=asin(y/radius);
-    j = floor(ny*(theta+PI/2)/PI+0.5);
-    if(j >= ny)
-      j = ny-1;                      /* Special case for y = radius. */
-    else if(j < 0)
+    theta = asin (y / radius);
+    j = floor (ny * (theta + PI / 2) / PI + 0.5);
+    if (j >= ny)
+      j = ny - 1; /* Special case for y = radius. */
+    else if (j < 0)
       j = 0;
 
-    double p2 = p*p;
+    double p2 = p * p;
     #pragma acc atomic
-    PSD_N[i][j] = PSD_N[i][j]+1;
-    
+    PSD_N[i][j] = PSD_N[i][j] + 1;
+
     #pragma acc atomic
-    PSD_p[i][j] = PSD_p[i][j]+p;
-    
+    PSD_p[i][j] = PSD_p[i][j] + p;
+
     #pragma acc atomic
     PSD_p2[i][j] = PSD_p2[i][j] + p2;
-    
+
     SCATTER;
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  DETECTOR_OUT_2D(
-    "4PI PSD monitor",
-    "Longitude [deg]",
-    "Latitude [deg]",
-    -180, 180, -90, 90,
-    nx, ny,
-    &PSD_N[0][0],&PSD_p[0][0],&PSD_p2[0][0],
-    filename);
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_2D ("4PI PSD monitor", "Longitude [deg]", "Latitude [deg]", -180, 180, -90, 90, nx, ny, &PSD_N[0][0], &PSD_p[0][0], &PSD_p2[0][0], filename);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(PSD_N);
-  destroy_darr2d(PSD_p);
-  destroy_darr2d(PSD_p2);
+  destroy_darr2d (PSD_N);
+  destroy_darr2d (PSD_p);
+  destroy_darr2d (PSD_p2);
 %}
 
 MCDISPLAY
 %{
-  circle("xy",0,0,0,radius);
-  circle("xz",0,0,0,radius);
-  circle("yz",0,0,0,radius);
+  circle ("xy", 0, 0, 0, radius);
+  circle ("xz", 0, 0, 0, radius);
+  circle ("yz", 0, 0, 0, radius);
 %}
 
 END

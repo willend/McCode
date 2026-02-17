@@ -65,35 +65,44 @@ DECLARE
 
 INITIALIZE
 %{
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
+  }
 
   if ((xmin >= xmax) || (ymin >= ymax)) {
-          printf("TOFlog_mon: %s: Null detection area !\n"
-                 "ERROR       (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-         NAME_CURRENT_COMP);
-    exit(0);
-  }
-  
-  if (tmin <= 0 || tmax <= 0) {
-      printf("TOFlog_mon: %s: Only supports positive tmin and tmax !\n"
-             "ERROR       (tmin, tmax). Exiting", NAME_CURRENT_COMP);
-      exit(0);
-  }
-    
-  if (tmin >= tmax) {
-      printf("TOFlog_mon: %s: tmin should be smaller than tmax !\n"
-             "ERROR       (tmin, tmax). Exiting", NAME_CURRENT_COMP);
-      exit(0);
+    printf ("TOFlog_mon: %s: Null detection area !\n"
+            "ERROR       (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
   }
 
-  nchan=(int)ceil(ndec*log(tmax/tmin)/log(10.0));
-  TOF_N = create_darr1d(nchan);
-  TOF_p = create_darr1d(nchan);
-  TOF_p2 = create_darr1d(nchan);
+  if (tmin <= 0 || tmax <= 0) {
+    printf ("TOFlog_mon: %s: Only supports positive tmin and tmax !\n"
+            "ERROR       (tmin, tmax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
+
+  if (tmin >= tmax) {
+    printf ("TOFlog_mon: %s: tmin should be smaller than tmax !\n"
+            "ERROR       (tmin, tmax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
+
+  nchan = (int)ceil (ndec * log (tmax / tmin) / log (10.0));
+  TOF_N = create_darr1d (nchan);
+  TOF_p = create_darr1d (nchan);
+  TOF_p2 = create_darr1d (nchan);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
@@ -101,53 +110,44 @@ TRACE
   int i;
 
   PROP_Z0;
-  if (x>xmin && x<xmax && y>ymin && y<ymax)
-  {
-    i = (int)floor(ndec*log(1E6*t/tmin)/log(10.0));         /* Bin number */
-    if(i >= 0 && i < nchan) {
-      double p2 = p*p;
-      #pragma acc atomic      
-      TOF_N[i] = TOF_N[i]+1;
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
+    i = (int)floor (ndec * log (1E6 * t / tmin) / log (10.0)); /* Bin number */
+    if (i >= 0 && i < nchan) {
+      double p2 = p * p;
       #pragma acc atomic
-      TOF_p[i] = TOF_p[i]+p;
-      #pragma acc atomic      
-      TOF_p2[i] = TOF_p2[i]+p2;
+      TOF_N[i] = TOF_N[i] + 1;
+      #pragma acc atomic
+      TOF_p[i] = TOF_p[i] + p;
+      #pragma acc atomic
+      TOF_p2[i] = TOF_p2[i] + p2;
       SCATTER;
     }
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  DETECTOR_OUT_1D(
-      "Time-of-flight monitor",
-      "Log(Time-of-flight [\\gms])",
-      "Intensity",
-      "t", log(tmin)/log(10.0), log(tmax)/log(10.0), nchan,
-      &TOF_N[0],&TOF_p[0],&TOF_p2[0],
-      filename);
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_1D ("Time-of-flight monitor", "Log(Time-of-flight [\\gms])", "Intensity", "t", log (tmin) / log (10.0), log (tmax) / log (10.0), nchan,
+                     &TOF_N[0], &TOF_p[0], &TOF_p2[0], filename);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr1d(TOF_N);
-  destroy_darr1d(TOF_p);
-  destroy_darr1d(TOF_p2);
+  destroy_darr1d (TOF_N);
+  destroy_darr1d (TOF_p);
+  destroy_darr1d (TOF_p2);
 %}
 
 
 MCDISPLAY
 %{
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END

@@ -68,82 +68,80 @@ DECLARE
 
 INITIALIZE
 %{
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
-
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("TOFlambda_monitor: %s: Null detection area !\n"
-           "ERROR              (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-           NAME_CURRENT_COMP);
-    exit(0);
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
   }
 
-  TOFL_N = create_darr2d(nt, nL);
-  TOFL_p = create_darr2d(nt, nL);
-  TOFL_p2 = create_darr2d(nt, nL);
-  tt_0 = tmin*1e-6;
-  tt_1 = tmax*1e-6;
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("TOFlambda_monitor: %s: Null detection area !\n"
+            "ERROR              (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
+
+  TOFL_N = create_darr2d (nt, nL);
+  TOFL_p = create_darr2d (nt, nL);
+  TOFL_p2 = create_darr2d (nt, nL);
+  tt_0 = tmin * 1e-6;
+  tt_1 = tmax * 1e-6;
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-  int i,j;
+  int i, j;
   double div;
   double lambda;
 
   PROP_Z0;
-  lambda = (2*PI/V2K)/sqrt(vx*vx + vy*vy + vz*vz);
-  if (x>xmin && x<xmax && y>ymin && y<ymax && lambda > Lmin && lambda < Lmax){
-    if (t < tt_1 && t > tt_0)
-    {
-      i = floor((lambda - Lmin)*nL/(Lmax - Lmin));
-      j = floor((t-tt_0)*nt/(tt_1-tt_0));
+  lambda = (2 * PI / V2K) / sqrt (vx * vx + vy * vy + vz * vz);
+  if (x > xmin && x < xmax && y > ymin && y < ymax && lambda > Lmin && lambda < Lmax) {
+    if (t < tt_1 && t > tt_0) {
+      i = floor ((lambda - Lmin) * nL / (Lmax - Lmin));
+      j = floor ((t - tt_0) * nt / (tt_1 - tt_0));
       /*  printf("tt_0, tt_1, nt %g %g %i t j %g %i \n",tt_0,tt_1,nt,t,j);
-      */
-      double p2 = p*p;
+       */
+      double p2 = p * p;
       #pragma acc atomic
-      TOFL_N[j][i] = TOFL_N[j][i]+1;
+      TOFL_N[j][i] = TOFL_N[j][i] + 1;
       #pragma acc atomic
-      TOFL_p[j][i] = TOFL_p[j][i]+p;
+      TOFL_p[j][i] = TOFL_p[j][i] + p;
       #pragma acc atomic
-      TOFL_p2[j][i] = TOFL_p2[j][i]+p2;
+      TOFL_p2[j][i] = TOFL_p2[j][i] + p2;
     }
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  DETECTOR_OUT_2D(
-    "TOF-wavelength monitor",
-    "Time-of-flight [\\gms]", "Wavelength [AA]",
-    tmin, tmax, Lmin, Lmax,
-    nt, nL,
-    &TOFL_N[0][0],&TOFL_p[0][0],&TOFL_p2[0][0],
-    filename);
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_2D ("TOF-wavelength monitor", "Time-of-flight [\\gms]", "Wavelength [AA]", tmin, tmax, Lmin, Lmax, nt, nL, &TOFL_N[0][0], &TOFL_p[0][0],
+                     &TOFL_p2[0][0], filename);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(TOFL_N);
-  destroy_darr2d(TOFL_p);
-  destroy_darr2d(TOFL_p2);
+  destroy_darr2d (TOFL_N);
+  destroy_darr2d (TOFL_p);
+  destroy_darr2d (TOFL_p2);
 %}
 
 MCDISPLAY
 %{
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END
