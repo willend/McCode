@@ -1,0 +1,293 @@
+#!/usr/bin/env python3
+"""
+mccode-clangformat.py
+
+Traverse a McCode checkout, find .instr and .comp files, reformat C-like code
+only inside %{  %} sections using clang-format with repository .clang-format
+style, keeping delimiters on their own lines.
+
+Usage:
+    python mccode-clangformat.py [--repo PATH] [--file FILTER] [--clang-format PATH] [--check]
+"""
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import List, Tuple
+
+# ---- Config ----
+FILE_EXTS = ('.instr', '.comp')
+BACKUP_SUFFIX = '.orig'
+PRE_ESCAPE='//__ESC__PRE'
+
+# Match a %{ on its own line then capture inner until a %} on its own line.
+BLOCK_RE = re.compile(
+    r'(^[ \t]*%\{[ \t]*\r?\n)((?:[^\r\n]*\r?\n)*?)(^[ \t]*%\}[ \t]*\r?$)',
+    re.MULTILINE
+)
+
+
+def find_files(root: Path, pattern: str) -> List[Path]:
+    files = []
+    for dirpath, _, filenames in os.walk(root):
+        for fn in filenames:
+            if pattern:
+                if fn.endswith(FILE_EXTS) and pattern in fn:
+                    files.append(Path(dirpath) / fn)
+            else:
+                if fn.endswith(FILE_EXTS):
+                    files.append(Path(dirpath) / fn)
+    return files
+
+
+def _indent_lines(core: str, indent_str: str, indent_blank_lines: bool) -> str:
+    """
+    Add `indent_str` to all lines of `core`. `core` may contain trailing newlines;
+    those are preserved. We operate per-line using splitlines(True).
+    """
+    if not indent_str:
+        return core
+
+    lines = core.splitlines(True)  # keep line endings
+
+    for i in range(0, len(lines)):
+        if not indent_blank_lines and lines[i].strip() == '':
+            continue
+        lines[i] = indent_str + lines[i]
+
+    return ''.join(lines)
+
+
+def run_clang_format_file_style(code: str, clang_path: str, assume_filename: Path) -> str:
+    """
+    Run clang-format with -style=file so it picks up the repository .clang-format.
+    """
+    cmd = [clang_path, '-style', 'file', '-assume-filename', str(assume_filename)]
+    p = subprocess.Popen(
+        cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, text=True
+    )
+    out, err = p.communicate(code)
+    if p.returncode != 0:
+        raise RuntimeError(f'clang-format failed for {assume_filename}:\n{err.strip()}')
+    return out
+
+def _escape_precompiler_line(s: str) -> str:
+    """
+    Prefix lines that start with optional whitespace followed by % or #
+    with a PRE_ESCAPE='//__ESC__PRE' (c++ style comment) so that clang-format 
+    will treat them as normal comments to indent.
+    Example: "  %foo" -> "  //__ESC__PRE%foo"
+    """
+    return re.sub(r'^([ \t]*)([%#])', lambda m: m.group(1) + PRE_ESCAPE + m.group(2), s, flags=re.MULTILINE)
+
+def _unescape_precompiler_line(s: str) -> str:
+    """
+    Remove the escape/comment prefix previously added.
+    """
+    return s.replace(PRE_ESCAPE, '')
+
+
+def _format_preserving_percent_lines(inner: str, clang_path: str, style_file: Path) -> str:
+    """
+    Format inner text with clang-format by escaping lines that start with '%' or '#'.
+    Keeps original line endings.
+    """
+    lines = inner.splitlines(True)  # preserve endings
+    out_parts = []
+    final_parts = []
+    buffer = []
+
+    def clang_format_buffer():
+        if not buffer:
+            return
+        chunk = ''.join(buffer)
+        # strip only a single trailing newline so clang-format output is normalized
+        if chunk.endswith('\n'):
+            chunk_in = chunk[:-1]
+            trailing_nl = '\n'
+        else:
+            chunk_in = chunk
+            trailing_nl = ''
+        formatted = run_clang_format_file_style(chunk_in, clang_path=clang_path, assume_filename=style_file)
+        # clang-format usually emits a trailing newline; strip one to maintain control
+        if formatted.endswith('\n'):
+            formatted = formatted[:-1]
+        out_parts.append(formatted + trailing_nl)
+        buffer.clear()
+
+    for L in lines:
+        buffer.append(_escape_precompiler_line(L))
+
+    clang_format_buffer()
+
+    for L in out_parts:
+        final_parts.append(_unescape_precompiler_line(L))
+
+    return ''.join(final_parts)
+
+
+def process_file(path: Path, clang_path: str, style_file: Path, check_only: bool = False,
+                 ) -> Tuple[bool, str]:
+    """
+    Returns (changed, err_msg).
+    """
+    text = path.read_text(encoding='utf-8')
+    changed = False
+
+    def repl(m: re.Match) -> str:
+        nonlocal changed
+        # groups now:
+        # m.group(1) == opening line including its trailing newline (indent + '%{' + newline)
+        # m.group(2) == inner content, a sequence of full lines (each ends with newline), possibly empty
+        # m.group(3) == closing line including its trailing newline (indent + '%}' + optional CRLF)
+        opening = m.group(1)
+        inner = m.group(2)
+        closing = m.group(3)
+
+        # If inner is empty or contains only blank lines or lines starting with '%', leave block unchanged.
+        lines = inner.splitlines()
+        has_non_percent = any((ln.strip() != '' and not ln.lstrip().startswith('%')) for ln in lines)
+        if not has_non_percent:
+            return m.group(0)  # return the exact original match, untouched
+
+        # Format only non-'%' lines, preserving '%' lines verbatim.
+        try:
+            formatted_inner = _format_preserving_percent_lines(
+                inner,
+                clang_path=clang_path,
+                style_file=style_file
+            )
+        except Exception as e:
+            raise RuntimeError(f'Formatting failed for {path}: {e}')
+
+        # formatted_inner is a sequence of lines; ensure we do not alter surrounding spacing.
+        # Remove exactly one trailing newline if present so we can control placement before closing.
+        if formatted_inner.endswith('\n'):
+            formatted_core = formatted_inner[:-1]
+            trailing_nl = '\n'
+        else:
+            formatted_core = formatted_inner
+            trailing_nl = ''
+
+        # Indent formatted core per-line (preserving per-line endings)
+        core = _indent_lines(formatted_core, indent_str="  ", indent_blank_lines=False)
+
+        # Reassemble: opening already contains its newline; closing contains its newline.
+        # We must not alter any text outside the original matched span.
+        if core == '':
+            result = opening + closing
+        else:
+            # core may already contain its own trailing newlines; ensure exactly one newline before closing
+            result = opening + core
+            # if core does not end with a newline, add one to separate from closing line
+            if not result.endswith('\n'):
+                result += '\n'
+            result += closing
+
+        if result != m.group(0):
+            changed = True
+        return result
+
+
+    try:
+        new_text = BLOCK_RE.sub(repl, text)
+    except RuntimeError as e:
+        return False, str(e)
+
+    if changed:
+        if check_only:
+            return True, ''
+        bak = path.with_suffix(path.suffix + BACKUP_SUFFIX)
+        if not bak.exists():
+            shutil.copy2(path, bak)
+        path.write_text(new_text, encoding='utf-8')
+
+    return changed, ''
+
+def ensure_clang_format(clang_path_arg: str | None) -> str:
+    if clang_path_arg:
+        return clang_path_arg
+    return 'clang-format'
+
+def main():
+    ap = argparse.ArgumentParser(
+        description='Format code inside McCode %{ %} blocks using repository .clang-format'
+    )
+    ap.add_argument('--repo', '-r', default='.', help='Repo path (default: current dir)')
+    ap.add_argument('--file', '-f', default=None, help='Only process files matching this label')
+    ap.add_argument('--clang-format', '-c', default=None, help='Path to clang-format executable')
+    ap.add_argument('--check', action='store_true', help="Check only; don't write files")
+    args = ap.parse_args()
+
+    root = Path(args.repo).resolve()
+    if not root.exists():
+        print(f'Repo path not found: {root}', file=sys.stderr)
+        sys.exit(2)
+    
+    # Warn if no .clang-format file is found in this repo tree
+    
+    # Determine top-level McCode directory
+    script_dir = Path(__file__).resolve().parent.parent.parent
+    style_file = script_dir / ".clang-format"
+    print(style_file)
+
+    # Require .clang-format to exist right next to this script
+    if not style_file.exists():
+        print(f"ERROR: Expected .clang-format file in {script_dir}, but none was found.", file=sys.stderr)
+        sys.exit(2)
+
+    if style_file is None:
+        print("WARNING: No .clang-format file found in this repository. "
+            "clang-format will use its built-in default style.",
+            file=sys.stderr)
+    else:
+        print(f"Using style file: {style_file}")
+
+
+    clang_path = ensure_clang_format(args.clang_format)
+
+    files = find_files(root,args.file)
+    if not files:
+        print('No .instr or .comp files found.', file=sys.stderr)
+        sys.exit(1)
+
+    any_changed = False
+    failures = []
+
+    for f in files:
+        try:
+            changed, msg = process_file(
+                f, clang_path=clang_path, style_file=style_file, check_only=args.check
+            )
+            if msg:
+                failures.append(msg)
+            if changed:
+                any_changed = True
+                print(f'Changed: {f}')
+        except FileNotFoundError:
+            failures.append('clang-format executable not found.')
+            break
+        except Exception as e:
+            failures.append(f'Error processing {f}: {e}')
+
+    if failures:
+        print('Some files had errors:', file=sys.stderr)
+        for m in failures:
+            print(m, file=sys.stderr)
+        sys.exit(3 if not any_changed else 0)
+
+    if any_changed:
+        if args.check:
+            print('Files would be changed.')
+        else:
+            print('Done.')
+    else:
+        print('No changes necessary.')
+
+if __name__ == '__main__':
+    main()
+
