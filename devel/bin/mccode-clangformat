@@ -7,7 +7,7 @@ only inside %{  %} sections using clang-format with repository .clang-format
 style, keeping delimiters on their own lines.
 
 Usage:
-    python mccode-clangformat.py [--repo PATH] [--clang-format PATH] [--check]
+    python mccode-clangformat.py [--repo PATH] [--file FILTER] [--clang-format PATH] [--check]
 """
 import argparse
 import os
