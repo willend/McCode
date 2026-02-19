@@ -61,157 +61,135 @@ INITIALIZE
   // Declarations
   int i;
 
-  Nofq = create_darr1d(NumberOfBins);
-  Iofq = create_darr1d(NumberOfBins);
-  IofqSquared = create_darr1d(NumberOfBins);
+  Nofq = create_darr1d (NumberOfBins);
+  Iofq = create_darr1d (NumberOfBins);
+  IofqSquared = create_darr1d (NumberOfBins);
 
-  NofR = create_darr1d(NumberOfBins);
-  IofR = create_darr1d(NumberOfBins);
-  IofRSquared = create_darr1d(NumberOfBins);
+  NofR = create_darr1d (NumberOfBins);
+  IofR = create_darr1d (NumberOfBins);
+  IofRSquared = create_darr1d (NumberOfBins);
 
   // Initializations
   for (i = 0; i < NumberOfBins; ++i) {
-		Nofq[i] = 0.0;
-		Iofq[i] = 0.0;
-		IofqSquared[i] = 0.0;
+    Nofq[i] = 0.0;
+    Iofq[i] = 0.0;
+    IofqSquared[i] = 0.0;
   }
 
-	TwoThetaMax = atan(RadiusDetector / DistanceFromSample);
-	qMax = 4 * PI * sin(TwoThetaMax / 2.0) / LambdaMin;
+  TwoThetaMax = atan (RadiusDetector / DistanceFromSample);
+  qMax = 4 * PI * sin (TwoThetaMax / 2.0) / LambdaMin;
 %}
 
 TRACE
 %{
-	// Declarations
+  // Declarations
   int i;
   double TwoTheta;
-	double Lambda;
+  double Lambda;
 
-	double R;
-	double RLow;
-	double RHigh;
+  double R;
+  double RLow;
+  double RHigh;
 
   double q;
-	double qLow;
-	double qHigh;
+  double qLow;
+  double qHigh;
 
-	double TwoThetaLow;
-	double TwoThetaHigh;
-	double AreaOfSlice;
+  double TwoThetaLow;
+  double TwoThetaHigh;
+  double AreaOfSlice;
 
   PROP_Z0;
 
-	// Computation of R
-  R = sqrt(pow(x, 2) + pow(y, 2));
+  // Computation of R
+  R = sqrt (pow (x, 2) + pow (y, 2));
 
-	// Computation of q
-	if (Lambda0 <= 0.0) {
-		Lambda = 2.0 * PI / (V2K * sqrt(pow(vx, 2) + pow(vy, 2) + pow(vz, 2)));
-	} else {
-		Lambda = Lambda0;
-	}
+  // Computation of q
+  if (Lambda0 <= 0.0) {
+    Lambda = 2.0 * PI / (V2K * sqrt (pow (vx, 2) + pow (vy, 2) + pow (vz, 2)));
+  } else {
+    Lambda = Lambda0;
+  }
 
-  TwoTheta = atan(R / DistanceFromSample);
-  q = 4.0 * PI * sin(TwoTheta / 2.0) / Lambda;
+  TwoTheta = atan (R / DistanceFromSample);
+  q = 4.0 * PI * sin (TwoTheta / 2.0) / Lambda;
 
-	// Put neutron in the correct r-bin
-	if (R < RadiusDetector) {
-		i = floor(NumberOfBins * R / RadiusDetector);
+  // Put neutron in the correct r-bin
+  if (R < RadiusDetector) {
+    i = floor (NumberOfBins * R / RadiusDetector);
 
-		RLow = RadiusDetector / NumberOfBins * i;
-		RHigh = RadiusDetector / NumberOfBins * (i + 1);
+    RLow = RadiusDetector / NumberOfBins * i;
+    RHigh = RadiusDetector / NumberOfBins * (i + 1);
 
-		TwoThetaLow = atan(RLow / DistanceFromSample);
-		TwoThetaHigh = atan(RHigh / DistanceFromSample);
+    TwoThetaLow = atan (RLow / DistanceFromSample);
+    TwoThetaHigh = atan (RHigh / DistanceFromSample);
 
-		AreaOfSlice = fabs((cos(2.0 * TwoThetaLow) - cos(2.0 * TwoThetaHigh)) * 2.0 * PI);
-		#pragma acc atomic
-		NofR[i] = NofR[i] + 1;
-		double p_A=p/AreaOfSlice;
-		#pragma acc atomic
-		IofR[i] = IofR[i] + p_A;
-		double p2_A2= p*p/(AreaOfSlice*AreaOfSlice);
-		#pragma acc atomic
-		IofRSquared[i] = IofRSquared[i] + p2_A2;
-    }
+    AreaOfSlice = fabs ((cos (2.0 * TwoThetaLow) - cos (2.0 * TwoThetaHigh)) * 2.0 * PI);
+    #pragma acc atomic
+    NofR[i] = NofR[i] + 1;
+    double p_A = p / AreaOfSlice;
+    #pragma acc atomic
+    IofR[i] = IofR[i] + p_A;
+    double p2_A2 = p * p / (AreaOfSlice * AreaOfSlice);
+    #pragma acc atomic
+    IofRSquared[i] = IofRSquared[i] + p2_A2;
+  }
 
-	// Put neutron in the correct q-bin
-    if (q < qMax) {
-		i = floor(NumberOfBins * q / qMax);
+  // Put neutron in the correct q-bin
+  if (q < qMax) {
+    i = floor (NumberOfBins * q / qMax);
 
-		qLow = qMax / NumberOfBins * i;
-		qHigh = qMax / NumberOfBins * (i + 1);
+    qLow = qMax / NumberOfBins * i;
+    qHigh = qMax / NumberOfBins * (i + 1);
 
-		TwoThetaLow = asin(qLow * Lambda / (4.0 * PI));
-		TwoThetaHigh = asin(qHigh * Lambda / (4.0 * PI));
+    TwoThetaLow = asin (qLow * Lambda / (4.0 * PI));
+    TwoThetaHigh = asin (qHigh * Lambda / (4.0 * PI));
 
-		AreaOfSlice = fabs((cos(2.0 * TwoThetaLow) - cos(2.0 * TwoThetaHigh)) * 2.0 * PI);
+    AreaOfSlice = fabs ((cos (2.0 * TwoThetaLow) - cos (2.0 * TwoThetaHigh)) * 2.0 * PI);
 
-		#pragma acc atomic
-		Nofq[i] = Nofq[i] + 1;
-		double p_A=p/AreaOfSlice;
-		#pragma acc atomic
-		Iofq[i] = Iofq[i] + p_A;
-		double p2_A2= p*p/(AreaOfSlice*AreaOfSlice);
-		#pragma acc atomic
-		IofqSquared[i] = IofqSquared[i] + p2_A2;
-		
-		SCATTER;
-    }
+    #pragma acc atomic
+    Nofq[i] = Nofq[i] + 1;
+    double p_A = p / AreaOfSlice;
+    #pragma acc atomic
+    Iofq[i] = Iofq[i] + p_A;
+    double p2_A2 = p * p / (AreaOfSlice * AreaOfSlice);
+    #pragma acc atomic
+    IofqSquared[i] = IofqSquared[i] + p2_A2;
 
-	// Restore neutron if requested
+    SCATTER;
+  }
+
+  // Restore neutron if requested
   if (restore_neutron) {
-//		RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    //		RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-	// Output I(r)
-  DETECTOR_OUT_1D(
-    "QMonitor - Radially averaged distribution",
-    "Radius [m]",
-    "I(r)",
-    "r",
-  	0.0,
-  	RadiusDetector,
-  	NumberOfBins,
-    &NofR[0],
-  	&IofR[0],
-  	&IofRSquared[0],
-    RFilename
-	);
+  // Output I(r)
+  DETECTOR_OUT_1D ("QMonitor - Radially averaged distribution", "Radius [m]", "I(r)", "r", 0.0, RadiusDetector, NumberOfBins, &NofR[0], &IofR[0], &IofRSquared[0],
+                   RFilename);
 
-	// Output I(q)
-  DETECTOR_OUT_1D(
-    "QMonitor - Distribution in q (Radially averaged)",
-    "q [1 / AA]",
-    "I(q)",
-    "q",
-  	0.0,
-  	qMax,
-  	NumberOfBins,
-    &Nofq[0],
-  	&Iofq[0],
-  	&IofqSquared[0],
-    qFilename
-	);
+  // Output I(q)
+  DETECTOR_OUT_1D ("QMonitor - Distribution in q (Radially averaged)", "q [1 / AA]", "I(q)", "q", 0.0, qMax, NumberOfBins, &Nofq[0], &Iofq[0], &IofqSquared[0],
+                   qFilename);
 %}
 
 FINALLY
 %{
-  destroy_darr1d(Nofq);
-  destroy_darr1d(Iofq);
-  destroy_darr1d(IofqSquared);
+  destroy_darr1d (Nofq);
+  destroy_darr1d (Iofq);
+  destroy_darr1d (IofqSquared);
 
-  destroy_darr1d(NofR);
-  destroy_darr1d(IofR);
-  destroy_darr1d(IofRSquared);
+  destroy_darr1d (NofR);
+  destroy_darr1d (IofR);
+  destroy_darr1d (IofRSquared);
 %}
 
 MCDISPLAY
 %{
-	circle("xy", 0, 0, 0, RadiusDetector);
+  circle ("xy", 0, 0, 0, RadiusDetector);
 %}
 
 END

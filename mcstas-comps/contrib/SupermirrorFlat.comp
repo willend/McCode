@@ -199,243 +199,226 @@ NOACC
 SHARE
 %{
 
-#ifndef SUPERMIRROR
-%include "supermirror-lib"
-#define SUPERMIRROR
-#endif
-
+  #ifndef SUPERMIRROR
+  %include "supermirror-lib"
+  #define SUPERMIRROR
+  #endif
 %}
 DECLARE
 %{
 
-	Coords translation_second_coords; 
-	Coords side_edge_normal_coords; 
-	Coords side_edge_point_coords; 
-	
-	Supermirror sm;
+  Coords translation_second_coords;
+  Coords side_edge_normal_coords;
+  Coords side_edge_point_coords;
 
-	int initialised;
+  Supermirror sm;
 
-	int i;
-	int j;
-	int n;
-	int m;
-	double xx;
-	double yy;
-	double zz;
+  int initialised;
 
-	double w_sm;
-	double t_sm;
-	Coords p_sm;
-	Coords v_sm;
-	Coords s_sm;
-	double last_exit_time;
-	Coords last_exit_point;
-	int last_exit_plane;
+  int i;
+  int j;
+  int n;
+  int m;
+  double xx;
+  double yy;
+  double zz;
 
-	int num_intersect; 
-	double first_intersect_dtime;
-	Coords first_intersect_dpoint; 
-	double first_intersect_time;
-	Coords first_intersect_point; 
-	int is_tracking;
-	int first_intersect_plane;
-	int outcome1;
-	int outcome2;
-	
-	NeutronRecord *neutron_record;
-	int number_of_neutron_records;
+  double w_sm;
+  double t_sm;
+  Coords p_sm;
+  Coords v_sm;
+  Coords s_sm;
+  double last_exit_time;
+  Coords last_exit_point;
+  int last_exit_plane;
+
+  int num_intersect;
+  double first_intersect_dtime;
+  Coords first_intersect_dpoint;
+  double first_intersect_time;
+  Coords first_intersect_point;
+  int is_tracking;
+  int first_intersect_plane;
+  int outcome1;
+  int outcome2;
+
+  NeutronRecord* neutron_record;
+  int number_of_neutron_records;
 %}
 INITIALIZE
 %{
-        printf("\tSupermirrorFlat.comp: INITIALIZE \n");
-	printf("\tname=%s\n",NAME_CURRENT_COMP);
-	printf("\tlength = %g m, thickness_in_mm = %g mm\n",length,thickness_in_mm);
-	printf("\tside_edge normal,point = (%g,%g,%g), (%g,%g,%g) m\n",
-		side_edge_normal[0], side_edge_normal[1], side_edge_normal[2],
-		side_edge_point[0], side_edge_point[1], side_edge_point[2]
-		);
-	printf("\tmirror_coated_side = %s\n",mirror_coated_side);
-	printf("\tmirror_spin_plus_material  name,m = %s, %g\n",mirror_spin_plus_material_name, mirror_spin_plus_m);
-	printf("\tmirror_spin_minus_material name,m = %s, %g\n",mirror_spin_minus_material_name, mirror_spin_minus_m);
-	printf("\tsubstrate_material name = %s\n",substrate_material_name);
-	printf("\tabsorber_coated_side = %s\n",absorber_coated_side);
-	printf("\tabsorber_material name,thickness in micron = %s, %g\n",absorber_material_name, absorber_thickness_in_micron);
-	printf("\tinitial_placement_at_origin = %s\n",initial_placement_at_origin);
-	printf("\ttilt_y_axis_location = %s\n",tilt_y_axis_location);
-	printf("\ttilt_about_y_first_in_degree, translation_second, rot_about_z_third_in_degree = %g deg, (%g,%g,%g) m, %g deg\n",
-		tilt_about_y_first_in_degree, 
-		translation_second_x, translation_second_y, translation_second_z, 
-		rot_about_z_third_in_degree
-		);
+  printf ("\tSupermirrorFlat.comp: INITIALIZE \n");
+  printf ("\tname=%s\n", NAME_CURRENT_COMP);
+  printf ("\tlength = %g m, thickness_in_mm = %g mm\n", length, thickness_in_mm);
+  printf ("\tside_edge normal,point = (%g,%g,%g), (%g,%g,%g) m\n", side_edge_normal[0], side_edge_normal[1], side_edge_normal[2], side_edge_point[0],
+          side_edge_point[1], side_edge_point[2]);
+  printf ("\tmirror_coated_side = %s\n", mirror_coated_side);
+  printf ("\tmirror_spin_plus_material  name,m = %s, %g\n", mirror_spin_plus_material_name, mirror_spin_plus_m);
+  printf ("\tmirror_spin_minus_material name,m = %s, %g\n", mirror_spin_minus_material_name, mirror_spin_minus_m);
+  printf ("\tsubstrate_material name = %s\n", substrate_material_name);
+  printf ("\tabsorber_coated_side = %s\n", absorber_coated_side);
+  printf ("\tabsorber_material name,thickness in micron = %s, %g\n", absorber_material_name, absorber_thickness_in_micron);
+  printf ("\tinitial_placement_at_origin = %s\n", initial_placement_at_origin);
+  printf ("\ttilt_y_axis_location = %s\n", tilt_y_axis_location);
+  printf ("\ttilt_about_y_first_in_degree, translation_second, rot_about_z_third_in_degree = %g deg, (%g,%g,%g) m, %g deg\n", tilt_about_y_first_in_degree,
+          translation_second_x, translation_second_y, translation_second_z, rot_about_z_third_in_degree);
 
-	side_edge_normal_coords = coords_set(side_edge_normal[0], side_edge_normal[1], side_edge_normal[2]);
-	side_edge_point_coords  = coords_set(side_edge_point[0],  side_edge_point[1],  side_edge_point[2]);
-	translation_second_coords = coords_set(translation_second_x, translation_second_y, translation_second_z);
-	
-	if (strcmp(tracking, "DetailTracking") == 0) {
-		is_tracking = 1;
-	}
-	else {
-		is_tracking = 0;
-	}
-	
-	//Initialise using simplified initialise function
-	initialised = InitialiseStdSupermirrorFlat( 
-	
-		NAME_CURRENT_COMP,
+  side_edge_normal_coords = coords_set (side_edge_normal[0], side_edge_normal[1], side_edge_normal[2]);
+  side_edge_point_coords = coords_set (side_edge_point[0], side_edge_point[1], side_edge_point[2]);
+  translation_second_coords = coords_set (translation_second_x, translation_second_y, translation_second_z);
 
-		length, //m supermirror length projection along z-axis
-		thickness_in_mm, //mm
-		side_edge_normal_coords, side_edge_point_coords, 
-		
-		mirror_coated_side, //Sequential combination of keywords of
-							//position: "Both", "Top", "Bottom";
-							//surface property: "Coated", "Substrate", "NoReflection"; 
-							//e.g. "BothCoated", "BottomCoatedTopSubstrate",
-							//case-insensitive.
-		mirror_spin_plus_material_name, mirror_spin_plus_m, 
-		mirror_spin_minus_material_name, mirror_spin_minus_m,
-		absorber_coated_side, //"BothCoated", "TopCoated", "BottomCoated", "BothNotCoated"
-		absorber_material_name, absorber_thickness_in_micron,
-		substrate_material_name,  
-		
-		initial_placement_at_origin, //"TopFrontEdgeCentre","FrontSubstrateCentre","BottomFrontEdgeCentre"
-		tilt_y_axis_location, 	//"TopFrontEdge","TopMirrorCentre","TopBackEdge"
-								//"FrontSubstrateCentre","SubstrateCentre","BackSubstrateCentre", 
-								//"BottomFrontEdge","BottomMirrorCentre","BottomBackEdge"
-		tilt_about_y_first_in_degree, //first, tile about x-axis at selected location 
-		translation_second_coords,    //second, translate reference point 
-		rot_about_z_third_in_degree,  //third, rotate about global z-axis
+  if (strcmp (tracking, "DetailTracking") == 0) {
+    is_tracking = 1;
+  } else {
+    is_tracking = 0;
+  }
 
-		is_tracking, 
-		
-		&sm);
+  // Initialise using simplified initialise function
+  initialised = InitialiseStdSupermirrorFlat (
 
-	if (is_tracking == 1) {
-		neutron_record = (sm.proc).nr;
-	}
-	
+      NAME_CURRENT_COMP,
+
+      length,          // m supermirror length projection along z-axis
+      thickness_in_mm, // mm
+      side_edge_normal_coords, side_edge_point_coords,
+
+      mirror_coated_side, // Sequential combination of keywords of
+                          // position: "Both", "Top", "Bottom";
+                          // surface property: "Coated", "Substrate", "NoReflection";
+                          // e.g. "BothCoated", "BottomCoatedTopSubstrate",
+                          // case-insensitive.
+      mirror_spin_plus_material_name, mirror_spin_plus_m, mirror_spin_minus_material_name, mirror_spin_minus_m,
+      absorber_coated_side, //"BothCoated", "TopCoated", "BottomCoated", "BothNotCoated"
+      absorber_material_name, absorber_thickness_in_micron, substrate_material_name,
+
+      initial_placement_at_origin,  //"TopFrontEdgeCentre","FrontSubstrateCentre","BottomFrontEdgeCentre"
+      tilt_y_axis_location,         //"TopFrontEdge","TopMirrorCentre","TopBackEdge"
+                                    //"FrontSubstrateCentre","SubstrateCentre","BackSubstrateCentre",
+                                    //"BottomFrontEdge","BottomMirrorCentre","BottomBackEdge"
+      tilt_about_y_first_in_degree, // first, tile about x-axis at selected location
+      translation_second_coords,    // second, translate reference point
+      rot_about_z_third_in_degree,  // third, rotate about global z-axis
+
+      is_tracking,
+
+      &sm);
+
+  if (is_tracking == 1) {
+    neutron_record = (sm.proc).nr;
+  }
 %}
 TRACE
 %{
-	
-	if (initialised != 0) {
 
-		w_sm = p;
-		t_sm = t;
-		p_sm = coords_set(x, y, z);
-		v_sm = coords_set(vx, vy, vz);
-		s_sm = coords_set(sx, sy, sz);
+  if (initialised != 0) {
 
-		last_exit_time = F_INDETERMINED;
-		last_exit_point = coords_set(F_INDETERMINED,F_INDETERMINED,F_INDETERMINED);
-		last_exit_plane = I_INDETERMINED;
+    w_sm = p;
+    t_sm = t;
+    p_sm = coords_set (x, y, z);
+    v_sm = coords_set (vx, vy, vz);
+    s_sm = coords_set (sx, sy, sz);
 
-		//First check if neutron intersect supermirror
-		//IntersectStdSupermirrorFlat 
-		//outcome: sm_Intersected, sm_Missed, sm_Error
-		outcome1 = IntersectStdSupermirrorFlat(
-			t_sm, p_sm, v_sm, last_exit_time, last_exit_point, last_exit_plane, 
-			&sm, 
-			&num_intersect, &first_intersect_dtime, &first_intersect_dpoint, &first_intersect_time, &first_intersect_point, &first_intersect_plane);
+    last_exit_time = F_INDETERMINED;
+    last_exit_point = coords_set (F_INDETERMINED, F_INDETERMINED, F_INDETERMINED);
+    last_exit_plane = I_INDETERMINED;
 
-		switch (outcome1) {
-			case  sm_Intersected: 
-			{
-				//update neutron parameters
-				t = first_intersect_time;
-				coords_get(first_intersect_point, &x, &y, &z);
-					
-				SCATTER;
+    // First check if neutron intersect supermirror
+    // IntersectStdSupermirrorFlat
+    // outcome: sm_Intersected, sm_Missed, sm_Error
+    outcome1 = IntersectStdSupermirrorFlat (t_sm, p_sm, v_sm, last_exit_time, last_exit_point, last_exit_plane, &sm, &num_intersect, &first_intersect_dtime,
+                                            &first_intersect_dpoint, &first_intersect_time, &first_intersect_point, &first_intersect_plane);
 
-				//StdSupermirrorFlat
-				//outcome2: sm_Exited, sm_Absorbed, sm_Error
-				outcome2 = StdSupermirrorFlat(
-					&w_sm, &t_sm, &p_sm, &v_sm, &s_sm, &last_exit_time, &last_exit_point, &last_exit_plane, 
-					&sm);
+    switch (outcome1) {
+    case sm_Intersected: {
+      // update neutron parameters
+      t = first_intersect_time;
+      coords_get (first_intersect_point, &x, &y, &z);
 
-				if (is_tracking) {
-					number_of_neutron_records = (sm.proc).n_nr;
-				
-					//first output detail tracking
-					if (number_of_neutron_records > 1) {
-						for (i = 0; i < number_of_neutron_records; i++) {
-							p = (((sm.proc).nr)[i]).nr_w;
-							t = (((sm.proc).nr)[i]).nr_t;
-							coords_get((((sm.proc).nr)[i]).nr_p, &x, &y, &z);
-							coords_get((((sm.proc).nr)[i]).nr_v, &vx, &vy, &vz);
-							coords_get((((sm.proc).nr)[i]).nr_s, &sx, &sy, &sz);
+      SCATTER;
 
-							SCATTER;
-						}
-					}
-				}
-				
-				//get the final neutron parameters
-				p = w_sm;
-				t = t_sm;
-				coords_get(p_sm, &x, &y, &z);
-				coords_get(v_sm, &vx, &vy, &vz);
-				coords_get(s_sm, &sx, &sy, &sz);
-				
-				//outcome: sm_Exited, sm_Absorbed, sm_Error
-				switch (outcome2) {
-					case sm_Exited: 
-						SCATTER; 
-						break;
-					case sm_Absorbed: 
-						ABSORB; 
-						break;
-					case sm_Error: 
-						p = 0; 
-						printf("SupermirrorFlat.comp: StdSupermirrorFlat: outcome2=%s(%d), something's wrong.\n", 
-								((sm.proc).event)[outcome2], outcome2);
-						break; //something's wrong
-					default: 
-						p = 0; 
-						printf("SupermirrorFlat.comp: StdSupermirrorFlat returns outcome2=%d, something's wrong.\n", outcome2); 
-						break;
-				}
-			}
-			case sm_Missed: 
-				if (keep_if_missed == 0) p = 0; 
-				break;
-			case sm_Error: 
-				p = 0; //something's wrong
-				printf("SupermirrorFlat.comp: IntersectStdSupermirrorFlat returns outcome1=%s(%d), something's wrong.\n", 
-						((sm.proc).event)[outcome1], outcome1);
-				break; 
-			default: 
-				p = 0; 
-				printf("SupermirrorFlat.comp: IntersectStdSupermirrorFlat returns outcome1=%d, something's wrong.\n", outcome1); 
-				break;
-		}
-	}
+      // StdSupermirrorFlat
+      // outcome2: sm_Exited, sm_Absorbed, sm_Error
+      outcome2 = StdSupermirrorFlat (&w_sm, &t_sm, &p_sm, &v_sm, &s_sm, &last_exit_time, &last_exit_point, &last_exit_plane, &sm);
+
+      if (is_tracking) {
+        number_of_neutron_records = (sm.proc).n_nr;
+
+        // first output detail tracking
+        if (number_of_neutron_records > 1) {
+          for (i = 0; i < number_of_neutron_records; i++) {
+            p = (((sm.proc).nr)[i]).nr_w;
+            t = (((sm.proc).nr)[i]).nr_t;
+            coords_get ((((sm.proc).nr)[i]).nr_p, &x, &y, &z);
+            coords_get ((((sm.proc).nr)[i]).nr_v, &vx, &vy, &vz);
+            coords_get ((((sm.proc).nr)[i]).nr_s, &sx, &sy, &sz);
+
+            SCATTER;
+          }
+        }
+      }
+
+      // get the final neutron parameters
+      p = w_sm;
+      t = t_sm;
+      coords_get (p_sm, &x, &y, &z);
+      coords_get (v_sm, &vx, &vy, &vz);
+      coords_get (s_sm, &sx, &sy, &sz);
+
+      // outcome: sm_Exited, sm_Absorbed, sm_Error
+      switch (outcome2) {
+      case sm_Exited:
+        SCATTER;
+        break;
+      case sm_Absorbed:
+        ABSORB;
+        break;
+      case sm_Error:
+        p = 0;
+        printf ("SupermirrorFlat.comp: StdSupermirrorFlat: outcome2=%s(%d), something's wrong.\n", ((sm.proc).event)[outcome2], outcome2);
+        break; // something's wrong
+      default:
+        p = 0;
+        printf ("SupermirrorFlat.comp: StdSupermirrorFlat returns outcome2=%d, something's wrong.\n", outcome2);
+        break;
+      }
+    }
+    case sm_Missed:
+      if (keep_if_missed == 0)
+        p = 0;
+      break;
+    case sm_Error:
+      p = 0; // something's wrong
+      printf ("SupermirrorFlat.comp: IntersectStdSupermirrorFlat returns outcome1=%s(%d), something's wrong.\n", ((sm.proc).event)[outcome1], outcome1);
+      break;
+    default:
+      p = 0;
+      printf ("SupermirrorFlat.comp: IntersectStdSupermirrorFlat returns outcome1=%d, something's wrong.\n", outcome1);
+      break;
+    }
+  }
 %}
 FINALLY
 %{
-	EmptySupermirrorFlatData(&sm);
+  EmptySupermirrorFlatData (&sm);
 %}
 MCDISPLAY
 %{
-	Coords *vp1;
-	int *ifvi1;
-	int k1,k2;
-	n=sm.geo.nf;
-	vp1=sm.geo.vp;
-	for (i=0; i<n; i++) {
-		m=sm.geo.afvi[i].nfvi;
-		ifvi1= sm.geo.afvi[i].ifvi;
-		k1 = ifvi1[0]; 
-		for (j=1; j<m; j++) {
-			k2 = ifvi1[j];
-			line(vp1[k1].x, vp1[k1].y, vp1[k1].z,  vp1[k2].x, vp1[k2].y, vp1[k2].z);
-			k1 = k2;
-		}
-		k2 = ifvi1[0]; 
-		line(vp1[k1].x, vp1[k1].y, vp1[k1].z,  vp1[k2].x, vp1[k2].y, vp1[k2].z);
-	}
-
+  Coords* vp1;
+  int* ifvi1;
+  int k1, k2;
+  n = sm.geo.nf;
+  vp1 = sm.geo.vp;
+  for (i = 0; i < n; i++) {
+    m = sm.geo.afvi[i].nfvi;
+    ifvi1 = sm.geo.afvi[i].ifvi;
+    k1 = ifvi1[0];
+    for (j = 1; j < m; j++) {
+      k2 = ifvi1[j];
+      line (vp1[k1].x, vp1[k1].y, vp1[k1].z, vp1[k2].x, vp1[k2].y, vp1[k2].z);
+      k1 = k2;
+    }
+    k2 = ifvi1[0];
+    line (vp1[k1].x, vp1[k1].y, vp1[k1].z, vp1[k2].x, vp1[k2].y, vp1[k2].z);
+  }
 %}
 END

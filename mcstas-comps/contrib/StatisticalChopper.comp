@@ -53,135 +53,138 @@ string sequence="NULL")
 
 DECLARE
 %{
-double delta_y;
-double height;
-double omega;
-int *Sequence;      /* Array containing 0=closed and 1=opened*/
-int *SequenceIndex; /* index of '1' in the sequence */
-int nslit;
-int m;              /* sum of opened slits ('1' in sequence) */
+  double delta_y;
+  double height;
+  double omega;
+  int* Sequence;      /* Array containing 0=closed and 1=opened*/
+  int* SequenceIndex; /* index of '1' in the sequence */
+  int nslit;
+  int m; /* sum of opened slits ('1' in sequence) */
 %}
 
 INITIALIZE 
 %{
-  Sequence=NULL;
-  SequenceIndex=NULL;
-  nslit=0;
-  m=0;
-
+  Sequence = NULL;
+  SequenceIndex = NULL;
+  nslit = 0;
+  m = 0;
 
   /* If slit height 'unset', assume full opening */
   if (yheight == 0) {
-    height=radius;
+    height = radius;
   } else {
-    height=yheight;
+    height = yheight;
   }
-  delta_y = radius-height/2; /* radius at beam center */
-  omega=2.0*PI*nu; /* rad/s */
-  
-  if (!sequence) {
-    fprintf(stderr,"StatisticalChopper: %s: sequence is NULL. \n", NAME_CURRENT_COMP);
-    exit(-1);
-  }
-  if (strlen(sequence) <=2) {
-    fprintf(stderr,"StatisticalChopper: %s: Sequence is too short (length=%i). Use conventional DiskChopper instead.\n", NAME_CURRENT_COMP, nslit);
-    exit(-1);
-  }
-  if (!strlen(sequence) || !strcmp(sequence,"NULL"))
-    strcpy(sequence,
-"100000010101001101110010010011110111111001011000011101001010111100101011111011010011011111000100011011100010000010001101101010100001110111001011111011001110001100011011011110101010000000110000011110011010100101011100000001001101000111100010110110001100100"
-    );
+  delta_y = radius - height / 2; /* radius at beam center */
+  omega = 2.0 * PI * nu;         /* rad/s */
 
-  if (yheight && yheight>radius) {
-    fprintf(stderr,"StatisticalChopper: %s: yheight must be < radius\n", NAME_CURRENT_COMP);
-    exit(-1); }
-  if (isfirst && n_pulse <=0) { 
-    fprintf(stderr,"StatisticalChopper: %s: wrong First chopper pulse number (n_pulse=%g)\n", NAME_CURRENT_COMP, n_pulse);
-    exit(-1); }
+  if (!sequence) {
+    fprintf (stderr, "StatisticalChopper: %s: sequence is NULL. \n", NAME_CURRENT_COMP);
+    exit (-1);
+  }
+  if (strlen (sequence) <= 2) {
+    fprintf (stderr, "StatisticalChopper: %s: Sequence is too short (length=%i). Use conventional DiskChopper instead.\n", NAME_CURRENT_COMP, nslit);
+    exit (-1);
+  }
+  if (!strlen (sequence) || !strcmp (sequence, "NULL"))
+    strcpy (sequence, "100000010101001101110010010011110111111001011000011101001010111100101011111011010011011111000100011011100010000010001101101010100001110111"
+                      "001011111011001110001100011011011110101010000000110000011110011010100101011100000001001101000111100010110110001100100");
+
+  if (yheight && yheight > radius) {
+    fprintf (stderr, "StatisticalChopper: %s: yheight must be < radius\n", NAME_CURRENT_COMP);
+    exit (-1);
+  }
+  if (isfirst && n_pulse <= 0) {
+    fprintf (stderr, "StatisticalChopper: %s: wrong First chopper pulse number (n_pulse=%g)\n", NAME_CURRENT_COMP, n_pulse);
+    exit (-1);
+  }
   if (!omega) {
-    fprintf(stderr,"StatisticalChopper: %s WARNING: chopper frequency is 0!\n", NAME_CURRENT_COMP);
+    fprintf (stderr, "StatisticalChopper: %s WARNING: chopper frequency is 0!\n", NAME_CURRENT_COMP);
     omega = 1e-15; /* We should actually use machine epsilon here... */
   }
   if (!abs_out) {
-    fprintf(stderr,"StatisticalChopper: %s WARNING: chopper will NOT absorb neutrons outside radius %g [m]\n", NAME_CURRENT_COMP, radius);
+    fprintf (stderr, "StatisticalChopper: %s WARNING: chopper will NOT absorb neutrons outside radius %g [m]\n", NAME_CURRENT_COMP, radius);
   }
-  
+
   /* Calulate delay from phase and vice versa, 'direction' moderated by sign of omega */
-  delay *=omega/fabs(omega);
+  delay *= omega / fabs (omega);
   if (phase) {
     if (delay) {
-      fprintf(stderr,"StatisticalChopper: %s WARNING: delay AND phase specified. Using phase setting\n", NAME_CURRENT_COMP);  
+      fprintf (stderr, "StatisticalChopper: %s WARNING: delay AND phase specified. Using phase setting\n", NAME_CURRENT_COMP);
     }
-    phase*=DEG2RAD;
+    phase *= DEG2RAD;
     /* 'Delay' should always be a delay, taking rotation direction into account: */
-    delay=omega*phase/(omega*omega);
+    delay = omega * phase / (omega * omega);
   } else {
-    phase=delay*omega;  /* rad */
+    phase = delay * omega; /* rad */
   }
-  
+
   if (verbose && nu) {
-    printf("StatisticalChopper: %s: frequency=%g [Hz] %g [rpm] time frame=%g [s] phase=%g [deg]\n",
-      NAME_CURRENT_COMP, nu, nu*60, fabs(1/nu), phase*RAD2DEG);
-    printf("                    height=%g [m], slits centered at radius=%g [m]\n",
-      height, delta_y);
+    printf ("StatisticalChopper: %s: frequency=%g [Hz] %g [rpm] time frame=%g [s] phase=%g [deg]\n", NAME_CURRENT_COMP, nu, nu * 60, fabs (1 / nu),
+            phase * RAD2DEG);
+    printf ("                    height=%g [m], slits centered at radius=%g [m]\n", height, delta_y);
   }
-      
-  nslit=strlen(sequence);
 
-  if (nslit>1) {
-    int    i=0,j=0;
-    double c=0;
-    int    index=0;
-    
-    Sequence      = malloc(nslit * sizeof(int));
-    SequenceIndex = malloc(nslit * sizeof(int));
+  nslit = strlen (sequence);
 
-    if (!Sequence){
-      fprintf(stderr,"StatisticalChopper: %s: Memory exhausted when allocating chopper sequence.\n", NAME_CURRENT_COMP);
-      exit(-1);
+  if (nslit > 1) {
+    int i = 0, j = 0;
+    double c = 0;
+    int index = 0;
+
+    Sequence = malloc (nslit * sizeof (int));
+    SequenceIndex = malloc (nslit * sizeof (int));
+
+    if (!Sequence) {
+      fprintf (stderr, "StatisticalChopper: %s: Memory exhausted when allocating chopper sequence.\n", NAME_CURRENT_COMP);
+      exit (-1);
     }
-    if (!SequenceIndex){
-      fprintf(stderr,"StatisticalChopper: %s: Memory exhausted when allocating chopper sequence table lookup.\n", NAME_CURRENT_COMP);
+    if (!SequenceIndex) {
+      fprintf (stderr, "StatisticalChopper: %s: Memory exhausted when allocating chopper sequence table lookup.\n", NAME_CURRENT_COMP);
     }
     /* build sequence index (where sequence==1) */
-    for (i=0;i<nslit;SequenceIndex[i++]=0);
-    for (i=0;i<nslit;i++) {
-      Sequence[i]=(int)sequence[i]-'0';
-      if (Sequence[i]) { 
-        m++; Sequence[i]=1; 
-        if (SequenceIndex) SequenceIndex[index++] = i;
+    for (i = 0; i < nslit; SequenceIndex[i++] = 0)
+      ;
+    for (i = 0; i < nslit; i++) {
+      Sequence[i] = (int)sequence[i] - '0';
+      if (Sequence[i]) {
+        m++;
+        Sequence[i] = 1;
+        if (SequenceIndex)
+          SequenceIndex[index++] = i;
       }
     }
-    c = (double)(m-1)/(double)(nslit-1); /* duty cycle */
-    
+    c = (double)(m - 1) / (double)(nslit - 1); /* duty cycle */
+
     /* checking sequence */
-    for (j=0; j<=2*nslit; j++) {
+    for (j = 0; j <= 2 * nslit; j++) {
       int A = 0;
-      for (i=0; i<nslit; i++){
-        A += Sequence[i]*Sequence[(i+j) % nslit];
+      for (i = 0; i < nslit; i++) {
+        A += Sequence[i] * Sequence[(i + j) % nslit];
       }
-      if (j==0 || j==nslit || j==2*nslit) {
+      if (j == 0 || j == nslit || j == 2 * nslit) {
         if (A != m)
-        fprintf(stderr,"StatisticalChopper: %s: Sequence does not satisfy autocorrelation pseudorandom criteria\n"
-                       "WARNING             A_0=%i is different from m=%i\n",
-                       NAME_CURRENT_COMP, A, m);
+          fprintf (stderr,
+                   "StatisticalChopper: %s: Sequence does not satisfy autocorrelation pseudorandom criteria\n"
+                   "WARNING             A_0=%i is different from m=%i\n",
+                   NAME_CURRENT_COMP, A, m);
         break;
       } else {
-        if (A != m*(m-1)/(nslit-1)) 
-        fprintf(stderr,"StatisticalChopper: %s: Sequence does not satisfy autocorrelation pseudorandom\n"
-                       "WARNING             A=%i is different from m(m-1)/(N-1)=%i\n", 
-                       NAME_CURRENT_COMP, A, m*(m-1)/(nslit-1));
+        if (A != m * (m - 1) / (nslit - 1))
+          fprintf (stderr,
+                   "StatisticalChopper: %s: Sequence does not satisfy autocorrelation pseudorandom\n"
+                   "WARNING             A=%i is different from m(m-1)/(N-1)=%i\n",
+                   NAME_CURRENT_COMP, A, m * (m - 1) / (nslit - 1));
         break;
       }
     } /* for j */
-    
+
     if (verbose && nu)
-      printf("StatisticalChopper: %s: Sequence length=%i with %i apertures; duty cycle c=%g \n",
-          NAME_CURRENT_COMP, nslit, m, c);
+      printf ("StatisticalChopper: %s: Sequence length=%i with %i apertures; duty cycle c=%g \n", NAME_CURRENT_COMP, nslit, m, c);
   } /* if nslit */
   else {
-    fprintf(stderr,"StatisticalChopper: %s: Sequence is too short (length=%i). Use conventional DiskChopper instead.\n", NAME_CURRENT_COMP, nslit);
-    exit(-1);
+    fprintf (stderr, "StatisticalChopper: %s: Sequence is too short (length=%i). Use conventional DiskChopper instead.\n", NAME_CURRENT_COMP, nslit);
+    exit (-1);
   }
   /* end INIT */
 %}
@@ -189,52 +192,56 @@ INITIALIZE
 TRACE
 %{
   double yprime;
-  
+
   PROP_Z0;
-  yprime = y+delta_y;
-  
+  yprime = y + delta_y;
+
   /* Is neutron outside the vertical slit range and should be absorbed ? */
-  if (abs_out && (x*x+yprime*yprime)>radius*radius) {
+  if (abs_out && (x * x + yprime * yprime) > radius * radius) {
     ABSORB;
   }
   /* Does neutron hit inner solid part of chopper in case of yheight!=radius ? */
-  if ((x*x+yprime*yprime)<(radius-height)*(radius-height)) {
+  if ((x * x + yprime * yprime) < (radius - height) * (radius - height)) {
     ABSORB;
   }
-    
+
   if (isfirst && SequenceIndex) {
     /* choose a slit in the sequence and set time accordingly */
-    t  = atan2(x,yprime)/omega + SequenceIndex[(int)(rand01()*m)]/nslit/nu 
-         -delay +jitter*randnorm()+  (n_pulse > 1 ? floor(n_pulse*rand01()/fabs(nu)) : 0);
-    p *= (double)m/(double)nslit; /* transmission */
+    t = atan2 (x, yprime) / omega + SequenceIndex[(int)(rand01 () * m)] / nslit / nu - delay + jitter * randnorm ()
+        + (n_pulse > 1 ? floor (n_pulse * rand01 () / fabs (nu)) : 0);
+    p *= (double)m / (double)nslit; /* transmission */
   } else {
     /* check if we pass through a slit */
     int seq;
-    double angle = 2*PI*nu*(t-atan2(x,yprime)/omega+jitter*randnorm()) - phase;
-    seq=(int) floor(angle*nslit/(2*PI)) % nslit;
-    if ( seq < 0 ) seq += nslit;
-    if (Sequence[seq]) SCATTER;
-    else               ABSORB;
+    double angle = 2 * PI * nu * (t - atan2 (x, yprime) / omega + jitter * randnorm ()) - phase;
+    seq = (int)floor (angle * nslit / (2 * PI)) % nslit;
+    if (seq < 0)
+      seq += nslit;
+    if (Sequence[seq])
+      SCATTER;
+    else
+      ABSORB;
   }
 %}
 
 FINALLY
 %{
-  free(Sequence);      Sequence=NULL;
-  free(SequenceIndex); SequenceIndex=NULL;
+  free (Sequence);
+  Sequence = NULL;
+  free (SequenceIndex);
+  SequenceIndex = NULL;
 %}
 
 MCDISPLAY
 %{
   int i;
-  double radius_min=radius-height;
-  
-  circle("xy", 0.0, -radius, 0.0, radius);
-  for (i=0; i<m; i++) {
+  double radius_min = radius - height;
+
+  circle ("xy", 0.0, -radius, 0.0, radius);
+  for (i = 0; i < m; i++) {
     /* draw a line at each slit center */
-    double angle=(double)SequenceIndex[i]*nslit/2*PI+phase;
-    line(radius_min*cos(angle), radius_min*sin(angle)-radius, 0,
-         radius*cos(angle),     radius*sin(angle)-radius, 0);
+    double angle = (double)SequenceIndex[i] * nslit / 2 * PI + phase;
+    line (radius_min * cos (angle), radius_min * sin (angle) - radius, 0, radius * cos (angle), radius * sin (angle) - radius, 0);
   }
 %}
 
