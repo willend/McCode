@@ -63,7 +63,7 @@ TRACE %{
 
 MCDISPLAY
 %{
-    mcdis_disc(0,0,0,radius, nx,ny,nz);
+  mcdis_disc (0, 0, 0, radius, nx, ny, nz);
 %}
 
 END

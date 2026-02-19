@@ -75,14 +75,14 @@ SHARE
 
 DECLARE
 %{
-off_struct offdata;
+  off_struct offdata;
 %}
 
 INITIALIZE
 %{
-if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
-	  if (off_init(geometry, xwidth, yheight, zdepth, !center, &offdata)) {
-      thickness=0;
+  if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
+    if (off_init (geometry, xwidth, yheight, zdepth, !center, &offdata)) {
+      thickness = 0;
     }
   }
 %}
@@ -94,18 +94,14 @@ TRACE %{
 
 MCDISPLAY
 %{
-      if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {	/* OFF file */
-            off_display(offdata);
-      }
-      else
-        if (radius > 0 &&  yheight) {	/* cylinder along y*/
-          cylinder(0,0,0,radius,yheight,thickness, nx, ny, nz);
-      }
-      else if (xwidth && yheight) { 	/* box/rectangle */
-          box(0,0,0,xwidth,yheight,zdepth,thickness, nx, ny, nz);
-      }
-      else if (radius > 0 && !yheight) {	/* sphere */
-          sphere(0,0,0,radius);
-      }
+  if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) { /* OFF file */
+    off_display (offdata);
+  } else if (radius > 0 && yheight) { /* cylinder along y*/
+    cylinder (0, 0, 0, radius, yheight, thickness, nx, ny, nz);
+  } else if (xwidth && yheight) { /* box/rectangle */
+    box (0, 0, 0, xwidth, yheight, zdepth, thickness, nx, ny, nz);
+  } else if (radius > 0 && !yheight) { /* sphere */
+    sphere (0, 0, 0, radius);
+  }
 %}
 END
