@@ -138,109 +138,105 @@ DECLARE
   double omega;      /* rotation frequency */
   double optimal_wl; /* optimal wavelength */
   VectorType pos_ch; /* centre pos. of the FC in the frame of the exit of the prev. comp. [cm] */
-
 %}
 
 INITIALIZE
 %{
-omega = 0.0;
-optimal_wl = 0.0;
+  omega = 0.0;
+  optimal_wl = 0.0;
 
-double x,y,z;
-coords_get(POS_R_COMP_INDEX(INDEX_CURRENT_COMP), &x, &y, &z);
+  double x, y, z;
+  coords_get (POS_R_COMP_INDEX (INDEX_CURRENT_COMP), &x, &y, &z);
   pos_ch[0] = -100.0 * z;
   pos_ch[1] = -100.0 * x;
   pos_ch[2] = -100.0 * y;
 
-  McInitVt();
+  McInitVt ();
 
   /* transformation of units */
-  height    *= 100.0; /* m -> cm */
-  width     *= 100.0;
-  depth     *= 100.0;
-  diameter  *= 100.0;
-  r_curv    *= 100.0;
+  height *= 100.0; /* m -> cm */
+  width *= 100.0;
+  depth *= 100.0;
+  diameter *= 100.0;
+  r_curv *= 100.0;
   wallwidth *= 100.0;
-  omega      = freq*2*PI/1000.0;  /* 1/s -> 2pi/ms */
-  Phase     *= DEG2RAD;
+  omega = freq * 2 * PI / 1000.0; /* 1/s -> 2pi/ms */
+  Phase *= DEG2RAD;
 
   /* checks and completion of input data */
-  CurvGeomOption = (int) GeomOption;
-  if (GeomOption > 0 && omega*r_curv==0)
-  { 
-    printf("Error: 'omega*r_curv' must not be zero for curved Fermi chopper"); exit(-1);
+  CurvGeomOption = (int)GeomOption;
+  if (GeomOption > 0 && omega * r_curv == 0) {
+    printf ("Error: 'omega*r_curv' must not be zero for curved Fermi chopper");
+    exit (-1);
   }
-  switch(GeomOption)
-  {
-    case 0: Option=1; optimal_wl=0.0;    break;
-    case 1: Option=2; optimal_wl=LAMBDA_FROM_V(2.0*omega*r_curv); break;
-    case 2: Option=2; optimal_wl=LAMBDA_FROM_V(2.0*omega*r_curv); break;
-    default: printf("Wrong option! Good options: 0-straight, 1-parabolic, 2-circular");
+  switch (GeomOption) {
+  case 0:
+    Option = 1;
+    optimal_wl = 0.0;
+    break;
+  case 1:
+    Option = 2;
+    optimal_wl = LAMBDA_FROM_V (2.0 * omega * r_curv);
+    break;
+  case 2:
+    Option = 2;
+    optimal_wl = LAMBDA_FROM_V (2.0 * omega * r_curv);
+    break;
+  default:
+    printf ("Wrong option! Good options: 0-straight, 1-parabolic, 2-circular");
   }
 
-  ChopperFermiInit(0, NULL);
+  ChopperFermiInit (0, NULL);
 %}
 
 TRACE
 %{
- int i=0;
- InputNeutrons[i] = mcstas2vitess(x, y, z, vx, vy, vz, t, sx, sy, sz, p);
- #define  MCSTAS_TRACE
- %include "chopper_fermi.c"
- #undef   MCSTAS_TRACE
- vitess2mcstas(Neutrons, &x, &y, &z, &vx, &vy, &vz, &t, &sx, &sy, &sz, &p);
+  int i = 0;
+  InputNeutrons[i] = mcstas2vitess (x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+  #define  MCSTAS_TRACE
+  %include "chopper_fermi.c"
+  #undef   MCSTAS_TRACE
+  vitess2mcstas (Neutrons, &x, &y, &z, &vx, &vy, &vz, &t, &sx, &sy, &sz, &p);
 %}
 
 FINALLY
 %{
- ChopperFermiCleanup();
- McCleanupVt();
+  ChopperFermiCleanup ();
+  McCleanupVt ();
 %}
 
 MCDISPLAY
 %{
-  double index=0;
+  double index = 0;
   double xpos, zpos, ymin, ymax, rad, w_ch;
   Nchannels = (Nchannels > 11 ? 11 : Nchannels);
-  w_ch = (width - (Nchannels+1) * wallwidth) / Nchannels/100;
-  rad  = diameter/2.0/100;
-  ymin = -height/2.0/100;
-  ymax =  height/2.0/100;
-  
+  w_ch = (width - (Nchannels + 1) * wallwidth) / Nchannels / 100;
+  rad = diameter / 2.0 / 100;
+  ymin = -height / 2.0 / 100;
+  ymax = height / 2.0 / 100;
+
   /* cylinder top/center/bottom  */
-  circle("xz", 0,ymax,0,rad);
-  circle("xz", 0,0   ,0,rad);
-  circle("xz", 0,ymin,0,rad);
+  circle ("xz", 0, ymax, 0, rad);
+  circle ("xz", 0, 0, 0, rad);
+  circle ("xz", 0, ymin, 0, rad);
   /* vertical lines to make a kind of volume */
-  line( 0  ,ymin,-rad, 0  ,ymax,-rad);
-  line( 0  ,ymin, rad, 0  ,ymax, rad);
-  line(-rad,ymin, 0  ,-rad,ymax, 0  );
-  line( rad,ymin, 0  , rad,ymax, 0  );
+  line (0, ymin, -rad, 0, ymax, -rad);
+  line (0, ymin, rad, 0, ymax, rad);
+  line (-rad, ymin, 0, -rad, ymax, 0);
+  line (rad, ymin, 0, rad, ymax, 0);
   /* slit package */
-  index = -Nchannels/2;
-  zpos  = depth/2/100;
-  for (index = -Nchannels/2; index < Nchannels/2; index++) {
-    xpos = index*w_ch;
-    multiline(5, xpos, ymin, -zpos,
-                 xpos, ymax, -zpos,
-                 xpos, ymax, +zpos,
-                 xpos, ymin, +zpos,
-                 xpos, ymin, -zpos);
+  index = -Nchannels / 2;
+  zpos = depth / 2 / 100;
+  for (index = -Nchannels / 2; index < Nchannels / 2; index++) {
+    xpos = index * w_ch;
+    multiline (5, xpos, ymin, -zpos, xpos, ymax, -zpos, xpos, ymax, +zpos, xpos, ymin, +zpos, xpos, ymin, -zpos);
   }
   /* cylinder inner sides containing slit package */
-  xpos = Nchannels*w_ch/2;
-  zpos = sqrt(rad*rad - xpos*xpos);
-  multiline(5,   xpos, ymin, -zpos,
-                 xpos, ymax, -zpos,
-                 xpos, ymax, +zpos,
-                 xpos, ymin, +zpos,
-                 xpos, ymin, -zpos);
+  xpos = Nchannels * w_ch / 2;
+  zpos = sqrt (rad * rad - xpos * xpos);
+  multiline (5, xpos, ymin, -zpos, xpos, ymax, -zpos, xpos, ymax, +zpos, xpos, ymin, +zpos, xpos, ymin, -zpos);
   xpos *= -1;
-  multiline(5,   xpos, ymin, -zpos,
-                 xpos, ymax, -zpos,
-                 xpos, ymax, +zpos,
-                 xpos, ymin, +zpos,
-                 xpos, ymin, -zpos);
+  multiline (5, xpos, ymin, -zpos, xpos, ymax, -zpos, xpos, ymax, +zpos, xpos, ymin, +zpos, xpos, ymin, -zpos);
 %}
 
 END

@@ -88,28 +88,29 @@ SHARE
 
 DECLARE
 %{
-off_struct offdata;
-t_Table pTable;
+  off_struct offdata;
+  t_Table pTable;
 %}
 
 INITIALIZE
 %{
-/* initialize OFF object from the file(s) */
-  if (!off_init( geometry, xwidth, yheight, zdepth, !center, &offdata )) exit(-1);
+  /* initialize OFF object from the file(s) */
+  if (!off_init (geometry, xwidth, yheight, zdepth, !center, &offdata))
+    exit (-1);
 
   /* optionally initialize reflectivity curves */
-  if (reflect && strlen(reflect) && strcmp(reflect,"NULL") && strcmp(reflect,"0")) {
-    if (Table_Read(&pTable, reflect, 1) <= 0) /* read 1st block data from file into pTable */
-      exit(fprintf(stderr,"Guide_anyshape: %s: can not read file %s. Aborting.\n", NAME_CURRENT_COMP, reflect));
+  if (reflect && strlen (reflect) && strcmp (reflect, "NULL") && strcmp (reflect, "0")) {
+    if (Table_Read (&pTable, reflect, 1) <= 0) /* read 1st block data from file into pTable */
+      exit (fprintf (stderr, "Guide_anyshape: %s: can not read file %s. Aborting.\n", NAME_CURRENT_COMP, reflect));
     else
-      Table_Rebin(&pTable);         /* rebin as evenly, increasing array */
+      Table_Rebin (&pTable); /* rebin as evenly, increasing array */
   }
 %}
 
 TRACE
 %{
-  int intersect=0;
-  int counter=0;
+  int intersect = 0;
+  int counter = 0;
   /* main loop for multiple reflections */
   #ifdef OPENACC
   off_struct thread_offdata = offdata;
@@ -117,83 +118,92 @@ TRACE
   #define thread_offdata offdata
   #endif
   do {
-    double t0=0, t3=0, dt=0;
-    Coords n0, n3, n={0,0,0};
+    double t0 = 0, t3 = 0, dt = 0;
+    Coords n0, n3, n = { 0, 0, 0 };
     /* determine intersections with object */
-    
-    double mc_gx=0.0, mc_gy=0.0, mc_gz=0.0;
+
+    double mc_gx = 0.0, mc_gy = 0.0, mc_gz = 0.0;
     if (mcgravitation) {
-       Coords locgrav;
-       locgrav = rot_apply(_comp->_rotation_absolute, coords_set(0,-GRAVITY,0));
-       coords_get(locgrav, &mc_gx, &mc_gy, &mc_gz);
+      Coords locgrav;
+      locgrav = rot_apply (_comp->_rotation_absolute, coords_set (0, -GRAVITY, 0));
+      coords_get (locgrav, &mc_gx, &mc_gy, &mc_gz);
     }
-    
-    intersect = off_intersect(&t0, &t3, &n0, &n3, x,y,z, vx, vy, vz, mc_gx, mc_gy, mc_gz, thread_offdata );
+
+    intersect = off_intersect (&t0, &t3, &n0, &n3, x, y, z, vx, vy, vz, mc_gx, mc_gy, mc_gz, thread_offdata);
 
     /* get the smallest positive */
-    if (t0 > 0) { dt = t0; n=n0; }
-    if (intersect > 1 && dt <= 0 && t3 > dt) { dt = t3; n=n3; }
+    if (t0 > 0) {
+      dt = t0;
+      n = n0;
+    }
+    if (intersect > 1 && dt <= 0 && t3 > dt) {
+      dt = t3;
+      n = n3;
+    }
 
     /* exit loop when no intersection forward */
-    if (dt <= 0 || !intersect) break;
+    if (dt <= 0 || !intersect)
+      break;
 
-    double nx,ny,nz;
-    coords_get(n, &nx, &ny, &nz);
+    double nx, ny, nz;
+    coords_get (n, &nx, &ny, &nz);
 
     /* propagate neutron to reflection point, must be before n_dot_v with gravity */
-    PROP_DT(dt);
+    PROP_DT (dt);
 
     /* test if the angle is large in case the object has an internal coating */
-    double n2      = nx*nx+ny*ny+nz*nz;
-    double n_dot_v = scalar_prod(vx,vy,vz,nx,ny,nz);
-    double q       = 2*fabs(n_dot_v)*V2K/sqrt(n2);
+    double n2 = nx * nx + ny * ny + nz * nz;
+    double n_dot_v = scalar_prod (vx, vy, vz, nx, ny, nz);
+    double q = 2 * fabs (n_dot_v) * V2K / sqrt (n2);
 
     /* handle surface intersection */
-    double R=0;
+    double R = 0;
     /* Reflectivity (see component Guide). */
-    if (reflect && strlen(reflect) && strcmp(reflect,"NULL") && strcmp(reflect,"0"))
-      TableReflecFunc(q, &pTable, &R);
+    if (reflect && strlen (reflect) && strcmp (reflect, "NULL") && strcmp (reflect, "0"))
+      TableReflecFunc (q, &pTable, &R);
     else {
-      double par[] = {R0, Qc, alpha, m, W};
-      StdReflecFunc(q, par, &R);
+      double par[] = { R0, Qc, alpha, m, W };
+      StdReflecFunc (q, par, &R);
     }
 
     if (R > 1) {
-      fprintf(stderr,"Guide_anyshape: %s: Warning: Reflectivity R=%g > 1 lowered to R=1.\n", NAME_CURRENT_COMP, R);
-      R=1;
+      fprintf (stderr, "Guide_anyshape: %s: Warning: Reflectivity R=%g > 1 lowered to R=1.\n", NAME_CURRENT_COMP, R);
+      R = 1;
     }
     /* now handle either probability when transmit or reflect */
     if (R > 0) {
       /* when allowing transmission, we should check if indeed we reflect */
-      if (!transmit || (transmit && rand01() < R)) {
+      if (!transmit || (transmit && rand01 () < R)) {
         /* reflect velocity: -q -> -2*n*n.v/|n|^2 */
-        if (!transmit) p *= R;
-        n_dot_v *= 2/n2;
-        vx -= nx*n_dot_v;
-        vy -= ny*n_dot_v;
-        vz -= nz*n_dot_v;
+        if (!transmit)
+          p *= R;
+        n_dot_v *= 2 / n2;
+        vx -= nx * n_dot_v;
+        vy -= ny * n_dot_v;
+        vz -= nz * n_dot_v;
         SCATTER;
       } else {
         if (transmit) {
-          p *= (1-R); /* transmitted beam has non reflected weight */
-        } else ABSORB;
+          p *= (1 - R); /* transmitted beam has non reflected weight */
+        } else
+          ABSORB;
       }
     } else {
       /* R=0: no reflection: absorb or transmit through when allowed */
-      if (!transmit) ABSORB;
+      if (!transmit)
+        ABSORB;
     }
 
     /* leave surface by a small amount so that next intersection is not the same one */
-    PROP_DT(1e-9);
-  } while (intersect && counter++<CHAR_BUF_LENGTH);
+    PROP_DT (1e-9);
+  } while (intersect && counter++ < CHAR_BUF_LENGTH);
   /* end of main loop */
-
 %}
 
 MCDISPLAY
 %{
   /* display the object */
-  off_display(offdata);
+  off_display (offdata);
 %}
 
 END

@@ -50,25 +50,27 @@ DECLARE
 
 INITIALIZE
 %{
-  xw = xmax-xmin;
-  yh = ymax-ymin;
-  zt = zmax-zmin;
-  xm = (xmax+xmin)/2;
-  ym = (ymax+ymin)/2;
-  zm = (zmax+zmin)/2;
-  if (xw == 0 || yh == 0 || zt == 0)
-    { fprintf(stderr,"Absorber: %s: Error: Slab volume is zero!\n", NAME_CURRENT_COMP); exit(-1); }
+  xw = xmax - xmin;
+  yh = ymax - ymin;
+  zt = zmax - zmin;
+  xm = (xmax + xmin) / 2;
+  ym = (ymax + ymin) / 2;
+  zm = (zmax + zmin) / 2;
+  if (xw == 0 || yh == 0 || zt == 0) {
+    fprintf (stderr, "Absorber: %s: Error: Slab volume is zero!\n", NAME_CURRENT_COMP);
+    exit (-1);
+  }
 %}
 
 TRACE
 %{
-  double t0,t1,xp,yp,zp;
+  double t0, t1, xp, yp, zp;
   xp = x - xm;
   yp = y - ym;
   zp = z - zm;
-  if (box_intersect(&t0, &t1, xp, yp, zp, vx, vy, vz, xw, yh, zt)) {
-    if (t1>=0) {
-      PROP_DT((t1+t0)/2);
+  if (box_intersect (&t0, &t1, xp, yp, zp, vx, vy, vz, xw, yh, zt)) {
+    if (t1 >= 0) {
+      PROP_DT ((t1 + t0) / 2);
       SCATTER;
       ABSORB;
     }
@@ -77,7 +79,7 @@ TRACE
 
 MCDISPLAY
 %{
-  box(xm, ym, zm, xw, yh, zt,0, 0, 1, 0);
+  box (xm, ym, zm, xw, yh, zt, 0, 0, 1, 0);
 %}
 
 END
