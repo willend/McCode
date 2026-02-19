@@ -64,36 +64,41 @@ DECLARE
 
 INITIALIZE
 %{
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
-
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("L_monitor: %s: Null detection area !\n"
-      "ERROR      (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-      NAME_CURRENT_COMP);
-    exit(0);
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
   }
 
-  L_N = create_darr1d(nL);
-  L_p = create_darr1d(nL);
-  L_p2 = create_darr1d(nL);
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("L_monitor: %s: Null detection area !\n"
+            "ERROR      (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
+
+  L_N = create_darr1d (nL);
+  L_p = create_darr1d (nL);
+  L_p2 = create_darr1d (nL);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
   PROP_Z0;
-  if (x>xmin && x<xmax && y>ymin && y<ymax)
-  {
-    double L = (2*PI/V2K)/sqrt(vx*vx + vy*vy + vz*vz);
-    int i = floor((L-Lmin)*nL/(Lmax-Lmin));
-    if(i >= 0 && i < nL)
-    {
-      double p2 = p*p;
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
+    double L = (2 * PI / V2K) / sqrt (vx * vx + vy * vy + vz * vz);
+    int i = floor ((L - Lmin) * nL / (Lmax - Lmin));
+    if (i >= 0 && i < nL) {
+      double p2 = p * p;
       #pragma acc atomic
-      L_N[i] = L_N[i] +1;
+      L_N[i] = L_N[i] + 1;
       #pragma acc atomic
       L_p[i] = L_p[i] + p;
       #pragma acc atomic
@@ -102,37 +107,28 @@ TRACE
     }
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  DETECTOR_OUT_1D(
-    "Wavelength monitor",
-    "Wavelength [AA]",
-    "Intensity",
-    "L", Lmin, Lmax, nL,
-    &L_N[0],&L_p[0],&L_p2[0],
-    filename);
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_1D ("Wavelength monitor", "Wavelength [AA]", "Intensity", "L", Lmin, Lmax, nL, &L_N[0], &L_p[0], &L_p2[0], filename);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr1d(L_N);
-  destroy_darr1d(L_p);
-  destroy_darr1d(L_p2);
+  destroy_darr1d (L_N);
+  destroy_darr1d (L_p);
+  destroy_darr1d (L_p2);
 %}
 
 MCDISPLAY
 %{
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END

@@ -57,81 +57,74 @@ DECLARE
 
 INITIALIZE
 %{
-  TOF_N = create_darr2d(nt, nphi);
-  TOF_p = create_darr2d(nt, nphi);
-  TOF_p2 = create_darr2d(nt, nphi);
+  TOF_N = create_darr2d (nt, nphi);
+  TOF_p = create_darr2d (nt, nphi);
+  TOF_p2 = create_darr2d (nt, nphi);
 
-  tt_0 = tmin*1e-6;
-  tt_1 = tmax*1e-6;
+  tt_0 = tmin * 1e-6;
+  tt_1 = tmax * 1e-6;
 
-  binphi = 360.0/(double)nphi;
+  binphi = 360.0 / (double)nphi;
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-  int i,j;
-  double cyl_t0,cyl_t1,dt,phi;
+  int i, j;
+  double cyl_t0, cyl_t1, dt, phi;
 
-  if(!cylinder_intersect(&cyl_t0, &cyl_t1, x,y,z,vx,vy,vz, radius, yheight))
-   /* No hit */
+  if (!cylinder_intersect (&cyl_t0, &cyl_t1, x, y, z, vx, vy, vz, radius, yheight))
+    /* No hit */
     ABSORB;
-  if(cyl_t0>0)  /* Neutron hits cylinder from the outside */
+  if (cyl_t0 > 0) /* Neutron hits cylinder from the outside */
     ABSORB;
-  dt=cyl_t1;
-  PROP_DT(dt);
-  if(y>=yheight/2 || y<= -yheight/2)
-    ABSORB;  /* Neutron hits cylinder ends; no detectors here */
+  dt = cyl_t1;
+  PROP_DT (dt);
+  if (y >= yheight / 2 || y <= -yheight / 2)
+    ABSORB; /* Neutron hits cylinder ends; no detectors here */
 
-  i = floor((t-tt_0)*nt/(tt_1-tt_0));              /* Bin number */
+  i = floor ((t - tt_0) * nt / (tt_1 - tt_0)); /* Bin number */
 
-  if (i < 0 || i >= nt)        /* Do not detect */
+  if (i < 0 || i >= nt) /* Do not detect */
   {
-  }
-  else
-  {
-    phi = atan2(x,z);
-    j = floor((double)nphi/2.0 + RAD2DEG*phi/(double)binphi);
-    double p2 = p*p;
-    #pragma acc atomic    
-    TOF_N[i][j] = TOF_N[i][j]+1;
-    #pragma acc atomic    
-    TOF_p[i][j] = TOF_p[i][j]+p;
-    #pragma acc atomic    
-    TOF_p2[i][j] = TOF_p2[i][j]+p2;
+  } else {
+    phi = atan2 (x, z);
+    j = floor ((double)nphi / 2.0 + RAD2DEG * phi / (double)binphi);
+    double p2 = p * p;
+    #pragma acc atomic
+    TOF_N[i][j] = TOF_N[i][j] + 1;
+    #pragma acc atomic
+    TOF_p[i][j] = TOF_p[i][j] + p;
+    #pragma acc atomic
+    TOF_p2[i][j] = TOF_p2[i][j] + p2;
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  DETECTOR_OUT_2D(
-      "Cylindrical Time-of-flight PSD monitor",
-      "Time-of-flight [\\gms]",
-      "Angle [deg]",
-      tmin, tmax, -180, 180,
-      nt, nphi,
-      &TOF_N[0][0],&TOF_p[0][0],&TOF_p2[0][0],
-      filename);
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_2D ("Cylindrical Time-of-flight PSD monitor", "Time-of-flight [\\gms]", "Angle [deg]", tmin, tmax, -180, 180, nt, nphi, &TOF_N[0][0],
+                     &TOF_p[0][0], &TOF_p2[0][0], filename);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(TOF_N);
-  destroy_darr2d(TOF_p);
-  destroy_darr2d(TOF_p2);
+  destroy_darr2d (TOF_N);
+  destroy_darr2d (TOF_p);
+  destroy_darr2d (TOF_p2);
 %}
 
 MCDISPLAY
 %{
-  magnify("y");
-  circle("xz", 0,0,0,radius);
+  magnify ("y");
+  circle ("xz", 0, 0, 0, radius);
 %}
 
 END

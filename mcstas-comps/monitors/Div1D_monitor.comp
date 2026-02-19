@@ -67,27 +67,34 @@ INITIALIZE
 %{
   int i;
 
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
-
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("Error(%s): Div1D_monitor: Null detection area !\n"
-                 "(xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-        NAME_CURRENT_COMP);
-    exit(-1);
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
   }
 
-  Div_N = create_darr1d(ndiv);
-  Div_p = create_darr1d(ndiv);
-  Div_p2 = create_darr1d(ndiv);
-  for (i=0; i<ndiv; i++){
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("Error(%s): Div1D_monitor: Null detection area !\n"
+            "(xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (-1);
+  }
+
+  Div_N = create_darr1d (ndiv);
+  Div_p = create_darr1d (ndiv);
+  Div_p2 = create_darr1d (ndiv);
+  for (i = 0; i < ndiv; i++) {
     Div_N[i] = 0;
     Div_p[i] = 0;
     Div_p2[i] = 0;
   }
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
@@ -96,17 +103,16 @@ TRACE
   double div;
 
   PROP_Z0;
-  if (x>xmin && x<xmax && y>ymin && y<ymax)
-  {
-    if (!vertical){
-      div = RAD2DEG*atan2(vx,vz);
-    }else{
-      div = RAD2DEG*atan2(vy,vz);
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
+    if (!vertical) {
+      div = RAD2DEG * atan2 (vx, vz);
+    } else {
+      div = RAD2DEG * atan2 (vy, vz);
     }
-    if (div < (double)maxdiv && div > -(double)maxdiv){
-      i = floor((div + (double)maxdiv)*ndiv/(2.0*(double)maxdiv));
+    if (div < (double)maxdiv && div > -(double)maxdiv) {
+      i = floor ((div + (double)maxdiv) * ndiv / (2.0 * (double)maxdiv));
 
-      double p2 = p*p;
+      double p2 = p * p;
       #pragma acc atomic
       Div_N[i] = Div_N[i] + 1;
 
@@ -120,41 +126,34 @@ TRACE
     }
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-  if(!nowritefile){
-    if (!vertical){
-      DETECTOR_OUT_1D(
-        "Horizontal divergence monitor","horizontal divergence [deg]",
-        "Intensity","divergence", -maxdiv, maxdiv, ndiv,
-        &Div_N[0],&Div_p[0],&Div_p2[0],filename);
-    }else{
-      DETECTOR_OUT_1D(
-        "Vertical divergence monitor","vertical divergence [deg]",
-        "Intensity","divergence", -maxdiv, maxdiv, ndiv,
-        &Div_N[0],&Div_p[0],&Div_p2[0],filename);
+  if (!nowritefile) {
+    if (!vertical) {
+      DETECTOR_OUT_1D ("Horizontal divergence monitor", "horizontal divergence [deg]", "Intensity", "divergence", -maxdiv, maxdiv, ndiv, &Div_N[0], &Div_p[0],
+                       &Div_p2[0], filename);
+    } else {
+      DETECTOR_OUT_1D ("Vertical divergence monitor", "vertical divergence [deg]", "Intensity", "divergence", -maxdiv, maxdiv, ndiv, &Div_N[0], &Div_p[0],
+                       &Div_p2[0], filename);
     }
   }
 %}
 
 FINALLY
 %{
-  destroy_darr1d(Div_N);
-  destroy_darr1d(Div_p);
-  destroy_darr1d(Div_p2);
+  destroy_darr1d (Div_N);
+  destroy_darr1d (Div_p);
+  destroy_darr1d (Div_p2);
 %}
 
 MCDISPLAY
 %{
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-      (double)xmax, (double)ymin, 0.0,
-      (double)xmax, (double)ymax, 0.0,
-      (double)xmin, (double)ymax, 0.0,
-      (double)xmin, (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 

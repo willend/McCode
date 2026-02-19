@@ -67,24 +67,31 @@ DECLARE
 
 INITIALIZE
 %{
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
-
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("E_monitor: %s: Null detection area !\n"
-           "ERROR      (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-           NAME_CURRENT_COMP);
-    exit(0);
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
   }
 
-  E_N = create_darr1d(nE);
-  E_p = create_darr1d(nE);
-  E_p2 = create_darr1d(nE);
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("E_monitor: %s: Null detection area !\n"
+            "ERROR      (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
+
+  E_N = create_darr1d (nE);
+  E_p = create_darr1d (nE);
+  E_p2 = create_darr1d (nE);
 
   S_p = S_pE = S_pE2 = 0;
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
@@ -93,20 +100,18 @@ TRACE
   double E;
 
   PROP_Z0;
-  if (x>xmin && x<xmax && y>ymin && y<ymax)
-  {
-    E = VS2E*(vx*vx + vy*vy + vz*vz);
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
+    E = VS2E * (vx * vx + vy * vy + vz * vz);
 
     S_p += p;
-    S_pE += p*E;
-    S_pE2 += p*E*E;
+    S_pE += p * E;
+    S_pE2 += p * E * E;
 
-    i = floor((E-Emin)*nE/(Emax-Emin));
-    if(i >= 0 && i < nE)
-    {
-      double p2 = p*p;
+    i = floor ((E - Emin) * nE / (Emax - Emin));
+    if (i >= 0 && i < nE) {
+      double p2 = p * p;
       #pragma acc atomic
-      E_N[i] = E_N[i] +1;
+      E_N[i] = E_N[i] + 1;
       #pragma acc atomic
       E_p[i] = E_p[i] + p;
       #pragma acc atomic
@@ -115,40 +120,31 @@ TRACE
     }
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  DETECTOR_OUT_1D(
-      "Energy monitor",
-      "Energy [meV]",
-      "Intensity",
-      "E", Emin, Emax, nE,
-      &E_N[0],&E_p[0],&E_p2[0],
-      filename);
-  if (S_p) printf("<E> : %g meV , E-width : %g meV \n",
-   S_pE/S_p,sqrt(S_pE2/S_p - S_pE*S_pE/(S_p*S_p)) );
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_1D ("Energy monitor", "Energy [meV]", "Intensity", "E", Emin, Emax, nE, &E_N[0], &E_p[0], &E_p2[0], filename);
+    if (S_p)
+      printf ("<E> : %g meV , E-width : %g meV \n", S_pE / S_p, sqrt (S_pE2 / S_p - S_pE * S_pE / (S_p * S_p)));
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr1d(E_N);
-  destroy_darr1d(E_p);
-  destroy_darr1d(E_p2);
+  destroy_darr1d (E_N);
+  destroy_darr1d (E_p);
+  destroy_darr1d (E_p2);
 %}
 
 MCDISPLAY
 %{
 
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END
