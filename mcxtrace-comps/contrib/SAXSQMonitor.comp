@@ -50,170 +50,149 @@ SETTING PARAMETERS (string RFilename="RDetector", string qFilename="QDetector", 
 
 DECLARE
 %{
-    DArray1d Nofq;
-    DArray1d Iofq;
-    DArray1d IofqSquared;
+  DArray1d Nofq;
+  DArray1d Iofq;
+  DArray1d IofqSquared;
 
-    DArray1d NofR;
-    DArray1d IofR;
-    DArray1d IofRSquared;
+  DArray1d NofR;
+  DArray1d IofR;
+  DArray1d IofRSquared;
 %}
 
 INITIALIZE
 %{
-    Nofq=create_darr1d(NumberOfBins);
-    Iofq=create_darr1d(NumberOfBins);
-    IofqSquared=create_darr1d(NumberOfBins);
-    NofR=create_darr1d(NumberOfBins);
-    IofR=create_darr1d(NumberOfBins);
-    IofRSquared=create_darr1d(NumberOfBins);
-    
-    if (DistanceFromSample <= 0)
-      exit(fprintf(stderr,"%s: ERROR: you must set the DistanceFromSample > 0.\n", NAME_CURRENT_COMP));
+  Nofq = create_darr1d (NumberOfBins);
+  Iofq = create_darr1d (NumberOfBins);
+  IofqSquared = create_darr1d (NumberOfBins);
+  NofR = create_darr1d (NumberOfBins);
+  IofR = create_darr1d (NumberOfBins);
+  IofRSquared = create_darr1d (NumberOfBins);
 
-    if (qMax<=0 && LambdaMin) {
-      double TwoThetaMax = atan(RadiusDetector / DistanceFromSample);
-      qMax = 4 * PI * sin(TwoThetaMax / 2.0) / LambdaMin;
-    }
-    
-    // Use instance name for monitor output if no input was given
-    if (!strcmp(RFilename,"\0")) sprintf(RFilename,"%s_R", NAME_CURRENT_COMP);
-    if (!strcmp(qFilename,"\0")) sprintf(qFilename,"%s_Q", NAME_CURRENT_COMP);
+  if (DistanceFromSample <= 0)
+    exit (fprintf (stderr, "%s: ERROR: you must set the DistanceFromSample > 0.\n", NAME_CURRENT_COMP));
+
+  if (qMax <= 0 && LambdaMin) {
+    double TwoThetaMax = atan (RadiusDetector / DistanceFromSample);
+    qMax = 4 * PI * sin (TwoThetaMax / 2.0) / LambdaMin;
+  }
+
+  // Use instance name for monitor output if no input was given
+  if (!strcmp (RFilename, "\0"))
+    sprintf (RFilename, "%s_R", NAME_CURRENT_COMP);
+  if (!strcmp (qFilename, "\0"))
+    sprintf (qFilename, "%s_Q", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-    int i;
-    double TwoTheta;
-    double Lambda;
+  int i;
+  double TwoTheta;
+  double Lambda;
 
-    double R;
-    double RLow;
-    double RHigh;
+  double R;
+  double RLow;
+  double RHigh;
 
-    double q;
-    double qLow;
-    double qHigh;
+  double q;
+  double qLow;
+  double qHigh;
 
-    double TwoThetaLow; 
-    double TwoThetaHigh;
-    double AreaOfSlice;
-    
-    PROP_Z0;
+  double TwoThetaLow;
+  double TwoThetaHigh;
+  double AreaOfSlice;
 
-    R = sqrt(x*x+y*y);
+  PROP_Z0;
 
-    // Computation of q
-    if (Lambda0 <= 0.0) {
-      Lambda = 2.0 * PI / sqrt(kx*kx+ky*ky+kz*kz);
-    } else {
-      Lambda = Lambda0;
-    }
+  R = sqrt (x * x + y * y);
 
-    TwoTheta = atan(R / DistanceFromSample);
-    q = 4.0 * PI * sin(TwoTheta / 2.0) / Lambda;
+  // Computation of q
+  if (Lambda0 <= 0.0) {
+    Lambda = 2.0 * PI / sqrt (kx * kx + ky * ky + kz * kz);
+  } else {
+    Lambda = Lambda0;
+  }
 
-    // Put photon in the correct r-bin
-    if (R < RadiusDetector) {
-      i = floor(NumberOfBins * R / RadiusDetector);
+  TwoTheta = atan (R / DistanceFromSample);
+  q = 4.0 * PI * sin (TwoTheta / 2.0) / Lambda;
 
-      RLow = RadiusDetector / NumberOfBins * i;
-      RHigh = RadiusDetector / NumberOfBins * (i + 1);
+  // Put photon in the correct r-bin
+  if (R < RadiusDetector) {
+    i = floor (NumberOfBins * R / RadiusDetector);
 
-      TwoThetaLow = atan(RLow / DistanceFromSample);
-      TwoThetaHigh = atan(RHigh / DistanceFromSample);
+    RLow = RadiusDetector / NumberOfBins * i;
+    RHigh = RadiusDetector / NumberOfBins * (i + 1);
 
-      AreaOfSlice = fabs((cos(2.0 * TwoThetaLow) - cos(2.0 * TwoThetaHigh)) * 2.0 * PI);
+    TwoThetaLow = atan (RLow / DistanceFromSample);
+    TwoThetaHigh = atan (RHigh / DistanceFromSample);
 
-#pragma acc atomic
-      NofR[i] = NofR[i] + 1;
-      double p_A=p/AreaOfSlice;
-#pragma acc atomic
-      IofR[i] += p_A;
-      double p2_A2= p*p/(AreaOfSlice*AreaOfSlice);
-#pragma acc atomic
-      IofRSquared[i] += p2_A2;
-    }
-      
-    // Put photon in the correct q-bin
-    if (q < qMax) {
-      i = floor(NumberOfBins * q / qMax);
+    AreaOfSlice = fabs ((cos (2.0 * TwoThetaLow) - cos (2.0 * TwoThetaHigh)) * 2.0 * PI);
 
-      qLow = qMax / NumberOfBins * i;
-      qHigh = qMax / NumberOfBins * (i + 1);
+    #pragma acc atomic
+    NofR[i] = NofR[i] + 1;
+    double p_A = p / AreaOfSlice;
+    #pragma acc atomic
+    IofR[i] += p_A;
+    double p2_A2 = p * p / (AreaOfSlice * AreaOfSlice);
+    #pragma acc atomic
+    IofRSquared[i] += p2_A2;
+  }
 
-      TwoThetaLow = asin(qLow * Lambda / (4.0 * PI));
-      TwoThetaHigh = asin(qHigh * Lambda / (4.0 * PI));
+  // Put photon in the correct q-bin
+  if (q < qMax) {
+    i = floor (NumberOfBins * q / qMax);
 
-      AreaOfSlice = fabs((cos(2.0 * TwoThetaLow) - cos(2.0 * TwoThetaHigh)) * 2.0 * PI);
+    qLow = qMax / NumberOfBins * i;
+    qHigh = qMax / NumberOfBins * (i + 1);
 
-#pragma acc atomic
-      Nofq[i] = Nofq[i] + 1;
-      double p_A=p/AreaOfSlice;
-#pragma acc atomic
-      Iofq[i] += p_A;
-      double p2_A2= p*p/(AreaOfSlice*AreaOfSlice);
-#pragma acc atomic
-      IofqSquared[i] += p2_A2;
+    TwoThetaLow = asin (qLow * Lambda / (4.0 * PI));
+    TwoThetaHigh = asin (qHigh * Lambda / (4.0 * PI));
 
-      SCATTER;
-    }
+    AreaOfSlice = fabs ((cos (2.0 * TwoThetaLow) - cos (2.0 * TwoThetaHigh)) * 2.0 * PI);
 
-    // Restore xray if requested
-    if (restore_xray) {
-      RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
-    }
+    #pragma acc atomic
+    Nofq[i] = Nofq[i] + 1;
+    double p_A = p / AreaOfSlice;
+    #pragma acc atomic
+    Iofq[i] += p_A;
+    double p2_A2 = p * p / (AreaOfSlice * AreaOfSlice);
+    #pragma acc atomic
+    IofqSquared[i] += p2_A2;
+
+    SCATTER;
+  }
+
+  // Restore xray if requested
+  if (restore_xray) {
+    RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+  }
 %}
 
 SAVE
 %{
   // Output I(r)
-    DETECTOR_OUT_1D(
-        "QMonitor - Radially averaged distribution",
-        "Radius [m]",
-        "I(r)",
-        "r", 
-        0.0, 
-        RadiusDetector, 
-        NumberOfBins,
-        NofR,
-        IofR,
-        IofRSquared,
-        RFilename
-        );
+  DETECTOR_OUT_1D ("QMonitor - Radially averaged distribution", "Radius [m]", "I(r)", "r", 0.0, RadiusDetector, NumberOfBins, NofR, IofR, IofRSquared, RFilename);
 
-    // Output I(q)
-    char fname1[256];
-    snprintf(fname1, 256, "%s_q", NAME_CURRENT_COMP);
-    // we use mcdetector_out_nD in order to update the [comp_name]_I symbol for the 2nd output
-    mcdetector_out_1D(
-        "QMonitor - Distribution in q (Radially averaged)",
-        "q [1 / AA]",
-        "I(q)",
-        "q", 
-        0.0, 
-        qMax, 
-        NumberOfBins,
-        Nofq,
-        Iofq,
-        IofqSquared,
-        qFilename, fname1,POS_A_CURRENT_COMP,ROT_A_CURRENT_COMP,INDEX_CURRENT_COMP
-        );
+  // Output I(q)
+  char fname1[256];
+  snprintf (fname1, 256, "%s_q", NAME_CURRENT_COMP);
+  // we use mcdetector_out_nD in order to update the [comp_name]_I symbol for the 2nd output
+  mcdetector_out_1D ("QMonitor - Distribution in q (Radially averaged)", "q [1 / AA]", "I(q)", "q", 0.0, qMax, NumberOfBins, Nofq, Iofq, IofqSquared, qFilename,
+                     fname1, POS_A_CURRENT_COMP, ROT_A_CURRENT_COMP, INDEX_CURRENT_COMP);
 %}
 
 FINALLY
 %{
-  destroy_darr1d(Nofq);
-  destroy_darr1d(Iofq);
-  destroy_darr1d(IofqSquared);
-  destroy_darr1d(NofR);
-  destroy_darr1d(IofR);
-  destroy_darr1d(IofRSquared);
+  destroy_darr1d (Nofq);
+  destroy_darr1d (Iofq);
+  destroy_darr1d (IofqSquared);
+  destroy_darr1d (NofR);
+  destroy_darr1d (IofR);
+  destroy_darr1d (IofRSquared);
 %}
 
 MCDISPLAY
 %{
-	circle("xy", 0, 0, 0, RadiusDetector);
+  circle ("xy", 0, 0, 0, RadiusDetector);
 %}
 
 END

@@ -63,33 +63,31 @@ INITIALIZE %{
   %}
 TRACE
 %{
-  double k,e,theta_bragg;
+  double k, e, theta_bragg;
 
-  k=sqrt(kx*kx+ky*ky+kz*kz);
-  e=K2E*k*1E-3;
-  theta_bragg=atan(kz/ky);
+  k = sqrt (kx * kx + ky * ky + kz * kz);
+  e = K2E * k * 1E-3;
+  theta_bragg = atan (kz / ky);
 
-  PROP_Z0; //MOVING TOWARDS THE CRYSTAL.
-  if (inside_rectangle(x, y, xwidth, yheight))
-  {if (Q>(2*k*sin(theta_bragg)-dQ) && Q<(2*k*sin(theta_bragg)+dQ))
-    {kz=-kz;
+  PROP_Z0; // MOVING TOWARDS THE CRYSTAL.
+  if (inside_rectangle (x, y, xwidth, yheight)) {
+    if (Q > (2 * k * sin (theta_bragg) - dQ) && Q < (2 * k * sin (theta_bragg) + dQ)) {
+      kz = -kz;
       SCATTER;
-    }else{
+    } else {
       ABSORB;
     }
   }
-
 %}
 
 MCDISPLAY
 %{
   /* A bit ugly; hard-coded dimensions. */
-  magnify("");
-  line(-xwidth/2,-yheight/2,0,xwidth/2,-yheight/2,0);
-  line(-xwidth/2,yheight/2,0,xwidth/2,yheight/2,0);
-  line(-xwidth/2,-yheight/2,0,-xwidth/2,yheight/2,0);
-  line(xwidth/2,-yheight/2,0,xwidth/2,yheight/2,0);
-
+  magnify ("");
+  line (-xwidth / 2, -yheight / 2, 0, xwidth / 2, -yheight / 2, 0);
+  line (-xwidth / 2, yheight / 2, 0, xwidth / 2, yheight / 2, 0);
+  line (-xwidth / 2, -yheight / 2, 0, -xwidth / 2, yheight / 2, 0);
+  line (xwidth / 2, -yheight / 2, 0, xwidth / 2, yheight / 2, 0);
 %}
 
 END
