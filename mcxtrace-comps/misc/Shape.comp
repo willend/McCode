@@ -65,38 +65,37 @@ SETTING PARAMETERS (string geometry=0, radius=0, xwidth=0, yheight=0, zdepth=0, 
 
 SHARE
 %{
-%include "read_table-lib"
-%include "interoff-lib"
+  %include "read_table-lib"
+  %include "interoff-lib"
 
-#ifndef SHAPES_T
-#define SHAPES_T
-enum shapes_t {NONE=-1,SPHERE, CYLINDER, CUBE, ELLIPSOID, ANY};
-#endif
+  #ifndef SHAPES_T
+  #define SHAPES_T
+  enum shapes_t { NONE = -1, SPHERE, CYLINDER, CUBE, ELLIPSOID, ANY };
+  #endif
 %}
 
 DECLARE
 %{
-off_struct offdata;
-int shape;
+  off_struct offdata;
+  int shape;
 %}
 
 INITIALIZE
 %{
-/*if geometry is specified - try to read the off/ply file and set shape*/
-  if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
-    if (off_init(geometry, xwidth, yheight, zdepth, 0, &(offdata)))
-      shape=ANY; 
-  } else if (radius && yheight){
-    shape=CYLINDER;
-  } else if (radius){
-    shape=SPHERE;
-  } else if (xwidth && yheight && zdepth){
-    shape=CUBE;
+  /*if geometry is specified - try to read the off/ply file and set shape*/
+  if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
+    if (off_init (geometry, xwidth, yheight, zdepth, 0, &(offdata)))
+      shape = ANY;
+  } else if (radius && yheight) {
+    shape = CYLINDER;
+  } else if (radius) {
+    shape = SPHERE;
+  } else if (xwidth && yheight && zdepth) {
+    shape = CUBE;
   } else {
-    fprintf(stderr,"Error (%s): Filter has zero effective volume\n",NAME_CURRENT_COMP);
-    exit(-1);
+    fprintf (stderr, "Error (%s): Filter has zero effective volume\n", NAME_CURRENT_COMP);
+    exit (-1);
   }
-  
 %}
 
 
