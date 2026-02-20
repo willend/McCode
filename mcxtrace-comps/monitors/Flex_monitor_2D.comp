@@ -64,82 +64,76 @@ DECLARE
 INITIALIZE
 %{
 
-  U_N =  create_darr2d(nU1,nU2);
-  U_p =  create_darr2d(nU1,nU2);
-  U_p2 = create_darr2d(nU1,nU2);
+  U_N = create_darr2d (nU1, nU2);
+  U_p = create_darr2d (nU1, nU2);
+  U_p2 = create_darr2d (nU1, nU2);
 
-  if(uid1!=-1){
-    snprintf(username1,127,"uservar%d",uid1);
-  }else{
-    snprintf(username1,127,"%s",ustring1);
+  if (uid1 != -1) {
+    snprintf (username1, 127, "uservar%d", uid1);
+  } else {
+    snprintf (username1, 127, "%s", ustring1);
   }
-  if(uid2!=-1){
-    snprintf(username2,127,"uservar%d",uid2);
-  }else{
-    snprintf(username2,127,"%s",ustring2);
+  if (uid2 != -1) {
+    snprintf (username2, 127, "uservar%d", uid2);
+  } else {
+    snprintf (username2, 127, "%s", ustring2);
   }
-  snprintf(signalname,127,"%s",signal);
+  snprintf (signalname, 127, "%s", signal);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-  double U1,U2;
-  int suc1,suc2,suc3;
-  
-  if(uid1!=-1){
-    U1 = particle_getuservar_byid(_particle,uid1,&suc1);
-  }else{
-    U1 = particle_getvar(_particle,ustring1,&suc1);
+  double U1, U2;
+  int suc1, suc2, suc3;
+
+  if (uid1 != -1) {
+    U1 = particle_getuservar_byid (_particle, uid1, &suc1);
+  } else {
+    U1 = particle_getvar (_particle, ustring1, &suc1);
   }
-  if(uid2!=-1){
-    U2 = particle_getuservar_byid(_particle,uid2,&suc2);
-  }else{
-    U2 = particle_getvar(_particle,ustring2,&suc2);
+  if (uid2 != -1) {
+    U2 = particle_getuservar_byid (_particle, uid2, &suc2);
+  } else {
+    U2 = particle_getvar (_particle, ustring2, &suc2);
   }
-    
-  int i = floor((U1-Umin1)*nU1/(Umax1-Umin1));
-  int j = floor((U2-Umin2)*nU2/(Umax2-Umin2));
-  if(!suc1 && i >= 0 && i < nU1)
-    {
-      if(!suc2 && j >= 0 && j < nU2)
-	{
-	  double pp=particle_getvar(_particle,signal,&suc3);
-	  double p2 = pp*pp;
-          #pragma acc atomic
-	  U_N[i][j] = U_N[i][j] +1;
-          #pragma acc atomic
-	  U_p[i][j] = U_p[i][j] + pp;
-          #pragma acc atomic
-	  U_p2[i][j] = U_p2[i][j] + p2;
-	  SCATTER;
-	}
+
+  int i = floor ((U1 - Umin1) * nU1 / (Umax1 - Umin1));
+  int j = floor ((U2 - Umin2) * nU2 / (Umax2 - Umin2));
+  if (!suc1 && i >= 0 && i < nU1) {
+    if (!suc2 && j >= 0 && j < nU2) {
+      double pp = particle_getvar (_particle, signal, &suc3);
+      double p2 = pp * pp;
+      #pragma acc atomic
+      U_N[i][j] = U_N[i][j] + 1;
+      #pragma acc atomic
+      U_p[i][j] = U_p[i][j] + pp;
+      #pragma acc atomic
+      U_p2[i][j] = U_p2[i][j] + p2;
+      SCATTER;
     }
-  
+  }
+
   if (restore_xray) {
-    RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+    RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
   }
 %}
 
 SAVE
 %{
   if (!nowritefile) {
-    DETECTOR_OUT_2D(
-      "Flex monitor 2D",
-      username1, username2,
-      Umin1, Umax1, Umin2, Umax2, nU1, nU2,
-      &U_N[0][0],&U_p[0][0],&U_p2[0][0],
-      filename);
+    DETECTOR_OUT_2D ("Flex monitor 2D", username1, username2, Umin1, Umax1, Umin2, Umax2, nU1, nU2, &U_N[0][0], &U_p[0][0], &U_p2[0][0], filename);
   }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(U_N);
-  destroy_darr2d(U_p);
-  destroy_darr2d(U_p2);
+  destroy_darr2d (U_N);
+  destroy_darr2d (U_p);
+  destroy_darr2d (U_p2);
 %}
 
 MCDISPLAY

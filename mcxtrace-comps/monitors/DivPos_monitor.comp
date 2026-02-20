@@ -65,88 +65,79 @@ DECLARE
 
 INITIALIZE
 %{
-    int i,j;
+  int i, j;
 
-    xmax = xwidth/2;  xmin = -xmax;
-    ymax = yheight/2; ymin = -ymax;
+  xmax = xwidth / 2;
+  xmin = -xmax;
+  ymax = yheight / 2;
+  ymin = -ymax;
 
-    if ((xmin >= xmax) || (ymin >= ymax)) {
-            printf("DivPos_monitor: %s: Null detection area !\n"
-                   "ERROR           (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-           NAME_CURRENT_COMP);
-      exit(0);
-    }
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("DivPos_monitor: %s: Null detection area !\n"
+            "ERROR           (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
 
-    for (i=0; i<nh; i++)
-     for (j=0; j<ndiv; j++)
-     {
+  for (i = 0; i < nh; i++)
+    for (j = 0; j < ndiv; j++) {
       Div_N[i][j] = 0;
       Div_p[i][j] = 0;
       Div_p2[i][j] = 0;
-     }
-    NORM(nx,ny,nz);
+    }
+  NORM (nx, ny, nz);
 
-    // Use instance name for monitor output if no input was given
-    if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  // Use instance name for monitor output if no input was given
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-    int i,j;
-    double div;
-    double k, kn;
+  int i, j;
+  double div;
+  double k, kn;
 
-    PROP_Z0;
-    if (x>xmin && x<xmax && y>ymin && y<ymax)
-    {
-      /* Find length of projection onto the [nx ny nz] axis */
-      kn = scalar_prod(kx, ky, kz, nx, ny, nz);
-      div = RAD2DEG*atan2(kx,kn);
+  PROP_Z0;
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
+    /* Find length of projection onto the [nx ny nz] axis */
+    kn = scalar_prod (kx, ky, kz, nx, ny, nz);
+    div = RAD2DEG * atan2 (kx, kn);
 
-      if (div < maxdiv_h && div > -maxdiv_h)
-      {
-        i = floor((x - xmin)*nh/(xmax - xmin));
-        j = floor((div + maxdiv_h)*ndiv/(2.0*maxdiv_h));
-        Div_N[i][j]++;
-        Div_p[i][j] += p;
-        Div_p2[i][j] += p*p;
-        SCATTER;
-      }
+    if (div < maxdiv_h && div > -maxdiv_h) {
+      i = floor ((x - xmin) * nh / (xmax - xmin));
+      j = floor ((div + maxdiv_h) * ndiv / (2.0 * maxdiv_h));
+      Div_N[i][j]++;
+      Div_p[i][j] += p;
+      Div_p2[i][j] += p * p;
+      SCATTER;
     }
-    if (restore_xray) {
-        RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
-    }
+  }
+  if (restore_xray) {
+    RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+  }
 %}
 
 SAVE
 %{
-  if(!nowritefile){
-    DETECTOR_OUT_2D(
-        "Position-divergence monitor",
-        "pos [m]",
-        "divergence [deg]",
-        xmin, xmax, -maxdiv_h, maxdiv_h,
-        nh, ndiv,
-        &Div_N[0][0],&Div_p[0][0],&Div_p2[0][0],
-        filename);
+  if (!nowritefile) {
+    DETECTOR_OUT_2D ("Position-divergence monitor", "pos [m]", "divergence [deg]", xmin, xmax, -maxdiv_h, maxdiv_h, nh, ndiv, &Div_N[0][0], &Div_p[0][0],
+                     &Div_p2[0][0], filename);
   }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(Div_N);
-  destroy_darr2d(Div_p);
-  destroy_darr2d(Div_p2);
+  destroy_darr2d (Div_N);
+  destroy_darr2d (Div_p);
+  destroy_darr2d (Div_p2);
 %}
 
 MCDISPLAY
 %{
-    
-    multiline(5, (double)xmin, (double)ymin, 0.0,
-                 (double)xmax, (double)ymin, 0.0,
-                 (double)xmax, (double)ymax, 0.0,
-                 (double)xmin, (double)ymax, 0.0,
-                 (double)xmin, (double)ymin, 0.0);
+
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END
