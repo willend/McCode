@@ -31,24 +31,24 @@ SETTING PARAMETERS (nevents=1e6)
 
 DECLARE
 %{
-  DArray2d Events; 
+  DArray2d Events;
   unsigned long Nevents;
   char fullfile[1024];
   char outputdir[512];
 %}
 INITIALIZE
 %{
-  Nevents = ceil(nevents);
-  Events = create_darr2d(Nevents, 11);
+  Nevents = ceil (nevents);
+  Events = create_darr2d (Nevents, 11);
   if (dirname == NULL) {
-    sprintf(outputdir,".");
+    sprintf (outputdir, ".");
   } else {
-    sprintf(outputdir,dirname);
+    sprintf (outputdir, dirname);
   }
   #ifndef USE_MPI
-  sprintf(fullfile,"%s/%s.%s",outputdir,NAME_CURRENT_COMP,"log");
+  sprintf (fullfile, "%s/%s.%s", outputdir, NAME_CURRENT_COMP, "log");
   #else
-  sprintf(fullfile,"%s/%s_%i.%s",outputdir,NAME_CURRENT_COMP,mpi_node_rank,"log");
+  sprintf (fullfile, "%s/%s_%i.%s", outputdir, NAME_CURRENT_COMP, mpi_node_rank, "log");
   #endif
 %}
 
@@ -59,7 +59,7 @@ TRACE
   if (i < Nevents) {
     #pragma acc atomic write
     Events[i][0] = x;
-    #pragma acc atomic write  
+    #pragma acc atomic write
     Events[i][1] = y;
     #pragma acc atomic write
     Events[i][2] = z;
@@ -84,30 +84,30 @@ TRACE
 
 SAVE
 %{
-  FILE * fp;
-  printf("Storing event logfile -->  %s\n",fullfile);
-  fp = fopen(fullfile, "w+");
+  FILE* fp;
+  printf ("Storing event logfile -->  %s\n", fullfile);
+  fp = fopen (fullfile, "w+");
   if (!fp) {
-    fprintf(stderr,"Could not open file %s in w+ mode\n",fullfile);
-    exit(-1);
+    fprintf (stderr, "Could not open file %s in w+ mode\n", fullfile);
+    exit (-1);
   }
-  fprintf(fp,"# Event-file %s, contains %lu events\n",fullfile,Nevents);
-  fprintf(fp,"########################################### START EVENT LIST ##############################################\n");
-  fprintf(fp,"#   id        x        y        z       kx       ky       kz        t       Ex       Ey       Ez        p # \n");
-  fprintf(fp,"###########################################################################################################\n");
+  fprintf (fp, "# Event-file %s, contains %lu events\n", fullfile, Nevents);
+  fprintf (fp, "########################################### START EVENT LIST ##############################################\n");
+  fprintf (fp, "#   id        x        y        z       kx       ky       kz        t       Ex       Ey       Ez        p # \n");
+  fprintf (fp, "###########################################################################################################\n");
   unsigned long i;
   int j;
-  for (i=0; i<Nevents; i++) {
-    fprintf(fp,"%6lu ",i);
-    for (j=0; j<11; j++) {
-      fprintf(fp,"%8.2g ", Events[i][j]);
+  for (i = 0; i < Nevents; i++) {
+    fprintf (fp, "%6lu ", i);
+    for (j = 0; j < 11; j++) {
+      fprintf (fp, "%8.2g ", Events[i][j]);
     }
-    fprintf(fp,"\n");
+    fprintf (fp, "\n");
   }
-  fprintf(fp,"###########################################################################################################\n");
-  fprintf(fp,"############################################ END EVENT LIST! ##############################################\n");
-  fclose(fp);
-  printf("Done storing logfile.\n");
+  fprintf (fp, "###########################################################################################################\n");
+  fprintf (fp, "############################################ END EVENT LIST! ##############################################\n");
+  fclose (fp);
+  printf ("Done storing logfile.\n");
 %}
 
 MCDISPLAY
