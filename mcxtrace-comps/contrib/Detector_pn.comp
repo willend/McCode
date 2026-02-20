@@ -73,103 +73,104 @@ DECLARE
 
 INITIALIZE
 %{
-  int status=0;
- 
-  if(!xwidth || !yheight){
-    fprintf(stderr,"%s: Detector has zero effective area\n",NAME_CURRENT_COMP);
-    exit(0);
-  }
-  xmax=xwidth/2.0;
-  xmin=-xmax;
-  ymax=yheight/2.0;
-  ymin=-ymax;
+  int status = 0;
 
-  //t_Table T;
-  if ( (status=Table_Read(&T,material_datafile,0))==-1){
-    fprintf(stderr,"Error: Could not parse file \"%s\" in COMP %s\n",material_datafile,NAME_CURRENT_COMP);
-    exit(-1);
+  if (!xwidth || !yheight) {
+    fprintf (stderr, "%s: Detector has zero effective area\n", NAME_CURRENT_COMP);
+    exit (0);
   }
-  char **header_parsed;
-  header_parsed=Table_ParseHeader(T.header,"Z","A[r]","rho","sigma[a]");
-  //if (!At) At=strtod(header_parsed[1],NULL);
-  //if (!Z) Z=strtol(header_parsed[0],NULL,10);
-  if (!rho) rho=strtod(header_parsed[2],NULL);
-  
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+  xmax = xwidth / 2.0;
+  xmin = -xmax;
+  ymax = yheight / 2.0;
+  ymin = -ymax;
+
+  // t_Table T;
+  if ((status = Table_Read (&T, material_datafile, 0)) == -1) {
+    fprintf (stderr, "Error: Could not parse file \"%s\" in COMP %s\n", material_datafile, NAME_CURRENT_COMP);
+    exit (-1);
+  }
+  char** header_parsed;
+  header_parsed = Table_ParseHeader (T.header, "Z", "A[r]", "rho", "sigma[a]");
+  // if (!At) At=strtod(header_parsed[1],NULL);
+  // if (!Z) Z=strtol(header_parsed[0],NULL,10);
+  if (!rho)
+    rho = strtod (header_parsed[2], NULL);
+
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
+  }
 
   if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("Detector_pn: %s: Null detection area !\n"
-        "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-        NAME_CURRENT_COMP);
-    exit(0);
+    printf ("Detector_pn: %s: Null detection area !\n"
+            "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
   }
 
-  PSD_N = create_darr2d(nx, ny);
-  PSD_p = create_darr2d(nx, ny);
-  PSD_p2 = create_darr2d(nx, ny);
-  
+  PSD_N = create_darr2d (nx, ny);
+  PSD_p = create_darr2d (nx, ny);
+  PSD_p2 = create_darr2d (nx, ny);
+
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-  double alpha,e,k,mu;
-  double l0,l1;
-  int i,j;
-  if (box_intersect(&l0,&l1,x,y,z,kx,ky,kz,xwidth,yheight,zdepth)){
-    PROP_DL(l0);
+  double alpha, e, k, mu;
+  double l0, l1;
+  int i, j;
+  if (box_intersect (&l0, &l1, x, y, z, kx, ky, kz, xwidth, yheight, zdepth)) {
+    PROP_DL (l0);
     /*table interpolation*/
-    k=sqrt(kx*kx+ky*ky+kz*kz);
-    e=k*K2E;
-    mu=Table_Value(T,e,1)*rho*1e2;
+    k = sqrt (kx * kx + ky * ky + kz * kz);
+    e = k * K2E;
+    mu = Table_Value (T, e, 1) * rho * 1e2;
 
-    l1-=l0; 
-    p*=(1-exp(-mu*l1));
+    l1 -= l0;
+    p *= (1 - exp (-mu * l1));
 
-    //photon detected in surface pixel  
-    if (x>xmin && x<xmax && y>ymin && y<ymax)
-    {
-      i = floor((x - xmin)*nx/(xmax - xmin));
-      j = floor((y - ymin)*ny/(ymax - ymin));
-#pragma acc atomic
+    // photon detected in surface pixel
+    if (x > xmin && x < xmax && y > ymin && y < ymax) {
+      i = floor ((x - xmin) * nx / (xmax - xmin));
+      j = floor ((y - ymin) * ny / (ymax - ymin));
+      #pragma acc atomic
       PSD_N[i][j] = PSD_N[i][j] + 1;
-#pragma acc atomic
+      #pragma acc atomic
       PSD_p[i][j] = PSD_p[i][j] + p;
-#pragma acc atomic
-      PSD_p2[i][j] = PSD_p2[i][j] + p*p;
+      #pragma acc atomic
+      PSD_p2[i][j] = PSD_p2[i][j] + p * p;
       SCATTER;
     }
     if (restore_xray) {
-      RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+      RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
     }
   }
 %}
 
 SAVE
 %{
-    DETECTOR_OUT_2D(
-        "Detector_pn",
-        "X position [cm]",
-        "Y position [cm]",
-        xmin*100.0, xmax*100.0, ymin*100.0, ymax*100.0,
-        nx, ny,
-        &PSD_N[0][0],&PSD_p[0][0],&PSD_p2[0][0],
-        filename);
+  DETECTOR_OUT_2D ("Detector_pn", "X position [cm]", "Y position [cm]", xmin * 100.0, xmax * 100.0, ymin * 100.0, ymax * 100.0, nx, ny, &PSD_N[0][0],
+                   &PSD_p[0][0], &PSD_p2[0][0], filename);
 %}
  
 FINALLY
 %{
-  Table_Free(&T);
-  destroy_darr2d(PSD_N);
-  destroy_darr2d(PSD_p);
-  destroy_darr2d(PSD_p2);
+  Table_Free (&T);
+  destroy_darr2d (PSD_N);
+  destroy_darr2d (PSD_p);
+  destroy_darr2d (PSD_p2);
 %}
 
  
 MCDISPLAY
 %{
-  box(0,0,0,xwidth,yheight,zdepth,0, 0, 1, 0);
+  box (0, 0, 0, xwidth, yheight, zdepth, 0, 0, 1, 0);
 %}
 END
