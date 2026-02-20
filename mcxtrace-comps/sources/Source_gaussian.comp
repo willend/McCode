@@ -59,8 +59,7 @@ SHARE
 
 DECLARE
 %{
-  double l0,
-  double dl;
+  double l0, double dl;
   double pmul;
   double pint;
   /*column specifiers for energy and intenisty/brilliance.*/
@@ -77,216 +76,236 @@ DECLARE
 
 INITIALIZE
 %{
-  if (!sig_y) sig_y=sig_x;
-  
-  if (!sigPr_x || !sigPr_y){
-    fprintf(stderr,"Source_gaussian (%s): Must define horizontal and vertical angular divergences \n",NAME_CURRENT_COMP);
-    exit(1);
+  if (!sig_y)
+    sig_y = sig_x;
+
+  if (!sigPr_x || !sigPr_y) {
+    fprintf (stderr, "Source_gaussian (%s): Must define horizontal and vertical angular divergences \n", NAME_CURRENT_COMP);
+    exit (1);
   }
 
-  if ( (focus_xw || focus_yh) && (dist*focus_xw*focus_yh == 0.0) ){
-    fprintf(stderr,"Error (%s): Nonsensical definition of sampling window: (focus_xw,focus_yh,dist)=(%g %g %g). Aborting\n",NAME_CURRENT_COMP,focus_xw,focus_yh,dist);
-    exit(1);
+  if ((focus_xw || focus_yh) && (dist * focus_xw * focus_yh == 0.0)) {
+    fprintf (stderr, "Error (%s): Nonsensical definition of sampling window: (focus_xw,focus_yh,dist)=(%g %g %g). Aborting\n", NAME_CURRENT_COMP, focus_xw,
+             focus_yh, dist);
+    exit (1);
   }
 
   /*flag if we are using a datafile*/
-  spectrum_from_file=(spectrum_file && strcmp(spectrum_file,"NULL") && strlen(spectrum_file));
+  spectrum_from_file = (spectrum_file && strcmp (spectrum_file, "NULL") && strlen (spectrum_file));
 
-  if (spectrum_from_file){
+  if (spectrum_from_file) {
     /*read spectrum from file*/
-    int status=0;
-    if ( (status=Table_Read(&sT,spectrum_file,0))==-1){
-      fprintf(stderr,"Source_gaussian(%s) Error: Could not parse file \"%s\"\n",NAME_CURRENT_COMP,spectrum_file?spectrum_file:"");
-      exit(1);
+    int status = 0;
+    if ((status = Table_Read (&sT, spectrum_file, 0)) == -1) {
+      fprintf (stderr, "Source_gaussian(%s) Error: Could not parse file \"%s\"\n", NAME_CURRENT_COMP, spectrum_file ? spectrum_file : "");
+      exit (1);
     }
     /*data is now in table sT*/
 
     /*integrate to get total flux, assuming numbers have been corrected for measuring aperture*/
     int i;
-    int cols,rows;
-    pint=0;
+    int cols, rows;
+    pint = 0;
 
-    cols=sT.columns;
-    rows=sT.rows;
-    column_e=0;/*default column specifiers*/
-    column_flux=1;
+    cols = sT.columns;
+    rows = sT.rows;
+    column_e = 0; /*default column specifiers*/
+    column_flux = 1;
 
     /*parse header for column specifiers*/
-    char **parsing;
-    parsing=Table_ParseHeader(sT.header,"column_e","column_E", 
-            "column_l", "column_L",
-            "column_bril", "column_flux",NULL);
-    if (parsing){
-            if (parsing[0]) { E0=-1; column_e=strtol(parsing[0],NULL,0); }
-            if (parsing[1]) { E0=-1; column_e=strtol(parsing[1],NULL,10); }
-            if (parsing[2]) { E0=0;  column_e=strtol(parsing[2],NULL,10); }
-            if (parsing[3]) { E0=0;  column_e=strtol(parsing[3],NULL,10); }
-            if (parsing[4]) { brilliance=1; column_flux=strtol(parsing[4],NULL,10); }
-            if (parsing[5]) { brilliance=0; column_flux=strtol(parsing[5],NULL,10); }
+    char** parsing;
+    parsing = Table_ParseHeader (sT.header, "column_e", "column_E", "column_l", "column_L", "column_bril", "column_flux", NULL);
+    if (parsing) {
+      if (parsing[0]) {
+        E0 = -1;
+        column_e = strtol (parsing[0], NULL, 0);
+      }
+      if (parsing[1]) {
+        E0 = -1;
+        column_e = strtol (parsing[1], NULL, 10);
+      }
+      if (parsing[2]) {
+        E0 = 0;
+        column_e = strtol (parsing[2], NULL, 10);
+      }
+      if (parsing[3]) {
+        E0 = 0;
+        column_e = strtol (parsing[3], NULL, 10);
+      }
+      if (parsing[4]) {
+        brilliance = 1;
+        column_flux = strtol (parsing[4], NULL, 10);
+      }
+      if (parsing[5]) {
+        brilliance = 0;
+        column_flux = strtol (parsing[5], NULL, 10);
+      }
     }
-    t_Table *T=&(sT);
+    t_Table* T = &(sT);
 
-    for (i=0;i<rows-1;i++){
-        int ec=column_e;
-        int flc=column_flux;
-        double ebin=(T->data[(i+1)*cols + ec]-T->data[i*cols + ec]); /*energy bin width in keV*/
-        if (brilliance){
-            /*unit is brilliance - not raw flux per unit angle and source area*/
-            /*correct for the non-uniform energy binning*/
-            double ebw=T->data[i*cols + ec]*1e-3; /*absolute bw in keV (should be the mean energy of the bin edges)*/
-            pint+=T->data[i*cols+flc]/ebw*ebin;
-        }else{
-            pint+=T->data[i*cols+flc]*ebin;
-        }
+    for (i = 0; i < rows - 1; i++) {
+      int ec = column_e;
+      int flc = column_flux;
+      double ebin = (T->data[(i + 1) * cols + ec] - T->data[i * cols + ec]); /*energy bin width in keV*/
+      if (brilliance) {
+        /*unit is brilliance - not raw flux per unit angle and source area*/
+        /*correct for the non-uniform energy binning*/
+        double ebw = T->data[i * cols + ec] * 1e-3; /*absolute bw in keV (should be the mean energy of the bin edges)*/
+        pint += T->data[i * cols + flc] / ebw * ebin;
+      } else {
+        pint += T->data[i * cols + flc] * ebin;
+      }
     }
-    printf("INFO (%s): Integrated intensity radiated is %g pht/s\n",NAME_CURRENT_COMP,pint);
-    if(E0) printf("%s: E0!=0 -> assuming intensity spectrum is parametrized by energy [keV]\n",NAME_CURRENT_COMP);
-  } else if (!E0 && !lambda0){
-    fprintf(stderr,"Error (%s): Must specify either wavelength or energy distribution\n",NAME_CURRENT_COMP);
-    exit(1);
+    printf ("INFO (%s): Integrated intensity radiated is %g pht/s\n", NAME_CURRENT_COMP, pint);
+    if (E0)
+      printf ("%s: E0!=0 -> assuming intensity spectrum is parametrized by energy [keV]\n", NAME_CURRENT_COMP);
+  } else if (!E0 && !lambda0) {
+    fprintf (stderr, "Error (%s): Must specify either wavelength or energy distribution\n", NAME_CURRENT_COMP);
+    exit (1);
   }
 
   /*Beam's footprint at a dist calculation*/
-  spX=sqrt(sig_x*sig_x+sigPr_x*sigPr_x*dist*dist);
-  spY=sqrt(sig_y*sig_y+sigPr_y*sigPr_y*dist*dist);
+  spX = sqrt (sig_x * sig_x + sigPr_x * sigPr_x * dist * dist);
+  spY = sqrt (sig_y * sig_y + sigPr_y * sigPr_y * dist * dist);
 
-  uniform_sampling=0;
-  if (focus_xw && focus_yh){
+  uniform_sampling = 0;
+  if (focus_xw && focus_yh) {
     /*adjust for a focusing window*/
-    pmul*=erf(focus_xw*0.5/M_SQRT2/spX)*erf(focus_yh*0.5/M_SQRT2/spY);
-    if ( focus_xw<spX || focus_yh<spY){
+    pmul *= erf (focus_xw * 0.5 / M_SQRT2 / spX) * erf (focus_yh * 0.5 / M_SQRT2 / spY);
+    if (focus_xw < spX || focus_yh < spY) {
       /*use a uniform sampling scheme for more efficient sampling by adjusting weights*/
-      uniform_sampling=1;
+      uniform_sampling = 1;
     }
   }
 
   /*corrections for energy range, calculate the X-ray weight from the flux*/
-  if (flux){//pmul=flux;
-    pmul=flux*1.0/(double)mcget_ncount();
-    if(E0 && dE){
-      pmul*=2*dE;
-    }else if (lambda0 && dlambda){
-      pmul*=2*(12.398/(lambda0-dlambda)-12.398/(lambda0+dlambda));
+  if (flux) { // pmul=flux;
+    pmul = flux * 1.0 / (double)mcget_ncount ();
+    if (E0 && dE) {
+      pmul *= 2 * dE;
+    } else if (lambda0 && dlambda) {
+      pmul *= 2 * (12.398 / (lambda0 - dlambda) - 12.398 / (lambda0 + dlambda));
     }
-  }else if(spectrum_from_file ){
-      pmul*=(sT.data[(sT.rows-1)*sT.columns]-sT.data[0]);
-  }else{
-    pmul=1.0/(double)mcget_ncount();
+  } else if (spectrum_from_file) {
+    pmul *= (sT.data[(sT.rows - 1) * sT.columns] - sT.data[0]);
+  } else {
+    pmul = 1.0 / (double)mcget_ncount ();
   }
 %}
 
 
 TRACE
 %{
-  double xx,yy,x1,y1,z1;
-  double k,e,l;
-  double F1=1.0;
-  double dx,dy,dz;
-  
-  /* Initial source area. Gaussian distribution at origin*/
-  xx=randnorm();
-  yy=randnorm();
-  x=xx*sig_x;
-  y=yy*sig_y;
-  z=0;
-  p=1.0;
- 
+  double xx, yy, x1, y1, z1;
+  double k, e, l;
+  double F1 = 1.0;
+  double dx, dy, dz;
 
-  if (spectrum_from_file){
-    double pp=0;
-    l=sT.data[0]+ (sT.data[(sT.rows-1)*sT.columns] -sT.data[0])*rand01();
-    if(brilliance){
+  /* Initial source area. Gaussian distribution at origin*/
+  xx = randnorm ();
+  yy = randnorm ();
+  x = xx * sig_x;
+  y = yy * sig_y;
+  z = 0;
+  p = 1.0;
+
+  if (spectrum_from_file) {
+    double pp = 0;
+    l = sT.data[0] + (sT.data[(sT.rows - 1) * sT.columns] - sT.data[0]) * rand01 ();
+    if (brilliance) {
       /*correct for brilliance being defined in relative wavelength band to get raw flux*/
-      pp=Table_Value(sT,l,column_flux)/(Table_Value(sT,l,column_e)*1e-3);
-    }else{
-      pp=Table_Value(sT,l,column_flux);
+      pp = Table_Value (sT, l, column_flux) / (Table_Value (sT, l, column_e) * 1e-3);
+    } else {
+      pp = Table_Value (sT, l, column_flux);
     }
-    p*=pp;
-    
+    p *= pp;
+
     /*if E0!=0 assume tables values are in keV, otherwise assume lambda i AA*/
     if (E0) {
-      k=E2K*l;
-    }else{
-      k=(2*M_PI/l);
+      k = E2K * l;
+    } else {
+      k = (2 * M_PI / l);
     }
-  }else if (E0){
-    if(!dE){
-      e=E0;
-    }else if (gauss){
-      e=E0+dE*randnorm();
-    }else{
-      e=randpm1()*dE + E0;
+  } else if (E0) {
+    if (!dE) {
+      e = E0;
+    } else if (gauss) {
+      e = E0 + dE * randnorm ();
+    } else {
+      e = randpm1 () * dE + E0;
     }
-    k=E2K*e;
-  }else if (lambda0){
-    if (!dlambda){
-      l=lambda0;
-    }else if (gauss){
-      l=lambda0+dlambda*randnorm();
-    }else{
-      l=randpm1()*dlambda + lambda0;
+    k = E2K * e;
+  } else if (lambda0) {
+    if (!dlambda) {
+      l = lambda0;
+    } else if (gauss) {
+      l = lambda0 + dlambda * randnorm ();
+    } else {
+      l = randpm1 () * dlambda + lambda0;
     }
-    k=(2*M_PI/l);
+    k = (2 * M_PI / l);
   }
 
   /* targeted area calculation*/
-  if (focus_xw){
-    if (uniform_sampling){
+  if (focus_xw) {
+    if (uniform_sampling) {
       /*sample uniformly but adjust weight*/
-      x1=randpm1()*focus_xw/2.0;
-      p*=exp(-(x1*x1)/(2.0*spX*spX));
-    }else {
+      x1 = randpm1 () * focus_xw / 2.0;
+      p *= exp (-(x1 * x1) / (2.0 * spX * spX));
+    } else {
       do {
-        x1=randnorm()*spX;
-      }while (fabs(x1)>focus_xw/2.0);
+        x1 = randnorm () * spX;
+      } while (fabs (x1) > focus_xw / 2.0);
     }
-  }else{
-    x1=randnorm()*spX;
+  } else {
+    x1 = randnorm () * spX;
   }
-  if (focus_yh){
-    if (uniform_sampling){
+  if (focus_yh) {
+    if (uniform_sampling) {
       /*sample uniformly but adjust weight*/
-      y1=randpm1()*focus_yh/2.0;
-      p*=exp(-(y1*y1)/(2.0*spY*spY));
-    }else {
+      y1 = randpm1 () * focus_yh / 2.0;
+      p *= exp (-(y1 * y1) / (2.0 * spY * spY));
+    } else {
       do {
-        y1=randnorm()*spY;
-      }while (fabs(y1)>focus_yh/2.0);
+        y1 = randnorm () * spY;
+      } while (fabs (y1) > focus_yh / 2.0);
     }
-  }else{
-    y1=randnorm()*spY;
+  } else {
+    y1 = randnorm () * spY;
   }
-  z1=dist;
-  
-  dx=x1-x;
-  dy=y1-y;
-  dz=sqrt(dx*dx+dy*dy+dist*dist);
-  
-  kx=(k*dx)/dz;
-  ky=(k*dy)/dz;
-  kz=(k*dist)/dz;
-  
+  z1 = dist;
+
+  dx = x1 - x;
+  dy = y1 - y;
+  dz = sqrt (dx * dx + dy * dy + dist * dist);
+
+  kx = (k * dx) / dz;
+  ky = (k * dy) / dz;
+  kz = (k * dist) / dz;
+
   /*randomly pick phase*/
-  if (randomphase){
-    phi=rand01()*2*M_PI;
-  }else{
-    phi=phase;
+  if (randomphase) {
+    phi = rand01 () * 2 * M_PI;
+  } else {
+    phi = phase;
   }
 
   /*set polarization vector*/
-  Ex=0;Ey=0;Ez=0;
-  p*=pmul;
-  
+  Ex = 0;
+  Ey = 0;
+  Ez = 0;
+  p *= pmul;
 %}
 
 MCDISPLAY
 %{
   double radius;
-  if (sig_x<sig_y) radius=sig_x;
-  else radius=sig_y; 
+  if (sig_x < sig_y)
+    radius = sig_x;
+  else
+    radius = sig_y;
 
-  
-  circle("xy",0,0,0,radius);
+  circle ("xy", 0, 0, 0, radius);
 %}
 
 END
