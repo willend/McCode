@@ -12,6 +12,11 @@
 *
 * %INSTRUMENT_SITE: FZ_Juelich
 *
+* Test instrument for the H Frielinghaus SANS_benchmark2 component. 
+*
+* The below test uses defaults of the instrument (SANS_benchmark2 modnum=11)
+* %Example: -y Detector: PSDnear_I=8000
+*
 * %Parameters
 * cnum: []     Set to 0.0 for no polarizer as for benchmarking the normal SANS samples, to 2.0 for two cavities, keep default values as much as possible
 * lbdmin: []   
@@ -53,6 +58,13 @@ bandwidth for detector distances:
 DECLARE
 %{
 %}
+
+USERVARS
+%{
+  int BS1; // Flag to signal if below radius of "virtual beamstop 1"
+  int BS2; // Flag to signal if below radius of "virtual beamstop 2"
+%}
+
 INITIALIZE
 %{
 %}
@@ -178,17 +190,42 @@ COMPONENT det    = TOFSANSdet( plength=0.003163, ssdist=22.0124+2.0*bendL+PolTot
    AT (0,0,20.0100) RELATIVE guide2
   ROTATED (0,0,0)   RELATIVE vorpl
 
-/*
-COMPONENT det1   = Monitor_nD_mod(xmin=-0.5, xmax=0.5, ymin=-0.5, ymax=0.5, xytr=0.1,
+COMPONENT Virtual_Beamstop_near = Arm()
+  AT (0,0,Clen*0.2-0.001) RELATIVE sample
+EXTEND %{
+  PROP_Z0;
+  double r2=x*x + y*y;
+  if ( r2 < 0.1*0.1 || r2 > 0.5*0.5 ) {
+    BS1=1;
+  }
+%}
+
+COMPONENT PSDnear = PSD_monitor(xwidth=1, yheight=1, restore_neutron=1, nx=300, ny=300)
+  WHEN !BS1 AT (0,0,Clen*0.2) RELATIVE sample
+  
+COMPONENT det1   = Monitor_nD(xmin=-0.5, xmax=0.5, ymin=-0.5, ymax=0.5,
                                   options ="kxy bins=300 limits=[0.0025,0.80]", filename ="short_dist.txt")
-   AT (0,0, Clen*0.2) RELATIVE sample
+  WHEN !BS1 AT (0,0, Clen*0.2) RELATIVE sample
   ROTATED (0,0,0)   RELATIVE vorpl
 
-COMPONENT det2   = Monitor_nD_mod(xmin=-0.5, xmax=0.5, ymin=-0.5, ymax=0.5, xytr=0.02,
+COMPONENT Virtual_Beamstop_far = Arm()
+  AT (0,0,Clen-0.001) RELATIVE sample
+EXTEND %{
+  PROP_Z0;
+  double r2=x*x + y*y;
+  if ( r2 < 0.02*0.02 || r2 > 0.5*0.5 ) {
+    BS2=1;
+  }
+%}
+
+COMPONENT PSDfar = PSD_monitor(xwidth=1, yheight=1, restore_neutron=1, nx=300, ny=300)
+  WHEN !BS2 AT (0,0,Clen) RELATIVE sample
+  
+COMPONENT det2   = Monitor_nD(xmin=-0.5, xmax=0.5, ymin=-0.5, ymax=0.5, 
                                   options ="kxy bins=300 limits=[0.0005,0.16]", filename ="long__dist.txt")
-   AT (0,0, Clen    ) RELATIVE sample
+  WHEN !BS2 AT (0,0, Clen    ) RELATIVE sample
   ROTATED (0,0,0)   RELATIVE vorpl
-*/
+
 
 FINALLY
 %{
