@@ -49,6 +49,9 @@
 * <li> Phonon sample, inelastic scattering, no Bragg peaks in sample </li>
 * mcrun RITA-II.instr -n1e6 L0=3.418 BPL=0.97 BPH=1.03 EI=7 EF=5 SAMPLE=4 REP=10 QH=2 QK=0.16 QM=0 AS=4.95 BS=4.95 CS=4.95 AAX=-4.95 BBZ=4.95 CCY=4.95 AH=0 AK=1 AL=0  BH=1 BK=0 BL=0 SAMPLEFILE="Pb.laz" -d RITA-II_SXPb200_2meV <br>
 * </ul>
+*
+* %Example: BPL=0.97 BPH=1.03 EI=5 EN=0 COLL_MS=40 SAMPLE=1 OUTFILTER=0 REP=10 Detector: psd_detector_I=216.427
+*
 * %Parameters
 * ITAR: [mA]               Relative neutron yield from the spallation target. Value relative to 2009
 * EI: [meV]                Incoming neutron energy. Also used to set range of energy monitors
@@ -432,7 +435,7 @@ int YwinMax[10];
 
       /* positioning of monochromator and analyser */
       arg = PI/machine_hkl.dm/machine_hkl.ki;
-      if (fabs(arg > 1))
+      if (fabs(arg) > 1)
         sprintf(machine_real.message, "Monochromator can not reach this KI. arg=%g", arg);
       else {
         if (machine_hkl.dm <= 0 || machine_hkl.ki <= 0)
@@ -444,7 +447,7 @@ int YwinMax[10];
       machine_real.a2=2*machine_real.a1;
 
       arg = PI/machine_hkl.da/machine_hkl.kf;
-      if (fabs(arg > 1))
+      if (fabs(arg) > 1)
         sprintf(machine_real.message, "Analyzer can not reach this KF. arg=%g",arg);
       else {
         if (machine_hkl.da <= 0 || machine_hkl.kf <= 0)
@@ -460,7 +463,7 @@ int YwinMax[10];
       /* code from TASMAD/t_conv.F:SAM_CASE */
       arg = (machine_hkl.ki*machine_hkl.ki + machine_hkl.kf*machine_hkl.kf - machine_real.qs)
           / (2*machine_hkl.ki*machine_hkl.kf);
-      if (fabs(arg) < 1)
+      if (fabs(arg) < 1.0)
         machine_real.a4 = RAD2DEG*acos(arg);
       else
         sprintf(machine_real.message, "Q modulus too big. Can not close triangle. arg=%g", arg);
@@ -484,7 +487,7 @@ machine_real.aa5 = -RAD2DEG*(acos((sin(DEG2RAD*machine_real.a6)-(cos(DEG2RAD*mac
 /*printf("(RITA Analyzer Rack Angle: AA5=%.4g[deg])\n", machine_real.aa5);*/
 /*A4 angle between blades */
 dsb = sqrt(dsa*dsa + ana_d*ana_d - 2*dsa*ana_d*cos(DEG2RAD*machine_real.aa5));
- machine_real.da4 = RAD2DEG*asin(ana_d*sin(DEG2RAD*abs(machine_real.aa5))/dsb);
+ machine_real.da4 = RAD2DEG*asin(ana_d*sin(DEG2RAD*fabs(machine_real.aa5))/dsb);
 //machine_real.da4 = RAD2DEG*atan(ana_d*cos(DEG2RAD*machine_real.aa5)/dsa);
 printf("(RITA Analyzer Angle between blades: DA4=%.4g[deg])\n", machine_real.da4);
 /*Blade angle rotation */
