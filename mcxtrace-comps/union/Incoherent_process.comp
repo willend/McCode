@@ -2,8 +2,10 @@
 *
 * McXtrace, X-ray tracing package
 *         Copyright, All rights reserved
+*         DTU Physics, Kgs. Lyngby, Denmark
+*         Synchrotron SOLEIL, Saint-Aubin, France
 *
-* %I
+* %Identification
 * Written by: Mads Bertelsen and Erik B Knudsen
 * Date: 20.08.15
 * Version: $Revision: 0.1 $
@@ -11,7 +13,7 @@
 *
 * A sample component to separate geometry and phsysics
 *
-* %D
+* %Description
 *
 * This Union_process is based on the Incoherent.comp component originally written
 *  by Kim Lefmann and Kristian Nielsen
@@ -33,7 +35,7 @@
 * Algorithm:
 * Described elsewhere
 *
-* %P
+* %Parameters
 * INPUT PARAMETERS:
 * sigma: [barns]          Incoherent scattering cross section
 * f_QE: [1]               Fraction of quasielastic scattering (rest is elastic)
@@ -43,7 +45,7 @@
 * Interact_fraction: [1]   How large a part of the scattering events should use this process 0-1 (sum of all processes in material = 1)
 * init:              [string] name of Union_init component (typically "init", default)
 *
-* OUTPUT PARAMETERS:
+* CALCULATED PARAMETERS:
 *
 * %L
 * The test/example instrument <a href="../examples/Test_Phonon.instr">Test_Phonon.instr</a>.
@@ -52,24 +54,19 @@
 ******************************************************************************/
 
 DEFINE COMPONENT Incoherent_process
-DEFINITION PARAMETERS ()
 SETTING PARAMETERS(sigma=5.08, f_QE=0, gamma=0, packing_factor=1, unit_cell_volume=13.8, interact_fraction=-1, string init="init")
-OUTPUT PARAMETERS ()
-
-/* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 
 SHARE
 %{
-#ifndef Union
-#define Union $Revision: 0.8 $
+  #ifndef Union
+  #define Union $Revision: 0.8 $
 
 
-%include "union-init.c"
+  %include "union-init.c"
 
-#endif
+  #endif
 
-
-struct Incoherent_physics_storage_struct{
+  struct Incoherent_physics_storage_struct {
     // Variables that needs to be transfered between any of the following places:
     // The initialize in this component
     // The function for calculating my
@@ -78,17 +75,16 @@ struct Incoherent_physics_storage_struct{
     double my_scattering;
     double QE_sampling_frequency;
     double lorentzian_width;
+  };
 
-};
-
-// Function for calculating my in Incoherent case
-int Incoherent_physics_my(double *my,double *k_initial, union data_transfer_union data_transfer, struct focus_data_struct *focus_data, _class_particle *_particle) {
+  // Function for calculating my in Incoherent case
+  int Incoherent_physics_my(double *my,double *k_initial, union data_transfer_union data_transfer, struct focus_data_struct *focus_data, _class_particle *_particle) {
     *my = data_transfer.pointer_to_a_Incoherent_physics_storage_struct->my_scattering;
     return 1;
-};
+  };
 
-// Function for basic incoherent scattering event
-int Incoherent_physics_scattering(double *k_final, double *k_initial, double *weight, union data_transfer_union data_transfer, struct focus_data_struct *focus_data, _class_particle *_particle) {
+  // Function for basic incoherent scattering event
+  int Incoherent_physics_scattering (double *k_final, double *k_initial, double *weight, union data_transfer_union data_transfer, struct focus_data_struct *focus_data, _class_particle *_particle) {
 
     //New version of incoherent scattering
     double k_length = sqrt(k_initial[0]*k_initial[0]+k_initial[1]*k_initial[1]+k_initial[2]*k_initial[2]);
@@ -96,22 +92,24 @@ int Incoherent_physics_scattering(double *k_final, double *k_initial, double *we
     Coords k_out;
     // Here is the focusing system in action, get a vector
     double solid_angle;
-    focus_data->focusing_function(&k_out,&solid_angle,focus_data);
-    NORM(k_out.x,k_out.y,k_out.z);
-    *weight *= solid_angle*0.25/PI;
+    focus_data->focusing_function (&k_out, &solid_angle, focus_data);
+    NORM (k_out.x, k_out.y, k_out.z);
+    *weight *= solid_angle * 0.25 / PI;
 
-    double E_i,dE,E_f;
+    double E_i, dE, E_f;
 
-    if (rand01() < data_transfer.pointer_to_a_Incoherent_physics_storage_struct->QE_sampling_frequency) {
-      E_i = K2E*k_length;
-      dE = data_transfer.pointer_to_a_Incoherent_physics_storage_struct->lorentzian_width*tan(PI/2*randpm1());
+    if (rand01 () < data_transfer.pointer_to_a_Incoherent_physics_storage_struct->QE_sampling_frequency) {
+      E_i = K2E * k_length;
+      dE = data_transfer.pointer_to_a_Incoherent_physics_storage_struct->lorentzian_width * tan (PI / 2 * randpm1 ());
       E_f = E_i + dE;
       if (E_f <= 0)
         return 0;
       k_length = E_f*E2K;
     }
 
-    k_final[0] = k_out.x*k_length; k_final[1] = k_out.y*k_length; k_final[2] = k_out.z*k_length;
+    k_final[0] = k_out.x * k_length;
+    k_final[1] = k_out.y * k_length;
+    k_final[2] = k_out.z * k_length;
     return 1;
 };
 
@@ -126,13 +124,13 @@ int Incoherent_physics_scattering(double *k_final, double *k_initial, double *we
 
 DECLARE
 %{
-// Needed for transport to the main component
-struct global_process_element_struct global_process_element;
-struct scattering_process_struct This_process;
+  // Needed for transport to the main component
+  struct global_process_element_struct global_process_element;
+  struct scattering_process_struct This_process;
 
-// Declare for this component, to do calculations on the input / store in the transported data
-struct Incoherent_physics_storage_struct Incoherent_storage;
-double effective_my_scattering;
+  // Declare for this component, to do calculations on the input / store in the transported data
+  struct Incoherent_physics_storage_struct Incoherent_storage;
+  double effective_my_scattering;
 
 %}
 
@@ -181,8 +179,7 @@ TRACE
 
 FINALLY
 %{
-// Since the process and it's storage is a static allocation, there is nothing to deallocate
-
+  // Since the process and it's storage is a static allocation, there is nothing to deallocate
 %}
 
 END
