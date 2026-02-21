@@ -1596,11 +1596,11 @@ SHARE
     if (T > 3000)
       T = 0; /* unrealistic */
     if (!T_file && T) {
-      MPI_MASTER(
-      if (Sqw->verbose_output > 0) {
-        printf ("Isotropic_Sqw: %s: Temperature computed from S(q,w) data from %s is T=%g [K].\n", Sqw->compname, file, T);
+      MPI_MASTER (
+        if (Sqw->verbose_output > 0) {
+	  printf ("Isotropic_Sqw: %s: Temperature computed from S(q,w) data from %s is T=%g [K].\n", Sqw->compname, file, T);
+	}
       );
-      }
     }
 
     if (Sqw->Temperature == 0) {
@@ -2801,7 +2801,7 @@ FINALLY
     mc_MPI_Sum (&VarSqw.multi, 1);
   }
   #endif
-    MPI_MASTER(
+  MPI_MASTER(
     if (VarSqw.neutron_removed)
       printf("Isotropic_Sqw: %s: %li neutron events (out of %li) that should have\n"
              "               scattered were transmitted because scattering conditions\n"
@@ -2814,16 +2814,15 @@ FINALLY
             NAME_CURRENT_COMP, VarSqw.neutron_pmult, VarSqw.neutron_exit);
 
     if (VarSqw.verbose_output >= 1 && VarSqw.psum_scatt > 0) {
-    printf ("Isotropic_Sqw: %s: Scattering fraction=%g of incoming intensity\n"
-            "               Absorption fraction           =%g\n",
-            NAME_CURRENT_COMP, VarSqw.mean_scatt / VarSqw.psum_scatt, VarSqw.mean_abs / VarSqw.psum_scatt);
-    printf ("               Single   scattering intensity =%g (coh=%g inc=%g)\n"
-            "               Multiple scattering intensity =%g\n",
-            VarSqw.single_coh + VarSqw.single_inc, VarSqw.single_coh, VarSqw.single_inc, VarSqw.multi);
-      );
+      printf ("Isotropic_Sqw: %s: Scattering fraction=%g of incoming intensity\n"
+	      "               Absorption fraction           =%g\n",
+	      NAME_CURRENT_COMP, VarSqw.mean_scatt / VarSqw.psum_scatt, VarSqw.mean_abs / VarSqw.psum_scatt);
+      printf ("               Single   scattering intensity =%g (coh=%g inc=%g)\n"
+	      "               Multiple scattering intensity =%g\n",
+	      VarSqw.single_coh + VarSqw.single_inc, VarSqw.single_coh, VarSqw.single_inc, VarSqw.multi);
     }
-
-    /* end FINALLY */
+  );
+  /* end FINALLY */
 %}
 /*****************************************************************************/
 /*****************************************************************************/
