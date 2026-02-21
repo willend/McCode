@@ -7,7 +7,7 @@ only inside %{  %} sections using clang-format with repository .clang-format
 style, keeping delimiters on their own lines.
 
 Usage:
-    python mccode-clangformat.py [--repo PATH] [--file FILTER] [--clang-format PATH] [--check]
+    python mccode-clangformat.py [--repo PATH] [--filter FILTER] [--clang-format PATH] [--check]
 """
 import argparse
 import os
@@ -217,16 +217,21 @@ def main():
     ap = argparse.ArgumentParser(
         description='Format code inside McCode %{ %} blocks using repository .clang-format'
     )
-    ap.add_argument('--repo', '-r', default='.', help='Repo path (default: current dir)')
-    ap.add_argument('--file', '-f', default=None, help='Only process files matching this label')
+    ap.add_argument('--repo', '-r', default=None, help='Repo path')
+    ap.add_argument('--filter', '-F', default=None, help='Only process files matching this filtering label')
+    ap.add_argument('--file', '-f', default=None, help='Process this file only')
+    ap.add_argument('--verbose', '-v', action='store_true', help='Show progress messages')
+
     ap.add_argument('--clang-format', '-c', default=None, help='Path to clang-format executable')
     ap.add_argument('--check', action='store_true', help="Check only; don't write files")
     args = ap.parse_args()
 
-    root = Path(args.repo).resolve()
-    if not root.exists():
-        print(f'Repo path not found: {root}', file=sys.stderr)
-        sys.exit(2)
+    root=None
+    if args.repo:
+        root = Path(args.repo).resolve()
+        if not root.exists():
+            print(f'Repo path not found: {root}', file=sys.stderr)
+            sys.exit(2)
     
     # Warn if no .clang-format file is found in this repo tree
     
@@ -250,16 +255,42 @@ def main():
 
     clang_path = ensure_clang_format(args.clang_format)
 
-    files = find_files(root,args.file)
-    if not files:
-        print('No .instr or .comp files found.', file=sys.stderr)
+    if args.file and root:
+        print('Incompatible input args: Please use EITHER -f some/file or -r directory/to/traverse', file=sys.stderr)
         sys.exit(1)
 
     any_changed = False
     failures = []
 
-    for f in files:
+    if root:
+        files = find_files(root,args.filter)
+        if not files:
+            print('No .instr or .comp files found in ' + root, file=sys.stderr)
+            sys.exit(1)
+
+        for f in files:
+            if args.verbose:
+                print('Processing ' + str(f))
+            try:
+                changed, msg = process_file(
+                    f, clang_path=clang_path, style_file=style_file, check_only=args.check
+                )
+                if msg:
+                    failures.append(msg)
+                if changed:
+                    any_changed = True
+                    print(f'Changed: {f}')
+            except FileNotFoundError:
+                failures.append('clang-format executable not found.')
+                break
+            except Exception as e:
+                failures.append(f'Error processing {f}: {e}')
+
+    if args.file:
         try:
+            f=Path(args.file)
+            if args.verbose:
+                print('Processing ' + str(f))
             changed, msg = process_file(
                 f, clang_path=clang_path, style_file=style_file, check_only=args.check
             )
@@ -269,8 +300,7 @@ def main():
                 any_changed = True
                 print(f'Changed: {f}')
         except FileNotFoundError:
-            failures.append('clang-format executable not found.')
-            break
+            failures.append('file not found.')
         except Exception as e:
             failures.append(f'Error processing {f}: {e}')
 
