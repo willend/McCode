@@ -15,6 +15,7 @@ _Please describe what OS you developed and tested your additions on, and if any 
   * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the component (please attach as screenshot in comments!)
   * [ ] I have ensured that basic use of the component is OK (e.g. an instrument using it compiles?)
   * [ ] I have used the `mctest` utility to **test** one or more instruments making use of the component (please attach `mcviewtest` report as screenshot in comments)
+  * [ ] I have used the `mccode-clangformat` tool to apply the standard McCode component indentation scheme
   * [ ] I have used the `mcrun --c-lint` "linter" and followed advice to remove most / all warnings that are raised
 * ### My contribution includes patches to an **existing** instrument file
   * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the instrument (please attach as screenshot in comments!)
@@ -26,6 +27,7 @@ _Please describe what OS you developed and tested your additions on, and if any 
   * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the component (please attach as screenshot in comments!)
   * [ ] I have ensured that basic use of the component is OK (e.g. an instrument using it compiles?)
   * [ ] I have included a corresponding **example** instrument and will fill in the **new instrument** section below
+  * [ ] I have used the `mccode-clangformat` tool to apply the standard McCode component indentation scheme
   * [ ] My new component is added within the `contrib` component category
 * ### My contribution includes a **new instrument** file
   * [ ] I have used the `mcdoc` utility and **rendered** a reasonable documentation page for the instrument (please attach as screenshot in comments!)
