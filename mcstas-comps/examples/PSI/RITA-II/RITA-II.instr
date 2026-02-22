@@ -50,7 +50,7 @@
 * mcrun RITA-II.instr -n1e6 L0=3.418 BPL=0.97 BPH=1.03 EI=7 EF=5 SAMPLE=4 REP=10 QH=2 QK=0.16 QM=0 AS=4.95 BS=4.95 CS=4.95 AAX=-4.95 BBZ=4.95 CCY=4.95 AH=0 AK=1 AL=0  BH=1 BK=0 BL=0 SAMPLEFILE="Pb.laz" -d RITA-II_SXPb200_2meV <br>
 * </ul>
 *
-* %Example: BPL=0.97 BPH=1.03 EI=5 EN=0 COLL_MS=40 SAMPLE=1 OUTFILTER=0 REP=10 Detector: psd_detector_I=216.427
+* Example: BPL=0.97 BPH=1.03 EI=5 EN=0 COLL_MS=40 SAMPLE=1 OUTFILTER=0 REP=10 Detector: psd_detector_I=216.427
 *
 * %Parameters
 * ITAR: [mA]               Relative neutron yield from the spallation target. Value relative to 2009
