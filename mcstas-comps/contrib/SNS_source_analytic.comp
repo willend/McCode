@@ -926,9 +926,6 @@ INITIALIZE
   CL = (1.0 / sqrt (Emin * 1e-3) - 1.0 / sqrt (Emax * 1e-3)) / (Emax - Emin) * 1e3;
   CU = (log (Emax * 1e-3) - log (Emin * 1e-3)) / (Emax - Emin) * 1e3;
 
-  #ifdef USE_MPI
-  p_in /= mpi_node_count;
-  #endif
   p_in /= mcget_ncount ();
 %}
 
