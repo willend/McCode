@@ -37,12 +37,14 @@
 * ttspot: [deg]      direction of dirac resolution spots
 * nspots: [1]        number of direc resolution spots
 * RESO:   [1]        flag to indicate constant Q-e dirac grid ala IN4 model
+* RECALC:   [1]      flag to indicate if RESO table needs to be re-caclulated
+*
 * %Link
 * The <a href="http://www.ill.eu/in5">IN5@ILL</a> cold time of flight instrument
 *
 * %E
 ************************************************************************/
-DEFINE INSTRUMENT ILL_IN5_Spots(lambda=4.5,dlambda=0.05,speed=8500, ratio=0.5, string housing="Fe.laz", string coh="Y3Fe5O12_YIG.laz", string inc="NULL", thickness=0, height=0.025, radius=0.005, order=0, wspot=1,ttspot=45,nspots=0,RESO=1)
+DEFINE INSTRUMENT ILL_IN5_Spots(lambda=4.5,dlambda=0.05,speed=8500, ratio=0.5, string housing="Fe.laz", string coh="Y3Fe5O12_YIG.laz", string inc="NULL", thickness=0, height=0.025, radius=0.005, order=0, wspot=1,ttspot=45,nspots=0,RESO=1,RECALC=0)
 DECLARE
 %{
 
@@ -291,11 +293,15 @@ INITIALIZE
   Ki = 2*PI/lambda;
   Vi = K2V*fabs(Ki);
   Ei = VS2E*Vi*Vi;
-  
+
   if (RESO) {
-    printf("\n\n!!!! Resolution mode, generating 2D Dirac delta-pattern for Isotropic_Sqw !!!! \n");
-    printf("!!!! Resolution mode, overwriting input %s by %s !!!! \n\n", coh, "Dirac2D.sqw");
-    Write_Sqw_Dirac(0, 0, 3*Ki, 5*Ei, 1000, "Dirac2D.sqw");
+    if (RECALC) {
+      MPI_MASTER(
+        printf("\n\n!!!! Resolution mode, generating 2D Dirac delta-pattern for Isotropic_Sqw !!!! \n");
+        printf("!!!! Resolution mode, overwriting input %s by %s !!!! \n\n", coh, "Dirac2D.sqw");
+        Write_Sqw_Dirac(0, 0, 3*Ki, 5*Ei, 1000, "Dirac2D.sqw");
+      );
+    }
     sprintf(coh,"Dirac2D.sqw");
   }
   
