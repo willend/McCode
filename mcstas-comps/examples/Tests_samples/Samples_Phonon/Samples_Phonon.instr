@@ -32,22 +32,18 @@
 * %End
 ******************************************************************************/
 DEFINE INSTRUMENT Samples_Phonon(E=10, 
-                                  DE=0, 
-                                  HDIV=1e-4, 
-                                  VDIV=1e-4, 
-                                  TT=72.69, 
-                                  OM=-43.3,
-                                  C=8,
-                                  focus_r = 0,
-                                  focus_a = 0
-
-            )
+            DE=0, 
+            HDIV=1e-4, 
+            VDIV=1e-4, 
+            TT=72.69, 
+            OM=-43.3,
+            C=8,
+            focus_r = 0,
+            focus_a = 0
+)
 
 
 INITIALIZE %{
-
-  
-
 %}
 
 
