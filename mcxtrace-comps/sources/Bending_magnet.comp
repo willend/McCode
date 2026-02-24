@@ -52,38 +52,38 @@ SETTING PARAMETERS (E0=0, dE=0, lambda0=0,dlambda=0, phase=0, randomphase=1, Ee=
 
 SHARE
 %{
-//  %include "read_table-lib"
+  //  %include "read_table-lib"
 
-#ifndef MCCODE_BESSELKNU
-#define MCCODE_BESSELKNU 1
+  #ifndef MCCODE_BESSELKNU
+  #define MCCODE_BESSELKNU 1
 
-#pragma acc routine seq
-double besselKnu(double nu, double x){
-    const double h=0.5;
-    double KK=0,dK;
-    int r=0;
-    const int maxiter=1000;
-    KK=exp(-x)/2.0;
-    dK=1;
-    while (dK>DBL_EPSILON && r<maxiter){
+  #pragma acc routine seq
+  double
+  besselKnu (double nu, double x) {
+    const double h = 0.5;
+    double KK = 0, dK;
+    int r = 0;
+    const int maxiter = 1000;
+    KK = exp (-x) / 2.0;
+    dK = 1;
+    while (dK > DBL_EPSILON && r < maxiter) {
       r++;
-      dK=exp(-x*cosh(r*h))*cosh(nu*r*h);
-      KK+=dK;
+      dK = exp (-x * cosh (r * h)) * cosh (nu * r * h);
+      KK += dK;
     }
-#ifndef OPENACC
-    if (r>=maxiter) {
-      fprintf(stderr,"Warning: Maximum number of iterations exceeded in besselKnu(%g,%g).\n",nu,x);
+    #ifndef OPENACC
+    if (r >= maxiter) {
+      fprintf (stderr, "Warning: Maximum number of iterations exceeded in besselKnu(%g,%g).\n", nu, x);
     }
-#endif
-    KK*=h;
+    #endif
+    KK *= h;
     return KK;
   }
-#endif /*MCCODE_BESSELKNU*/
+  #endif /*MCCODE_BESSELKNU*/
 
-#ifndef M_SQRT1_2
-#define M_SQRT1_2 0.70710678118654752440
-#endif
-
+  #ifndef M_SQRT1_2
+  #define M_SQRT1_2 0.70710678118654752440
+  #endif
 %}
 
 DECLARE
@@ -103,163 +103,165 @@ INITIALIZE
 
   // fprintf(stderr,"Warning (%s): Bending_magnet is an experimental component - testing is ongoing\n",NAME_CURRENT_COMP);
 
-  if(B<=0 || Ee<=0 || Ie<=0 ){
-    fprintf(stderr, "Error (%s): B, Ee, and Ie must all be >= 0. Found (%g %g %g). Aborting.\n",NAME_CURRENT_COMP,B,Ee,Ie);
-    exit(1);
+  if (B <= 0 || Ee <= 0 || Ie <= 0) {
+    fprintf (stderr, "Error (%s): B, Ee, and Ie must all be >= 0. Found (%g %g %g). Aborting.\n", NAME_CURRENT_COMP, B, Ee, Ie);
+    exit (1);
   }
 
-  if (sigex <0 || sigey<0){
-    fprintf(stderr, "Error (%s): sigex and sigey must be > 0. Negative beam size isn't meaningful. Aborting.\n",NAME_CURRENT_COMP);
-    exit(1);
+  if (sigex < 0 || sigey < 0) {
+    fprintf (stderr, "Error (%s): sigex and sigey must be > 0. Negative beam size isn't meaningful. Aborting.\n", NAME_CURRENT_COMP);
+    exit (1);
   }
-  if (dist<=0){
-    fprintf(stderr,"Error (%s): Target undefined.\n",NAME_CURRENT_COMP);
-    exit(1);
+  if (dist <= 0) {
+    fprintf (stderr, "Error (%s): Target undefined.\n", NAME_CURRENT_COMP);
+    exit (1);
   }
 
   /*compute gamma*/
-  gamma=(Ee*1e9)/(MELECTRON/CELE*M_C*M_C);/*the extra CELE is to convert to eV*/
-  gamma2=gamma*gamma;
-  igamma=1.0/gamma;
+  gamma = (Ee * 1e9) / (MELECTRON / CELE * M_C * M_C); /*the extra CELE is to convert to eV*/
+  gamma2 = gamma * gamma;
+  igamma = 1.0 / gamma;
 
-  //printf("Bending_magnet (%s): gamma=%g, divergence is 1/gamma=%g rad.\n",NAME_CURRENT_COMP,gamma,igamma);
+  // printf("Bending_magnet (%s): gamma=%g, divergence is 1/gamma=%g rad.\n",NAME_CURRENT_COMP,gamma,igamma);
   /*compute characteristic energy in keV*/
-  double Ec=0.665*Ee*Ee*B;
-  //double Ec=1.5*gamma2*HBAR*CELE*B/MELECTRON *1e-3; /*check units on this one. The 1e-3 factor is because energy is assumed to be in keV*/
+  double Ec = 0.665 * Ee * Ee * B;
+  // double Ec=1.5*gamma2*HBAR*CELE*B/MELECTRON *1e-3; /*check units on this one. The 1e-3 factor is because energy is assumed to be in keV*/
   /*We normally do computations in k so use that for transfer*/
-  kc=E2K*Ec;
+  kc = E2K * Ec;
 
-  s1x=sqrt(sigex*sigex + igamma*igamma*dist*dist);
-  s1y=sqrt(sigey*sigey + igamma*igamma*dist*dist);
-  p0=1.0/mcget_ncount();
+  s1x = sqrt (sigex * sigex + igamma * igamma * dist * dist);
+  s1y = sqrt (sigey * sigey + igamma * igamma * dist * dist);
+  p0 = 1.0 / mcget_ncount ();
 %}
 
 
 TRACE
 %{
 
-  double xx,yy,x1,y1,z1;
-  double k,e,l;
-  double F1=1.0;
-  double dx,dy,dz;
-  
+  double xx, yy, x1, y1, z1;
+  double k, e, l;
+  double F1 = 1.0;
+  double dx, dy, dz;
+
   // initial source area
-  xx=randnorm();
-  yy=randnorm();
-  x=xx*sigex;
-  y=yy*sigey;
-  z=0;
+  xx = randnorm ();
+  yy = randnorm ();
+  x = xx * sigex;
+  y = yy * sigey;
+  z = 0;
 
   // Gaussian distribution at origin
-  p=p0;/*initial weight is p0*/
-  if (E0){
-    if(!dE){
-      e=E0;
-    }else {
-      e=randpm1()*dE + E0;
+  p = p0; /*initial weight is p0*/
+  if (E0) {
+    if (!dE) {
+      e = E0;
+    } else {
+      e = randpm1 () * dE + E0;
     }
-    k=E2K*e;
-  }else if (lambda0){
-    if (!dlambda){
-      l=lambda0;
-    }else{
-      l=randpm1()*dlambda + lambda0;
+    k = E2K * e;
+  } else if (lambda0) {
+    if (!dlambda) {
+      l = lambda0;
+    } else {
+      l = randpm1 () * dlambda + lambda0;
     }
-    k=(2*M_PI/l);
+    k = (2 * M_PI / l);
   }
   // targeted area calculation
-  if (focus_xw){
-    if (!gauss_t){
+  if (focus_xw) {
+    if (!gauss_t) {
       /*sample uniformly but adjust weight*/
-      x1=randpm1()*focus_xw/2.0;
-      p*=exp(-(x1*x1)/(2.0*s1x*s1x));
-    }else {
+      x1 = randpm1 () * focus_xw / 2.0;
+      p *= exp (-(x1 * x1) / (2.0 * s1x * s1x));
+    } else {
       do {
-        x1=randnorm()*s1x;
-      }while (focus_xw!=0 && fabs(x1)>focus_xw/2.0);
+        x1 = randnorm () * s1x;
+      } while (focus_xw != 0 && fabs (x1) > focus_xw / 2.0);
       /*adjust for restricted sampling window*/
-      p*=erf(focus_xw*0.5*M_SQRT1_2/s1x);
+      p *= erf (focus_xw * 0.5 * M_SQRT1_2 / s1x);
     }
-  }else{
-    x1=randnorm()*igamma;
+  } else {
+    x1 = randnorm () * igamma;
   }
-  if (focus_yh){
-    if (!gauss_t){
+  if (focus_yh) {
+    if (!gauss_t) {
       /*sample uniformly but adjust weight*/
-      y1=randpm1()*focus_yh/2.0;
-      p*=exp(-(y1*y1)/(2.0*s1y*s1y));
-    }else {
+      y1 = randpm1 () * focus_yh / 2.0;
+      p *= exp (-(y1 * y1) / (2.0 * s1y * s1y));
+    } else {
       do {
-        y1=randnorm()*s1y;
-      }while (fabs(y1)>focus_yh/2.0);
+        y1 = randnorm () * s1y;
+      } while (fabs (y1) > focus_yh / 2.0);
       /*adjust for restricted sampling window*/
-      p*=erf(focus_yh*0.5*M_SQRT1_2/s1y);
+      p *= erf (focus_yh * 0.5 * M_SQRT1_2 / s1y);
     }
-  }else{
-    y1=randnorm()*igamma;
+  } else {
+    y1 = randnorm () * igamma;
   }
-  z1=dist;
-  dx=x1-x;
-  dy=y1-y;
-  dz=sqrt(dx*dx+dy*dy+dist*dist);
+  z1 = dist;
+  dx = x1 - x;
+  dy = y1 - y;
+  dz = sqrt (dx * dx + dy * dy + dist * dist);
 
-  kx=(k*dx)/dz;
-  ky=(k*dy)/dz;
-  kz=(k*dist)/dz;
-  
-  /*spectral strength of radiation is given by Patterson*/  
-  double k_kc=k/kc;
-  double K2_3=besselKnu(0.666666666666666666666666667,k_kc*0.5);
-  p*=1.33e13*Ee*Ee*Ie* k_kc*k_kc*K2_3*K2_3;
-  //p*=ALPHA/(M_PI*M_PI)*gamma2*Ie/CELE* 1e-4 * 0.75 *k_kc*k_kc*K2_3*K2_3;
-  
+  kx = (k * dx) / dz;
+  ky = (k * dy) / dz;
+  kz = (k * dist) / dz;
+
+  /*spectral strength of radiation is given by Patterson*/
+  double k_kc = k / kc;
+  double K2_3 = besselKnu (0.666666666666666666666666667, k_kc * 0.5);
+  p *= 1.33e13 * Ee * Ee * Ie * k_kc * k_kc * K2_3 * K2_3;
+  // p*=ALPHA/(M_PI*M_PI)*gamma2*Ie/CELE* 1e-4 * 0.75 *k_kc*k_kc*K2_3*K2_3;
 
   /*randomly pick phase*/
-  if (randomphase){
-    phi=rand01()*2*M_PI;
-  }else{
-    phi=phase;
+  if (randomphase) {
+    phi = rand01 () * 2 * M_PI;
+  } else {
+    phi = phase;
   }
 
   /*set polarization vector*/
-  Ex=0;Ey=0;Ez=0;
+  Ex = 0;
+  Ey = 0;
+  Ez = 0;
 %}
 
 MCDISPLAY
 %{
-  
 
-  double radius,D;
-  radius=3.3*Ee/B;;
-  D=0.1;
-  double x0,x1,z0,z1;
-  const double phimin=-2.0*DEG2RAD, phimax=2.0*DEG2RAD;
-  double phi=phimin,dphi;  
-  dphi=(phimax-phimin)/32;
-  while (phi<phimax){
-    x0=radius*(1-cos(phi));
-    x1=radius*(1-cos(phi+dphi));
-    z0=radius*sin(phi);
-    z1=radius*sin(phi+dphi);
-    line(x0,0.0,z0,x1,0.0,z1);
-    phi+=dphi;
+
+  double radius, D;
+  radius = 3.3 * Ee / B;
+  ;
+  D = 0.1;
+  double x0, x1, z0, z1;
+  const double phimin = -2.0 * DEG2RAD, phimax = 2.0 * DEG2RAD;
+  double phi = phimin, dphi;
+  dphi = (phimax - phimin) / 32;
+  while (phi < phimax) {
+    x0 = radius * (1 - cos (phi));
+    x1 = radius * (1 - cos (phi + dphi));
+    z0 = radius * sin (phi);
+    z1 = radius * sin (phi + dphi);
+    line (x0, 0.0, z0, x1, 0.0, z1);
+    phi += dphi;
   }
 
-  line(0.0,0.0,0.0, D*sin(igamma), 0.0, D);
-  line(0.0,0.0,0.0,-D*sin(igamma), 0.0, D);
-  line(0.0,0.0,0.0, 0.0, D*sin(igamma), D);
-  line(0.0,0.0,0.0, 0.0,-D*sin(igamma), D);
-  
-  phi =-igamma;
-  dphi= 2.0*igamma/32;
-  while(phi<igamma){
-    x0=D*sin(phi);
-    x1=D*sin(phi+dphi);
-    z0=D*cos(phi);
-    z1=D*cos(phi+dphi);
-    line(x0,0.0,z0,x1,0.0,z1);
-    line(0.0,x0,z0,0.0,x1,z1);
-    phi+=dphi;
+  line (0.0, 0.0, 0.0, D* sin (igamma), 0.0, D);
+  line (0.0, 0.0, 0.0, -D* sin (igamma), 0.0, D);
+  line (0.0, 0.0, 0.0, 0.0, D* sin (igamma), D);
+  line (0.0, 0.0, 0.0, 0.0, -D* sin (igamma), D);
+
+  phi = -igamma;
+  dphi = 2.0 * igamma / 32;
+  while (phi < igamma) {
+    x0 = D * sin (phi);
+    x1 = D * sin (phi + dphi);
+    z0 = D * cos (phi);
+    z1 = D * cos (phi + dphi);
+    line (x0, 0.0, z0, x1, 0.0, z1);
+    line (0.0, x0, z0, 0.0, x1, z1);
+    phi += dphi;
   }
 %}
 

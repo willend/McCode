@@ -51,11 +51,11 @@ SHARE
   %include "read_table-lib"
   #include <complex.h>
   struct Ssimplex_struct {
-    double l0,dl;
-    double s0,s1;
-    double pmul,pint;
+    double l0, dl;
+    double s0, s1;
+    double pmul, pint;
     t_Table T;
-    double complex **dfl;
+    double complex** dfl;
   };
 %}
 
@@ -73,129 +73,132 @@ INITIALIZE
   /*skip this for now*/
 
   char dflfn[512];
-  FILE *dflfp;
+  FILE* dflfp;
   int k;
   int l;
   int m;
-  float *r;
-  float *i;
+  float* r;
+  float* i;
 
-  r=malloc(gridpoints*sizeof(float));
-  i=malloc(gridpoints*sizeof(float));
+  r = malloc (gridpoints * sizeof (float));
+  i = malloc (gridpoints * sizeof (float));
 
-  strncpy(dflfn,fname,502);
-  strncat(dflfn,".fld",4);
+  strncpy (dflfn, fname, 502);
+  strncat (dflfn, ".fld", 4);
   /*allocate storage for the input array*/
-  if( (prms.dfl=calloc(nslices,sizeof(double complex *)))==NULL){
-    fprintf(stderr,"Error(%s): allocation failed for slice array. Aborting.\n",NAME_CURRENT_COMP);
-    exit(-1);
+  if ((prms.dfl = calloc (nslices, sizeof (double complex*))) == NULL) {
+    fprintf (stderr, "Error(%s): allocation failed for slice array. Aborting.\n", NAME_CURRENT_COMP);
+    exit (-1);
   }
-  if( (dflfp=Open_File(dflfn,"r", NULL))==NULL){
-    fprintf(stderr,"Error(%s): cannot open file %s for reading- Aborting.\n",NAME_CURRENT_COMP,dflfn);
-    exit(-1);
+  if ((dflfp = Open_File (dflfn, "r", NULL)) == NULL) {
+    fprintf (stderr, "Error(%s): cannot open file %s for reading- Aborting.\n", NAME_CURRENT_COMP, dflfn);
+    exit (-1);
   }
 
-  for (k=0;k<nslices;k++){
+  for (k = 0; k < nslices; k++) {
     /*printf("alloc'ing for slice %d...",k);*/
-    if( (prms.dfl[k]=calloc(gridpoints*gridpoints,sizeof(double complex)))==NULL) { 
-      fprintf(stderr,"Error(%s): allocation failed for slice %d. Aborting.\n",NAME_CURRENT_COMP,k);
-      exit(-1);
+    if ((prms.dfl[k] = calloc (gridpoints * gridpoints, sizeof (double complex))) == NULL) {
+      fprintf (stderr, "Error(%s): allocation failed for slice %d. Aborting.\n", NAME_CURRENT_COMP, k);
+      exit (-1);
     }
     /*printf("done\n");*/
     /*so read the data*/
     /*printf("reading for slice %d...",k);*/
-    for (l=0;l<gridpoints;l++){
-      int s=0;
-      for (m=0;m<gridpoints;m++){
-        s+=fread(r+m,sizeof(float),1,dflfp);
-        s+=fread(i+m,sizeof(float),1,dflfp);
+    for (l = 0; l < gridpoints; l++) {
+      int s = 0;
+      for (m = 0; m < gridpoints; m++) {
+        s += fread (r + m, sizeof (float), 1, dflfp);
+        s += fread (i + m, sizeof (float), 1, dflfp);
       }
-      if(s!=2*gridpoints){
-        fprintf(stderr,"Error(%s): input data not read cleanly (slice %d, row %d)\n",NAME_CURRENT_COMP,k,l);
+      if (s != 2 * gridpoints) {
+        fprintf (stderr, "Error(%s): input data not read cleanly (slice %d, row %d)\n", NAME_CURRENT_COMP, k, l);
       }
-      for (m=0;m<gridpoints;m++){
-        prms.dfl[k][l*gridpoints+m]=r[m]+I*i[m];
+      for (m = 0; m < gridpoints; m++) {
+        prms.dfl[k][l * gridpoints + m] = r[m] + I * i[m];
       }
     }
     /*printf("done\n");*/
   }
-  free(r);
-  free(i);
-  prms.pmul=flux/(double)mcget_ncount();
+  free (r);
+  free (i);
+  prms.pmul = flux / (double)mcget_ncount ();
 %}
 
 TRACE
 %{
-  double xwidth,yheight,k;
-  double theta_x,theta_y;
-  double alpha,beta;
-  double complex cp,cp2,t0,t1;
-  int ix,iy,is;
-  double ds,s,deltas;
+  double xwidth, yheight, k;
+  double theta_x, theta_y;
+  double alpha, beta;
+  double complex cp, cp2, t0, t1;
+  int ix, iy, is;
+  double ds, s, deltas;
 
-  xwidth=(gridpoints-1)*meshsize;
-  yheight=(gridpoints-1)*meshsize;
+  xwidth = (gridpoints - 1) * meshsize;
+  yheight = (gridpoints - 1) * meshsize;
   /*sample x and y from gridsize*/
-  x=(rand01()-0.5)*xwidth;
-  y=(rand01()-0.5)*yheight;
-  ix=(int)((x+0.5*xwidth)/meshsize);
-  if(ix==gridpoints) ix--;
-  iy=(int)((y+0.5*yheight)/meshsize);
-  if(iy==gridpoints) iy--;
+  x = (rand01 () - 0.5) * xwidth;
+  y = (rand01 () - 0.5) * yheight;
+  ix = (int)((x + 0.5 * xwidth) / meshsize);
+  if (ix == gridpoints)
+    ix--;
+  iy = (int)((y + 0.5 * yheight) / meshsize);
+  if (iy == gridpoints)
+    iy--;
 
   /*sample s inbetween s and s0 and s1*/
-  s=rand01()*(s1-s0);
-  
-  deltas=(s1-s0)/(nslices-1);
+  s = rand01 () * (s1 - s0);
+
+  deltas = (s1 - s0) / (nslices - 1);
   /*which slice is closest*/
-  is=(int)(s/deltas+0.5);
-  if(is==nslices) is--;
-  t=(s+s0)/M_C;
+  is = (int)(s / deltas + 0.5);
+  if (is == nslices)
+    is--;
+  t = (s + s0) / M_C;
 
+  alpha = ((x + 0.5 * xwidth - ix * meshsize) / meshsize);
+  beta = ((y + 0.5 * yheight - iy * meshsize) / meshsize);
 
-  alpha=( (x+0.5*xwidth - ix*meshsize) /meshsize );
-  beta= ( (y+0.5*yheight - iy*meshsize) /meshsize );
+  t0 = (1 - alpha) * prms.dfl[is][iy * gridpoints + ix] + alpha * prms.dfl[is][iy * gridpoints + ix + 1];
+  t1 = (1 - alpha) * prms.dfl[is][(iy + 1) * gridpoints + ix] + alpha * prms.dfl[is][(iy + 1) * gridpoints + ix + 1];
 
-  t0=(1-alpha)*prms.dfl[is][iy*gridpoints+ix] + alpha*prms.dfl[is][iy*gridpoints+ix+1];
-  t1=(1-alpha)*prms.dfl[is][(iy+1)*gridpoints+ix] + alpha*prms.dfl[is][(iy+1)*gridpoints+ix+1];
-  
-  cp = (1-beta)*t0+beta*t1;
+  cp = (1 - beta) * t0 + beta * t1;
   /*cp now contains the complex radiation field at x,y*/
 
-  p=prms.pmul*cabs(cp);
-  phi=carg(cp);
+  p = prms.pmul * cabs (cp);
+  phi = carg (cp);
 
-  theta_x=(randnorm())*focus_a;
-  theta_y=(randnorm())*focus_a;
-  
+  theta_x = (randnorm ()) * focus_a;
+  theta_y = (randnorm ()) * focus_a;
+
   /*draw random coordinates in the acceptance window*/
-  kx=tan(theta_x);
-  ky=tan(theta_y);
-  kz=1;
-  NORM(kx,ky,kz);
+  kx = tan (theta_x);
+  ky = tan (theta_y);
+  kz = 1;
+  NORM (kx, ky, kz);
 
-  k=E0*E2K;
-  kx*=k;
-  ky*=k;
-  kz*=k;
+  k = E0 * E2K;
+  kx *= k;
+  ky *= k;
+  kz *= k;
 
   /*set polarization vector*/
-  Ex=0;Ey=0;Ez=0;
-
+  Ex = 0;
+  Ey = 0;
+  Ez = 0;
 %}
 
 FINALLY
 %{
-  Table_Free(&(prms.T));
+  Table_Free (&(prms.T));
 %}
 
 MCDISPLAY
 %{
-  double radius=0.05;
-  
-  circle("xy",0,0,0,radius);
-  circle("xz",0,0,0,radius);
-  circle("yz",0,0,0,radius);
+  double radius = 0.05;
+
+  circle ("xy", 0, 0, 0, radius);
+  circle ("xz", 0, 0, 0, radius);
+  circle ("yz", 0, 0, 0, radius);
 %}
 
 END

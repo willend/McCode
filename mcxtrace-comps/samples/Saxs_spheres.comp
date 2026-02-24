@@ -67,147 +67,152 @@ DECLARE
   double At;
   double rho;
   t_Table T;
-  int mu_ci;/*which column holds absorption mus*/
+  int mu_ci; /*which column holds absorption mus*/
   int abs_data;
 %}
 INITIALIZE
 %{
-  shape=-1; /* -1:no shape, 0:cyl, 1:box, 2:sphere  */
-  if (xwidth && yheight && zdepth)  shape=1; /* box */
-  else if (radius > 0 && yheight)   shape=0; /* cylinder */
-  else if (radius > 0 && !yheight)  shape=2; /* sphere */
+  shape = -1; /* -1:no shape, 0:cyl, 1:box, 2:sphere  */
+  if (xwidth && yheight && zdepth)
+    shape = 1; /* box */
+  else if (radius > 0 && yheight)
+    shape = 0; /* cylinder */
+  else if (radius > 0 && !yheight)
+    shape = 2; /* sphere */
 
-  if (shape < 0) 
-    exit(fprintf(stderr,"Saxs_spheres: %s: sample has invalid dimensions.\n"
-                        "ERROR     Please check parameter values.\n", NAME_CURRENT_COMP));
-  
+  if (shape < 0)
+    exit (fprintf (stderr,
+                   "Saxs_spheres: %s: sample has invalid dimensions.\n"
+                   "ERROR     Please check parameter values.\n",
+                   NAME_CURRENT_COMP));
+
   /* now compute target coords if a component index is supplied */
-  if (!target_index && !target_x && !target_y && !target_z) target_index=1;
-  if (target_index)
-  {
+  if (!target_index && !target_x && !target_y && !target_z)
+    target_index = 1;
+  if (target_index) {
     Coords ToTarget;
-    ToTarget = coords_sub(POS_A_COMP_INDEX(INDEX_CURRENT_COMP+target_index),POS_A_CURRENT_COMP);
-    ToTarget = rot_apply(ROT_A_CURRENT_COMP, ToTarget);
-    coords_get(ToTarget, &target_x, &target_y, &target_z);
+    ToTarget = coords_sub (POS_A_COMP_INDEX (INDEX_CURRENT_COMP + target_index), POS_A_CURRENT_COMP);
+    ToTarget = rot_apply (ROT_A_CURRENT_COMP, ToTarget);
+    coords_get (ToTarget, &target_x, &target_y, &target_z);
   }
 
   if (!(target_x || target_y || target_z)) {
-    printf("Saxs_spheres: %s: The target is not defined. Using direct beam (Z-axis).\n",
-      NAME_CURRENT_COMP);
-    target_z=1;
+    printf ("Saxs_spheres: %s: The target is not defined. Using direct beam (Z-axis).\n", NAME_CURRENT_COMP);
+    target_z = 1;
   }
   /*check for existance of a sphere material datafile. If none is given absorption will be neglected.*/
-  if (sphere_mtrl && strlen(sphere_mtrl) && strcmp(sphere_mtrl,"NULL")){  
+  if (sphere_mtrl && strlen (sphere_mtrl) && strcmp (sphere_mtrl, "NULL")) {
     int status;
-    if ( sphere_mtrl && (status=Table_Read(&(T),sphere_mtrl,0))==-1){
-      fprintf(stderr,"Error(%s): Could not parse file \"%s\"\n",NAME_CURRENT_COMP,sphere_mtrl);
-      exit(-1);
+    if (sphere_mtrl && (status = Table_Read (&(T), sphere_mtrl, 0)) == -1) {
+      fprintf (stderr, "Error(%s): Could not parse file \"%s\"\n", NAME_CURRENT_COMP, sphere_mtrl);
+      exit (-1);
     }
-    char **header_parsed;
-    header_parsed=Table_ParseHeader(T.header,"Z","A[r]","rho","Z/A","sigma[a]",NULL);
-    if(header_parsed[2]){rho=strtod(header_parsed[2],NULL);}
-    if(header_parsed[0]){Z=strtod(header_parsed[0],NULL);}
-    if(header_parsed[1]){At=strtod(header_parsed[1],NULL);}
+    char** header_parsed;
+    header_parsed = Table_ParseHeader (T.header, "Z", "A[r]", "rho", "Z/A", "sigma[a]", NULL);
+    if (header_parsed[2]) {
+      rho = strtod (header_parsed[2], NULL);
+    }
+    if (header_parsed[0]) {
+      Z = strtod (header_parsed[0], NULL);
+    }
+    if (header_parsed[1]) {
+      At = strtod (header_parsed[1], NULL);
+    }
     /*which columns holds the mus*/
-    if (mu_c){
-      mu_ci=mu_c;
-    }else{
+    if (mu_c) {
+      mu_ci = mu_c;
+    } else {
       /*not given so take a guess*/
-      mu_ci=5;
-      if (T.columns==3) mu_ci=1;
+      mu_ci = 5;
+      if (T.columns == 3)
+        mu_ci = 1;
     }
-    abs_data=1;
-  }else{
-    abs_data=0;
+    abs_data = 1;
+  } else {
+    abs_data = 0;
   }
-  my_s_pre = Phi * 4*PI*R*R*R/3 * Delta_rho*Delta_rho;
-
+  my_s_pre = Phi * 4 * PI * R * R * R / 3 * Delta_rho * Delta_rho;
 %}
 TRACE
 %{
   double l0, l1, v, l_full, l, l_1, dt, dl, d_phi, theta, my_a_v;
-  double aim_x=0, aim_y=0, aim_z=1, axis_x, axis_y, axis_z;
+  double aim_x = 0, aim_y = 0, aim_z = 1, axis_x, axis_y, axis_z;
   double arg, tmp_vx, tmp_vy, tmp_vz, vout_x, vout_y, vout_z;
   double f, solid_angle, kx_i, ky_i, kz_i, k, q, qx, qy, qz;
-  char   intersect=0;
+  char intersect = 0;
 
   /* Intersection particle trajectory / sample (sample surface) */
   if (shape == 0)
-    intersect = cylinder_intersect(&l0, &l1, x, y, z, kx, ky, kz, radius, yheight);
+    intersect = cylinder_intersect (&l0, &l1, x, y, z, kx, ky, kz, radius, yheight);
   else if (shape == 1)
-    intersect = box_intersect(&l0, &l1, x, y, z, kx, ky, kz, xwidth, yheight, zdepth);
+    intersect = box_intersect (&l0, &l1, x, y, z, kx, ky, kz, xwidth, yheight, zdepth);
   else if (shape == 2)
-    intersect = sphere_intersect(&l0, &l1, x, y, z, kx, ky, kz, radius);
-  if(intersect)
-  {
-    if(l0 < 0){
-      fprintf(stderr,"photon already inside sample %s - absorbing\n",NAME_CURRENT_COMP);
+    intersect = sphere_intersect (&l0, &l1, x, y, z, kx, ky, kz, radius);
+  if (intersect) {
+    if (l0 < 0) {
+      fprintf (stderr, "photon already inside sample %s - absorbing\n", NAME_CURRENT_COMP);
       ABSORB;
     }
     /* Xray enters at l=l0. */
-    k = sqrt(kx*kx + ky*ky + kz*kz);
-    l_full = (l1 - l0);             /* Length of full path through sample */
-    dl = rand01()*(l1 - l0) + l0; /* Time of scattering */
-    PROP_DL(dl);                  /* Point of scattering */
-    l = (dl-l0);                /* Penetration in sample */
+    k = sqrt (kx * kx + ky * ky + kz * kz);
+    l_full = (l1 - l0);              /* Length of full path through sample */
+    dl = rand01 () * (l1 - l0) + l0; /* Time of scattering */
+    PROP_DL (dl);                    /* Point of scattering */
+    l = (dl - l0);                   /* Penetration in sample */
 
-    kx_i=kx;
-    ky_i=ky;
-    kz_i=kz;
+    kx_i = kx;
+    ky_i = ky;
+    kz_i = kz;
     if ((target_x || target_y || target_z)) {
-      aim_x = target_x-x;       /* Vector pointing at target (anal./det.) */
-      aim_y = target_y-y;
-      aim_z = target_z-z;
+      aim_x = target_x - x; /* Vector pointing at target (anal./det.) */
+      aim_y = target_y - y;
+      aim_z = target_z - z;
     }
-    if(focus_aw && focus_ah) {
-      randvec_target_rect_angular(&kx, &ky, &kz, &solid_angle,
-        aim_x, aim_y, aim_z, focus_aw, focus_ah, ROT_A_CURRENT_COMP);
-    } else if(focus_xw && focus_yh) {
-      randvec_target_rect(&kx, &ky, &kz, &solid_angle,
-        aim_x, aim_y, aim_z, focus_xw, focus_yh, ROT_A_CURRENT_COMP);
+    if (focus_aw && focus_ah) {
+      randvec_target_rect_angular (&kx, &ky, &kz, &solid_angle, aim_x, aim_y, aim_z, focus_aw, focus_ah, ROT_A_CURRENT_COMP);
+    } else if (focus_xw && focus_yh) {
+      randvec_target_rect (&kx, &ky, &kz, &solid_angle, aim_x, aim_y, aim_z, focus_xw, focus_yh, ROT_A_CURRENT_COMP);
     } else {
-      randvec_target_circle(&kx, &ky, &kz, &solid_angle, aim_x, aim_y, aim_z, focus_r);
+      randvec_target_circle (&kx, &ky, &kz, &solid_angle, aim_x, aim_y, aim_z, focus_r);
     }
-    NORM(kx, ky, kz);
+    NORM (kx, ky, kz);
     kx *= k;
     ky *= k;
     kz *= k;
-    qx = (kx_i-kx);
-    qy = (ky_i-ky);
-    qz = (kz_i-kz);
-    q = sqrt(qx*qx+qy*qy+qz*qz);
+    qx = (kx_i - kx);
+    qy = (ky_i - ky);
+    qz = (kz_i - kz);
+    q = sqrt (qx * qx + qy * qy + qz * qz);
 
-    f = 3 * (sin(q*R) - q*R*cos(q*R))/(q*R*q*R*q*R);
+    f = 3 * (sin (q * R) - q * R * cos (q * R)) / (q * R * q * R * q * R);
 
     /*calculate absorption*/
-    if(abs_data){
-      my_a_v=Table_Value(T,k*K2E,mu_ci);
-    }else{
-      my_a_v=0;
+    if (abs_data) {
+      my_a_v = Table_Value (T, k * K2E, mu_ci);
+    } else {
+      my_a_v = 0;
     }
-    p *= l_full*solid_angle/(4*PI)*my_s_pre*f*f*exp(-my_a_v*(l+l1));
+    p *= l_full * solid_angle / (4 * PI) * my_s_pre * f * f * exp (-my_a_v * (l + l1));
     SCATTER;
   }
 %}
 
 MCDISPLAY
 %{
-  
-  if (shape == 0) {	/* cylinder */
-    circle("xz", 0,  yheight/2.0, 0, radius);
-    circle("xz", 0, -yheight/2.0, 0, radius);
-    line(-radius, -yheight/2.0, 0, -radius, +yheight/2.0, 0);
-    line(+radius, -yheight/2.0, 0, +radius, +yheight/2.0, 0);
-    line(0, -yheight/2.0, -radius, 0, +yheight/2.0, -radius);
-    line(0, -yheight/2.0, +radius, 0, +yheight/2.0, +radius);
-  }
-  else if (shape == 1) { 	/* box */
-    box(0,0,0,xwidth,yheight,zdepth,0, 0, 1, 0);
-  }
-  else if (shape == 2) {	/* sphere */
-    circle("xy", 0,  0.0, 0, radius);
-    circle("xz", 0,  0.0, 0, radius);
-    circle("yz", 0,  0.0, 0, radius);        
+
+  if (shape == 0) { /* cylinder */
+    circle ("xz", 0, yheight / 2.0, 0, radius);
+    circle ("xz", 0, -yheight / 2.0, 0, radius);
+    line (-radius, -yheight / 2.0, 0, -radius, +yheight / 2.0, 0);
+    line (+radius, -yheight / 2.0, 0, +radius, +yheight / 2.0, 0);
+    line (0, -yheight / 2.0, -radius, 0, +yheight / 2.0, -radius);
+    line (0, -yheight / 2.0, +radius, 0, +yheight / 2.0, +radius);
+  } else if (shape == 1) { /* box */
+    box (0, 0, 0, xwidth, yheight, zdepth, 0, 0, 1, 0);
+  } else if (shape == 2) { /* sphere */
+    circle ("xy", 0, 0.0, 0, radius);
+    circle ("xz", 0, 0.0, 0, radius);
+    circle ("yz", 0, 0.0, 0, radius);
   }
 %}
 END

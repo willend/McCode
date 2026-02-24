@@ -62,67 +62,61 @@ DECLARE
 INITIALIZE
 %{
 
-  U_N = create_darr1d(nU);
-  U_p = create_darr1d(nU);
-  U_p2 = create_darr1d(nU);
+  U_N = create_darr1d (nU);
+  U_p = create_darr1d (nU);
+  U_p2 = create_darr1d (nU);
 
-  if(uid!=-1){
-    snprintf(username,127,"uservar%d",uid);
-  }else{
-    snprintf(username,127,"%s",ustring);
+  if (uid != -1) {
+    snprintf (username, 127, "uservar%d", uid);
+  } else {
+    snprintf (username, 127, "%s", ustring);
   }
-  snprintf(signalname,127,"%s",signal);
+  snprintf (signalname, 127, "%s", signal);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
   double U;
   int suc;
-  if(uid!=-1){
-    U = particle_getuservar_byid(_particle,uid,&suc);
-  }else{
-    U = particle_getvar(_particle,ustring,&suc);
+  if (uid != -1) {
+    U = particle_getuservar_byid (_particle, uid, &suc);
+  } else {
+    U = particle_getvar (_particle, ustring, &suc);
   }
-  int i = floor((U-Umin)*nU/(Umax-Umin));
-  if(!suc && i >= 0 && i < nU)
-    {
-      double pp=particle_getvar(_particle,signal,&suc);
-      double p2 = pp*pp;
-      #pragma acc atomic
-      U_N[i] = U_N[i] +1;
-      #pragma acc atomic
-      U_p[i] = U_p[i] + pp;
-      #pragma acc atomic
-      U_p2[i] = U_p2[i] + p2;
-      SCATTER;
-    }
-  
+  int i = floor ((U - Umin) * nU / (Umax - Umin));
+  if (!suc && i >= 0 && i < nU) {
+    double pp = particle_getvar (_particle, signal, &suc);
+    double p2 = pp * pp;
+    #pragma acc atomic
+    U_N[i] = U_N[i] + 1;
+    #pragma acc atomic
+    U_p[i] = U_p[i] + pp;
+    #pragma acc atomic
+    U_p2[i] = U_p2[i] + p2;
+    SCATTER;
+  }
+
   if (restore_xray) {
-    RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+    RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
   }
 %}
 
 SAVE
 %{
   if (!nowritefile) {
-    DETECTOR_OUT_1D(
-      "Flex monitor 1D",
-      username,
-      signalname,
-      username, Umin, Umax, nU,
-      &U_N[0],&U_p[0],&U_p2[0],
-      filename);
+    DETECTOR_OUT_1D ("Flex monitor 1D", username, signalname, username, Umin, Umax, nU, &U_N[0], &U_p[0], &U_p2[0], filename);
   }
 %}
 
 FINALLY
 %{
-  destroy_darr1d(U_N);
-  destroy_darr1d(U_p);
-  destroy_darr1d(U_p2);
+  destroy_darr1d (U_N);
+  destroy_darr1d (U_p);
+  destroy_darr1d (U_p2);
 %}
 
 MCDISPLAY

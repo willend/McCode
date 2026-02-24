@@ -60,7 +60,7 @@ TRACE %{
 
 MCDISPLAY
 %{
-    mcdis_new_circle(0,0,0,radius, 0,1,0);
+  mcdis_new_circle (0, 0, 0, radius, 0, 1, 0);
 %}
 
 END

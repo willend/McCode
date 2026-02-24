@@ -55,8 +55,8 @@ SHARE
 %{
   %include "perfect_crystals-lib"
   #include <complex.h>
-  %include "read_table-lib" 
-  %include "reflectivity-lib"  
+  %include "read_table-lib"
+  %include "reflectivity-lib"
 %}
 
 DECLARE
@@ -70,143 +70,161 @@ DECLARE
 INITIALIZE
 %{
   int status;
-  
-  if (radius) x_a=y_b=z_c=radius;
 
-  if (coating && strlen(coating)) {
-    status=reflec_Init(&re,COATING_UNDEFINED,coating,NULL);
-  }else{
+  if (radius)
+    x_a = y_b = z_c = radius;
+
+  if (coating && strlen (coating)) {
+    status = reflec_Init (&re, COATING_UNDEFINED, coating, NULL);
+  } else {
     /*assume a constant reflectivity*/
-    status=reflec_Init(&re,CONSTANT,NULL, &(R0));
+    status = reflec_Init (&re, CONSTANT, NULL, &(R0));
   }
 
-  a2inv=(x_a)?1/(x_a*x_a):0; /* 0 really means infinity for x direction */
-  b2inv=(y_b)?1/(y_b*y_b):0;
-  c2inv=(z_c)?1/(z_c*z_c):0;
+  a2inv = (x_a) ? 1 / (x_a * x_a) : 0; /* 0 really means infinity for x direction */
+  b2inv = (y_b) ? 1 / (y_b * y_b) : 0;
+  c2inv = (z_c) ? 1 / (z_c * z_c) : 0;
 
-  printf("Component %s: initialized\n",NAME_CURRENT_COMP);
+  printf ("Component %s: initialized\n", NAME_CURRENT_COMP);
 
-  fflush(NULL); // put diagnostics in order!
-  
+  fflush (NULL); // put diagnostics in order!
+
   // compatibility with older use
-  if (zdepth)  length=zdepth;
-  if (xwidth)  width =xwidth;
+  if (zdepth)
+    length = zdepth;
+  if (xwidth)
+    width = xwidth;
 %}
 
 TRACE
 %{
-    double E;				// (keV) x-ray energy
-    double K; 				// length of k-vector
-    double kxu,kyu,kzu;			// unit vector in the direction of k-vector.
-    double x_int,y_int,z_int;
-    double R;
-    
-    /* get the photon's kvector and energy */
-    K=sqrt(kx*kx+ky*ky+kz*kz);
-    E = K2E*K; /* use built-in constants for consistency */
-    /* make unit vector in the direction of k :*/
-    kxu = kx; kyu = ky; kzu = kz;
-    NORM(kxu,kyu,kzu);
+  double E;             // (keV) x-ray energy
+  double K;             // length of k-vector
+  double kxu, kyu, kzu; // unit vector in the direction of k-vector.
+  double x_int, y_int, z_int;
+  double R;
 
-    double A,B,C, xt, yt, zt;
-    double t0,t1;
-    /*an offset to the mirror parameters perhaps*/
+  /* get the photon's kvector and energy */
+  K = sqrt (kx * kx + ky * ky + kz * kz);
+  E = K2E * K; /* use built-in constants for consistency */
+  /* make unit vector in the direction of k :*/
+  kxu = kx;
+  kyu = ky;
+  kzu = kz;
+  NORM (kxu, kyu, kzu);
 
-    xt=x;
-    zt=z;
-    yt=y-y_b;
+  double A, B, C, xt, yt, zt;
+  double t0, t1;
+  /*an offset to the mirror parameters perhaps*/
 
-    C=xt*xt*a2inv + yt*yt*b2inv + zt*zt*c2inv -1;
-    B=2*(kxu*xt*a2inv + kyu*yt*b2inv + kzu*zt*c2inv);
-    A=kxu*kxu*a2inv + kyu*kyu*b2inv + kzu*kzu*c2inv;
+  xt = x;
+  zt = z;
+  yt = y - y_b;
 
-    if(solve_2nd_order(&t0,&t1,A,B,C)){
-        double xx0, xx1, yy0, yy1, zz0, zz1; /* we will have to tentatively propagate twice to see which surface we hit */
-        xx0=x+kxu*t0; yy0=y+kyu*t0; zz0=z+kzu*t0;
-        xx1=x+kxu*t1; yy1=y+kyu*t1; zz1=z+kzu*t1;
-        
-        /*Check if we hit the mirror and whether the hit it is in front of the ray.
-         * This does not account for mirror curvature */
-                              
-        int hit0=(fabs(xx0)<width/2.0) && (fabs(zz0)<length/2.0) && t0>0;
-        int hit1=(fabs(xx1)<width/2.0) && (fabs(zz1)<length/2.0) && t1>0;
-        int doit=hit0 || hit1;
-                
-        if(hit0 && !hit1) PROP_DL(t0); /* only one intersection actually on mirror */
-        else if (hit1 && !hit0) PROP_DL(t1); /* other intersection */
-        else if (hit0 && hit1) { /* both, take first strike (which may be back of mirror) */
-            PROP_DL(t0<t1?t0:t1);	
-        } else {
-            RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
-        }
+  C = xt * xt * a2inv + yt * yt * b2inv + zt * zt * c2inv - 1;
+  B = 2 * (kxu * xt * a2inv + kyu * yt * b2inv + kzu * zt * c2inv);
+  A = kxu * kxu * a2inv + kyu * kyu * b2inv + kzu * kzu * c2inv;
 
-        if ( doit ){
-            SCATTER;
-            xt=x; yt=y-y_b; zt=z; /* update shifted coordinates to intersection point */
-            double nx, ny, nz;
-            /* grad is the inner normal to the surface at this point */
-            nx=-xt*a2inv; ny=-yt*b2inv; nz=-zt*c2inv; NORM(nx, ny, nz);
+  if (solve_2nd_order (&t0, &t1, A, B, C)) {
+    double xx0, xx1, yy0, yy1, zz0, zz1; /* we will have to tentatively propagate twice to see which surface we hit */
+    xx0 = x + kxu * t0;
+    yy0 = y + kyu * t0;
+    zz0 = z + kzu * t0;
+    xx1 = x + kxu * t1;
+    yy1 = y + kyu * t1;
+    zz1 = z + kzu * t1;
 
-            double kdotn;
-            kdotn=-scalar_prod(kx,ky,kz,nx,ny,nz);
-            double kfx,kfy,kfz;
-            kfx=kx+2*kdotn*nx;
-            kfy=ky+2*kdotn*ny;
-            kfz=kz+2*kdotn*nz;
+    /*Check if we hit the mirror and whether the hit it is in front of the ray.
+     * This does not account for mirror curvature */
 
-            kx=kfx;ky=kfy;kz=kfz;
+    int hit0 = (fabs (xx0) < width / 2.0) && (fabs (zz0) < length / 2.0) && t0 > 0;
+    int hit1 = (fabs (xx1) < width / 2.0) && (fabs (zz1) < length / 2.0) && t1 > 0;
+    int doit = hit0 || hit1;
 
-            /*adjust weight of ray*/
+    if (hit0 && !hit1)
+      PROP_DL (t0); /* only one intersection actually on mirror */
+    else if (hit1 && !hit0)
+      PROP_DL (t1);          /* other intersection */
+    else if (hit0 && hit1) { /* both, take first strike (which may be back of mirror) */
+      PROP_DL (t0 < t1 ? t0 : t1);
+    } else {
+      RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+    }
 
-            double q=2.0*kdotn;
-            double R=reflecq(re,q,0,K,fabs(90-acos(kdotn/K)*RAD2DEG));
-            p*=R;
-            /*update phase - as an approximation turn by 180 deg.*/;
-            phi+=M_PI; 
+    if (doit) {
+      SCATTER;
+      xt = x;
+      yt = y - y_b;
+      zt = z; /* update shifted coordinates to intersection point */
+      double nx, ny, nz;
+      /* grad is the inner normal to the surface at this point */
+      nx = -xt * a2inv;
+      ny = -yt * b2inv;
+      nz = -zt * c2inv;
+      NORM (nx, ny, nz);
 
-            /*catch dead rays*/
+      double kdotn;
+      kdotn = -scalar_prod (kx, ky, kz, nx, ny, nz);
+      double kfx, kfy, kfz;
+      kfx = kx + 2 * kdotn * nx;
+      kfy = ky + 2 * kdotn * ny;
+      kfz = kz + 2 * kdotn * nz;
 
-            //if (p==0) ABSORB;
-        } else {
-        RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
-        }
-    }   
+      kx = kfx;
+      ky = kfy;
+      kz = kfz;
+
+      /*adjust weight of ray*/
+
+      double q = 2.0 * kdotn;
+      double R = reflecq (re, q, 0, K, fabs (90 - acos (kdotn / K) * RAD2DEG));
+      p *= R;
+      /*update phase - as an approximation turn by 180 deg.*/;
+      phi += M_PI;
+
+      /*catch dead rays*/
+
+      // if (p==0) ABSORB;
+    } else {
+      RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+    }
+  }
 %}
 
 MCDISPLAY
 %{
-  int i,j,N=12;
-  double t,xx,yy,zz,xx0,yy0,zz0;
-  double a2,b2,c2; 
-  a2=1.0/a2inv;
-  b2=1.0/b2inv;
-  c2=1.0/c2inv; 
-  if (xwidth && zdepth){
-    for (i=0;i<N;i++){
-      xx0=-xwidth/2.0;
-      zz=i*zdepth/(N-1)-zdepth/2.0;
-      yy0=-(1)*sqrt(b2*(1-xx0*xx0/a2-zz*zz/c2))+sqrt(b2);
-      for (j=1;j<N;j++){
-        xx=j*xwidth/(N-1)-xwidth/2.0;
-        yy=-(1)*sqrt(b2*(1-xx*xx/a2-zz*zz/c2))+sqrt(b2);
-        line(xx0,yy0,zz,xx,yy,zz);
-        xx0=xx;
-        yy0=yy; 
+  int i, j, N = 12;
+  double t, xx, yy, zz, xx0, yy0, zz0;
+  double a2, b2, c2;
+  a2 = 1.0 / a2inv;
+  b2 = 1.0 / b2inv;
+  c2 = 1.0 / c2inv;
+  if (xwidth && zdepth) {
+    for (i = 0; i < N; i++) {
+      xx0 = -xwidth / 2.0;
+      zz = i * zdepth / (N - 1) - zdepth / 2.0;
+      yy0 = -(1) * sqrt (b2 * (1 - xx0 * xx0 / a2 - zz * zz / c2)) + sqrt (b2);
+      for (j = 1; j < N; j++) {
+        xx = j * xwidth / (N - 1) - xwidth / 2.0;
+        yy = -(1) * sqrt (b2 * (1 - xx * xx / a2 - zz * zz / c2)) + sqrt (b2);
+        line (xx0, yy0, zz, xx, yy, zz);
+        xx0 = xx;
+        yy0 = yy;
       }
     }
-    for (i=0;i<N;i++){
-      zz0=-zdepth/2.0;
-      xx=i*xwidth/(N-1)-xwidth/2.0;
-      yy0=-(1)*sqrt(b2*(1-xx*xx/a2-zz0*zz0/c2))+sqrt(b2);
-      for (j=1;j<N;j++){
-        zz=j*zdepth/(N-1)-zdepth/2.0;
-        yy=-(1)*sqrt(b2*(1-xx*xx/a2-zz*zz/c2))+sqrt(b2);
-        line(xx,yy0,zz0,xx,yy,zz);
-        zz0=zz;
-        yy0=yy; 
+    for (i = 0; i < N; i++) {
+      zz0 = -zdepth / 2.0;
+      xx = i * xwidth / (N - 1) - xwidth / 2.0;
+      yy0 = -(1) * sqrt (b2 * (1 - xx * xx / a2 - zz0 * zz0 / c2)) + sqrt (b2);
+      for (j = 1; j < N; j++) {
+        zz = j * zdepth / (N - 1) - zdepth / 2.0;
+        yy = -(1) * sqrt (b2 * (1 - xx * xx / a2 - zz * zz / c2)) + sqrt (b2);
+        line (xx, yy0, zz0, xx, yy, zz);
+        zz0 = zz;
+        yy0 = yy;
       }
     }
-  }    
+  }
 %}
 
 END

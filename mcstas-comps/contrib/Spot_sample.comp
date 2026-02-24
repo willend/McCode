@@ -72,14 +72,13 @@ xwidth=0, yheight=0, zthick=0, Eideal=100.0,w=50.0,two_theta=25.0,n_spots=4)
 
 SHARE
 %{
-struct StructVarsVspot
-{
-double sigma_a; /* Absorption cross section per atom (barns) */
+  struct StructVarsVspot {
+    double sigma_a; /* Absorption cross section per atom (barns) */
     double sigma_i; /* Incoherent scattering cross section per atom (barns) */
     double rho;     /* Density of atoms (AA-3) */
     double my_s;
     double my_a_v;
-    char   isrect;      /* true when sample is a box */
+    char isrect; /* true when sample is a box */
   };
 %}
 
@@ -91,122 +90,113 @@ INITIALIZE
 %{
 
   if (!radius_o || !h) {
-    if (!xwidth || !yheight || !zthick) exit(fprintf(stderr,"V_sample: %s: sample has no volume (zero dimensions)\n", NAME_CURRENT_COMP));
-    else VarsV.isrect=1; }
-  else VarsV.isrect=0;
+    if (!xwidth || !yheight || !zthick)
+      exit (fprintf (stderr, "V_sample: %s: sample has no volume (zero dimensions)\n", NAME_CURRENT_COMP));
+    else
+      VarsV.isrect = 1;
+  } else
+    VarsV.isrect = 0;
 
-  VarsV.sigma_a=5.08; /* in barns */
-  VarsV.sigma_i=4.935;
-  VarsV.rho = (2*pack/(3.024*3.024*3.024));
-  VarsV.my_s=(VarsV.rho * 100 * VarsV.sigma_i);
-  VarsV.my_a_v=(VarsV.rho * 100 * VarsV.sigma_a * 2200);
+  VarsV.sigma_a = 5.08; /* in barns */
+  VarsV.sigma_i = 4.935;
+  VarsV.rho = (2 * pack / (3.024 * 3.024 * 3.024));
+  VarsV.my_s = (VarsV.rho * 100 * VarsV.sigma_i);
+  VarsV.my_a_v = (VarsV.rho * 100 * VarsV.sigma_a * 2200);
 
   /* now compute target coords if a component index is supplied */
-
 %}
 
 TRACE
 %{
-  double t0, t3;                /* Entry/exit time for outer cylinder */
-  double t1, t2;                /* Entry/exit time for inner cylinder */
-  double v;                     /* Neutron velocity */
-  double dt0, dt1, dt2, dt;     /* Flight times through sample */
-  double l_full;                /* Flight path length for non-scattered neutron */
-  double l_i, l_o=0;            /* Flight path lenght in/out for scattered neutron */
-  double my_a;                  /* Velocity-dependent attenuation factor */
-  double solid_angle=0;         /* Solid angle of target as seen from scattering point */
-  double aim_x, aim_y, aim_z;   /* Position of target relative to scattering point */
-  double kix,kiy,kiz,qx,qy,qz;
-  double kf,kfx,kfy,kfz,kiideal,kfideal,Efideal;
-  double Ef,Ei,pol,rbool;
+  double t0, t3;              /* Entry/exit time for outer cylinder */
+  double t1, t2;              /* Entry/exit time for inner cylinder */
+  double v;                   /* Neutron velocity */
+  double dt0, dt1, dt2, dt;   /* Flight times through sample */
+  double l_full;              /* Flight path length for non-scattered neutron */
+  double l_i, l_o = 0;        /* Flight path lenght in/out for scattered neutron */
+  double my_a;                /* Velocity-dependent attenuation factor */
+  double solid_angle = 0;     /* Solid angle of target as seen from scattering point */
+  double aim_x, aim_y, aim_z; /* Position of target relative to scattering point */
+  double kix, kiy, kiz, qx, qy, qz;
+  double kf, kfx, kfy, kfz, kiideal, kfideal, Efideal;
+  double Ef, Ei, pol, rbool;
   int spot;
-  int intersect=0;
+  int intersect = 0;
 
   if (VarsV.isrect)
-    intersect = box_intersect(&t0, &t3, x, y, z, vx, vy, vz, xwidth, yheight, zthick);
+    intersect = box_intersect (&t0, &t3, x, y, z, vx, vy, vz, xwidth, yheight, zthick);
   else
-    intersect = cylinder_intersect(&t0, &t3, x, y, z, vx, vy, vz, radius_o, h);
-  if(intersect)
-  {
-    if(t0 < 0) ABSORB; /* we already passed the sample */
+    intersect = cylinder_intersect (&t0, &t3, x, y, z, vx, vy, vz, radius_o, h);
+  if (intersect) {
+    if (t0 < 0)
+      ABSORB; /* we already passed the sample */
     /* Neutron enters at t=t0. */
 
-    dt0 = t3-t0;                /* Time in sample, */
-    v = sqrt(vx*vx + vy*vy + vz*vz);
-    kix=vx*V2K;kiy=vy*V2K;kiz=vz*V2K;
-    Ei=v*v*VS2E;
-    l_full = v * (dt0);   /* Length of full path through sample */
-    dt = rand01()*(dt0);    /* Time of scattering (relative to t0) */
-    l_i = v*dt;                 /* Penetration in sample */
+    dt0 = t3 - t0; /* Time in sample, */
+    v = sqrt (vx * vx + vy * vy + vz * vz);
+    kix = vx * V2K;
+    kiy = vy * V2K;
+    kiz = vz * V2K;
+    Ei = v * v * VS2E;
+    l_full = v * (dt0);     /* Length of full path through sample */
+    dt = rand01 () * (dt0); /* Time of scattering (relative to t0) */
+    l_i = v * dt;           /* Penetration in sample */
 
-    PROP_DT(dt+t0);             /* Point of scattering */
+    PROP_DT (dt + t0); /* Point of scattering */
 
-    Efideal=Eideal-w;
-    kfideal=sqrt(Efideal/2.0723);
-    kiideal=SE2V*sqrt(Eideal)*V2K;
-    spot=floor(n_spots*rand01())+1;
-    pol=(spot-1)*2.0*PI/n_spots;
-    qz=kiideal-kfideal*cos(two_theta*DEG2RAD);
-    qx=-kfideal*cos(pol)*sin(two_theta*DEG2RAD);
-    qy=-kfideal*sin(pol)*sin(two_theta*DEG2RAD);
-    kfx=kix-qx;
-    kfy=kiy-qy;
-    kfz=kiz-qz;
+    Efideal = Eideal - w;
+    kfideal = sqrt (Efideal / 2.0723);
+    kiideal = SE2V * sqrt (Eideal) * V2K;
+    spot = floor (n_spots * rand01 ()) + 1;
+    pol = (spot - 1) * 2.0 * PI / n_spots;
+    qz = kiideal - kfideal * cos (two_theta * DEG2RAD);
+    qx = -kfideal * cos (pol) * sin (two_theta * DEG2RAD);
+    qy = -kfideal * sin (pol) * sin (two_theta * DEG2RAD);
+    kfx = kix - qx;
+    kfy = kiy - qy;
+    kfz = kiz - qz;
 
-
-
-    if(!VarsV.isrect) {
-      if(!cylinder_intersect(&t0, &t3, x, y, z, vx, vy, vz, radius_o, h))
-      {
+    if (!VarsV.isrect) {
+      if (!cylinder_intersect (&t0, &t3, x, y, z, vx, vy, vz, radius_o, h)) {
         /* ??? did not hit cylinder */
-        printf("FATAL ERROR: Did not hit cylinder from inside.\n");
-        exit(1);
+        printf ("FATAL ERROR: Did not hit cylinder from inside.\n");
+        exit (1);
       }
       dt = t3;
     }
-    vx = kfx*K2V;
-    vy = kfy*K2V;
-    vz = kfz*K2V;
+    vx = kfx * K2V;
+    vy = kfy * K2V;
+    vz = kfz * K2V;
     /*printf("vx:%g vy:%g vz:%g \n", vx,vy,vz);*/
-    my_a = VarsV.my_a_v/v;
-    p*=1;
+    my_a = VarsV.my_a_v / v;
+    p *= 1;
     SCATTER;
   }
 %}
 
 MCDISPLAY
 %{
-  
+
   if (!VarsV.isrect) {
-    circle("xz", 0,  h/2.0, 0, radius_o);
-    circle("xz", 0, -h/2.0, 0, radius_o);
-    line(-radius_o, -h/2.0, 0, -radius_o, +h/2.0, 0);
-    line(+radius_o, -h/2.0, 0, +radius_o, +h/2.0, 0);
-    line(0, -h/2.0, -radius_o, 0, +h/2.0, -radius_o);
-    line(0, -h/2.0, +radius_o, 0, +h/2.0, +radius_o);
-  }
-  else
-  {
-    double xmin = -0.5*xwidth;
-    double xmax =  0.5*xwidth;
-    double ymin = -0.5*yheight;
-    double ymax =  0.5*yheight;
-    double zmin = -0.5*zthick;
-    double zmax =  0.5*zthick;
-    multiline(5, xmin, ymin, zmin,
-                 xmax, ymin, zmin,
-                 xmax, ymax, zmin,
-                 xmin, ymax, zmin,
-                 xmin, ymin, zmin);
-    multiline(5, xmin, ymin, zmax,
-                 xmax, ymin, zmax,
-                 xmax, ymax, zmax,
-                 xmin, ymax, zmax,
-                 xmin, ymin, zmax);
-    line(xmin, ymin, zmin, xmin, ymin, zmax);
-    line(xmax, ymin, zmin, xmax, ymin, zmax);
-    line(xmin, ymax, zmin, xmin, ymax, zmax);
-    line(xmax, ymax, zmin, xmax, ymax, zmax);
+    circle ("xz", 0, h / 2.0, 0, radius_o);
+    circle ("xz", 0, -h / 2.0, 0, radius_o);
+    line (-radius_o, -h / 2.0, 0, -radius_o, +h / 2.0, 0);
+    line (+radius_o, -h / 2.0, 0, +radius_o, +h / 2.0, 0);
+    line (0, -h / 2.0, -radius_o, 0, +h / 2.0, -radius_o);
+    line (0, -h / 2.0, +radius_o, 0, +h / 2.0, +radius_o);
+  } else {
+    double xmin = -0.5 * xwidth;
+    double xmax = 0.5 * xwidth;
+    double ymin = -0.5 * yheight;
+    double ymax = 0.5 * yheight;
+    double zmin = -0.5 * zthick;
+    double zmax = 0.5 * zthick;
+    multiline (5, xmin, ymin, zmin, xmax, ymin, zmin, xmax, ymax, zmin, xmin, ymax, zmin, xmin, ymin, zmin);
+    multiline (5, xmin, ymin, zmax, xmax, ymin, zmax, xmax, ymax, zmax, xmin, ymax, zmax, xmin, ymin, zmax);
+    line (xmin, ymin, zmin, xmin, ymin, zmax);
+    line (xmax, ymin, zmin, xmax, ymin, zmax);
+    line (xmin, ymax, zmin, xmin, ymax, zmax);
+    line (xmax, ymax, zmin, xmax, ymax, zmax);
   }
 %}
 

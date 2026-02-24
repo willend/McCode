@@ -92,7 +92,7 @@ class InstrExampleTest:
             "errmsg"       : self.errmsg,
         }
     def save(self, infolder):
-        text = json.dumps(self.get_json_repr())
+        text = json.dumps(self.get_json_repr(), indent=2)
         f = open(join(infolder, self.get_display_name()) + ".json", 'w').write(text)
     def get_display_name(self):
         if self.testnb > 1:
@@ -376,7 +376,10 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         if test.didrun and not failed:
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
-            logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " / " + str(test.targetval) + " = " + str(round(100.0*test.testval/test.targetval)) + " %]")
+            if test.targetval!=0: # Normal situation, non-zero target value
+                logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " / " + str(test.targetval) + " = " + str(round(100.0*test.testval/test.targetval)) + " %]")
+            else:                 # Special case, expected test target value is 0
+                logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]")
 
         # save test result to disk
         test.testcomplete = True

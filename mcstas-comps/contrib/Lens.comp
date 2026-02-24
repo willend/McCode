@@ -121,52 +121,51 @@ p_interact=0.1,focus_aw=10,focus_ah=10,RMS=0, string geometry=0)
 
 SHARE
 %{
-/* support for OFF/PLY geometry */
-%include "read_table-lib"
-%include "interoff-lib"
+  /* support for OFF/PLY geometry */
+  %include "read_table-lib"
+  %include "interoff-lib"
 
-/* Lens_roughness: function to rotate normal vector around axis for roughness
-*                 with specified tilt angle (deg)
+  /* Lens_roughness: function to rotate normal vector around axis for roughness
+   *                 with specified tilt angle (deg)
    * RETURNS: rotated nx,ny,nz coordinates
    */
-#pragma acc routine seq
-  void Lens_roughness(double *nx, double *ny, double *nz, double tilt, _class_particle* _particle)
-  {
-    double nt_x, nt_y, nt_z;  /* transverse vector */
-    double n1_x, n1_y, n1_z;  /* normal vector (tmp) */
+  #pragma acc routine seq
+  void
+  Lens_roughness (double* nx, double* ny, double* nz, double tilt, _class_particle* _particle) {
+    double nt_x, nt_y, nt_z; /* transverse vector */
+    double n1_x, n1_y, n1_z; /* normal vector (tmp) */
 
     /* normal vector n_z = [ 0,1,0], n_t = n x n_z; */
-    vec_prod(nt_x,nt_y,nt_z, *nx,*ny,*nz, 0,1,0);
+    vec_prod (nt_x, nt_y, nt_z, *nx, *ny, *nz, 0, 1, 0);
 
     /* rotate n with angle wav_z around n_t -> n1 */
-    tilt  *= DEG2RAD/(sqrt(8*log(2)))*randnorm();
-    rotate(n1_x,n1_y,n1_z, *nx,*ny,*nz, tilt, nt_x,nt_y,nt_z);
+    tilt *= DEG2RAD / (sqrt (8 * log (2))) * randnorm ();
+    rotate (n1_x, n1_y, n1_z, *nx, *ny, *nz, tilt, nt_x, nt_y, nt_z);
 
     /* rotate n1 with angle phi around n -> nt */
-    rotate(nt_x,nt_y,nt_z, n1_x,n1_y,n1_z, 2*PI*rand01(), *nx,*ny,*nz);
+    rotate (nt_x, nt_y, nt_z, n1_x, n1_y, n1_z, 2 * PI * rand01 (), *nx, *ny, *nz);
 
-    *nx=nt_x;
-    *ny=nt_y;
-    *nz=nt_z;
+    *nx = nt_x;
+    *ny = nt_y;
+    *nz = nt_z;
   }
 
-/* parabola_intersect: Calculate intersection between a line and a parabola with
-*  axis along z, focal length f, centered at (0,0,0)
- * RETURNS 0 when no intersection is found
- *      or 1 in case of intersection with resulting times t0 and t1 */
-#pragma acc routine seq
-  int parabola_intersect(double *t0, double *t1, double x, double y, double z,
-                 double vx, double vy, double vz, double f)
-  {
-     /* equation of line: (x,y,z) = (vx,vy,vz)*t+(x,y,z)_0 */
-     /* equation of parabola:  z  = (x^2+y^2)/4/f
-        that is: 4*f*(vz*t+z0) = (vx*t+x0)^2 + (vy*t+y0)^2 */
+  /* parabola_intersect: Calculate intersection between a line and a parabola with
+   *  axis along z, focal length f, centered at (0,0,0)
+   * RETURNS 0 when no intersection is found
+   *      or 1 in case of intersection with resulting times t0 and t1 */
+  #pragma acc routine seq
+  int
+  parabola_intersect (double* t0, double* t1, double x, double y, double z, double vx, double vy, double vz, double f) {
+    /* equation of line: (x,y,z) = (vx,vy,vz)*t+(x,y,z)_0 */
+    /* equation of parabola:  z  = (x^2+y^2)/4/f
+       that is: 4*f*(vz*t+z0) = (vx*t+x0)^2 + (vy*t+y0)^2 */
 
-     double A = vx*vx+vy*vy;
-     double B = 2*vx*x+2*vy*y-4*vz*f;
-     double C = x*x+y*y-4*f*z;
+    double A = vx * vx + vy * vy;
+    double B = 2 * vx * x + 2 * vy * y - 4 * vz * f;
+    double C = x * x + y * y - 4 * f * z;
 
-     return(solve_2nd_order(t0, t1, A,B,C));
+    return (solve_2nd_order (t0, t1, A, B, C));
   }
 
   /* Lens_intersect: function to compute intersection with lens surface
@@ -180,35 +179,35 @@ SHARE
    *          neutron must then be propagated on the surface with PROP_DT,
    *          and checked for actual intersection.
    */
-#pragma acc routine seq
-  double Lens_intersect(double x,double y,double z,
-    double vx,double vy,double vz,
-    double shift, double radius,
-    int type, double arg)
-  {
+  #pragma acc routine seq
+  double
+  Lens_intersect (double x, double y, double z, double vx, double vy, double vz, double shift, double radius, int type, double arg) {
     double t0, t1;
 
-    if (!vz || !type || !radius) return -1;
-    if (type==1 && arg) {   /* spherical */
-      if (sphere_intersect(&t0,&t1, x,y,z+shift+arg, vx,vy,vz, fabs(arg))) {
-        return ( arg > 0 ? t1 : t0 ); /* concave : convex surface */
+    if (!vz || !type || !radius)
+      return -1;
+    if (type == 1 && arg) { /* spherical */
+      if (sphere_intersect (&t0, &t1, x, y, z + shift + arg, vx, vy, vz, fabs (arg))) {
+        return (arg > 0 ? t1 : t0); /* concave : convex surface */
       } else
-        return(-1);
-    } else if (type==2 && arg) { /* parabolic */
-      if (parabola_intersect(&t0, &t1, x,y,z+shift, vx,vy,vz, arg)) {
-        if (t0 < 0 && 0 < t1) return(t1);
-        if (t1 < 0 && 0 < t0) return(t0);
-        return(t1 < t0 ? t1 : t0);
+        return (-1);
+    } else if (type == 2 && arg) { /* parabolic */
+      if (parabola_intersect (&t0, &t1, x, y, z + shift, vx, vy, vz, arg)) {
+        if (t0 < 0 && 0 < t1)
+          return (t1);
+        if (t1 < 0 && 0 < t0)
+          return (t0);
+        return (t1 < t0 ? t1 : t0);
       } else
-        return(-1);
+        return (-1);
       /* end parabola */
-    } else if (type==3) {    /* planar */
-      if (plane_intersect(&t0, x,y,z+shift, vx,vy,vz, -sin(arg),0,-cos(arg), 0,0,0)>0)
-        return(t0);
+    } else if (type == 3) { /* planar */
+      if (plane_intersect (&t0, x, y, z + shift, vx, vy, vz, -sin (arg), 0, -cos (arg), 0, 0, 0) > 0)
+        return (t0);
       else
-        return(-1);
-    } else  /* unsupported geometry */
-      return(-1);
+        return (-1);
+    } else /* unsupported geometry */
+      return (-1);
   }
 %}
 
@@ -226,24 +225,22 @@ DECLARE
 INITIALIZE
 %{
   /* density: Number of atoms by AA^3, pow(10,-24) stands for conversion from cm^3 to AA^3 */
-  if (density<=0 || weight<=0)
-    exit(printf("Lens: %s: FATAL: invalid material density or molar weight: density=%g weight=%g\n",
-      NAME_CURRENT_COMP, density, weight));
-  rho= density*6.02214179*1e23*1e-24/weight;
-  if (sigma_coh==0)
-    exit(printf("Lens: %s: FATAL: invalid material coherent cross section: sigma_coh=%g\n",
-      NAME_CURRENT_COMP, sigma_coh));
-  bc=sqrt(fabs(sigma_coh)*100/4/PI)*1e-5;      /* bound coherent cross section */
-  if (sigma_coh<0) bc *= -1;
-  if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
+  if (density <= 0 || weight <= 0)
+    exit (printf ("Lens: %s: FATAL: invalid material density or molar weight: density=%g weight=%g\n", NAME_CURRENT_COMP, density, weight));
+  rho = density * 6.02214179 * 1e23 * 1e-24 / weight;
+  if (sigma_coh == 0)
+    exit (printf ("Lens: %s: FATAL: invalid material coherent cross section: sigma_coh=%g\n", NAME_CURRENT_COMP, sigma_coh));
+  bc = sqrt (fabs (sigma_coh) * 100 / 4 / PI) * 1e-5; /* bound coherent cross section */
+  if (sigma_coh < 0)
+    bc *= -1;
+  if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
     #ifndef USE_OFF
-    fprintf(stderr,"Error: You are attempting to use an OFF geometry without -DUSE_OFF. You will need to recompile with that define set!\n");
-    exit(-1);
+    fprintf (stderr, "Error: You are attempting to use an OFF geometry without -DUSE_OFF. You will need to recompile with that define set!\n");
+    exit (-1);
     #else
     /* init the OFF/PLY without centering and scaling */
-	  if (!off_init(geometry, 0, 0, 0, 1, &offdata))
-      exit(printf("Lens: %s: FATAL: could not initialize geometry file %s [OFF/PLY]\n",
-      NAME_CURRENT_COMP, geometry));
+    if (!off_init (geometry, 0, 0, 0, 1, &offdata))
+      exit (printf ("Lens: %s: FATAL: could not initialize geometry file %s [OFF/PLY]\n", NAME_CURRENT_COMP, geometry));
     #endif
   }
 
@@ -252,323 +249,361 @@ INITIALIZE
 
   focus_aw *= DEG2RAD;
   focus_ah *= DEG2RAD;
-  my_s  = rho * 100 *(sigma_inc+sigma_coh);
-  my_a_v= rho * 100 * sigma_abs;
+  my_s = rho * 100 * (sigma_inc + sigma_coh);
+  my_a_v = rho * 100 * sigma_abs;
 %}
 
 TRACE
 %{
 
-double n; /* refractive index */
-double v, lambda; /* neutron speed and wavelength */
-double dt;        /* time to intersection */
-double theta_RMS;
-double nx=0, ny=0, nz=0; /* normal vector to surface */
-double ax, ay, az; /* temporary vector for surface refraction */
-double alpha1, beta1, theta1, theta2; /* angles for refraction computation */
+  double n;         /* refractive index */
+  double v, lambda; /* neutron speed and wavelength */
+  double dt;        /* time to intersection */
+  double theta_RMS;
+  double nx = 0, ny = 0, nz = 0;        /* normal vector to surface */
+  double ax, ay, az;                    /* temporary vector for surface refraction */
+  double alpha1, beta1, theta1, theta2; /* angles for refraction computation */
 
-#ifdef OPENACC
-#ifdef USE_OFF
-off_struct thread_offdata = offdata;
-#endif
-#else
-#define thread_offdata offdata
-#endif
-
-/* iterate two faces intersection until no more is possible */
-do {
-  /* ======================== First face of the lens ========================== */
-  /* determine intersection time */
-  nx=ny=nz=0;
+  #ifdef OPENACC
   #ifdef USE_OFF
-  if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
-    double t1=0,t0=0;
-    Coords n, n0, n1;
-    n=n0=n1=coords_set(0,0,0);
-    int    intersect=off_intersect  (&t0, &t1, &n0, &n1, x,y,z, vx,vy,vz, 0, 0, 0, thread_offdata);
-    if (!intersect) dt=-1;
-    else if (t0 < 0 && 0 < t1)      { dt = t1; n=n1; }
-    else if (t1 < 0 && 0 < t0) { dt = t0; n=n0; }
-    else {
-      if (t1 < t0) { dt=t1; n=n1; }
-      else  { dt=t0; n=n0; }
-    }
-    coords_get(n, &nx, &ny, &nz);
-  } else
+  off_struct thread_offdata = offdata;
   #endif
-  if (r1 && !focus1) {
-    dt = Lens_intersect(x,y,z, vx, vy, vz, thickness/2, radius, 1, r1);
-  } else if (!r1 && focus1){
-      if (focus1>0){
-          dt = Lens_intersect(x,y,z, vx, vy, vz, thickness/2, radius, 2, -focus1);
-      }else{
-          dt = Lens_intersect(x,y,z, vx, vy, vz, thickness/2 + radius*radius/(4*fabs(focus1)) , radius, 2, -focus1);
-      }
-  } else {
-    dt = Lens_intersect(x,y,z, vx, vy, vz, thickness/2, radius, 3, phiy1);
-  }
-  if (dt <= 0) break; /* no intersection: exit from main loop */
-
-  /* propagate to surface (1) */
-  PROP_DT(dt);
-
-  /* check for lens cross section (radius) */
-  if (radius && x*x+y*y > radius*radius) break; /* outside from cross section: exit from main loop */
-  SCATTER;
-
-  v=sqrt(vx*vx+vy*vy+vz*vz);
-
-  if (v) lambda=3956.0032/v; else ABSORB;
-
-  /* compute refractive index */
-  /* without inc nor abs: n  = sqrt(1-(lambda*lambda*rho*bc/PI));   */
-  /* M. L. Goldberger et al, Phys. Rev. 71, 294 - 310 (1947) */
-  /* alpha1 = (sigma_inc+sigma_abs*2200/v)/2/lambda;
-  n      = 1-lambda*lambda*rho/2/PI*sqrt(bc*bc-alpha1*alpha1); */
-  n   = sqrt(1-(lambda*lambda*rho*bc/PI));
-
-#pragma acc atomic
-  mean_n += n*p;
-#pragma acc atomic
-  events += p;
-
-  theta_RMS=atan(2*RMS/lambda);           /* cone angle from RMS roughness */
-
-  /* compute normal vector (1) when not given by OFF/PLY */
-  if (!nx && !ny && !nz) {
-    dt = 0;
-    if (r1 && !focus1) {
-      double sign=r1/fabs(r1);
-      nx=-sign*x;
-      ny=-sign*y;
-      nz=sign*(-z-thickness/2-r1);
-    } else if (!r1 && focus1) {
-      nx=-x/2/focus1;
-      ny=-y/2/focus1;
-      nz=-1;
-    } else {
-      nx=-sin(phiy1);
-      ny=0;
-      nz=-cos(phiy1);
-    }
-  }
-  /* tilt normal vector for roughness, in cone theta_RMS */
-  if (RMS>0) Lens_roughness(&nx, &ny, &nz, theta_RMS, _particle);
-
-  /* compute incoming angles w.r.t surface */
-  NORM(nx,ny,nz);
-  vec_prod(ax,ay,az,nx,ny,nz,-vx,-vy,-vz);
-  /* if n and v are parallel - no refraction.*/
-  if (ax!=0 || ay!=0 || az!=0){
-      theta1 = atan2(sqrt(ax*ax+ay*ay+az*az),scalar_prod(nx,ny,nz,-vx,-vy,-vz));
-
-      /* Fresnel formula for refraction */
-      theta2 = asin(sin(theta1)/n);
-
-      /* compute new velocity after refraction */
-      alpha1 = (sin(theta2))/(sin(theta1));
-      beta1  = (alpha1*v*cos(theta1))-(v*cos(theta2));
-      vx = beta1*nx + alpha1*vx;
-      vy = beta1*ny + alpha1*vy;
-      vz = beta1*nz + alpha1*vz;
-  }
-  /* ======================== Second face of the lens ========================= */
-  /* determine intersection time to go to second surface */
-  nx=ny=nz=0;
-  #ifdef USE_OFF
-  if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
-    double t1=0,t0=0;
-    Coords n, n0, n1;
-    n=n0=n1=coords_set(0,0,0);
-    int    intersect=off_intersect  (&t0, &t1, &n0, &n1, x,y,z, vx,vy,vz, 0, 0, 0, thread_offdata);
-    if (!intersect) dt=-1;
-    else if (t0 < 0 && 0 < t1)      { dt = t1; n=n1; }
-    else if (t1 < 0 && 0 < t0) { dt = t0; n=n0; }
-    else {
-      if (t1 < t0) { dt=t1; n=n1; }
-      else  { dt=t0; n=n0; }
-    }
-    coords_get(n, &nx, &ny, &nz);
-  } else
+  #else
+  #define thread_offdata offdata
   #endif
-  if (r2 && !focus2)
-    dt = Lens_intersect(x,y,z, vx, vy, vz, -thickness/2, radius, 1, -r2);
-  else if (!r2 && focus2){
-      if (focus2>0){
-          dt = Lens_intersect(x,y,z, vx, vy, vz, -thickness/2, radius, 2, focus2);
-      }else{
-          dt = Lens_intersect(x,y,z, vx, vy, vz, -thickness/2 - radius*radius/(4*fabs(focus2)) , radius, 2, focus2);
+
+  /* iterate two faces intersection until no more is possible */
+  do {
+    /* ======================== First face of the lens ========================== */
+    /* determine intersection time */
+    nx = ny = nz = 0;
+    #ifdef USE_OFF
+    if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
+      double t1 = 0, t0 = 0;
+      Coords n, n0, n1;
+      n = n0 = n1 = coords_set (0, 0, 0);
+      int intersect = off_intersect (&t0, &t1, &n0, &n1, x, y, z, vx, vy, vz, 0, 0, 0, thread_offdata);
+      if (!intersect)
+        dt = -1;
+      else if (t0 < 0 && 0 < t1) {
+        dt = t1;
+        n = n1;
+      } else if (t1 < 0 && 0 < t0) {
+        dt = t0;
+        n = n0;
+      } else {
+        if (t1 < t0) {
+          dt = t1;
+          n = n1;
+        } else {
+          dt = t0;
+          n = n0;
+        }
       }
-  }else{
-    dt = Lens_intersect(x,y,z, vx, vy, vz, -thickness/2, radius, 3, phiy2);
-  }
-  if (dt <= 0) break; /* no intersection: exit from main loop */
+      coords_get (n, &nx, &ny, &nz);
+    } else
+      #endif
+      if (r1 && !focus1) {
+        dt = Lens_intersect (x, y, z, vx, vy, vz, thickness / 2, radius, 1, r1);
+      } else if (!r1 && focus1) {
+        if (focus1 > 0) {
+          dt = Lens_intersect (x, y, z, vx, vy, vz, thickness / 2, radius, 2, -focus1);
+        } else {
+          dt = Lens_intersect (x, y, z, vx, vy, vz, thickness / 2 + radius * radius / (4 * fabs (focus1)), radius, 2, -focus1);
+        }
+      } else {
+        dt = Lens_intersect (x, y, z, vx, vy, vz, thickness / 2, radius, 3, phiy1);
+      }
+    if (dt <= 0)
+      break; /* no intersection: exit from main loop */
 
-  /* =============== Absorption and scattering between the two faces =========== */
-  double my_a,my_t,p_trans,p_scatt,mc_trans,mc_scatt,ws,d_path;
-  double p_mult=1;
-  int    flag=0;
-  double l_i=0;
-  double solid_angle=0;
+    /* propagate to surface (1) */
+    PROP_DT (dt);
 
-  my_a = my_a_v*(2200/v);
-  my_t = my_a + my_s;
-  ws = my_s/my_t;  /* (inc+coh)/(inc+coh+abs) */
-
-  d_path = v * dt;
-
-  /* Proba of transmission along length d_path */
-  p_trans = exp(-my_t*d_path);
-  p_scatt = 1 - p_trans;
-
-  flag = 0; /* flag used for propagation to exit point before ending */
-  /* are we next to the exit ? probably no scattering (avoid rounding errors) */
-  if (my_s*d_path <= 4e-7) {
-    flag = 1;           /* No interaction before the exit */
-  }
-
-  /* force a given fraction of the beam to scatter */
-  if (p_interact>0 && p_interact<=1) {
-    /* we force a portion of the beam to interact */
-    /* This is used to improve statistics on single scattering (and multiple) */
-    mc_trans = 1-p_interact;
-  } else {
-    mc_trans = p_trans; /* 1 - p_scatt */
-  }
-
-  mc_scatt = 1 - mc_trans; /* portion of beam to scatter (or force to) */
-  if (mc_scatt <= 0 || mc_scatt>1) flag=1;
-
-  /* MC choice: Interaction or transmission ? */
-  if (!flag && mc_scatt > 0 && (mc_scatt >= 1 || (rand01()) < mc_scatt)) { /* Interaction neutron/sample */
-    p_mult *= ws; /* Update weight ; account for absorption and retain scattered fraction */
-    /* we have chosen portion mc_scatt of beam instead of p_scatt, so we compensate */
-    p_mult *= fabs(p_scatt/mc_scatt); /* lower than 1 */
-  } else {
-    flag = 1; /* Transmission : no interaction neutron/sample */
-    p_mult *= fabs(p_trans/mc_trans);  /* attenuate beam by portion which is scattered (and left along) */
-  }
-
-  if (flag) { /* propagate directly to secound surface */
-    if (!isnan(p_mult)) {
-	p *= p_mult; /* apply absorption correction */
-    } else {
-        ABSORB;
-    }
-  }
-  else
-  {
-    double a;
-    if (my_t*d_path < 1e-6){
-      /* For very weak scattering, use simple uniform sampling of scattering
-      point to avoid rounding errors. */
-      dt = rand0max(d_path); /* length */
-    } else {
-      a = rand0max((1 - exp(-my_t*d_path)));
-      dt = -log(1 - a) / my_t; /* length */
-    }
-
-    l_i = dt;/* Penetration in sample: scattering+abs */
-    dt /= v; /* Time from present position to scattering point */
-    PROP_DT(dt); /* Point of scattering */
-
-    randvec_target_rect_angular(&vx, &vy, &vz, &solid_angle,0,0,1, focus_aw, focus_ah, ROT_A_CURRENT_COMP);
-    NORM(vx, vy, vz);
-
-    vx*=v;
-    vy*=v;
-    vz*=v;
-
-    p_mult *= solid_angle/4/PI;
-    if (!isnan(p_mult)) {
-	p *= p_mult;
-    } else {
-        ABSORB;
-    }
+    /* check for lens cross section (radius) */
+    if (radius && x * x + y * y > radius * radius)
+      break; /* outside from cross section: exit from main loop */
     SCATTER;
 
-    /* recompute new intersection time to go to second surface (velocity changed during scattering event) */
-    nx=ny=nz=0;
-    #ifdef USE_OFF
-    if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
-      double t1=0,t0=0;
-      Coords n, n0, n1;
-      n=n0=n1=coords_set(0,0,0);
-      int    intersect=off_intersect  (&t0, &t1, &n0, &n1, x,y,z, vx,vy,vz, 0, 0, 0, thread_offdata);
-      if (!intersect) dt=-1;
-      else if (t0 < 0 && 0 < t1)      { dt = t1; n=n1; }
-      else if (t1 < 0 && 0 < t0) { dt = t0; n=n0; }
-      else {
-        if (t1 < t0) { dt=t1; n=n1; }
-        else  { dt=t0; n=n0; }
-      }
-      coords_get(n, &nx, &ny, &nz);
-    } else
-    #endif
-    if (r2 && !focus2)
-      dt = Lens_intersect(x,y,z, vx, vy, vz, -thickness/2, radius, 1, -r2);
-    else if (!r2 && focus2)
-      if (focus2>0){
-          dt = Lens_intersect(x,y,z, vx, vy, vz, -thickness/2, radius, 2, focus2);
-      }else{
-          dt = Lens_intersect(x,y,z, vx, vy, vz, -thickness/2 - radius*radius/(4*fabs(focus2)) , radius, 2, focus2);
-      }
+    v = sqrt (vx * vx + vy * vy + vz * vz);
+
+    if (v)
+      lambda = 3956.0032 / v;
     else
-      dt = Lens_intersect(x,y,z, vx, vy, vz, -thickness/2, radius, 3, phiy2);
+      ABSORB;
 
-    if (dt <= 0) break; /* no intersection: exit from main loop */
+    /* compute refractive index */
+    /* without inc nor abs: n  = sqrt(1-(lambda*lambda*rho*bc/PI));   */
+    /* M. L. Goldberger et al, Phys. Rev. 71, 294 - 310 (1947) */
+    /* alpha1 = (sigma_inc+sigma_abs*2200/v)/2/lambda;
+    n      = 1-lambda*lambda*rho/2/PI*sqrt(bc*bc-alpha1*alpha1); */
+    n = sqrt (1 - (lambda * lambda * rho * bc / PI));
 
-  } /* end scattering handling in material*/
+    #pragma acc atomic
+    mean_n += n * p;
+    #pragma acc atomic
+    events += p;
 
-  /* propagate to surface */
-  PROP_DT(dt);
+    theta_RMS = atan (2 * RMS / lambda); /* cone angle from RMS roughness */
 
-  /* check for lens cross section (radius) */
-  if (radius && x*x+y*y > radius*radius) break; /* outside from cross section: exit from main loop */
-  SCATTER;
-
-  v=sqrt(vx*vx+vy*vy+vz*vz);
-
-  /* compute normal vector (2) when not given by OFF/PLY */
-  if (!nx && !ny && !nz) {
-    dt = 0;
-    if (r2 && !focus2) {
-      double sign=r2/fabs(r2);
-      nx=sign*x;
-      ny=sign*y;
-      nz=sign*(z-thickness/2-r2);
-    } else if (!r2 && focus2){
-      nx=x/2/focus2;
-      ny=y/2/focus2;
-      nz=-1;
-    } else {
-      nx=-sin(phiy2);
-      ny=0;
-      nz=-cos(phiy2);
+    /* compute normal vector (1) when not given by OFF/PLY */
+    if (!nx && !ny && !nz) {
+      dt = 0;
+      if (r1 && !focus1) {
+        double sign = r1 / fabs (r1);
+        nx = -sign * x;
+        ny = -sign * y;
+        nz = sign * (-z - thickness / 2 - r1);
+      } else if (!r1 && focus1) {
+        nx = -x / 2 / focus1;
+        ny = -y / 2 / focus1;
+        nz = -1;
+      } else {
+        nx = -sin (phiy1);
+        ny = 0;
+        nz = -cos (phiy1);
+      }
     }
-  }
-  /* tilt normal vector for roughness, in cone theta_RMS */
-  if (RMS>0) Lens_roughness(&nx, &ny, &nz, theta_RMS, _particle);
+    /* tilt normal vector for roughness, in cone theta_RMS */
+    if (RMS > 0)
+      Lens_roughness (&nx, &ny, &nz, theta_RMS, _particle);
 
-  /* compute incoming angles w.r.t surface */
-  NORM(nx,ny,nz);
-  vec_prod(ax,ay,az,nx,ny,nz,-vx,-vy,-vz);
-  /* if n and v are parallel - no refraction.*/
-  if (ax!=0 || ay!=0 || az!=0){
-      theta1 = atan2(sqrt(ax*ax+ay*ay+az*az),scalar_prod(nx,ny,nz,-vx,-vy,-vz));
+    /* compute incoming angles w.r.t surface */
+    NORM (nx, ny, nz);
+    vec_prod (ax, ay, az, nx, ny, nz, -vx, -vy, -vz);
+    /* if n and v are parallel - no refraction.*/
+    if (ax != 0 || ay != 0 || az != 0) {
+      theta1 = atan2 (sqrt (ax * ax + ay * ay + az * az), scalar_prod (nx, ny, nz, -vx, -vy, -vz));
 
       /* Fresnel formula for refraction */
-      theta2=asin(sin(theta1)*n);
+      theta2 = asin (sin (theta1) / n);
 
       /* compute new velocity after refraction */
-      alpha1 = (sin(theta2))/(sin(theta1));
-      beta1 = (alpha1*v*cos(theta1))-(v*cos(theta2));
-      vx = beta1*nx + alpha1*vx;
-      vy = beta1*ny + alpha1*vy;
-      vz = beta1*nz + alpha1*vz;
-  }
-} while (dt>0); /* loop until no more intersection */
+      alpha1 = (sin (theta2)) / (sin (theta1));
+      beta1 = (alpha1 * v * cos (theta1)) - (v * cos (theta2));
+      vx = beta1 * nx + alpha1 * vx;
+      vy = beta1 * ny + alpha1 * vy;
+      vz = beta1 * nz + alpha1 * vz;
+    }
+    /* ======================== Second face of the lens ========================= */
+    /* determine intersection time to go to second surface */
+    nx = ny = nz = 0;
+    #ifdef USE_OFF
+    if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
+      double t1 = 0, t0 = 0;
+      Coords n, n0, n1;
+      n = n0 = n1 = coords_set (0, 0, 0);
+      int intersect = off_intersect (&t0, &t1, &n0, &n1, x, y, z, vx, vy, vz, 0, 0, 0, thread_offdata);
+      if (!intersect)
+        dt = -1;
+      else if (t0 < 0 && 0 < t1) {
+        dt = t1;
+        n = n1;
+      } else if (t1 < 0 && 0 < t0) {
+        dt = t0;
+        n = n0;
+      } else {
+        if (t1 < t0) {
+          dt = t1;
+          n = n1;
+        } else {
+          dt = t0;
+          n = n0;
+        }
+      }
+      coords_get (n, &nx, &ny, &nz);
+    } else
+      #endif
+      if (r2 && !focus2)
+        dt = Lens_intersect (x, y, z, vx, vy, vz, -thickness / 2, radius, 1, -r2);
+      else if (!r2 && focus2) {
+        if (focus2 > 0) {
+          dt = Lens_intersect (x, y, z, vx, vy, vz, -thickness / 2, radius, 2, focus2);
+        } else {
+          dt = Lens_intersect (x, y, z, vx, vy, vz, -thickness / 2 - radius * radius / (4 * fabs (focus2)), radius, 2, focus2);
+        }
+      } else {
+        dt = Lens_intersect (x, y, z, vx, vy, vz, -thickness / 2, radius, 3, phiy2);
+      }
+    if (dt <= 0)
+      break; /* no intersection: exit from main loop */
 
+    /* =============== Absorption and scattering between the two faces =========== */
+    double my_a, my_t, p_trans, p_scatt, mc_trans, mc_scatt, ws, d_path;
+    double p_mult = 1;
+    int flag = 0;
+    double l_i = 0;
+    double solid_angle = 0;
+
+    my_a = my_a_v * (2200 / v);
+    my_t = my_a + my_s;
+    ws = my_s / my_t; /* (inc+coh)/(inc+coh+abs) */
+
+    d_path = v * dt;
+
+    /* Proba of transmission along length d_path */
+    p_trans = exp (-my_t * d_path);
+    p_scatt = 1 - p_trans;
+
+    flag = 0; /* flag used for propagation to exit point before ending */
+    /* are we next to the exit ? probably no scattering (avoid rounding errors) */
+    if (my_s * d_path <= 4e-7) {
+      flag = 1; /* No interaction before the exit */
+    }
+
+    /* force a given fraction of the beam to scatter */
+    if (p_interact > 0 && p_interact <= 1) {
+      /* we force a portion of the beam to interact */
+      /* This is used to improve statistics on single scattering (and multiple) */
+      mc_trans = 1 - p_interact;
+    } else {
+      mc_trans = p_trans; /* 1 - p_scatt */
+    }
+
+    mc_scatt = 1 - mc_trans; /* portion of beam to scatter (or force to) */
+    if (mc_scatt <= 0 || mc_scatt > 1)
+      flag = 1;
+
+    /* MC choice: Interaction or transmission ? */
+    if (!flag && mc_scatt > 0 && (mc_scatt >= 1 || (rand01 ()) < mc_scatt)) { /* Interaction neutron/sample */
+      p_mult *= ws;                                                           /* Update weight ; account for absorption and retain scattered fraction */
+      /* we have chosen portion mc_scatt of beam instead of p_scatt, so we compensate */
+      p_mult *= fabs (p_scatt / mc_scatt); /* lower than 1 */
+    } else {
+      flag = 1;                            /* Transmission : no interaction neutron/sample */
+      p_mult *= fabs (p_trans / mc_trans); /* attenuate beam by portion which is scattered (and left along) */
+    }
+
+    if (flag) { /* propagate directly to secound surface */
+      if (!isnan (p_mult)) {
+        p *= p_mult; /* apply absorption correction */
+      } else {
+        ABSORB;
+      }
+    } else {
+      double a;
+      if (my_t * d_path < 1e-6) {
+        /* For very weak scattering, use simple uniform sampling of scattering
+        point to avoid rounding errors. */
+        dt = rand0max (d_path); /* length */
+      } else {
+        a = rand0max ((1 - exp (-my_t * d_path)));
+        dt = -log (1 - a) / my_t; /* length */
+      }
+
+      l_i = dt;     /* Penetration in sample: scattering+abs */
+      dt /= v;      /* Time from present position to scattering point */
+      PROP_DT (dt); /* Point of scattering */
+
+      randvec_target_rect_angular (&vx, &vy, &vz, &solid_angle, 0, 0, 1, focus_aw, focus_ah, ROT_A_CURRENT_COMP);
+      NORM (vx, vy, vz);
+
+      vx *= v;
+      vy *= v;
+      vz *= v;
+
+      p_mult *= solid_angle / 4 / PI;
+      if (!isnan (p_mult)) {
+        p *= p_mult;
+      } else {
+        ABSORB;
+      }
+      SCATTER;
+
+      /* recompute new intersection time to go to second surface (velocity changed during scattering event) */
+      nx = ny = nz = 0;
+      #ifdef USE_OFF
+      if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
+        double t1 = 0, t0 = 0;
+        Coords n, n0, n1;
+        n = n0 = n1 = coords_set (0, 0, 0);
+        int intersect = off_intersect (&t0, &t1, &n0, &n1, x, y, z, vx, vy, vz, 0, 0, 0, thread_offdata);
+        if (!intersect)
+          dt = -1;
+        else if (t0 < 0 && 0 < t1) {
+          dt = t1;
+          n = n1;
+        } else if (t1 < 0 && 0 < t0) {
+          dt = t0;
+          n = n0;
+        } else {
+          if (t1 < t0) {
+            dt = t1;
+            n = n1;
+          } else {
+            dt = t0;
+            n = n0;
+          }
+        }
+        coords_get (n, &nx, &ny, &nz);
+      } else
+        #endif
+        if (r2 && !focus2)
+          dt = Lens_intersect (x, y, z, vx, vy, vz, -thickness / 2, radius, 1, -r2);
+        else if (!r2 && focus2)
+          if (focus2 > 0) {
+            dt = Lens_intersect (x, y, z, vx, vy, vz, -thickness / 2, radius, 2, focus2);
+          } else {
+            dt = Lens_intersect (x, y, z, vx, vy, vz, -thickness / 2 - radius * radius / (4 * fabs (focus2)), radius, 2, focus2);
+          }
+        else
+          dt = Lens_intersect (x, y, z, vx, vy, vz, -thickness / 2, radius, 3, phiy2);
+
+      if (dt <= 0)
+        break; /* no intersection: exit from main loop */
+
+    } /* end scattering handling in material*/
+
+    /* propagate to surface */
+    PROP_DT (dt);
+
+    /* check for lens cross section (radius) */
+    if (radius && x * x + y * y > radius * radius)
+      break; /* outside from cross section: exit from main loop */
+    SCATTER;
+
+    v = sqrt (vx * vx + vy * vy + vz * vz);
+
+    /* compute normal vector (2) when not given by OFF/PLY */
+    if (!nx && !ny && !nz) {
+      dt = 0;
+      if (r2 && !focus2) {
+        double sign = r2 / fabs (r2);
+        nx = sign * x;
+        ny = sign * y;
+        nz = sign * (z - thickness / 2 - r2);
+      } else if (!r2 && focus2) {
+        nx = x / 2 / focus2;
+        ny = y / 2 / focus2;
+        nz = -1;
+      } else {
+        nx = -sin (phiy2);
+        ny = 0;
+        nz = -cos (phiy2);
+      }
+    }
+    /* tilt normal vector for roughness, in cone theta_RMS */
+    if (RMS > 0)
+      Lens_roughness (&nx, &ny, &nz, theta_RMS, _particle);
+
+    /* compute incoming angles w.r.t surface */
+    NORM (nx, ny, nz);
+    vec_prod (ax, ay, az, nx, ny, nz, -vx, -vy, -vz);
+    /* if n and v are parallel - no refraction.*/
+    if (ax != 0 || ay != 0 || az != 0) {
+      theta1 = atan2 (sqrt (ax * ax + ay * ay + az * az), scalar_prod (nx, ny, nz, -vx, -vy, -vz));
+
+      /* Fresnel formula for refraction */
+      theta2 = asin (sin (theta1) * n);
+
+      /* compute new velocity after refraction */
+      alpha1 = (sin (theta2)) / (sin (theta1));
+      beta1 = (alpha1 * v * cos (theta1)) - (v * cos (theta2));
+      vx = beta1 * nx + alpha1 * vx;
+      vy = beta1 * ny + alpha1 * vy;
+      vz = beta1 * nz + alpha1 * vz;
+    }
+  } while (dt > 0); /* loop until no more intersection */
 %}
 
 FINALLY %{
@@ -596,214 +631,209 @@ FINALLY %{
 
 MCDISPLAY
 %{
-  magnify("xy");
-  double theta1,theta00=0,theta01=0,eps,eps2,theta_line,distance,height,height2,dist_parab1,dist_parab2;
-  height=radius/2;
-  height2=radius/2;
-  dist_parab1=0.0;
-  dist_parab2=0.0;
+  magnify ("xy");
+  double theta1, theta00 = 0, theta01 = 0, eps, eps2, theta_line, distance, height, height2, dist_parab1, dist_parab2;
+  height = radius / 2;
+  height2 = radius / 2;
+  dist_parab1 = 0.0;
+  dist_parab2 = 0.0;
 
   /* draw circles to describe the 2 surfaces */
-  if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {	/* OFF file */
-    off_display(offdata);
-  }
-  else {
+  if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) { /* OFF file */
+    off_display (offdata);
+  } else {
     if (r1 && !focus1) { /* sphere1 */
-      theta00=asin(fabs((radius/2)/r1));
-      if (r1<0 && r2<=0 && (-r1+r1*cos(theta00)>thickness/2) ){
-        theta00=acos((fabs(r1)-thickness/2)/fabs(r1));
-        height=fabs(r1)*sin(theta00);
+      theta00 = asin (fabs ((radius / 2) / r1));
+      if (r1 < 0 && r2 <= 0 && (-r1 + r1 * cos (theta00) > thickness / 2)) {
+        theta00 = acos ((fabs (r1) - thickness / 2) / fabs (r1));
+        height = fabs (r1) * sin (theta00);
       }
 
-      theta1=-theta00;
-      eps=theta00/4;
-      eps2=2*PI/4;
-      while (theta1<0) {
-        circle("xy",0,0,-thickness/2-r1+r1*cos(theta1),fabs(r1)*sin(theta1));
-        theta1+=eps;
-        theta_line=0;
-        while (theta_line<2*PI){
-          line(fabs(r1)*sin(theta1-eps)*cos(theta_line),fabs(r1)*sin(theta1-eps)*sin(theta_line),-thickness/2-r1+r1*cos(theta1-eps),fabs(r1)*sin(theta1)*cos(theta_line),fabs(r1)*sin(theta1)*sin(theta_line),-thickness/2-r1+r1*cos(theta1));
-          theta_line+=eps2;
+      theta1 = -theta00;
+      eps = theta00 / 4;
+      eps2 = 2 * PI / 4;
+      while (theta1 < 0) {
+        circle ("xy", 0, 0, -thickness / 2 - r1 + r1 * cos (theta1), fabs (r1) * sin (theta1));
+        theta1 += eps;
+        theta_line = 0;
+        while (theta_line < 2 * PI) {
+          line (fabs (r1) * sin (theta1 - eps) * cos (theta_line), fabs (r1) * sin (theta1 - eps) * sin (theta_line),
+                -thickness / 2 - r1 + r1 * cos (theta1 - eps), fabs (r1) * sin (theta1) * cos (theta_line), fabs (r1) * sin (theta1) * sin (theta_line),
+                -thickness / 2 - r1 + r1 * cos (theta1));
+          theta_line += eps2;
         }
       }
 
     } else if (!r1 && focus1) { /* parabola1 */
-      if (focus1>0){
-        dist_parab1=-radius*radius/(4*focus1);
+      if (focus1 > 0) {
+        dist_parab1 = -radius * radius / (4 * focus1);
       } else {
-        dist_parab1=0.0;
+        dist_parab1 = 0.0;
       }
 
-      distance=-(radius*radius)/(4*focus1);
-      eps=-distance/4;
-      eps2=2*PI/4;
-      while (focus1*distance<0) {
-        if (focus1>0){
-          circle("xy",0,0,distance-thickness/2,sqrt((4*focus1*fabs(distance))));
-          distance+=eps;
-          theta_line=0;
-          while (theta_line<2*PI){
-             line(sqrt(4*fabs(focus1)*(fabs(distance-eps)))*cos(theta_line),sqrt(4*fabs(focus1)*(fabs(distance-eps)))*sin(theta_line),distance-eps-thickness/2,sqrt(4*fabs(focus1)*fabs(distance))*cos(theta_line),sqrt(4*fabs(focus1)*fabs(distance))*sin(theta_line),distance-thickness/2);
-          theta_line+=eps2;
+      distance = -(radius * radius) / (4 * focus1);
+      eps = -distance / 4;
+      eps2 = 2 * PI / 4;
+      while (focus1 * distance < 0) {
+        if (focus1 > 0) {
+          circle ("xy", 0, 0, distance - thickness / 2, sqrt ((4 * focus1 * fabs (distance))));
+          distance += eps;
+          theta_line = 0;
+          while (theta_line < 2 * PI) {
+            line (sqrt (4 * fabs (focus1) * (fabs (distance - eps))) * cos (theta_line), sqrt (4 * fabs (focus1) * (fabs (distance - eps))) * sin (theta_line),
+                  distance - eps - thickness / 2, sqrt (4 * fabs (focus1) * fabs (distance)) * cos (theta_line),
+                  sqrt (4 * fabs (focus1) * fabs (distance)) * sin (theta_line), distance - thickness / 2);
+            theta_line += eps2;
           }
         } else {
-          theta_line=0;
-          double rp,rpe,zz;
-          rp=sqrt(4*fabs(focus1)*fabs(distance));
-          zz=-thickness/2-radius*radius/(4*fabs(focus1))+distance;
-          circle("xy",0,0,zz,rp);
-          distance+=eps;
-          zz=-thickness/2-radius*radius/(4*fabs(focus1))+distance;
-          rpe=sqrt(4*fabs(focus1)*fabs(distance));
+          theta_line = 0;
+          double rp, rpe, zz;
+          rp = sqrt (4 * fabs (focus1) * fabs (distance));
+          zz = -thickness / 2 - radius * radius / (4 * fabs (focus1)) + distance;
+          circle ("xy", 0, 0, zz, rp);
+          distance += eps;
+          zz = -thickness / 2 - radius * radius / (4 * fabs (focus1)) + distance;
+          rpe = sqrt (4 * fabs (focus1) * fabs (distance));
 
-          theta_line=0;
-          while (theta_line<2*PI){
-            line(rpe*cos(theta_line),rpe*sin(theta_line),zz, rp*cos(theta_line), rp*sin(theta_line), zz-eps);
-            theta_line+=eps2;
+          theta_line = 0;
+          while (theta_line < 2 * PI) {
+            line (rpe * cos (theta_line), rpe * sin (theta_line), zz, rp * cos (theta_line), rp * sin (theta_line), zz - eps);
+            theta_line += eps2;
           }
         }
       }
-    } else  { /* plane 1 */
+    } else { /* plane 1 */
       /* phiy1 is rotation angle around 'y' at z=-thickness. width/height is radius. */
-      double x1= height2*cos(phiy1);
-      double y1= height2;
-      double z1=-height2*sin(phiy1)-thickness/2;
-      multiline(5,  x1,  y1, z1,
-                    x1, -y1, z1,
-                   -x1, -y1,-z1,
-                   -x1,  y1,-z1,
-                    x1,  y1, z1);
+      double x1 = height2 * cos (phiy1);
+      double y1 = height2;
+      double z1 = -height2 * sin (phiy1) - thickness / 2;
+      multiline (5, x1, y1, z1, x1, -y1, z1, -x1, -y1, -z1, -x1, y1, -z1, x1, y1, z1);
     }
 
-    if (r2 && !focus2) {  /* sphere 2 */
-      theta01=asin(fabs((radius/2)/r2));
-      if (r1<=0&&r2<0&&(r2-r2*cos(theta01)<-thickness/2)){
-        theta01=acos((fabs(r2)-thickness/2)/fabs(r2));
-        height2=fabs(r2)*sin(theta01);
+    if (r2 && !focus2) { /* sphere 2 */
+      theta01 = asin (fabs ((radius / 2) / r2));
+      if (r1 <= 0 && r2 < 0 && (r2 - r2 * cos (theta01) < -thickness / 2)) {
+        theta01 = acos ((fabs (r2) - thickness / 2) / fabs (r2));
+        height2 = fabs (r2) * sin (theta01);
       }
-      theta1=PI-theta01;
+      theta1 = PI - theta01;
 
-      eps=(PI-theta1)/4;
-      eps2=2*PI/4;
-      while (theta1<PI) {
-        circle("xy",0,0,thickness/2+r2+r2*cos(theta1),fabs(r2)*sin(theta1));
-        theta1+=eps;
-        theta_line=0;
-        while (theta_line<2*PI) {
-          line(fabs(r2)*sin(theta1-eps)*cos(theta_line),fabs(r2)*sin(theta1-eps)*sin(theta_line),thickness/2+r2+r2*cos(theta1-eps),fabs(r2)*sin(theta1)*cos(theta_line),fabs(r2)*sin(theta1)*sin(theta_line),thickness/2+r2+r2*cos(theta1));
-          theta_line+=eps2;
+      eps = (PI - theta1) / 4;
+      eps2 = 2 * PI / 4;
+      while (theta1 < PI) {
+        circle ("xy", 0, 0, thickness / 2 + r2 + r2 * cos (theta1), fabs (r2) * sin (theta1));
+        theta1 += eps;
+        theta_line = 0;
+        while (theta_line < 2 * PI) {
+          line (fabs (r2) * sin (theta1 - eps) * cos (theta_line), fabs (r2) * sin (theta1 - eps) * sin (theta_line),
+                thickness / 2 + r2 + r2 * cos (theta1 - eps), fabs (r2) * sin (theta1) * cos (theta_line), fabs (r2) * sin (theta1) * sin (theta_line),
+                thickness / 2 + r2 + r2 * cos (theta1));
+          theta_line += eps2;
         }
       }
     } else if (!r2 && focus2) { /* parabola 2 */
-      if (focus2>0){
-        dist_parab2=radius*radius/(4*focus2);
-      }else{
-        dist_parab2=0.0;
+      if (focus2 > 0) {
+        dist_parab2 = radius * radius / (4 * focus2);
+      } else {
+        dist_parab2 = 0.0;
       }
 
-      distance=(radius*radius)/(4*focus2);
-      height2=sqrt((4*focus2*fabs(distance)));
-      eps=-distance/4;
-      eps2=2*PI/4;
-      while (focus2*distance>0){
-        if (focus2>0) {
-          circle("xy",0,0,distance+thickness/2,sqrt((4*fabs(focus2)*fabs(distance))));
-          distance+=eps;
-          theta_line=0;
-          while (theta_line<2*PI) {
-            line(sqrt(4*focus2*(fabs(distance-eps)))*cos(theta_line),sqrt(4*focus2*(fabs(distance-eps)))*sin(theta_line),distance-eps+thickness/2,sqrt(4*focus2*fabs(distance))*cos(theta_line),sqrt(4*focus2*fabs(distance))*sin(theta_line),distance+thickness/2);
-            theta_line+=eps2;
+      distance = (radius * radius) / (4 * focus2);
+      height2 = sqrt ((4 * focus2 * fabs (distance)));
+      eps = -distance / 4;
+      eps2 = 2 * PI / 4;
+      while (focus2 * distance > 0) {
+        if (focus2 > 0) {
+          circle ("xy", 0, 0, distance + thickness / 2, sqrt ((4 * fabs (focus2) * fabs (distance))));
+          distance += eps;
+          theta_line = 0;
+          while (theta_line < 2 * PI) {
+            line (sqrt (4 * focus2 * (fabs (distance - eps))) * cos (theta_line), sqrt (4 * focus2 * (fabs (distance - eps))) * sin (theta_line),
+                  distance - eps + thickness / 2, sqrt (4 * focus2 * fabs (distance)) * cos (theta_line), sqrt (4 * focus2 * fabs (distance)) * sin (theta_line),
+                  distance + thickness / 2);
+            theta_line += eps2;
           }
         } else {
-          double rp,rpe,zz;
-          rp=sqrt(4*fabs(focus2)*fabs(distance));
-          zz=thickness/2+(radius*radius)/(4*fabs(focus2))+distance;
-          circle("xy",0,0,zz,rp);
-          distance+=eps;
-          zz=thickness/2+(radius*radius)/(4*fabs(focus2))+distance;
-          rpe=sqrt(4*fabs(focus2)*fabs(distance));
-          
-          theta_line=0;
-          while (theta_line<2*PI){
-            line(rpe*cos(theta_line),rpe*sin(theta_line),zz, rp*cos(theta_line), rp*sin(theta_line), zz-eps);
-            theta_line+=eps2;
+          double rp, rpe, zz;
+          rp = sqrt (4 * fabs (focus2) * fabs (distance));
+          zz = thickness / 2 + (radius * radius) / (4 * fabs (focus2)) + distance;
+          circle ("xy", 0, 0, zz, rp);
+          distance += eps;
+          zz = thickness / 2 + (radius * radius) / (4 * fabs (focus2)) + distance;
+          rpe = sqrt (4 * fabs (focus2) * fabs (distance));
+
+          theta_line = 0;
+          while (theta_line < 2 * PI) {
+            line (rpe * cos (theta_line), rpe * sin (theta_line), zz, rp * cos (theta_line), rp * sin (theta_line), zz - eps);
+            theta_line += eps2;
           }
         }
       }
     } else { /* plane 2 */
       /* phiy2 is rotation angle around 'y' at z=+thickness. width/height is radius. */
-      double x1= height2*cos(phiy2);
-      double y1= height2;
-      double z1=-height2*sin(phiy2)+thickness/2;
-      multiline(5,  x1,  y1, z1,
-                    x1, -y1, z1,
-                   -x1, -y1,-z1,
-                   -x1,  y1,-z1,
-                    x1,  y1, z1);
+      double x1 = height2 * cos (phiy2);
+      double y1 = height2;
+      double z1 = -height2 * sin (phiy2) + thickness / 2;
+      multiline (5, x1, y1, z1, x1, -y1, z1, -x1, -y1, -z1, -x1, y1, -z1, x1, y1, z1);
     }
 
     /* draw outer containing cylinder */
-    if (r1 && r2 && !focus1 && !focus2){
-		  line(-fabs(r1)*sin(theta00),-fabs(r1)*sin(theta00),-thickness/2-r1+r1*cos(theta00),-fabs(r2)*sin(theta01),fabs(r2)*sin(theta01),thickness/2+r2-r2*cos(theta01));
-		  line(fabs(r1)*sin(theta00),-fabs(r1)*sin(theta00),-thickness/2-r1+r1*cos(theta00),fabs(r2)*sin(theta01),fabs(r1)*sin(theta00),thickness/2+r2-r2*cos(theta01));
-		  line(-fabs(r1)*sin(theta00),-fabs(r1)*sin(theta00),-thickness/2-r1+r1*cos(theta00),fabs(r2)*sin(theta01),-fabs(r1)*sin(theta00),thickness/2+r2-r2*cos(theta01));
-		  line(-fabs(r1)*sin(theta00),fabs(r1)*sin(theta00),-thickness/2-r1+r1*cos(theta00),fabs(r2)*sin(theta01),fabs(r1)*sin(theta00),thickness/2+r2-r2*cos(theta01));
-	  }
-	  else if (r1 && !r2) {
-		  if (!focus2){
-			  line(-height,0,-thickness/2-r1+r1*cos(theta00),-height,0,(thickness/2+radius/2*sin(phiy2))/cos(phiy2));
-			  line(height,0,-thickness/2-r1+r1*cos(theta00),height,0,(thickness/2-radius/2*sin(phiy2))/cos(phiy2));
-			  line(0,-height,-thickness/2-r1+r1*cos(theta00),0,-height,(thickness/2+radius/2*sin(phiy2))/cos(phiy2));
-			  line(0,height,-thickness/2-r1+r1*cos(theta00),0,height,(thickness/2-radius/2*sin(phiy2))/cos(phiy2));
-		  }
-		  else
-		  {
-			  line(-fabs(r1)*sin(theta00),0,-thickness/2-r1+r1*cos(theta00),-radius/2,0,thickness/2+radius*radius/(16*focus2));
-			  line(fabs(r1)*sin(theta00),0,-thickness/2-r1+r1*cos(theta00),radius/2,0,thickness/2+radius*radius/(16*focus2));
-		  }
-	  }
-	  else if (r2 && !r1) {
-		  if (!focus1){
-			  line(-height2,0,(-thickness/2+radius/2*sin(phiy1))/cos(phiy1),-height2,0,thickness/2+r2-r2*cos(theta01));
-			  line(height2,0,(-thickness/2-radius/2*sin(phiy1))/cos(phiy1),height2,0,thickness/2+r2-r2*cos(theta01));
-			  line(0,height2,(-thickness/2+radius/2*sin(phiy1))/cos(phiy1),0,height2,thickness/2+r2-r2*cos(theta01));
-			  line(0,height2,(-thickness/2-radius/2*sin(phiy1))/cos(phiy1),0,height2,thickness/2+r2-r2*cos(theta01));
-		  }
-		  else
-		  {
-			  line(-height2,0,-thickness/2-radius*radius/(16*focus1),-height2,0,(thickness/2+radius/2*sin(phiy2))/cos(phiy2));
-			  line(height2,0,-thickness/2-radius*radius/(16*focus1),height2,0,(thickness/2-radius/2*sin(phiy2))/cos(phiy2));
-			  line(0,height2,-thickness/2-radius*radius/(16*focus1),0,height2,(thickness/2+radius/2*sin(phiy2))/cos(phiy2));
-			  line(0,height2,-thickness/2-radius*radius/(16*focus1),0,height2,(thickness/2-radius/2*sin(phiy2))/cos(phiy2));
-		  }
-	  }
-	  else {
-		  if (!focus1 && !focus2){
-			  line(-radius/2,0,(-thickness/2+radius/2*sin(phiy1))/cos(phiy1),-radius/2,0,(thickness/2+radius/2*sin(phiy2))/cos(phiy2));
-			  line(radius/2,0,(-thickness/2-radius/2*sin(phiy1))/cos(phiy1),radius/2,0,(thickness/2-radius/2*sin(phiy2))/cos(phiy2));
-			  line(0,-radius/2,(-thickness/2+radius/2*sin(phiy1))/cos(phiy1),0,-radius/2,(thickness/2+radius/2*sin(phiy2))/cos(phiy2));
-			  line(0,radius/2,(-thickness/2-radius/2*sin(phiy1))/cos(phiy1),0,radius/2,(thickness/2-radius/2*sin(phiy2))/cos(phiy2));
-		  }
-		  else if (!focus1){
-			  line(-radius/2,0,(-thickness/2+radius/2*sin(phiy1))/cos(phiy1),-radius/2,0,thickness/2+dist_parab2);
-			  line(radius/2,0,(-thickness/2-radius/2*sin(phiy1))/cos(phiy1),radius/2,0,thickness/2+dist_parab2);
-			  line(0,-radius/2,(-thickness/2+radius/2*sin(phiy1))/cos(phiy1),0,-radius/2,thickness/2+dist_parab2);
-			  line(0,radius/2,(-thickness/2-radius/2*sin(phiy1))/cos(phiy1),0,radius/2,thickness/2+dist_parab2);
-		  }
-		  else if (!focus2){
-			  line(-height,0,-thickness/2+dist_parab1,-height,0,(thickness/2+radius/2*sin(phiy2))/cos(phiy2));
-			  line(height,0,-thickness/2+dist_parab1,height,0,(thickness/2-radius/2*sin(phiy2))/cos(phiy2));
-			  line(0,-height,-thickness/2+dist_parab1,0,-height,(thickness/2+radius/2*sin(phiy2))/cos(phiy2));
-			  line(0,height,-thickness/2+dist_parab1,0,height,(thickness/2-radius/2*sin(phiy2))/cos(phiy2));
-		  }
-		  else {
-			  line(-radius,0,-thickness/2+dist_parab1,-radius,0,thickness/2+dist_parab2);
-			  line(radius,0,-thickness/2+dist_parab1,radius,0,thickness/2+dist_parab2);
-			  line(0,-radius,-thickness/2+dist_parab1,0,-radius,thickness/2+dist_parab2);
-			  line(0,radius,-thickness/2+dist_parab1,0,radius,thickness/2+dist_parab2);
-		  }
-	  }
+    if (r1 && r2 && !focus1 && !focus2) {
+      line (-fabs (r1) * sin (theta00), -fabs (r1) * sin (theta00), -thickness / 2 - r1 + r1 * cos (theta00), -fabs (r2) * sin (theta01),
+            fabs (r2) * sin (theta01), thickness / 2 + r2 - r2 * cos (theta01));
+      line (fabs (r1) * sin (theta00), -fabs (r1) * sin (theta00), -thickness / 2 - r1 + r1 * cos (theta00), fabs (r2) * sin (theta01), fabs (r1) * sin (theta00),
+            thickness / 2 + r2 - r2 * cos (theta01));
+      line (-fabs (r1) * sin (theta00), -fabs (r1) * sin (theta00), -thickness / 2 - r1 + r1 * cos (theta00), fabs (r2) * sin (theta01),
+            -fabs (r1) * sin (theta00), thickness / 2 + r2 - r2 * cos (theta01));
+      line (-fabs (r1) * sin (theta00), fabs (r1) * sin (theta00), -thickness / 2 - r1 + r1 * cos (theta00), fabs (r2) * sin (theta01), fabs (r1) * sin (theta00),
+            thickness / 2 + r2 - r2 * cos (theta01));
+    } else if (r1 && !r2) {
+      if (!focus2) {
+        line (-height, 0, -thickness / 2 - r1 + r1 * cos (theta00), -height, 0, (thickness / 2 + radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (height, 0, -thickness / 2 - r1 + r1 * cos (theta00), height, 0, (thickness / 2 - radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (0, -height, -thickness / 2 - r1 + r1 * cos (theta00), 0, -height, (thickness / 2 + radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (0, height, -thickness / 2 - r1 + r1 * cos (theta00), 0, height, (thickness / 2 - radius / 2 * sin (phiy2)) / cos (phiy2));
+      } else {
+        line (-fabs (r1) * sin (theta00), 0, -thickness / 2 - r1 + r1 * cos (theta00), -radius / 2, 0, thickness / 2 + radius * radius / (16 * focus2));
+        line (fabs (r1) * sin (theta00), 0, -thickness / 2 - r1 + r1 * cos (theta00), radius / 2, 0, thickness / 2 + radius * radius / (16 * focus2));
+      }
+    } else if (r2 && !r1) {
+      if (!focus1) {
+        line (-height2, 0, (-thickness / 2 + radius / 2 * sin (phiy1)) / cos (phiy1), -height2, 0, thickness / 2 + r2 - r2 * cos (theta01));
+        line (height2, 0, (-thickness / 2 - radius / 2 * sin (phiy1)) / cos (phiy1), height2, 0, thickness / 2 + r2 - r2 * cos (theta01));
+        line (0, height2, (-thickness / 2 + radius / 2 * sin (phiy1)) / cos (phiy1), 0, height2, thickness / 2 + r2 - r2 * cos (theta01));
+        line (0, height2, (-thickness / 2 - radius / 2 * sin (phiy1)) / cos (phiy1), 0, height2, thickness / 2 + r2 - r2 * cos (theta01));
+      } else {
+        line (-height2, 0, -thickness / 2 - radius * radius / (16 * focus1), -height2, 0, (thickness / 2 + radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (height2, 0, -thickness / 2 - radius * radius / (16 * focus1), height2, 0, (thickness / 2 - radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (0, height2, -thickness / 2 - radius * radius / (16 * focus1), 0, height2, (thickness / 2 + radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (0, height2, -thickness / 2 - radius * radius / (16 * focus1), 0, height2, (thickness / 2 - radius / 2 * sin (phiy2)) / cos (phiy2));
+      }
+    } else {
+      if (!focus1 && !focus2) {
+        line (-radius / 2, 0, (-thickness / 2 + radius / 2 * sin (phiy1)) / cos (phiy1), -radius / 2, 0,
+              (thickness / 2 + radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (radius / 2, 0, (-thickness / 2 - radius / 2 * sin (phiy1)) / cos (phiy1), radius / 2, 0, (thickness / 2 - radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (0, -radius / 2, (-thickness / 2 + radius / 2 * sin (phiy1)) / cos (phiy1), 0, -radius / 2,
+              (thickness / 2 + radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (0, radius / 2, (-thickness / 2 - radius / 2 * sin (phiy1)) / cos (phiy1), 0, radius / 2, (thickness / 2 - radius / 2 * sin (phiy2)) / cos (phiy2));
+      } else if (!focus1) {
+        line (-radius / 2, 0, (-thickness / 2 + radius / 2 * sin (phiy1)) / cos (phiy1), -radius / 2, 0, thickness / 2 + dist_parab2);
+        line (radius / 2, 0, (-thickness / 2 - radius / 2 * sin (phiy1)) / cos (phiy1), radius / 2, 0, thickness / 2 + dist_parab2);
+        line (0, -radius / 2, (-thickness / 2 + radius / 2 * sin (phiy1)) / cos (phiy1), 0, -radius / 2, thickness / 2 + dist_parab2);
+        line (0, radius / 2, (-thickness / 2 - radius / 2 * sin (phiy1)) / cos (phiy1), 0, radius / 2, thickness / 2 + dist_parab2);
+      } else if (!focus2) {
+        line (-height, 0, -thickness / 2 + dist_parab1, -height, 0, (thickness / 2 + radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (height, 0, -thickness / 2 + dist_parab1, height, 0, (thickness / 2 - radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (0, -height, -thickness / 2 + dist_parab1, 0, -height, (thickness / 2 + radius / 2 * sin (phiy2)) / cos (phiy2));
+        line (0, height, -thickness / 2 + dist_parab1, 0, height, (thickness / 2 - radius / 2 * sin (phiy2)) / cos (phiy2));
+      } else {
+        line (-radius, 0, -thickness / 2 + dist_parab1, -radius, 0, thickness / 2 + dist_parab2);
+        line (radius, 0, -thickness / 2 + dist_parab1, radius, 0, thickness / 2 + dist_parab2);
+        line (0, -radius, -thickness / 2 + dist_parab1, 0, -radius, thickness / 2 + dist_parab2);
+        line (0, radius, -thickness / 2 + dist_parab1, 0, radius, thickness / 2 + dist_parab2);
+      }
+    }
   } /* end of not a OFF/PLY */
 %}
 

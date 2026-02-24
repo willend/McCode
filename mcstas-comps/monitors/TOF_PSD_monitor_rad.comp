@@ -60,91 +60,79 @@ DECLARE
 
 INITIALIZE
 %{
-  TOFPSDr_N = create_darr2d(nt, nr);
-  TOFPSDr_p = create_darr2d(nt, nr);
-  TOFPSDr_p2 = create_darr2d(nt, nr);
-  TOFPSDr_av_p = create_darr2d(nt, nr);
-  TOFPSDr_av_p2 = create_darr2d(nt, nr);
+  TOFPSDr_N = create_darr2d (nt, nr);
+  TOFPSDr_p = create_darr2d (nt, nr);
+  TOFPSDr_p2 = create_darr2d (nt, nr);
+  TOFPSDr_av_p = create_darr2d (nt, nr);
+  TOFPSDr_av_p2 = create_darr2d (nt, nr);
 
-  tt_0=tmin*1e-6;
-  tt_1=tmax*1e-6;
-
-  // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  tt_0 = tmin * 1e-6;
+  tt_1 = tmax * 1e-6;
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename_av,"\0")) sprintf(filename_av,"%s%s",NAME_CURRENT_COMP,"_avg");
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
+
+  // Use instance name for monitor output if no input was given
+  if (!strcmp (filename_av, "\0"))
+    sprintf (filename_av, "%s%s", NAME_CURRENT_COMP, "_avg");
 %}
 
 TRACE
 %{
-  int i,j;
-  double dt,radpos;
+  int i, j;
+  double dt, radpos;
 
   PROP_Z0;
 
-  radpos = sqrt(x*x+y*y);
-  i = floor((t-tt_0)*nt/(tt_1-tt_0));              /* Bin number */
-  j = floor(nr*radpos/rmax);
+  radpos = sqrt (x * x + y * y);
+  i = floor ((t - tt_0) * nt / (tt_1 - tt_0)); /* Bin number */
+  j = floor (nr * radpos / rmax);
 
-  if (radpos < rmax && i>=0 && i < nt)
-  {
-    double p2 = p*p;
+  if (radpos < rmax && i >= 0 && i < nt) {
+    double p2 = p * p;
     #pragma acc atomic
-    TOFPSDr_N[i][j] = TOFPSDr_N[i][j]+1;
+    TOFPSDr_N[i][j] = TOFPSDr_N[i][j] + 1;
     #pragma acc atomic
-    TOFPSDr_p[i][j] = TOFPSDr_p[i][j]+p;
+    TOFPSDr_p[i][j] = TOFPSDr_p[i][j] + p;
     #pragma acc atomic
-    TOFPSDr_p2[i][j] = TOFPSDr_p2[i][j]+p2;
+    TOFPSDr_p2[i][j] = TOFPSDr_p2[i][j] + p2;
     SCATTER;
   }
 
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  int i, j;
-  for(i=0; i<nt; i++)
-    for(j=0; j<nr; j++) {
-      TOFPSDr_av_p[i][j]  = TOFPSDr_p[i][j]  / (PI*rmax*rmax/(nr*nr)*(2*j+1.0));
-      TOFPSDr_av_p2[i][j] = TOFPSDr_p2[i][j]
-        / (PI*rmax*rmax/(nr*nr)*(2*j+1.0)) / (PI*rmax*rmax/(nr*nr)*(2*j+1.0));
-    }
-  DETECTOR_OUT_2D(
-    "TOF PSD monitor radial sum",
-    "Time-of-flight [\\gms]",
-    "Radius [m]",
-    tmin, tmax, 0, rmax,
-    nt, nr,
-    &TOFPSDr_N[0][0],&TOFPSDr_p[0][0],&TOFPSDr_p2[0][0],
-    filename);
-  DETECTOR_OUT_2D(
-    "TOF PSD monitor radial average",
-    "Time-of-flight [\\gms]",
-    "Radius [m]",
-    tmin, tmax, 0, rmax,
-    nt, nr,
-    &TOFPSDr_N[0][0],&TOFPSDr_av_p[0][0],&TOFPSDr_av_p2[0][0],
-    filename_av);
-}
+  if (!nowritefile) {
+    int i, j;
+    for (i = 0; i < nt; i++)
+      for (j = 0; j < nr; j++) {
+        TOFPSDr_av_p[i][j] = TOFPSDr_p[i][j] / (PI * rmax * rmax / (nr * nr) * (2 * j + 1.0));
+        TOFPSDr_av_p2[i][j] = TOFPSDr_p2[i][j] / (PI * rmax * rmax / (nr * nr) * (2 * j + 1.0)) / (PI * rmax * rmax / (nr * nr) * (2 * j + 1.0));
+      }
+    DETECTOR_OUT_2D ("TOF PSD monitor radial sum", "Time-of-flight [\\gms]", "Radius [m]", tmin, tmax, 0, rmax, nt, nr, &TOFPSDr_N[0][0], &TOFPSDr_p[0][0],
+                     &TOFPSDr_p2[0][0], filename);
+    DETECTOR_OUT_2D ("TOF PSD monitor radial average", "Time-of-flight [\\gms]", "Radius [m]", tmin, tmax, 0, rmax, nt, nr, &TOFPSDr_N[0][0], &TOFPSDr_av_p[0][0],
+                     &TOFPSDr_av_p2[0][0], filename_av);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(TOFPSDr_N);
-  destroy_darr2d(TOFPSDr_p);
-  destroy_darr2d(TOFPSDr_p2);
-  destroy_darr2d(TOFPSDr_av_p);
-  destroy_darr2d(TOFPSDr_av_p2);
+  destroy_darr2d (TOFPSDr_N);
+  destroy_darr2d (TOFPSDr_p);
+  destroy_darr2d (TOFPSDr_p2);
+  destroy_darr2d (TOFPSDr_av_p);
+  destroy_darr2d (TOFPSDr_av_p2);
 %}
 
 MCDISPLAY
 %{
-  circle("xy",0,0,0,rmax);
+  circle ("xy", 0, 0, 0, rmax);
 %}
 
 END

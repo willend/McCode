@@ -51,65 +51,57 @@ SHARE
 
 DECLARE
 %{
-char *filename;                 /* path + filename             */
-FILE *hfile;			/* X-ray output file handle    */
-Ray *obuf;			/* X-ray output buffer         */
-int pos;			/* Current position in buffer  */
-int reclen;                     /* Fortran binary unformatted sequential record head/tail */
-int ncol;                       
-int i;
-int iflag;
-double p_out;                   /* sum of output weight        */
-double p2_out;                  /* square sum of output weight */
+  char* filename; /* path + filename             */
+  FILE* hfile;    /* X-ray output file handle    */
+  Ray* obuf;      /* X-ray output buffer         */
+  int pos;        /* Current position in buffer  */
+  int reclen;     /* Fortran binary unformatted sequential record head/tail */
+  int ncol;
+  int i;
+  int iflag;
+  double p_out;  /* sum of output weight        */
+  double p2_out; /* square sum of output weight */
 %}
 
 INITIALIZE
 %{
-  ncol = 18;                  /* num column fixed at 18 for McXtrace->Shadow */
-  iflag = 0 ;                 /* Shadow flag must be set to zero !!! */ 
+  ncol = 18; /* num column fixed at 18 for McXtrace->Shadow */
+  iflag = 0; /* Shadow flag must be set to zero !!! */
   /* Open x-ray output file. */
-  if (file==NULL)
-  {
+  if (file == NULL) {
     hfile = stdout;
-  }
-  else if
- (!strcmp(file, "no_file"))
-  {
+  } else if (!strcmp (file, "no_file")) {
     hfile = NULL;
-  }
-  else
-  {
-    hfile = fopen((filename=FullParName(file)), "wb");
-    if(!hfile)
-    {
-      fprintf(stderr, "Shadow_output: Error: Cannot open output file %s.\n", filename);
-      exit(1);
+  } else {
+    hfile = fopen ((filename = FullParName (file)), "wb");
+    if (!hfile) {
+      fprintf (stderr, "Shadow_output: Error: Cannot open output file %s.\n", filename);
+      exit (1);
     }
   }
-#ifdef WIN32
-  if(hfile==stdout)
-  { if(_setmode(_fileno( stdout ), _O_BINARY ) == -1)
-    { fprintf(stderr,"Can't set stdout to binary mode\n");
-      exit(1);
+  #ifdef WIN32
+  if (hfile == stdout) {
+    if (_setmode (_fileno (stdout), _O_BINARY) == -1) {
+      fprintf (stderr, "Can't set stdout to binary mode\n");
+      exit (1);
     }
   }
-#endif
+  #endif
   /* Write header for Shadow data file. */
-  reclen = 3*sizeof(int);
-  fwrite(&reclen, sizeof(int), 1, hfile);
-  fwrite(&ncol, sizeof(int), 1, hfile);
-  fwrite(&bufsize, sizeof(int), 1, hfile);
-  fwrite(&iflag, sizeof(int), 1, hfile);
-  fwrite(&reclen, sizeof(int), 1, hfile);
+  reclen = 3 * sizeof (int);
+  fwrite (&reclen, sizeof (int), 1, hfile);
+  fwrite (&ncol, sizeof (int), 1, hfile);
+  fwrite (&bufsize, sizeof (int), 1, hfile);
+  fwrite (&iflag, sizeof (int), 1, hfile);
+  fwrite (&reclen, sizeof (int), 1, hfile);
 
   /* Allocate x-ray output buffer. */
-  reclen = ncol * sizeof(double);
-  obuf = calloc(bufsize, reclen + 2*sizeof(int));
+  reclen = ncol * sizeof (double);
+  obuf = calloc (bufsize, reclen + 2 * sizeof (int));
 
-  if(!obuf)
-  {
-    fprintf(stderr, "Shadow_output: Error: Cannot allocate x-ray buffer.\n");
-    exit(1);
+  if (!obuf) {
+    fprintf (stderr, "Shadow_output: Error: Cannot allocate x-ray buffer.\n");
+    exit (1);
   }
   /* Initialize buffer. */
   pos = 0;
@@ -120,28 +112,24 @@ TRACE
   int count;
 
   /* Flush output buffer if full. */
-  if(hfile && pos >= bufsize)
-  { count = fwrite(obuf, sizeof(Ray), bufsize, hfile);
-    if(progress)
-    {
-      fputc('.', stderr);	/* Output progress indicator. */
-      fflush(stderr);
+  if (hfile && pos >= bufsize) {
+    count = fwrite (obuf, sizeof (Ray), bufsize, hfile);
+    if (progress) {
+      fputc ('.', stderr); /* Output progress indicator. */
+      fflush (stderr);
     }
-    if(count != bufsize)
-    {
-      fprintf(stderr, "Shadow_output: Error during write of x-ray file.\n");
-      exit(1);
-    }
-    else
-    {
-      pos = 0;			/* Reposition at start of buffer */
+    if (count != bufsize) {
+      fprintf (stderr, "Shadow_output: Error during write of x-ray file.\n");
+      exit (1);
+    } else {
+      pos = 0; /* Reposition at start of buffer */
     }
   }
-/* the variable mcrun_num is used as ray index for Shadow */
-  obuf[pos] = mcxtrace2shadow(x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p,mcrun_num); /*pos instead of mcrun_num?*/
+  /* the variable mcrun_num is used as ray index for Shadow */
+  obuf[pos] = mcxtrace2shadow (x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p, mcrun_num); /*pos instead of mcrun_num?*/
 
-  p_out  += p;
-  p2_out += p*p;
+  p_out += p;
+  p2_out += p * p;
 
   ++pos;
 %}
@@ -150,29 +138,27 @@ FINALLY
   int count, dum;
 
   /* Flush output buffer if necessary. */
-  if(hfile && pos > 0)
-  {
+  if (hfile && pos > 0) {
 
- /*  count = fwrite(obuf, sizeof(Ray), pos, hfile); */
-    for(i=0;i<pos;i++){
-      fwrite(&reclen, sizeof(int), 1, hfile);
-      dum = fwrite(&obuf[i], sizeof(Ray), 1, hfile);
-      fwrite(&reclen, sizeof(int), 1, hfile);
+    /*  count = fwrite(obuf, sizeof(Ray), pos, hfile); */
+    for (i = 0; i < pos; i++) {
+      fwrite (&reclen, sizeof (int), 1, hfile);
+      dum = fwrite (&obuf[i], sizeof (Ray), 1, hfile);
+      fwrite (&reclen, sizeof (int), 1, hfile);
       count += dum;
     }
 
-    if(count != pos)
-    {
-      fprintf(stderr, "Shadow_output: Error during write of x-ray event file.\n");
-      exit(1);
+    if (count != pos) {
+      fprintf (stderr, "Shadow_output: Error during write of x-ray event file.\n");
+      exit (1);
     }
   }
-  if(progress)
-    fprintf(stderr, ".\n");	/* Output final progress indicator. */
-  if(obuf)
-    free(obuf);
-  if(hfile && file)
-    fclose(hfile);
+  if (progress)
+    fprintf (stderr, ".\n"); /* Output final progress indicator. */
+  if (obuf)
+    free (obuf);
+  if (hfile && file)
+    fclose (hfile);
 %}
 MCDISPLAY
 %{

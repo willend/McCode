@@ -2552,15 +2552,13 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("");
   cout("extern int mcgravitation;      /* flag to enable gravitation */");
   cout("#pragma acc declare create ( mcgravitation )");
-  cout("int mcallowbackprop;        ");
-  cout("#pragma acc declare create ( mcallowbackprop )");
 
   cout("");
   cout("_class_particle mcgenstate(void) {");
 #if MCCODE_PROJECT == 1     /* neutron */
-  cout("  _class_particle particle = mcsetstate(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, mcgravitation, NULL, mcallowbackprop);");
+  cout("  _class_particle particle = mcsetstate(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, mcgravitation, NULL, 0);");
 #elif MCCODE_PROJECT == 2   /* xray */
-  cout("  _class_particle particle = mcsetstate(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, mcgravitation, NULL, mcallowbackprop);");
+  cout("  _class_particle particle = mcsetstate(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, mcgravitation, NULL, 0);");
 #endif
   cout("  return(particle);");
   cout("}");

@@ -57,42 +57,46 @@ DECLARE
   DArray1d TOF_N;
   DArray1d TOF_p;
   DArray1d TOF_p2;
-  double t_min; 
+  double t_min;
   double t_max;
   double delta_t;
 %}
 
 INITIALIZE
 %{
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
+  }
 
   if ((xmin >= xmax) || (ymin >= ymax)) {
-          printf("TOF_monitor: %s: Null detection area !\n"
-                 "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-         NAME_CURRENT_COMP);
-    exit(0);
+    printf ("TOF_monitor: %s: Null detection area !\n"
+            "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
   }
 
-  TOF_N = create_darr1d(nt);
-  TOF_p = create_darr1d(nt);
-  TOF_p2 = create_darr1d(nt);
+  TOF_N = create_darr1d (nt);
+  TOF_p = create_darr1d (nt);
+  TOF_p2 = create_darr1d (nt);
 
-  if (tmax!=0)
-  {
-    t_max=tmax;
-    t_min=tmin;
-    delta_t=(t_max-t_min)/nt;
-  }
-  else
-  {
-    delta_t=dt;
-    t_min=0;
-    t_max=nt*dt+tmin;
+  if (tmax != 0) {
+    t_max = tmax;
+    t_min = tmin;
+    delta_t = (t_max - t_min) / nt;
+  } else {
+    delta_t = dt;
+    t_min = 0;
+    t_max = nt * dt + tmin;
   }
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
@@ -100,53 +104,43 @@ TRACE
   int i;
 
   PROP_Z0;
-  if (x>xmin && x<xmax && y>ymin && y<ymax)
-  {
-    i = floor((1E6*t-t_min)/delta_t);              /* Bin number */
-    if(i >= 0 && i < nt) {
-      double p2 = p*p;
-      #pragma acc atomic      
-      TOF_N[i] = TOF_N[i]+1;
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
+    i = floor ((1E6 * t - t_min) / delta_t); /* Bin number */
+    if (i >= 0 && i < nt) {
+      double p2 = p * p;
       #pragma acc atomic
-      TOF_p[i] = TOF_p[i]+p;
-      #pragma acc atomic      
-      TOF_p2[i] = TOF_p2[i]+p2;
+      TOF_N[i] = TOF_N[i] + 1;
+      #pragma acc atomic
+      TOF_p[i] = TOF_p[i] + p;
+      #pragma acc atomic
+      TOF_p2[i] = TOF_p2[i] + p2;
       SCATTER;
     }
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-  if(!nowritefile) {
-  DETECTOR_OUT_1D(
-      "Time-of-flight monitor",
-      "Time-of-flight [\\gms]",
-      "Intensity",
-      "t", t_min, t_max, nt,
-      &TOF_N[0],&TOF_p[0],&TOF_p2[0],
-      filename);
+  if (!nowritefile) {
+    DETECTOR_OUT_1D ("Time-of-flight monitor", "Time-of-flight [\\gms]", "Intensity", "t", t_min, t_max, nt, &TOF_N[0], &TOF_p[0], &TOF_p2[0], filename);
   }
 %}
 
 FINALLY
 %{
-  destroy_darr1d(TOF_N);
-  destroy_darr1d(TOF_p);
-  destroy_darr1d(TOF_p2);
+  destroy_darr1d (TOF_N);
+  destroy_darr1d (TOF_p);
+  destroy_darr1d (TOF_p2);
 %}
 
 MCDISPLAY
 %{
 
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END

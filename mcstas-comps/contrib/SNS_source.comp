@@ -490,20 +490,20 @@ void tPcalc(double (*func)(double,double,double*,double*),double llim, double hl
 DECLARE
 %{
   double p_in;
-  double *inxvec;
+  double* inxvec;
   #pragma acc shape(inxvec[0:500])
-  double *inyvec;
+  double* inyvec;
   #pragma acc shape(inyvec[0:500])
-  double *Pvec;
+  double* Pvec;
   #pragma acc shape(Pvec[0:500])
   int xylength;
-  double *tcol;
+  double* tcol;
   #pragma acc shape(tcol[0:200])
-  double *Ecol;
+  double* Ecol;
   #pragma acc shape(Ecol[0:200])
-  double *tPvec;
+  double* tPvec;
   #pragma acc shape(tPvec[0:500])
-  double **Ptmat;
+  double** Ptmat;
   #pragma acc shape(Ptmat[0:200][0:200])
   double EPmax;
   double EPmin;
@@ -520,175 +520,178 @@ DECLARE
 
 INITIALIZE
 %{
-  FILE *fp;
-  double llim, hlim,ltlim,htlim,junk;
-  double **Imat;
-  int idx1,idx2;
-  double *tmp;
+  FILE* fp;
+  double llim, hlim, ltlim, htlim, junk;
+  double** Imat;
+  int idx1, idx2;
+  double* tmp;
 
   double tyval[500];
   double txval[500];
 
-  Pvec=malloc(500*sizeof(double));
-  inxvec=malloc(500*sizeof(double));
-  inyvec=malloc(500*sizeof(double));
-  tcol=malloc(200*sizeof(double));
-  Ecol=malloc(200*sizeof(double));
-  tPvec=malloc(500*sizeof(double));
-  Ptmat=malloc(200*sizeof(double *));
-  Imat=malloc(200*sizeof(double*));
+  Pvec = malloc (500 * sizeof (double));
+  inxvec = malloc (500 * sizeof (double));
+  inyvec = malloc (500 * sizeof (double));
+  tcol = malloc (200 * sizeof (double));
+  Ecol = malloc (200 * sizeof (double));
+  tPvec = malloc (500 * sizeof (double));
+  Ptmat = malloc (200 * sizeof (double*));
+  Imat = malloc (200 * sizeof (double*));
   if (!Pvec || !inxvec || !inyvec || !tcol || !Ecol || !tPvec || !Ptmat || !Imat) {
-    fprintf(stderr,"SNS_Source: malloc() failure in INIT. Exit!\n");
-    exit(-1);
+    fprintf (stderr, "SNS_Source: malloc() failure in INIT. Exit!\n");
+    exit (-1);
   }
-  for(idx1=0;idx1<200;idx1++){
-    Ptmat[idx1]=malloc(200*sizeof(double));
-    tmp=Ptmat[idx1];
-    if(!tmp) {
-      fprintf(stderr,"SNS_Source: malloc() failure in INIT: Ptmat[%i]  Exit!\n",idx1);
-      exit(-1);
+  for (idx1 = 0; idx1 < 200; idx1++) {
+    Ptmat[idx1] = malloc (200 * sizeof (double));
+    tmp = Ptmat[idx1];
+    if (!tmp) {
+      fprintf (stderr, "SNS_Source: malloc() failure in INIT: Ptmat[%i]  Exit!\n", idx1);
+      exit (-1);
     }
   }
-  for(idx1=0;idx1<200;idx1++){
-    Imat[idx1]=malloc(500*sizeof(double));
-    tmp=Imat[idx1];
-    if(!tmp) {
-      fprintf(stderr,"SNS_Source: malloc() failure in INIT. Itmat[%i]  Exit!!\n",idx1);
-      exit(-1);
+  for (idx1 = 0; idx1 < 200; idx1++) {
+    Imat[idx1] = malloc (500 * sizeof (double));
+    tmp = Imat[idx1];
+    if (!tmp) {
+      fprintf (stderr, "SNS_Source: malloc() failure in INIT. Itmat[%i]  Exit!!\n", idx1);
+      exit (-1);
     }
   }
-  ltlim=0.1;
-  htlim=1.8e3;
- /* read file */
-  printf("%s%s\n","Loading moderator file ",filename);
-   sns_source_load(filename,inxvec,inyvec,0,2,&xylength,tcol,Ecol,Imat,&ntvals,&nEvals);
- /* calculate probabilty distribution function points for use in interpolation routine */
+  ltlim = 0.1;
+  htlim = 1.8e3;
+  /* read file */
+  printf ("%s%s\n", "Loading moderator file ", filename);
+  sns_source_load (filename, inxvec, inyvec, 0, 2, &xylength, tcol, Ecol, Imat, &ntvals, &nEvals);
+  /* calculate probabilty distribution function points for use in interpolation routine */
 
- llim=inxvec[1];hlim=inxvec[xylength];
- printf("Start calculating probability distribution\n");
- /* calculate total number of neutrons in specified energy window */
- INorm2=integ1(xonly,Emin/1000.0,Emax/1000.0,0.001, xylength,inxvec,inyvec);
-  Pcalc(xonly,llim,hlim,inxvec,Pvec,xylength,&idxstart,&idxstop,
-    inyvec);
+  llim = inxvec[1];
+  hlim = inxvec[xylength];
+  printf ("Start calculating probability distribution\n");
+  /* calculate total number of neutrons in specified energy window */
+  INorm2 = integ1 (xonly, Emin / 1000.0, Emax / 1000.0, 0.001, xylength, inxvec, inyvec);
+  Pcalc (xonly, llim, hlim, inxvec, Pvec, xylength, &idxstart, &idxstop, inyvec);
   /*calculate probability distribution as a function of t for each energy value */
-  tyval[0]=Imat[0][0];
-  //printf("outntvals %i\n",ntvals);
-  //printf("%g \n",tyval[0]);
-  for(idx1=0;idx1<nEvals;idx1++){
-      for(idx2=0;idx2<ntvals;idx2++){
-        //printf("idx2 %d idx1 %d tyval: %g\n",idx2,idx1,Imat[idx2][idx1]);
-        tyval[idx2]=Imat[idx2][idx1];
-        txval[idx2]=tcol[idx2];
-      }
-      tPcalc(txonly,ltlim,htlim,tcol,tPvec,ntvals,&tidxstart,&tidxstop,
-        txval,tyval);
-      for(idx2=0;idx2<ntvals;idx2++){
-        Ptmat[idx2][idx1]=tPvec[idx2];
-      }
-   }
-  /* Generate min and max Prob values corresponding to specified energy window*/
-    /* use quadratic interpolation  */
-   EPmax=quadfuncint(Emax/1000.0,xylength,inxvec,Pvec);
-   EPmin=quadfuncint(Emin/1000.0,xylength,inxvec,Pvec);
-  /* Calculate solid Angle */
-  p_in = focus_xw*focus_yh/(dist*dist);
-  for(idx1=0;idx1<200;idx1++){
-    free(Imat[idx1]);
+  tyval[0] = Imat[0][0];
+  // printf("outntvals %i\n",ntvals);
+  // printf("%g \n",tyval[0]);
+  for (idx1 = 0; idx1 < nEvals; idx1++) {
+    for (idx2 = 0; idx2 < ntvals; idx2++) {
+      // printf("idx2 %d idx1 %d tyval: %g\n",idx2,idx1,Imat[idx2][idx1]);
+      tyval[idx2] = Imat[idx2][idx1];
+      txval[idx2] = tcol[idx2];
+    }
+    tPcalc (txonly, ltlim, htlim, tcol, tPvec, ntvals, &tidxstart, &tidxstop, txval, tyval);
+    for (idx2 = 0; idx2 < ntvals; idx2++) {
+      Ptmat[idx2][idx1] = tPvec[idx2];
+    }
   }
-  free(Imat);
+  /* Generate min and max Prob values corresponding to specified energy window*/
+  /* use quadratic interpolation  */
+  EPmax = quadfuncint (Emax / 1000.0, xylength, inxvec, Pvec);
+  EPmin = quadfuncint (Emin / 1000.0, xylength, inxvec, Pvec);
+  /* Calculate solid Angle */
+  p_in = focus_xw * focus_yh / (dist * dist);
+  for (idx1 = 0; idx1 < 200; idx1++) {
+    free (Imat[idx1]);
+  }
+  free (Imat);
 
-  printf("Finished calculating probability distribution\n");
-  pmul=1;
-  pmul/=mcget_ncount();
+  printf ("Finished calculating probability distribution\n");
+  pmul = 1;
+  pmul /= mcget_ncount ();
 %}
 TRACE
 %{
-  double theta,phi,v,tauv,E,Eval,tval,randp;  
+  double theta, phi, v, tauv, E, Eval, tval, randp;
   double hdiv;
   double vdiv;
-  double hdivmin,hdivmax,vdivmin,vdivmax;
-  int idx1,idx3,Eidxl,Eidxh;
+  double hdivmin, hdivmax, vdivmin, vdivmax;
+  int idx1, idx3, Eidxl, Eidxh;
   double tyval[500];
   double txval[500];
-  p=p_in;
-  z=0;
+  p = p_in;
+  z = 0;
 
-  x = (rand01()-0.5)*xwidth; /* choose points uniformly distributed on the source */
-  y = (rand01()-0.5)*yheight;
+  x = (rand01 () - 0.5) * xwidth; /* choose points uniformly distributed on the source */
+  y = (rand01 () - 0.5) * yheight;
 
- hdivmax=atan((focus_xw/2.0-x)/dist);
- hdivmin=atan(-(focus_xw/2.0+x)/dist);
- vdivmax=atan((focus_yh/2.0-y)/dist);
- vdivmin=atan(-(focus_yh/2.0+y)/dist);
+  hdivmax = atan ((focus_xw / 2.0 - x) / dist);
+  hdivmin = atan (-(focus_xw / 2.0 + x) / dist);
+  vdivmax = atan ((focus_yh / 2.0 - y) / dist);
+  vdivmin = atan (-(focus_yh / 2.0 + y) / dist);
 
-  theta = hdivmin + (hdivmax-hdivmin)*rand01(); /* Small angle approx. */
-  phi = vdivmin + (vdivmax-vdivmin)*rand01();
-  hdiv=theta;
-  vdiv=phi;
+  theta = hdivmin + (hdivmax - hdivmin) * rand01 (); /* Small angle approx. */
+  phi = vdivmin + (vdivmax - vdivmin) * rand01 ();
+  hdiv = theta;
+  vdiv = phi;
   /* generate random numbers*/
 
-   /*First generate E random value */
-    randp=EPmin+rand01()*(EPmax-EPmin);
-    /* find E value corresponding to random probability */
+  /*First generate E random value */
+  randp = EPmin + rand01 () * (EPmax - EPmin);
+  /* find E value corresponding to random probability */
+  #ifndef OPENACC
+  Eval = zero_find (Pfunc, randp, inxvec[idxstart], inxvec[idxstop], 1e-7, xylength, inxvec, Pvec);
+  #else
+  Eval = zero_find_gpu1 (randp, inxvec[idxstart], inxvec[idxstop], 1e-7, xylength, inxvec, Pvec);
+  #endif
+  /* from a known E value generate an emission time value */
+  /* find the index of the E values that bracket the random E value */
+  idx1 = 0;
+  while ((idx1 < nEvals) && (Ecol[idx1] < Eval)) {
+    idx1++;
+  }
+  Eidxh = idx1;
+  Eidxl = idx1 - 1;
+  /*calculate the interpolated t, P curve to determine t value from uniform random value*/
+  for (idx3 = 0; idx3 < ntvals; idx3++) {
+    tyval[idx3] = linint (Eval, Ecol[Eidxl], Ecol[Eidxh], Ptmat[idx3][Eidxl], Ptmat[idx3][Eidxh]);
+    txval[idx3] = tcol[idx3];
+  }
+  randp = tyval[tidxstart] + rand01 () * (tyval[tidxstop - 1] - tyval[tidxstart]);
+  if (randp > 0.0) {
     #ifndef OPENACC
-    Eval=zero_find(Pfunc,randp,inxvec[idxstart],inxvec[idxstop],1e-7,
-      xylength,inxvec,Pvec);
-    #else
-    Eval=zero_find_gpu1(randp,inxvec[idxstart],inxvec[idxstop],1e-7,
-      xylength,inxvec,Pvec);
-    #endif
-   /* from a known E value generate an emission time value */
-   /* find the index of the E values that bracket the random E value */
-   idx1=0;
-   while((idx1<nEvals)&&(Ecol[idx1]<Eval)){
-     idx1++;
-   }
-   Eidxh=idx1;
-   Eidxl=idx1-1;
-   /*calculate the interpolated t, P curve to determine t value from uniform random value*/
-   for (idx3=0;idx3<ntvals;idx3++){
-     tyval[idx3]=linint(Eval,Ecol[Eidxl],Ecol[Eidxh],Ptmat[idx3][Eidxl],Ptmat[idx3][Eidxh]);
-     txval[idx3]=tcol[idx3];
-   }
-   randp=tyval[tidxstart]+rand01()*(tyval[tidxstop-1]-tyval[tidxstart]);
-   if (randp>0.0){
-     #ifndef OPENACC
-     tval=zero_find(tPfunc,randp,txval[tidxstart],txval[tidxstop-1],1e-5,
-        ntvals,txval,tyval); }
-     #else
-     tval=zero_find_gpu2(randp,txval[tidxstart],txval[tidxstop-1],1e-5,
-        ntvals,txval,tyval); }
-     #endif
-    else{
-       tval=0;}
-  E = Eval*1000.0;  /* Convert Energy from Ev to meV */
-  t = tval*1e-6;      /* Convert time from mus to S */
-  v = SE2V*sqrt(E);
+    tval = zero_find (tPfunc, randp, txval[tidxstart], txval[tidxstop - 1], 1e-5, ntvals, txval, tyval);
+  }
+  #else
+  tval = zero_find_gpu2 (randp, txval[tidxstart], txval[tidxstop - 1], 1e-5, ntvals, txval, tyval);
+  }
+  #endif
+  else {
+    tval = 0;
+  }
+  E = Eval * 1000.0; /* Convert Energy from Ev to meV */
+  t = tval * 1e-6;   /* Convert time from mus to S */
+  v = SE2V * sqrt (E);
   /* Calculate components of velocity vector such that the neutron is within the focusing rectangle */
-  vz = v*cos(phi)*cos(theta);   /* Small angle approx. */
-  vy = v*sin(phi);
-  vx = v*cos(phi)*sin(theta);
+  vz = v * cos (phi) * cos (theta); /* Small angle approx. */
+  vy = v * sin (phi);
+  vx = v * cos (phi) * sin (theta);
 
-  p*=(xwidth*yheight/(0.1*0.12))*INorm2*pmul;
-
+  p *= (xwidth * yheight / (0.1 * 0.12)) * INorm2 * pmul;
 %}
 FINALLY
 %{
   int idxf;
-  free(tPvec);
-  free(inxvec);free(inyvec);free(Pvec);free(tcol);free(Ecol);
-  for(idxf=0;idxf<200;idxf++){
-    free(Ptmat[idxf]);
+  free (tPvec);
+  free (inxvec);
+  free (inyvec);
+  free (Pvec);
+  free (tcol);
+  free (Ecol);
+  for (idxf = 0; idxf < 200; idxf++) {
+    free (Ptmat[idxf]);
   }
-  free(Ptmat);
-
+  free (Ptmat);
 %}
 
 MCDISPLAY
 %{
-  double x1,y1,x2,y2;
-  x1=-xwidth/2.0;y1=-yheight/2.0;x2=xwidth/2.0;y2=yheight/2.0;
-  multiline(4,(double)x1,(double)y1,0.0,(double)x1,(double)y2,0.0,(double)x2,(double)y2,0.0,(double)x2,(double)y1,0.0,(double)x1,(double)y1,0.0);
+  double x1, y1, x2, y2;
+  x1 = -xwidth / 2.0;
+  y1 = -yheight / 2.0;
+  x2 = xwidth / 2.0;
+  y2 = yheight / 2.0;
+  multiline (4, (double)x1, (double)y1, 0.0, (double)x1, (double)y2, 0.0, (double)x2, (double)y2, 0.0, (double)x2, (double)y1, 0.0, (double)x1, (double)y1, 0.0);
 %}
 
 END

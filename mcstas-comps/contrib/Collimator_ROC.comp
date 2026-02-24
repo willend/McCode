@@ -64,64 +64,53 @@ ROC_ttmin=0, ROC_ttmax=100, ROC_sign=1)
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
 INITIALIZE
 %{
-if (ROC_pitch <= 0 || ROC_ri > ROC_ro || ROC_ro <= 0
-|| ROC_h <=0 || ROC_ttmin > ROC_ttmax)
-  fprintf(stderr,"Collimator_ROC: error: %s: Invalid geometrical parameters.\n", NAME_CURRENT_COMP);
+  if (ROC_pitch <= 0 || ROC_ri > ROC_ro || ROC_ro <= 0 || ROC_h <= 0 || ROC_ttmin > ROC_ttmax)
+    fprintf (stderr, "Collimator_ROC: error: %s: Invalid geometrical parameters.\n", NAME_CURRENT_COMP);
 %}
 
 TRACE
 %{
-  double ROC_angle,x0,z0,x1,z1,a,r,xp,zp;
-  double d,dt,pi,t0,t1,t2,t3,twotheta;
+  double ROC_angle, x0, z0, x1, z1, a, r, xp, zp;
+  double d, dt, pi, t0, t1, t2, t3, twotheta;
 
-  if (cylinder_intersect(&t0, &t1, x, y, z, vx, vy, vz, ROC_ri, ROC_h) && t1 > 0)
-  {
+  if (cylinder_intersect (&t0, &t1, x, y, z, vx, vy, vz, ROC_ri, ROC_h) && t1 > 0) {
     int MyAbsorb = 0;
 
-    if (t0 < 0) t0 = t1;
-    twotheta = -atan2(x+vx*t0,z+vz*t0);
-    if (( (double)ROC_sign*twotheta*RAD2DEG >= ROC_ttmin ) && ( (double)ROC_sign*twotheta*RAD2DEG <= ROC_ttmax ))
-    {
-      if (cylinder_intersect(&t2, &t3, x, y, z, vx, vy, vz, ROC_ro, ROC_h) && t3 >0)
-      {
-        dt=(x*vz-z*vx)/(vx*vx+vz*vz);
-        xp=vz*dt;
-        zp=-vx*dt;
-        d=sqrt(xp*xp+zp*zp);
-        pi=1.0-RAD2DEG*fabs(asin(d/ROC_ro)-asin(d/ROC_ri))/ROC_pitch;
-        if (pi>0)
-           p*=pi;
-        else MyAbsorb = 1;
-      }
-      else MyAbsorb = 1;
-    }
-    else MyAbsorb = 1;
-    if (MyAbsorb)
-    {
-      PROP_DT(t0);
+    if (t0 < 0)
+      t0 = t1;
+    twotheta = -atan2 (x + vx * t0, z + vz * t0);
+    if (((double)ROC_sign * twotheta * RAD2DEG >= ROC_ttmin) && ((double)ROC_sign * twotheta * RAD2DEG <= ROC_ttmax)) {
+      if (cylinder_intersect (&t2, &t3, x, y, z, vx, vy, vz, ROC_ro, ROC_h) && t3 > 0) {
+        dt = (x * vz - z * vx) / (vx * vx + vz * vz);
+        xp = vz * dt;
+        zp = -vx * dt;
+        d = sqrt (xp * xp + zp * zp);
+        pi = 1.0 - RAD2DEG * fabs (asin (d / ROC_ro) - asin (d / ROC_ri)) / ROC_pitch;
+        if (pi > 0)
+          p *= pi;
+        else
+          MyAbsorb = 1;
+      } else
+        MyAbsorb = 1;
+    } else
+      MyAbsorb = 1;
+    if (MyAbsorb) {
+      PROP_DT (t0);
       ABSORB;
     }
-  }
-  else ABSORB;
-
+  } else
+    ABSORB;
 %}
 MCDISPLAY
 %{
-  double ROC_angle,x0,z0,x1,z1;
+  double ROC_angle, x0, z0, x1, z1;
 
-  
-  for (ROC_angle=ROC_ttmin; ROC_angle <= ROC_ttmax; ROC_angle += ROC_pitch)
-  {
-   x0=ROC_ri*sin(ROC_angle*DEG2RAD);
-   z0=ROC_ri*cos(ROC_angle*DEG2RAD);
-   x1=x0/ROC_ri*ROC_ro;
-   z1=z0/ROC_ri*ROC_ro;
-   multiline(5,
-    x0,  ROC_h/2, z0,
-    x0, -ROC_h/2, z0,
-    x1, -ROC_h/2, z1,
-    x1,  ROC_h/2, z1,
-    x0,  ROC_h/2, z0);
+  for (ROC_angle = ROC_ttmin; ROC_angle <= ROC_ttmax; ROC_angle += ROC_pitch) {
+    x0 = ROC_ri * sin (ROC_angle * DEG2RAD);
+    z0 = ROC_ri * cos (ROC_angle * DEG2RAD);
+    x1 = x0 / ROC_ri * ROC_ro;
+    z1 = z0 / ROC_ri * ROC_ro;
+    multiline (5, x0, ROC_h / 2, z0, x0, -ROC_h / 2, z0, x1, -ROC_h / 2, z1, x1, ROC_h / 2, z1, x0, ROC_h / 2, z0);
   }
 %}
 END

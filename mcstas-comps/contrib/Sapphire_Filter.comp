@@ -54,35 +54,30 @@ SETTING PARAMETERS (xmin=-0.16, xmax=0.16, ymin=-0.16, ymax=0.16, len=0.1,A=0.81
 
 TRACE
 %{
-  double L,L2,Filt_T;
+  double L, L2, Filt_T;
   double dt;
   PROP_Z0;
-  L = (2*PI/V2K)/sqrt(vx*vx + vy*vy + vz*vz);
-    if (x<xmin || x>xmax || y<ymin || y>ymax) ABSORB;
-    dt = len/vz;
-    PROP_DT(dt);
-    L2=L*L;
-    Filt_T=(A*L+C*(1-exp(-B/L2-D/L2/L2)));
-    Filt_T = exp(-Filt_T*len);
-    p*=Filt_T;
+  L = (2 * PI / V2K) / sqrt (vx * vx + vy * vy + vz * vz);
+  if (x < xmin || x > xmax || y < ymin || y > ymax)
+    ABSORB;
+  dt = len / vz;
+  PROP_DT (dt);
+  L2 = L * L;
+  Filt_T = (A * L + C * (1 - exp (-B / L2 - D / L2 / L2)));
+  Filt_T = exp (-Filt_T * len);
+  p *= Filt_T;
 %}
 
 MCDISPLAY
 %{
-  
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
-  multiline(5, (double)xmin, (double)ymin, (double)len,
-               (double)xmax, (double)ymin, (double)len,
-               (double)xmax, (double)ymax, (double)len,
-               (double)xmin, (double)ymax, (double)len,
-               (double)xmin, (double)ymin, (double)len);
-  line(xmin, ymin, 0.0, xmin, ymin, len);
-  line(xmax, ymin, 0.0, xmax, ymin, len);
-  line(xmin, ymax, 0.0, xmin, ymax, len);
-  line(xmax, ymax, 0.0 , xmax, ymax, len);
+
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, (double)len, (double)xmax, (double)ymin, (double)len, (double)xmax, (double)ymax, (double)len, (double)xmin,
+             (double)ymax, (double)len, (double)xmin, (double)ymin, (double)len);
+  line (xmin, ymin, 0.0, xmin, ymin, len);
+  line (xmax, ymin, 0.0, xmax, ymin, len);
+  line (xmin, ymax, 0.0, xmin, ymax, len);
+  line (xmax, ymax, 0.0, xmax, ymax, len);
 %}
 END

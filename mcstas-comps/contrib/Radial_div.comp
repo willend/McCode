@@ -69,81 +69,75 @@ INITIALIZE
 %{
   int i;
 
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
-
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-          printf("Div1dLam: %s: Null detection area !\n"
-                 "ERROR         (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-         NAME_CURRENT_COMP);
-    exit(0);
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
   }
 
-  Div_N = create_darr1d(ndiv);
-  Div_p = create_darr1d(ndiv);
-  Div_p2 = create_darr1d(ndiv);
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("Div1dLam: %s: Null detection area !\n"
+            "ERROR         (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
 
-  for (i=0; i<ndiv; i++) {
-/*       printf("radial_div_monitor: %d\n",i); */
+  Div_N = create_darr1d (ndiv);
+  Div_p = create_darr1d (ndiv);
+  Div_p2 = create_darr1d (ndiv);
+
+  for (i = 0; i < ndiv; i++) {
+    /*       printf("radial_div_monitor: %d\n",i); */
     Div_N[i] = 0;
     Div_p[i] = 0;
     Div_p2[i] = 0;
-   }
-/*     printf("%d %d %d\n",i,ndiv,h_maxdiv); */
+  }
+  /*     printf("%d %d %d\n",i,ndiv,h_maxdiv); */
 %}
 
 TRACE
 %{
   int i;
   double h_div, v_div, lambda, r_div;
-lambda = (2*PI/V2K)/sqrt(vx*vx + vy*vy + vz*vz);
+  lambda = (2 * PI / V2K) / sqrt (vx * vx + vy * vy + vz * vz);
 
   PROP_Z0;
-  if (x>xmin && x<xmax && y>ymin && y<ymax &&
-      lambda > Lmin && lambda < Lmax)
-  {
-    h_div = RAD2DEG*atan2(vx,vz);
-    v_div = RAD2DEG*atan2(vy,vz);
-    r_div=sqrt(h_div*h_div+v_div*v_div);
-    if (r_div < maxdiv_r)
-    {
-      i = floor((r_div)*ndiv/(maxdiv_r));
+  if (x > xmin && x < xmax && y > ymin && y < ymax && lambda > Lmin && lambda < Lmax) {
+    h_div = RAD2DEG * atan2 (vx, vz);
+    v_div = RAD2DEG * atan2 (vy, vz);
+    r_div = sqrt (h_div * h_div + v_div * v_div);
+    if (r_div < maxdiv_r) {
+      i = floor ((r_div)*ndiv / (maxdiv_r));
       Div_N[i]++;
       Div_p[i] += p;
-      Div_p2[i] += p*p;
+      Div_p2[i] += p * p;
       SCATTER;
     }
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-  DETECTOR_OUT_1D(
-      "radial_div",
-      "radial divergence [deg]",
-      "Intensity",
-      "divergence", 0, maxdiv_r, ndiv,
-      &Div_N[0],&Div_p[0],&Div_p2[0],
-      filename);
+  DETECTOR_OUT_1D ("radial_div", "radial divergence [deg]", "Intensity", "divergence", 0, maxdiv_r, ndiv, &Div_N[0], &Div_p[0], &Div_p2[0], filename);
 %}
 
 FINALLY
 %{
-  destroy_darr1d(Div_N);
-  destroy_darr1d(Div_p);
-  destroy_darr1d(Div_p2);
+  destroy_darr1d (Div_N);
+  destroy_darr1d (Div_p);
+  destroy_darr1d (Div_p2);
 %}
 
 MCDISPLAY
 %{
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 

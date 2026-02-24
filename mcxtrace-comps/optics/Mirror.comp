@@ -48,14 +48,14 @@ SETTING PARAMETERS (zdepth=0.1, xwidth=0.01, yheight=0,
 
 SHARE
 %{
-    %include "read_table-lib"
-    %include "reflectivity-lib"
-    %include "interoff-lib"
-    
-    #ifndef SHAPES_T
-    #define SHAPES_T
-    enum shapes_t {NONE=-1,SPHERE, CYLINDER, CUBE, ELLIPSOID, ANY};
-    #endif
+  %include "read_table-lib"
+  %include "reflectivity-lib"
+  %include "interoff-lib"
+
+  #ifndef SHAPES_T
+  #define SHAPES_T
+  enum shapes_t { NONE = -1, SPHERE, CYLINDER, CUBE, ELLIPSOID, ANY };
+  #endif
 %}
 
 DECLARE
@@ -67,104 +67,104 @@ DECLARE
 
 INITIALIZE
 %{
-    int status=0;
+  int status = 0;
 
-    if (coating && strlen(coating) && strcmp(coating,"NULL") ) {
-      status=reflec_Init(&re,COATING_UNDEFINED,coating,NULL);
-    }else{
-      /*assume a constant reflectivity*/
-      status=reflec_Init_const(&re,R0);
-    }
+  if (coating && strlen (coating) && strcmp (coating, "NULL")) {
+    status = reflec_Init (&re, COATING_UNDEFINED, coating, NULL);
+  } else {
+    /*assume a constant reflectivity*/
+    status = reflec_Init_const (&re, R0);
+  }
 
-    if(status!=0){
-      fprintf(stderr,"ERROR (%s): Could not interpret reflectivity. Aborting.\n", NAME_CURRENT_COMP);
-      exit(-1);
-    }
+  if (status != 0) {
+    fprintf (stderr, "ERROR (%s): Could not interpret reflectivity. Aborting.\n", NAME_CURRENT_COMP);
+    exit (-1);
+  }
 
-    if (geometry && strlen(geometry) && strcmp(geometry, "NULL") && strcmp(geometry, "0")) {
-      if (off_init(geometry, xwidth, yheight, zdepth, 0, &(offdata)))
-        shape=ANY;
-      else
-        exit(fprintf(stderr,"ERROR (%s): Could not import geometry file %s\n", 
-          NAME_CURRENT_COMP, geometry));
-    } else if (yheight || xwidth)
-        shape=CUBE;
-      else
-        exit(fprintf(stderr,"ERROR (%s): invalid Mirror dimensions. Aborting.\n", 
-          NAME_CURRENT_COMP));
-
+  if (geometry && strlen (geometry) && strcmp (geometry, "NULL") && strcmp (geometry, "0")) {
+    if (off_init (geometry, xwidth, yheight, zdepth, 0, &(offdata)))
+      shape = ANY;
+    else
+      exit (fprintf (stderr, "ERROR (%s): Could not import geometry file %s\n", NAME_CURRENT_COMP, geometry));
+  } else if (yheight || xwidth)
+    shape = CUBE;
+  else
+    exit (fprintf (stderr, "ERROR (%s): invalid Mirror dimensions. Aborting.\n", NAME_CURRENT_COMP));
 %}
 
 TRACE
 %{
-    int    intersect=1;
-    double nx,ny,nz;
+  int intersect = 1;
+  double nx, ny, nz;
 
-    if (shape == ANY) { // off/ply
-      double l0,l1;
-      Coords n0, n1;
-      intersect = off_x_intersect(&l0, &l1, &n0, &n1, x, y, z, kx, ky, kz, offdata );
-      if (intersect) {
-        if (l0>0) {
-          PROP_DL(l0);
-          coords_get(n0, &nx, &ny, &nz);
-        } else if (l1 > 0) {
-          PROP_DL(l1);
-          coords_get(n1, &nx, &ny, &nz);
-        }
+  if (shape == ANY) { // off/ply
+    double l0, l1;
+    Coords n0, n1;
+    intersect = off_x_intersect (&l0, &l1, &n0, &n1, x, y, z, kx, ky, kz, offdata);
+    if (intersect) {
+      if (l0 > 0) {
+        PROP_DL (l0);
+        coords_get (n0, &nx, &ny, &nz);
+      } else if (l1 > 0) {
+        PROP_DL (l1);
+        coords_get (n1, &nx, &ny, &nz);
       }
-    } else if(yheight){ // YZ plane
-        PROP_X0;
-        if(y<-yheight/2.0|| y>yheight/2.0 || z<-zdepth/2.0 || z>zdepth/2.0){
-            intersect=0;
-        }else{
-            nx=1; ny=nz=0;
-        }
-    } else {    // XZ plane
-        PROP_Y0;
-        if(x<-xwidth/2.0|| x>xwidth/2.0 || z<-zdepth/2.0 || z>zdepth/2.0){
-            intersect=0;
-        }else{
-            nx=0; ny=1; nz=0;
-        }
     }
-    if(intersect){
-        double s,k,q,R;
-        
-        s=scalar_prod(kx,ky,kz,nx,ny,nz);
-        k=sqrt(scalar_prod(kx,ky,kz,kx,ky,kz));
-         
-        kx=kx-2*s*nx;
-        ky=ky-2*s*ny;
-        kz=kz-2*s*nz;
-        SCATTER;
-        q=2.0*s;
-        R=reflecq(re,q,0.0,k,fabs(90-acos(s/k)*RAD2DEG));
-        p*=R;
-        /*update phase - as an approximation turn by 180 deg.*/;
-        phi+=M_PI;
-    }else{
-        /*missed mirror - restore xray*/
-        RESTORE_XRAY(INDEX_CURRENT_COMP, x,y,z, kx,ky,kz, phi,t, Ex,Ey,Ez, p);
+  } else if (yheight) { // YZ plane
+    PROP_X0;
+    if (y < -yheight / 2.0 || y > yheight / 2.0 || z < -zdepth / 2.0 || z > zdepth / 2.0) {
+      intersect = 0;
+    } else {
+      nx = 1;
+      ny = nz = 0;
     }
+  } else { // XZ plane
+    PROP_Y0;
+    if (x < -xwidth / 2.0 || x > xwidth / 2.0 || z < -zdepth / 2.0 || z > zdepth / 2.0) {
+      intersect = 0;
+    } else {
+      nx = 0;
+      ny = 1;
+      nz = 0;
+    }
+  }
+  if (intersect) {
+    double s, k, q, R;
+
+    s = scalar_prod (kx, ky, kz, nx, ny, nz);
+    k = sqrt (scalar_prod (kx, ky, kz, kx, ky, kz));
+
+    kx = kx - 2 * s * nx;
+    ky = ky - 2 * s * ny;
+    kz = kz - 2 * s * nz;
+    SCATTER;
+    q = 2.0 * s;
+    R = reflecq (re, q, 0.0, k, fabs (90 - acos (s / k) * RAD2DEG));
+    p *= R;
+    /*update phase - as an approximation turn by 180 deg.*/;
+    phi += M_PI;
+  } else {
+    /*missed mirror - restore xray*/
+    RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+  }
 %}
 
 MCDISPLAY
 %{
   /* A bit ugly; hard-coded dimensions. */
-  magnify("");
-  if (shape == ANY) {	/* OFF file */
-    off_display(offdata);
-  } else if(yheight){
-    line(0,-yheight/2.0,-zdepth/2.0, 0, yheight/2.0,-zdepth/2.0);
-    line(0,-yheight/2.0, zdepth/2.0, 0, yheight/2.0, zdepth/2.0);
-    line(0,-yheight/2.0,-zdepth/2.0, 0,-yheight/2.0, zdepth/2.0);
-    line(0, yheight/2.0,-zdepth/2.0, 0, yheight/2.0, zdepth/2.0);
-  }else{
-    line(-xwidth/2.0,0,-zdepth/2.0, xwidth/2.0,0,-zdepth/2.0);
-    line(-xwidth/2.0,0, zdepth/2.0, xwidth/2.0,0, zdepth/2.0);
-    line(-xwidth/2.0,0,-zdepth/2.0,-xwidth/2.0,0, zdepth/2.0);
-    line( xwidth/2.0,0,-zdepth/2.0, xwidth/2.0,0, zdepth/2.0);
+  magnify ("");
+  if (shape == ANY) { /* OFF file */
+    off_display (offdata);
+  } else if (yheight) {
+    line (0, -yheight / 2.0, -zdepth / 2.0, 0, yheight / 2.0, -zdepth / 2.0);
+    line (0, -yheight / 2.0, zdepth / 2.0, 0, yheight / 2.0, zdepth / 2.0);
+    line (0, -yheight / 2.0, -zdepth / 2.0, 0, -yheight / 2.0, zdepth / 2.0);
+    line (0, yheight / 2.0, -zdepth / 2.0, 0, yheight / 2.0, zdepth / 2.0);
+  } else {
+    line (-xwidth / 2.0, 0, -zdepth / 2.0, xwidth / 2.0, 0, -zdepth / 2.0);
+    line (-xwidth / 2.0, 0, zdepth / 2.0, xwidth / 2.0, 0, zdepth / 2.0);
+    line (-xwidth / 2.0, 0, -zdepth / 2.0, -xwidth / 2.0, 0, zdepth / 2.0);
+    line (xwidth / 2.0, 0, -zdepth / 2.0, xwidth / 2.0, 0, zdepth / 2.0);
   }
 %}
 

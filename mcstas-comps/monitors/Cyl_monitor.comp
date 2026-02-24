@@ -60,12 +60,13 @@ DECLARE
 
 INITIALIZE
 %{
-  PSD_N =  create_darr1d(nr);
-  PSD_p =  create_darr1d(nr);
-  PSD_p2 = create_darr1d(nr);
+  PSD_N = create_darr1d (nr);
+  PSD_p = create_darr1d (nr);
+  PSD_p2 = create_darr1d (nr);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 
 TRACE
@@ -73,60 +74,53 @@ TRACE
   int i, j;
   double t0, t1, phi;
 
-  if(cylinder_intersect(&t0, &t1, x, y, z, vx, vy, vz, radius, yheight) == 1) {
-    if(t0<0) {
-      if(t1>0) {
-	PROP_DT(t1);
-	/* Calculate pixel */
-	if (fabs(y) <= yheight/2.0) {
-	  phi=atan2(x,z)*RAD2DEG;
-	  
-	  if (phi >= thmin && phi <= thmax) {
-	    i=floor((nr) * (phi-thmin)/(thmax-thmin));
-	    
-	    double p2 = p*p;
+  if (cylinder_intersect (&t0, &t1, x, y, z, vx, vy, vz, radius, yheight) == 1) {
+    if (t0 < 0) {
+      if (t1 > 0) {
+        PROP_DT (t1);
+        /* Calculate pixel */
+        if (fabs (y) <= yheight / 2.0) {
+          phi = atan2 (x, z) * RAD2DEG;
+
+          if (phi >= thmin && phi <= thmax) {
+            i = floor ((nr) * (phi - thmin) / (thmax - thmin));
+
+            double p2 = p * p;
             #pragma acc atomic
-	    PSD_N[i] = PSD_N[i]+1;
-	    
+            PSD_N[i] = PSD_N[i] + 1;
+
             #pragma acc atomic
-	    PSD_p[i] = PSD_p[i]+p;
-	  
-	    #pragma acc atomic
-	    PSD_p2[i] = PSD_p2[i]+p2;
-	  }
-	}
+            PSD_p[i] = PSD_p[i] + p;
+
+            #pragma acc atomic
+            PSD_p2[i] = PSD_p2[i] + p2;
+          }
+        }
       }
     }
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {   
-  DETECTOR_OUT_1D(
-      "Cylindrical monitor",
-      "radial position [deg]",
-      "Intensity",
-      "Theta",
-      thmin, thmax, nr, 
-      &PSD_N[0],&PSD_p[0],&PSD_p2[0],
-      filename);
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_1D ("Cylindrical monitor", "radial position [deg]", "Intensity", "Theta", thmin, thmax, nr, &PSD_N[0], &PSD_p[0], &PSD_p2[0], filename);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr1d(PSD_N);
-  destroy_darr1d(PSD_p);
-  destroy_darr1d(PSD_p2);
+  destroy_darr1d (PSD_N);
+  destroy_darr1d (PSD_p);
+  destroy_darr1d (PSD_p2);
 %}
 
 MCDISPLAY
 %{
-  circle("xz", 0, 0, 0, radius );
+  circle ("xz", 0, 0, 0, radius);
 %}
 
 END

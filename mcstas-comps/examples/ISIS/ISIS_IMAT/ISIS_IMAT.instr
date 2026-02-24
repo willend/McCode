@@ -24,6 +24,8 @@
 * Journal of Instrumentation, 8 (2013), no 10, http://dx.doi.org/10.1088/1748-0221/8/10/P10001
 * 2. Results from calculations published in the previous paper were obtained using McStas ISIS_moderator component (Face="W5")  
 * 
+* %Example: -y Detector: psd4pi_I=0.34
+* %Example: -y --format=NeXus Detector: psd4pi_I=0.34
 *
 * %Parameters
 * INPUT PARAMETERS:
@@ -150,7 +152,7 @@ AT (0.0, 0.0, 10.00) RELATIVE pinhole
 // must here be static, but the grammar tests for a '{' as fisrt char. The 'Lazy'
 // #define is indeed a {value}, but not replaced before the code generation takes
 // place.
-COMPONENT sample = PowderN(reflections="Na2Ca3Al2F14.laz", radius = 0.002, yheight = 0.01,
+SPLIT 102 COMPONENT sample = PowderN(reflections="Na2Ca3Al2F14.laz", radius = 0.002, yheight = 0.01,
         Vc = 1079.1, sigma_abs = 2.9464e-3, sigma_inc = 3.4176, d_phi=60, format={17,6,0,0,0,0,0,13,0 })
 AT (0.0, 0.0, 56) RELATIVE Origin
 EXTEND

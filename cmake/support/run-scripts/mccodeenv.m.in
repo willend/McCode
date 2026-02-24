@@ -3,7 +3,7 @@
 % First, set up various environment variables
 %
 % Path related:
-setenv('PATH', ['@CPACK_NSIS_INSTALL_ROOT@\\bin;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3\\Scripts\\;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3\\Library\\bin;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3\\Library\\mingw-w64\\bin;c:\\strawberry\\perl\\bin;c:\\Microsoft MPI\\Bin;' getenv('PATH')]);
+setenv('PATH', ['@CPACK_NSIS_INSTALL_ROOT@\\bin;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3\\bin;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3\\Scripts\\;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3\\Library\\bin;@CPACK_NSIS_INSTALL_ROOT@\\miniconda3\\Library\\mingw-w64\\bin;c:\\strawberry\\perl\\bin;c:\\Microsoft MPI\\Bin;' getenv('PATH')]);
 %
 % McStas related:
 setenv('@FLAVOR_UPPER@', '@CPACK_NSIS_INSTALL_ROOT@\\lib');

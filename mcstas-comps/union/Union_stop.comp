@@ -50,11 +50,11 @@ SETTING PARAMETERS()
 
 SHARE
 %{
-#ifndef Union
-#error "The Union_init component must be included before this Union_stop component"
-#endif
+  #ifndef Union
+  #error "The Union_init component must be included before this Union_stop component"
+  #endif
 
-%include "union-suffix.c"
+  %include "union-suffix.c"
 %}
 
 DECLARE

@@ -101,7 +101,6 @@ SHARE
 %{
   %include "ref-lib"
 
-
   /******************************************************************************
    * horiz_tube_intersect: compute intersection with a horizontal tube, allowing for gravity
    * i.e. one with length along x axis
@@ -116,7 +115,7 @@ SHARE
    * Here Rtop > Rbottom, regardless of which way up the bend is.
    * idown = 1 for a downhill bender, where radius is negative, idown =0 for uphill bender, with radius positive
    * Find a crossing using tstep1, then go back to start of that step and check with smaller steps, tstep2.
-   * NOTE we need the first of possibly two wall crossings that may be very close together, so have to go 
+   * NOTE we need the first of possibly two wall crossings that may be very close together, so have to go
    * to start of previous step, then forwards again with smaller steps (i.e. cannot do a classic Newton-Raphson search here).
    * If tstep1 is too large we may miss one or even two collisions with a wall.
    * 8/8/17 makes sure that t11 cannot return zero, else can get stuck in infinite loop, so aim for mid point of the crossing step
@@ -128,49 +127,53 @@ SHARE
    *
    *
    *******************************************************************************/
-  
- // RKH need a c++ expert to check which variables should be passed by reference (or not) etc for greater efficiancy 
- // the original code passed *t11
- int
-  horiz_tube_intersect(double *t11, double tStep1, double tStep2, double tMax, double y, double z,
-                       double vy, double vz, double Rtop, double Rbottom, double Gy, double Gz, int idown, int debug )
-   {
+
+  // RKH need a c++ expert to check which variables should be passed by reference (or not) etc for greater efficiancy
+  // the original code passed *t11
+  int
+  horiz_tube_intersect (double* t11, double tStep1, double tStep2, double tMax, double y, double z, double vy, double vz, double Rtop, double Rbottom, double Gy,
+                        double Gz, int idown, int debug) {
     double t, t2, Rtop2, Rbottom2, znew, ynew, Rneutron2;
-    if(debug>5)printf("hti  Gy: %f,tStep1: %f,tStep2: %f,tMax: %f,y: %f, z: %f,vy: %f,vz: %f\n",Gy,tStep1,tStep2,tMax,y,z,vy,vz);
+    if (debug > 5)
+      printf ("hti  Gy: %f,tStep1: %f,tStep2: %f,tMax: %f,y: %f, z: %f,vy: %f,vz: %f\n", Gy, tStep1, tStep2, tMax, y, z, vy, vz);
     *t11 = 0.0;
     t = 0.0;
     Rtop2 = Rtop * Rtop;
     Rbottom2 = Rbottom * Rbottom;
-    do{
-    t += tStep1;
-    t2 = 0.5*t*t;
-    znew = z + vz*t +Gz*t2;
-    ynew = y + vy*t +Gy*t2;
-    Rneutron2 =  znew*znew + ynew*ynew;
-    if(debug>9)printf("t1: %f, z: %f, y: %f, r: %f\n",t, znew, ynew, sqrt(Rneutron2));
-    
-    if ((Rneutron2 > Rtop2) || (Rneutron2 < Rbottom2)) {
-    t-=tStep1;
+    do {
+      t += tStep1;
+      t2 = 0.5 * t * t;
+      znew = z + vz * t + Gz * t2;
+      ynew = y + vy * t + Gy * t2;
+      Rneutron2 = znew * znew + ynew * ynew;
+      if (debug > 9)
+        printf ("t1: %f, z: %f, y: %f, r: %f\n", t, znew, ynew, sqrt (Rneutron2));
+
+      if ((Rneutron2 > Rtop2) || (Rneutron2 < Rbottom2)) {
+        t -= tStep1;
         do {
           t += tStep2;
-          t2 = 0.5*t*t;
-          znew = z + vz*t + Gz*t2;
-          ynew = y + vy*t + Gy*t2;
-          Rneutron2 =  znew*znew + ynew*ynew;
-          if(debug>9)printf("t2: %f, z: %f, y: %f, r: %f\n",t, znew, ynew, sqrt(Rneutron2));
-            if (Rneutron2 > Rtop2){
-             *t11 = t - tStep2*0.5;  // 8/8/17 subtract only half the step here, so t11 is never zero
-             return idown + 1; }  //  2 for downhill, hit top; 1 for uphill hit bottom
-            else if (Rneutron2 < Rbottom2) {
-             *t11 = t - tStep2*0.5;  // 8/8/17 subtract only half the step here, so t11 is never zero
-             return 2 - idown; }  //  1 for downhill, hit bottom; 2 for uphill hit top
-        } while (t < tMax);      //  tMax limit is excessive here, but will guarantee success
-    }                            // end of IF
+          t2 = 0.5 * t * t;
+          znew = z + vz * t + Gz * t2;
+          ynew = y + vy * t + Gy * t2;
+          Rneutron2 = znew * znew + ynew * ynew;
+          if (debug > 9)
+            printf ("t2: %f, z: %f, y: %f, r: %f\n", t, znew, ynew, sqrt (Rneutron2));
+          if (Rneutron2 > Rtop2) {
+            *t11 = t - tStep2 * 0.5; // 8/8/17 subtract only half the step here, so t11 is never zero
+            return idown + 1;
+          } //  2 for downhill, hit top; 1 for uphill hit bottom
+          else if (Rneutron2 < Rbottom2) {
+            *t11 = t - tStep2 * 0.5; // 8/8/17 subtract only half the step here, so t11 is never zero
+            return 2 - idown;
+          } //  1 for downhill, hit bottom; 2 for uphill hit top
+        } while (t < tMax); //  tMax limit is excessive here, but will guarantee success
+      } // end of IF
     } while (t < tMax);
-    
-    return 0;                     // escape without collision
-   /* horiz_tube_intersect */
-   }
+
+    return 0; // escape without collision
+    /* horiz_tube_intersect */
+  }
 %}
 
 DECLARE
@@ -182,7 +185,7 @@ DECLARE
   Coords pointLeft;
   Coords pointRight;
   Coords pointIn;
-  Coords pointOut;  
+  Coords pointOut;
 %}
 
 INITIALIZE%{
@@ -244,338 +247,341 @@ INITIALIZE%{
 
 TRACE
 %{
- // RKH there is no "stuck in infinite loop" checking here ...
- // RKH not used    const double whalf = 0.5*xwidth; /* half width of guide */
+  // RKH there is no "stuck in infinite loop" checking here ...
+  // RKH not used    const double whalf = 0.5*xwidth; /* half width of guide */
   double Gx, Gy, Gz;
-  const double hhalf = 0.5*yheight; /* half height of guide */
-// RKH, not used      const double z_off = radius*sin(length/radius); /* z-comp of guide length */
-  const double dThreshold = 1e-10; /* distance threshold */
-  const double tThreshold = dThreshold/sqrt(vx*vx + vy*vy + vz*vz);
+  const double hhalf = 0.5 * yheight; /* half height of guide */
+                                      // RKH, not used      const double z_off = radius*sin(length/radius); /* z-comp of guide length */
+  const double dThreshold = 1e-10;    /* distance threshold */
+  const double tThreshold = dThreshold / sqrt (vx * vx + vy * vy + vz * vz);
   double angle_z_vout; /* angle between z-axis and v_out */
 
-  //Variables for multiple slits
-  const double channelWidth = yheight/nchan; // slitWidth
-  const double bladeHalf = 0.5*d; /* half width of spacers */
-  int channelHit;    // decide which channel is hit
-  double posInChannel; // position in channel
+  // Variables for multiple slits
+  const double channelWidth = yheight / nchan; // slitWidth
+  const double bladeHalf = 0.5 * d;            /* half width of spacers */
+  int channelHit;                              // decide which channel is hit
+  double posInChannel;                         // position in channel
 
   double t11, theta, alpha, endtime, phi;
   double weight;
 
-  double Rtop; /* larger radius of channel */
+  double Rtop;    /* larger radius of channel */
   double Rbottom; /* smaller radius of channel */
-  double absR = fabs(radius);
+  double absR = fabs (radius);
   int i_bounce = 0;
 
   if (mcgravitation) {
-     coords_get(localG, &Gx, &Gy, &Gz);
-  }
-  else
-    Gy = Gz =0;
+    coords_get (localG, &Gx, &Gy, &Gz);
+  } else
+    Gy = Gz = 0;
 
-//  are we tracking the neutron inside the cylindrical cross section or not 
+  //  are we tracking the neutron inside the cylindrical cross section or not
   int itrack = 0;
-  if (Gy != 0 || Gz != 0 ) itrack = 1;
-  if (alwaystrack == 1 ) itrack = 1;
+  if (Gy != 0 || Gz != 0)
+    itrack = 1;
+  if (alwaystrack == 1)
+    itrack = 1;
 
   int idown = 0;
-  if (radius<0)
+  if (radius < 0)
     idown = 1;
 
   /* Propagate neutron to entrance */
   PROP_Z0;
-  if (!inside_rectangle(x, y, xwidth, yheight))
+  if (!inside_rectangle (x, y, xwidth, yheight))
     ABSORB;
 
-  if (nchan>1){
+  if (nchan > 1) {
     // check if neutron gets absorbed in spacers
-    posInChannel = fmod(y+hhalf, channelWidth);
-    if(posInChannel <= bladeHalf ||
-       posInChannel >= channelWidth-bladeHalf)
+    posInChannel = fmod (y + hhalf, channelWidth);
+    if (posInChannel <= bladeHalf || posInChannel >= channelWidth - bladeHalf)
       ABSORB;
 
     // determine which channel neutron enters, (don't really need channelHit, but its nice to know it, there may be a more elegant way here still)
-    if (idown == 1) 
-       channelHit = (int)((y+hhalf)/channelWidth);  // downhill, channels 0,1,2,3 from bottom to top
+    if (idown == 1)
+      channelHit = (int)((y + hhalf) / channelWidth); // downhill, channels 0,1,2,3 from bottom to top
     else
-       channelHit = (int)((hhalf-y)/channelWidth);  //   uphill, channels 0,1,2,3 from top to bottom
+      channelHit = (int)((hhalf - y) / channelWidth); //   uphill, channels 0,1,2,3 from top to bottom
 
     // Modify radii according to the channel entered, Rtop is always the larger here (could have renamed it)
-    Rtop = absR - hhalf +(channelHit+1)*channelWidth - bladeHalf;
-    Rbottom = absR - hhalf + channelHit*channelWidth + bladeHalf;
+    Rtop = absR - hhalf + (channelHit + 1) * channelWidth - bladeHalf;
+    Rbottom = absR - hhalf + channelHit * channelWidth + bladeHalf;
 
-    if(debug > 0)
-      printf("\nchannelHit: %d/%f, idown:%i, Rtop: %f, Rbottom: %f\n",
-      channelHit, (y+hhalf)/channelWidth, idown, Rtop, Rbottom);
-   } else { // only 1 slit
+    if (debug > 0)
+      printf ("\nchannelHit: %d/%f, idown:%i, Rtop: %f, Rbottom: %f\n", channelHit, (y + hhalf) / channelWidth, idown, Rtop, Rbottom);
+  } else { // only 1 slit
 
-     Rtop = absR + hhalf;
-     Rbottom = absR - hhalf;
+    Rtop = absR + hhalf;
+    Rbottom = absR - hhalf;
+  }
 
-   }
-  
-  int counter=0;
-  for(;;) {
+  int counter = 0;
+  for (;;) {
     counter++;
     double tLeft, tRight, tTop, tBot, tIn, tOut, tMirror;
     double tUp, tSide, time, endtime;
     double R, Q;
     Coords vVec, xVec;
     double vel_yz;
-    int ibend, ibendnew;                     // 1 bottom, 2 top, 3 left, 4 right, 5 exit, 6 entrance, 0 no collision
+    int ibend, ibendnew;         // 1 bottom, 2 top, 3 left, 4 right, 5 exit, 6 entrance, 0 no collision
     double tStep1, tStep2, tMax; // long & short time step (calc from diststep1 & diststep2); longest time to track until in top/bottom of bender channel
-    tMax=0;
+    tMax = 0;
 
-    xVec = coords_set(x, y, z);
-    vVec = coords_set(vx, vy, vz);
-    
-    // RKH has simplified the logic of the original here, to use ibend integer to keep up with the fate of the neutron, 
+    xVec = coords_set (x, y, z);
+    vVec = coords_set (vx, vy, vz);
+
+    // RKH has simplified the logic of the original here, to use ibend integer to keep up with the fate of the neutron,
     // and to avoid repeatedly comparing double precision time values
     ibend = 0;
 
-    //solve for transport to flat sides of bender, 
-    // could assume we can only hit either right or left depending on vx <0 or >0, but not both, however a VERY slow neutron in a narrow channel
-    // could hit both sides in a horizontal bender, so check both separately, note these have gravity.
-    // solve_2nd_order is in mccode-r.c, with 2nd param NULL it finds the smallest positve solution to A.t^2 + B.t + C = 0
-    solve_2nd_order(&tLeft, NULL, 0.5*coords_sp(normSides,localG),
-      coords_sp(normSides, vVec),
-      coords_sp(normSides, coords_sub(xVec, pointLeft)));
-      if(tLeft>tThreshold){ tMax = tLeft;
-      ibend = 3;}
-     
-    solve_2nd_order(&tRight, NULL, 0.5*coords_sp(normSides,localG),
-       coords_sp(normSides, vVec),
-       coords_sp(normSides, coords_sub(xVec, pointRight)) );
-      if ( (tRight > tThreshold) && ( (tRight < tMax) || ibend == 0)) {tMax = tRight;
-      ibend =4; }
-      
-   // solve transport for entrance & exit planes of bender
-    solve_2nd_order(&tIn, NULL, 0.5*coords_sp(normIn,localG),
-		    coords_sp(normIn, vVec),
-		    coords_sp(normIn, coords_sub(xVec, pointIn)));
-            if( (tIn>tThreshold ) && (tIn < tMax || ibend ==0)){ tMax = tIn;
-            ibend = 6;}
+    // solve for transport to flat sides of bender,
+    //  could assume we can only hit either right or left depending on vx <0 or >0, but not both, however a VERY slow neutron in a narrow channel
+    //  could hit both sides in a horizontal bender, so check both separately, note these have gravity.
+    //  solve_2nd_order is in mccode-r.c, with 2nd param NULL it finds the smallest positve solution to A.t^2 + B.t + C = 0
+    solve_2nd_order (&tLeft, NULL, 0.5 * coords_sp (normSides, localG), coords_sp (normSides, vVec), coords_sp (normSides, coords_sub (xVec, pointLeft)));
+    if (tLeft > tThreshold) {
+      tMax = tLeft;
+      ibend = 3;
+    }
 
-    solve_2nd_order(&tOut, NULL, 0.5*coords_sp(normOut,localG),
-		    coords_sp(normOut, vVec),
-		    coords_sp(normOut, coords_sub(xVec, pointOut)));
-            if( (tOut>tThreshold) && (tOut < tMax || ibend ==0)){ tMax = tOut;
-            ibend = 5;}
-            
-    tStep1 = diststep1/coords_len(vVec);   // could just use vz, but would come unstuck if vz=0, so play safe here
-    tStep2 = tStep1*diststep2/diststep1;
-    
+    solve_2nd_order (&tRight, NULL, 0.5 * coords_sp (normSides, localG), coords_sp (normSides, vVec), coords_sp (normSides, coords_sub (xVec, pointRight)));
+    if ((tRight > tThreshold) && ((tRight < tMax) || ibend == 0)) {
+      tMax = tRight;
+      ibend = 4;
+    }
+
+    // solve transport for entrance & exit planes of bender
+    solve_2nd_order (&tIn, NULL, 0.5 * coords_sp (normIn, localG), coords_sp (normIn, vVec), coords_sp (normIn, coords_sub (xVec, pointIn)));
+    if ((tIn > tThreshold) && (tIn < tMax || ibend == 0)) {
+      tMax = tIn;
+      ibend = 6;
+    }
+
+    solve_2nd_order (&tOut, NULL, 0.5 * coords_sp (normOut, localG), coords_sp (normOut, vVec), coords_sp (normOut, coords_sub (xVec, pointOut)));
+    if ((tOut > tThreshold) && (tOut < tMax || ibend == 0)) {
+      tMax = tOut;
+      ibend = 5;
+    }
+
+    tStep1 = diststep1 / coords_len (vVec); // could just use vz, but would come unstuck if vz=0, so play safe here
+    tStep2 = tStep1 * diststep2 / diststep1;
+
     /* Find intersection points with top and bottom (curved) guide walls */
 
-    if(debug>4)printf("get1 Gy: %f,tStep1: %f,tStep2: %f,tMax: %f\n",Gy,tStep1,tStep2,tMax);
+    if (debug > 4)
+      printf ("get1 Gy: %f,tStep1: %f,tStep2: %f,tMax: %f\n", Gy, tStep1, tStep2, tMax);
 
     // adjust y so centre of bender arcs are at origin
     double yshift = y - radius;
-    
+
     // either track in steps
-    // RKH 08/08/17 oops, issue here, getting stuck when returning t11 = 0 
-    if ( itrack == 1){
-      ibendnew = horiz_tube_intersect(&t11, tStep1, tStep2, tMax, yshift, z, vy, vz, 
-            Rtop, Rbottom, Gy, Gz, idown, debug);
-    
-      if(debug > 3)
-        printf("ibend: %i, ibendnew: %i, tLeft: %f,tRight: %f,tIn: %f,tOut: %f,t11: %f\n",
-        ibend,ibendnew,tLeft,tRight,tIn,tOut,t11);
-      
-      if (ibendnew != 0 ) { ibend = ibendnew;   
-        tMax = t11;}                            // by definition here, t11  <= tMax
+    // RKH 08/08/17 oops, issue here, getting stuck when returning t11 = 0
+    if (itrack == 1) {
+      ibendnew = horiz_tube_intersect (&t11, tStep1, tStep2, tMax, yshift, z, vy, vz, Rtop, Rbottom, Gy, Gz, idown, debug);
+
+      if (debug > 3)
+        printf ("ibend: %i, ibendnew: %i, tLeft: %f,tRight: %f,tIn: %f,tOut: %f,t11: %f\n", ibend, ibendnew, tLeft, tRight, tIn, tOut, t11);
+
+      if (ibendnew != 0) {
+        ibend = ibendnew;
+        tMax = t11;
+      } // by definition here, t11  <= tMax
+    } else {
+      // or if no gravity, solve straight line intersecting circles
+      double AA = (vy * vy + vz * vz);
+      double BB = 2.0 * (z * vz + yshift * vy);
+      double CC = z * z + yshift * yshift;
+      solve_2nd_order (&t11, NULL, AA, BB, (CC - Rtop * Rtop));
+      if ((t11 > tThreshold) && (t11 < tMax || ibend == 0)) {
+        tMax = t11;
+        ibend = idown + 1;
+      }
+
+      solve_2nd_order (&t11, NULL, AA, BB, (CC - Rbottom * Rbottom));
+      if ((t11 > tThreshold) && (t11 < tMax || ibend == 0)) {
+        tMax = t11;
+        ibend = 2 - idown;
+      }
     }
-    else{
-    // or if no gravity, solve straight line intersecting circles
-      double AA = (vy*vy + vz*vz);
-      double BB = 2.0*( z*vz + yshift*vy);
-      double CC = z*z + yshift*yshift;
-      solve_2nd_order(&t11, NULL, AA, BB, (CC - Rtop*Rtop));
-            if( (t11>tThreshold) && (t11 < tMax || ibend ==0)){ tMax = t11;
-            ibend = idown + 1;}
-   
-      solve_2nd_order(&t11, NULL, AA, BB, (CC - Rbottom*Rbottom));
-            if( (t11>tThreshold) && (t11 < tMax || ibend ==0)){ tMax = t11;
-            ibend = 2 - idown;}
-    }
-    if(debug > 3)
-      printf("Rtop: %f, Rbottom: %f, yshift: %f, z: %f, vy: %f, vz: %f t11: %f, Gy: %f, Gz: %f\n",
-      Rtop, Rbottom, y-radius, z, vy, vz, t11, Gy, Gz);
+    if (debug > 3)
+      printf ("Rtop: %f, Rbottom: %f, yshift: %f, z: %f, vy: %f, vz: %f t11: %f, Gy: %f, Gz: %f\n", Rtop, Rbottom, y - radius, z, vy, vz, t11, Gy, Gz);
 
     // RKH at this point ibend should not be zero ! - but it often is....  Also why won't ABSORB work here?
-    if (ibend == 0){
-      printf("ERROR? ibend: %i, ibendnew: %i, tLeft: %f,tRight: %f,tIn: %f,tOut: %f,t11: %f\n",
-      ibend,ibendnew,tLeft,tRight,tIn,tOut,t11);
+    if (ibend == 0) {
+      printf ("ERROR? ibend: %i, ibendnew: %i, tLeft: %f,tRight: %f,tIn: %f,tOut: %f,t11: %f\n", ibend, ibendnew, tLeft, tRight, tIn, tOut, t11);
       break;
-      }
-      
+    }
+
     // Has the neutron left the guide?  Note we pass put the number pf bounces.
     // RKH - presume that somewhere else the neutron is propagated into next component??
-    if (ibend > 4 ) break;
+    if (ibend > 4)
+      break;
 
     if (mcgravitation) {
-//      coords_get(localG, &Gx, &Gy, &Gz);                // RKH works fine with this commented out
-      if(debug>4)printf("get2 Gxyz: %f,%f,%f\n",Gx,Gy,Gz);
-      PROP_GRAV_DT(tMax,Gx,Gy,Gz);                  // this is in PSI_DMC.c, updates mcnlx, mcnvx etc.
-    }
-    else
-      PROP_DT(tMax);                               // this actually checks for gravity, but repeats component gravity vector rotation
+      //      coords_get(localG, &Gx, &Gy, &Gz);                // RKH works fine with this commented out
+      if (debug > 4)
+        printf ("get2 Gxyz: %f,%f,%f\n", Gx, Gy, Gz);
+      PROP_GRAV_DT (tMax, Gx, Gy, Gz); // this is in PSI_DMC.c, updates mcnlx, mcnvx etc.
+    } else
+      PROP_DT (tMax); // this actually checks for gravity, but repeats component gravity vector rotation
 
-// RKH depending how well we found the intersection, the neutron may not be exactly at the top or bottom wall.
-// The reflection angle is being calculated for the wall using new z value.
+    // RKH depending how well we found the intersection, the neutron may not be exactly at the top or bottom wall.
+    // The reflection angle is being calculated for the wall using new z value.
     SCATTER;
 
     i_bounce += 1;
     /* Find reflection surface */
-    if(ibend == 1 || ibend ==2) { /* bottom or top surface */
-      if(ibend == 2){
-         if(idown == 1)
+    if (ibend == 1 || ibend == 2) { /* bottom or top surface */
+      if (ibend == 2) {
+        if (idown == 1)
           R = -Rtop;
-         else
-          R = Rbottom;}
-      else
-         {if(idown == 1)
+        else
+          R = Rbottom;
+      } else {
+        if (idown == 1)
           R = -Rbottom;
-         else
-          R = Rtop;}
+        else
+          R = Rtop;
+      }
 
-      phi = atan(vy/vz); /* angle of neutron trajectory */
-      alpha = asin(z/R); /* angle of guide wall */
-      theta = fabs(phi-alpha); /* angle of reflection */
-      angle_z_vout = 2.0*alpha - phi;
+      phi = atan (vy / vz);       /* angle of neutron trajectory */
+      alpha = asin (z / R);       /* angle of guide wall */
+      theta = fabs (phi - alpha); /* angle of reflection */
+      angle_z_vout = 2.0 * alpha - phi;
 
-      vel_yz = sqrt(vy*vy + vz*vz); /* in plane velocity */
-      vz = vel_yz*cos(angle_z_vout);
-      vy = vel_yz*sin(angle_z_vout);
+      vel_yz = sqrt (vy * vy + vz * vz); /* in plane velocity */
+      vz = vel_yz * cos (angle_z_vout);
+      vy = vel_yz * sin (angle_z_vout);
 
     } else { /* left or right walls */
-      theta = fabs(atan(vx/vz));
+      theta = fabs (atan (vx / vz));
       vx = -vx;
     }
 
     /* Let's compute reflectivity! */
-    Q = 2.0*sin(theta)*sqrt(vx*vx + vy*vy + vz*vz)*V2K;
+    Q = 2.0 * sin (theta) * sqrt (vx * vx + vy * vy + vz * vz) * V2K;
 
     /* and the probability ... */
     if (ibend == 2) {
-      StdReflecFunc(Q, rTopPar, &weight);
-      if (debug > 0) fprintf(stdout, "\tTop hit:\n");
+      StdReflecFunc (Q, rTopPar, &weight);
+      if (debug > 0)
+        fprintf (stdout, "\tTop hit:\n");
     } else if (ibend == 1) {
-      StdReflecFunc(Q, rBottomPar, &weight);
-      if (debug > 0) fprintf(stdout, "\tBottom hit:\n");
+      StdReflecFunc (Q, rBottomPar, &weight);
+      if (debug > 0)
+        fprintf (stdout, "\tBottom hit:\n");
     } else if (ibend == 4) {
-      StdReflecFunc(Q, rSidesPar, &weight);
-      if (debug > 0) fprintf(stdout, "\tRight hit:\n");
+      StdReflecFunc (Q, rSidesPar, &weight);
+      if (debug > 0)
+        fprintf (stdout, "\tRight hit:\n");
     } else if (ibend == 3) {
-      StdReflecFunc(Q, rSidesPar, &weight);
-      if (debug > 0) fprintf(stdout, "\tLeft hit:\n");
+      StdReflecFunc (Q, rSidesPar, &weight);
+      if (debug > 0)
+        fprintf (stdout, "\tLeft hit:\n");
     }
 
     /* Check that weight is meaningful. If not force it.*/
-    if (weight <= 0) ABSORB;
-    if (weight > 1) weight = 1;
+    if (weight <= 0)
+      ABSORB;
+    if (weight > 1)
+      weight = 1;
 
     /* Twiddle the neutron weight */
     p *= weight;
 
-    if(p == 0) {
+    if (p == 0) {
       // Neutron is dead. Kill it!
       ABSORB;
       break;
     }
-    if (counter>recurse_max) {
+    if (counter > recurse_max) {
       // Neutron is dead. Kill it!
       ABSORB;
       break;
     }
-
   }
-
 %}
 
 MCDISPLAY
 %{
   double y1, y2, z1, z2;
-  y1=y2=z1=z2=0;
+  y1 = y2 = z1 = z2 = 0;
   const int n = 90;
   double yplot[90], zplot[90];
   int ns = 0;
   int j = 1;
-  const double lengthOfGuide = sin(length/radius)*radius;
-  const double channelWidth = yheight/nchan;
+  const double lengthOfGuide = sin (length / radius) * radius;
+  const double channelWidth = yheight / nchan;
   double R = 0; /* radius of arc */
   int nChansMax = nchan;
-  int nMax      = n;
+  int nMax = n;
 
-  if (lengthOfGuide<=0)
-    exit(fprintf(stdout,"Vertical_bender: %s: Negative guide length ! lengthOfGuide=%g\n",
-	    NAME_CURRENT_COMP, lengthOfGuide));
+  if (lengthOfGuide <= 0)
+    exit (fprintf (stdout, "Vertical_bender: %s: Negative guide length ! lengthOfGuide=%g\n", NAME_CURRENT_COMP, lengthOfGuide));
 
-  if (drawOption==2) {
+  if (drawOption == 2) {
 
-    if(nChansMax>20)
+    if (nChansMax > 20)
       nChansMax = 20;
     nMax = 40;
-  } else if (drawOption==3) {
+  } else if (drawOption == 3) {
 
-    if(nChansMax>5)
+    if (nChansMax > 5)
       nChansMax = 5;
     nMax = 10;
   }
 
-  magnify("xy");
+  magnify ("xy");
 
   // draw opening
-  rectangle("xy", 0, 0, 0, xwidth, yheight);
+  rectangle ("xy", 0, 0, 0, xwidth, yheight);
 
-  for(ns=0; ns < nChansMax+1; ns++) {
+  for (ns = 0; ns < nChansMax + 1; ns++) {
 
     // to make sure the sides are drawn properly
-    if(ns==nChansMax && nChansMax<nchan)
-      ns=nchan;
+    if (ns == nChansMax && nChansMax < nchan)
+      ns = nchan;
 
     // calculate x for this R
-    R = radius - 0.5*yheight + ns*channelWidth;
+    R = radius - 0.5 * yheight + ns * channelWidth;
 
-    for(j=0; j<nMax; j++) {
+    for (j = 0; j < nMax; j++) {
 
-      if(endFlat) {
+      if (endFlat) {
 
-	if(ns==0)  // only calculate once
-	  zplot[j] = j*lengthOfGuide/(double)(nMax-1);
+        if (ns == 0) // only calculate once
+          zplot[j] = j * lengthOfGuide / (double)(nMax - 1);
       } else
-	zplot[j] = R*sin(length/radius * (double)j/(double)(nMax-1));
+        zplot[j] = R * sin (length / radius * (double)j / (double)(nMax - 1));
 
-      if(radius>0)
-	yplot[j] = radius - sqrt(R*R - zplot[j]*zplot[j]);
+      if (radius > 0)
+        yplot[j] = radius - sqrt (R * R - zplot[j] * zplot[j]);
       else
-	yplot[j] = radius + sqrt(R*R - zplot[j]*zplot[j]);
+        yplot[j] = radius + sqrt (R * R - zplot[j] * zplot[j]);
     }
 
     // To be able to draw end we store some of the point values
-    if(ns==0) { // first wall
+    if (ns == 0) { // first wall
 
-      y1 = yplot[nMax-1];
-      z1 = zplot[nMax-1];
-    } else if(ns==nchan) { //last wall
+      y1 = yplot[nMax - 1];
+      z1 = zplot[nMax - 1];
+    } else if (ns == nchan) { // last wall
 
-      y2 = yplot[nMax-1];
-      z2 = zplot[nMax-1];
+      y2 = yplot[nMax - 1];
+      z2 = zplot[nMax - 1];
     }
 
-    for(j=0; j<nMax-1; j++) {
-      line(0.5*xwidth, yplot[j], zplot[j], 0.5*xwidth, yplot[j+1], zplot[j+1]);
-      line(-0.5*xwidth, yplot[j], zplot[j], -0.5*xwidth, yplot[j+1], zplot[j+1]);
-
+    for (j = 0; j < nMax - 1; j++) {
+      line (0.5 * xwidth, yplot[j], zplot[j], 0.5 * xwidth, yplot[j + 1], zplot[j + 1]);
+      line (-0.5 * xwidth, yplot[j], zplot[j], -0.5 * xwidth, yplot[j + 1], zplot[j + 1]);
     }
   }
 
   // draw end gap
-  line(0.5*xwidth, y1, z1, 0.5*xwidth, y2, z2);
-  line(0.5*xwidth, y1, z1, -0.5*xwidth, y1, z1);
-  line(-0.5*xwidth, y2, z2, 0.5*xwidth, y2, z2);
-  line(-0.5*xwidth, y1, z1, -0.5*xwidth, y2, z2);
-
+  line (0.5 * xwidth, y1, z1, 0.5 * xwidth, y2, z2);
+  line (0.5 * xwidth, y1, z1, -0.5 * xwidth, y1, z1);
+  line (-0.5 * xwidth, y2, z2, 0.5 * xwidth, y2, z2);
+  line (-0.5 * xwidth, y1, z1, -0.5 * xwidth, y2, z2);
 %}
 
 END

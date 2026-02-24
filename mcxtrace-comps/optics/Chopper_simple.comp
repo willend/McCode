@@ -49,56 +49,57 @@ SETTING PARAMETERS (t0=0,T=1,tau=0.1,xwidth=0.1,yheight=0.1,isfirst=0,t_rise=0, 
 
 INITIALIZE
 %{
-  if (T<=0 || tau<=0){
-    fprintf(stderr,"Error: (%s): Periodm T=%g <=0 or opening time, tau=%g <=0\n",NAME_CURRENT_COMP,T,tau);
-    exit(-1);
+  if (T <= 0 || tau <= 0) {
+    fprintf (stderr, "Error: (%s): Periodm T=%g <=0 or opening time, tau=%g <=0\n", NAME_CURRENT_COMP, T, tau);
+    exit (-1);
   }
-  if(xwidth<=0 || yheight<=0){
-    fprintf(stderr,"Error: (%s): Opening area (xwidth x yheight) = (%g x %g) <=0\n",NAME_CURRENT_COMP,xwidth,yheight);
-    exit(-1);
+  if (xwidth <= 0 || yheight <= 0) {
+    fprintf (stderr, "Error: (%s): Opening area (xwidth x yheight) = (%g x %g) <=0\n", NAME_CURRENT_COMP, xwidth, yheight);
+    exit (-1);
   }
 %}
 
 TRACE
 %{
-  double tjitter=0;
+  double tjitter = 0;
   PROP_Z0;
-  if(tjit) tjitter = (rand01()-0.5)*tau*tjit;
-  if ( fabs(x)<xwidth/2.0 && fabs(y)<yheight/2.0){
-    if (isfirst){
-      if (t_rise==0){
+  if (tjit)
+    tjitter = (rand01 () - 0.5) * tau * tjit;
+  if (fabs (x) < xwidth / 2.0 && fabs (y) < yheight / 2.0) {
+    if (isfirst) {
+      if (t_rise == 0) {
         /*this is the first time defining element*/
-        t=t0+rand01()*tau+tjitter;
-        p*=tau/T;/*correct for only sampling part of the time line*/
-      }else{
-        t=rand01()*(tau+2*t_rise);
-        if (t<t_rise){
-          p*=t/t_rise;
-        }else if( t<tau+t_rise && t>tau ){
-          p*=(1-t_rise)/t_rise;
+        t = t0 + rand01 () * tau + tjitter;
+        p *= tau / T; /*correct for only sampling part of the time line*/
+      } else {
+        t = rand01 () * (tau + 2 * t_rise);
+        if (t < t_rise) {
+          p *= t / t_rise;
+        } else if (t < tau + t_rise && t > tau) {
+          p *= (1 - t_rise) / t_rise;
         }
-        t+=t0;
+        t += t0;
       }
-    }else{
-      int n=(int) floor((t-t0)/T);
-      if(t-(t0+n*T+tjitter)>tau){
+    } else {
+      int n = (int)floor ((t - t0) / T);
+      if (t - (t0 + n * T + tjitter) > tau) {
         ABSORB;
       }
     }
-  }else{
+  } else {
     ABSORB;
   }
 %}
 
 MCDISPLAY
 %{
-  /*chopper is symbolically shown as a disc chopper, although it is not*/ 
-  
-  rectangle("xy",0,0,0,xwidth,yheight);
-  double delta,radius;
-  delta=2*yheight;
-  radius=sqrt(xwidth*xwidth/4+delta*delta);
-  circle("xy",0,-(delta-yheight/2.0),0,radius);
+  /*chopper is symbolically shown as a disc chopper, although it is not*/
+
+  rectangle ("xy", 0, 0, 0, xwidth, yheight);
+  double delta, radius;
+  delta = 2 * yheight;
+  radius = sqrt (xwidth * xwidth / 4 + delta * delta);
+  circle ("xy", 0, -(delta - yheight / 2.0), 0, radius);
 %}
 
 END
