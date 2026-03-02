@@ -54,7 +54,7 @@ INITIALIZE
     MPI_MASTER( printf("Running with NCrystal(cfg=\"%s\", zdepth=%g,...)\n",NCcfg,zdepth); );
   } else if (Filter==2) {
     MPI_MASTER( printf("Running with PowderN(reflections=\"Be.laz\", zdepth=%g,...)\n",zdepth); );
-  } else if (Filter==2) {
+  } else if (Filter==3) {
     MPI_MASTER( printf("Running with Isotropic_Sqw(Sqw_coh=\"Be.laz\", zdepth=%g,...)\n",zdepth); );
   } else {
     MPI_MASTER( fprintf(stderr,"Sorry, Filter=%d not supported!\n",Filter); );
