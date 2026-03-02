@@ -17,7 +17,7 @@
 * %Example: Filter=0 Detector: L_out_I=2183.87
 * %Example: Filter=1 T=80 Detector: L_out_I=1875.02
 * %Example: Filter=2 Detector: L_out_I=1868.5
-* %Example: Filter=4 Detector: L_out_I=2011.26
+* %Example: Filter=3 Detector: L_out_I=2011.26
 *
 * %Parameters
 * Lmin:         [Angs] Lowest wavelength from source
