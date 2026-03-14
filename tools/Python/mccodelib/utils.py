@@ -772,24 +772,43 @@ def get_file_contents(filepath):
     else:
         return ''
 
-def run_subtool_noread(cmd, cwd=None):
-    ''' run subtool to completion in a excessive pipe-output robust way (millions of lines) '''
+def run_subtool_noread(cmd, cwd=None, timeout=None):
+    """Run external command without reading output; kill if it runs longer than timeout (seconds).
+    Returns (returncode, timed_out: bool).
+    """
+
     if not cwd:
         cwd = os.getcwd()
+
     try:
-        process = subprocess.Popen(cmd,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   stdin=subprocess.PIPE,
-                                   shell=True,
-                                   universal_newlines=True,
-                                   cwd=cwd)
-        process.communicate()
-        return process.returncode
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            shell=True,
+            universal_newlines=True,
+            cwd=cwd,
+        )
+
+        try:
+            # communicate supports timeout (Python 3.3+)
+            process.communicate(timeout=timeout)
+            return process.returncode, False
+        except subprocess.TimeoutExpired:
+            # force kill if still alive
+            try:
+                process.kill()  # SIGKILL on Unix
+            except Exception:
+                pass
+            process.wait()
+
+        return process.returncode if process.returncode is not None else -1, True
+
     except Exception as e:
-        ''' unicode read error safe-guard '''
+        # unicode/read error safe-guard
         print("run_subtool_noread (cmd=%s) error: %s" % (cmd, str(e)))
-        return -1
+        return -1, False
 
 def run_subtool_to_completion(cmd, cwd=None, stdout_cb=None, stderr_cb=None):
     '''

@@ -232,7 +232,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
 
 
     # compile, record time
-    global ncount, mpi, openacc, suffix, nexus, lint, permissive
+    global ncount, mpi, openacc, suffix, nexus, lint, permissive, compilemax, runmax
     logging.info("")
     if not lint:
         logging.info("Compiling instruments [seconds]...")
@@ -271,7 +271,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                         cmd = cmd + " --mpi=1 "
                     cmd = cmd + " --verbose -c -n0 %s > compile_stdout.txt 2>&1" % test.instrname
 
-                utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname))
+                utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname), timeout=compilemax)
                 t2 = time.time()
                 test.compiled = os.path.exists(binfile)
                 test.compiletime = t2 - t1
@@ -339,7 +339,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             if version:
                 cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
             cmd = cmd + " -s 1000 %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, test.testnb, test.testnb)
-        retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname))
+        retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=runmax)
         t2 = time.time()
         didwrite = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.sim"))
         didwrite_nexus = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.h5"))
@@ -614,6 +614,8 @@ nexus = None
 lint = None
 permissive = None
 runLocal = None
+runmax = None
+compilemax = None
 
 def main(args):
     # mutually excusive main branches
@@ -672,7 +674,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal
+    global ncount, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, runmax
     if args.ncount:
         ncount = args.ncount[0]
     elif args.n:
@@ -719,6 +721,16 @@ def main(args):
         lint = True
         suffix = '_lint' + suffix
         logging.info("c-linting enabled")
+    if args.runmax:
+        runmax=int(args.runmax[0])
+    else:
+        runmax=3600
+    if args.compilemax:
+        compilemax=int(args.compilemax[0])
+        if lint:
+            compilemax=100*compilemax
+    else:
+        compilemax=600
     if args.permissive:
         permissive = True
         logging.info("Permissive mode, tool will not report failure on failed instruments")
@@ -746,6 +758,8 @@ if __name__ == '__main__':
     parser.add_argument('--suffix', nargs=1, help='Add suffix to test directory name, e.g. 3.x-dev_suffix')
     parser.add_argument('--nexus', action='store_true', help='Compile for / use NeXus output format everywhere')
     parser.add_argument('--lint', action='store_true', help='Just run the c-linter')
+    parser.add_argument('--compilemax', nargs=1, help='Maximum time (s) allowed pr. compilation (x100 with --lint)')
+    parser.add_argument('--runmax', nargs=1, help='Maximum time (s) allowed pr. test Example run')
     parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional.')
     parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR')
     args = parser.parse_args()
