@@ -1609,9 +1609,9 @@ void def_trace_section(struct instr_def *instr)
           "x", "y", "z", "vx", "vy", "vz",
           "t", "sx", "sy", "sz", "p", "mcgravitation", "mcMagnet", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
   #elif MCCODE_PROJECT == 2   /* xray */
-  #define NUM_STATE_PARS 15
+  #define NUM_STATE_PARS 16
           "x", "y", "z", "kx", "ky", "kz",
-          "phi", "t", "Ex", "Ey","Ez", "p", "_mctmp_a", "_mctmp_b", "_mctmp_c"
+          "phi", "t", "Ex", "Ey","Ez", "p", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
   #endif
   };
 
@@ -2448,11 +2448,11 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("  double sx,sy,sz; /* spin [0-1] */");
   cout("  int mcgravitation; /* gravity-state */");
   cout("  void *mcMagnet;    /* precession-state */");
-  cout("  int allow_backprop; /* allow backprop */");
 #elif MCCODE_PROJECT == 2 /* xray */
   cout("  double kx,ky,kz; /* wave-vector */");
   cout("  double phi, Ex,Ey,Ez; /* phase and electrical field */");
 #endif
+  cout("  int allow_backprop; /* allow backprop */");
   cout("  /* Generic Temporaries: */");
   cout("  /* May be used internally by components e.g. for special */");
   cout("  /* return-values from functions used in trace, thusreturned via */");
