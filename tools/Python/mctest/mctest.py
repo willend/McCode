@@ -172,6 +172,7 @@ def extract_testvals(datafolder, monitorname):
 
 def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilter=None, version=None):
     ''' this main test function tests the given mccode branch/version '''
+    skipped=False
     global runLocal
     # copy instr files and record info
     if not runLocal:
@@ -228,6 +229,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 logging.debug(formatstr % instrname)
         except:
             print("\nWARNING: Skipped " + instrname + " test - did " + instrdir + " exist already??\n")
+            skipped=True
             pass
 
 
@@ -297,8 +299,10 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                         f.close()
             else:
                 logging.info("Skipping compile of " + test.instrname)
+                skipped=True
         # save (incomplete) test results to disk
-        test.save(infolder=join(testdir, test.instrname))
+        if not skipped:
+            test.save(infolder=join(testdir, test.instrname))
 
     # run, record time
     logging.info("")
@@ -383,7 +387,8 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
 
         # save test result to disk
         test.testcomplete = True
-        test.save(infolder=join(testdir, test.instrname))
+        if not skipped:
+            test.save(infolder=join(testdir, test.instrname))
 
     #    cpu type: cat /proc/cpuinfo |grep name |uniq | cut -f2- -d: 
     #    gpu type: nvidia-smi -L | head -1 |cut -f2- -d: |cut -f1 -d\(
