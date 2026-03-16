@@ -66,9 +66,8 @@ SHARE
 
 INITIALIZE
 %{
-  MPI_MASTER(
-    fprintf(stderr,"Al_window %s WARNING: Using simple lo-fi transmission model.\n - Replace with PowderN or NCrystal for bragg edges etc.\n",NAME_CURRENT_COMP);
-  );
+  MPI_MASTER (fprintf (stderr, "Al_window %s WARNING: Using simple lo-fi transmission model.\n - Replace with PowderN or NCrystal for bragg edges etc.\n",
+                       NAME_CURRENT_COMP););
 %}
 
 TRACE
@@ -98,8 +97,7 @@ TRACE
   Al_my_tot = Al_rho / Al_mmol * Al_s_tot_lambda * avogadro;
 
   /* Weight with cross-section */
-  p *= exp (-(Al_my_tot+Al_my_a) * dist); /* neutron passes window without any interaction */
-
+  p *= exp (-(Al_my_tot + Al_my_a) * dist); /* neutron passes window without any interaction */
 %}
 
 MCDISPLAY
