@@ -20,7 +20,8 @@
 *  - Material specified from Al.laz input-file 
 *  - Parametrized for 80% statistics -> transmission
 * 3) NCrystal()
-*  - Material specified from local Al.ncmat input (generated from CIF file)
+*  - Material specified from local Al as .ncmat format input 
+*    (generated from CIF file COD / 1502689)
 *
 * %Example: Window=1 thickness=0.001 Detector: OutputWL_I=0.098
 * %Example: Window=2 thickness=0.001 Detector: OutputWL_I=0.098
