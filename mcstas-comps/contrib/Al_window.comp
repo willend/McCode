@@ -31,7 +31,8 @@
 *
 * Variables calculated in the component
 *
-* Al_my_tot   : Total attenuation factor due to scattering and absorbtion [m^-1]
+* Al_my_s     : Attenuation factor due to scattering [m^-1]
+* Al_my_a     : Attenuation factor due to absorbtion [m^-1]
 *
 * %E
 *******************************************************************************/
@@ -81,9 +82,10 @@ TRACE
   lambda = sqrt (81.81 / (VS2E * v * v));
   Al_s_tot_lambda = Al_pf_A + Al_pf_B1 * lambda + Al_pf_B2 * lambda * lambda + Al_pf_B3 * lambda * lambda * lambda;
   Al_s_tot_lambda += Al_pf_B4 * lambda * lambda * lambda * lambda;
-  Al_my_tot = Al_rho / Al_mmol * Al_s_tot_lambda * avogadro * 10 + Al_my_a_v / v;
+  Al_my_tot = Al_rho / Al_mmol * Al_s_tot_lambda * avogadro * 10;
+  Al_my_a = Al_my_a_v / v;
 
-  p *= exp (-Al_my_tot * dist); /* neutron passes window without any interaction */
+  p *= exp (-Al_my_a * dist); /* neutron passes window without any interaction */
 
   /* TODO: scatter in Debye-Scherrer cone */
 %}
