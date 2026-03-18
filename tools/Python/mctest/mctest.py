@@ -352,23 +352,25 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         # run the test, record time and runtime success/fail
         t1 = time.time()
         cmd = mccode_config.configuration["MCRUN"]
-        if nexus:
-            cmd = cmd + " --format=NeXus "
-        if mpi is not None:
-            if openacc is True:
-                if version:
-                    cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-                cmd = cmd + " -s 1000 %s %s -n%s --openacc --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
+        # Did test run already?
+
+        if not os.path.exists(join(testdir, test.instrname, str(test.testnb))):      
+            if nexus:
+                cmd = cmd + " --format=NeXus "
+            if mpi is not None:
+                if openacc is True:
+                    if version:
+                        cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
+                    cmd = cmd + " -s 1000 %s %s -n%s --openacc --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
+                else:
+                    if version:
+                        cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
+                    cmd = cmd + " -s 1000 %s %s -n%s --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
             else:
                 if version:
                     cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-                cmd = cmd + " -s 1000 %s %s -n%s --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
-        else:
-            if version:
-                cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-            cmd = cmd + " -s 1000 %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, test.testnb, test.testnb)
-        suffix=""
-        if not os.path.exists(join(testdir, test.instrname, str(test.testnb))):
+                cmd = cmd + " -s 1000 %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, test.testnb, test.testnb)
+                suffix=""
             retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=runmax)
             t2 = time.time()
             didwrite = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.sim"))
