@@ -95,26 +95,30 @@ class InstrExampleTest:
         text = json.dumps(self.get_json_repr(), indent=2)
         f = open(join(infolder, self.get_display_name()) + ".json", 'w').write(text)
     def load(self,testnb=0):
-        jsonfile=os.path.join(os.path.dirname(self.localfile),self.get_display_name()+'.json')
-        f = open(jsonfile, "r", encoding="utf-8")
-        obj = json.load(f)
-        # # Populate test
-        self.displayname=obj['displayname']
-        self.sourcefile=obj['sourcefile']
-        self.localfile=obj['localfile']
-        self.instrname=obj['instrname']
-        self.testnb=obj['testnb']
-        self.parvals=obj['parvals']
-        self.detector=obj['detector']
-        self.targetval=obj['targetval']
-        self.testval=obj['testval']
-        self.linted=obj['linted']
-        self.compiled=obj['compiled']
-        self.compiletime=obj['compiletime']
-        self.didrun=obj['didrun']
-        self.runtime=obj['runtime']
-        self.errmsg=obj['errmsg']
-        
+        jsonfile=pathlib.Path(os.path.join(os.path.dirname(self.localfile),self.get_display_name()+'.json'))
+        if jsonfile.is_file():
+            f = open(jsonfile, "r", encoding="utf-8")
+            obj = json.load(f)
+            # # Populate test
+            self.displayname=obj['displayname']
+            self.sourcefile=obj['sourcefile']
+            self.localfile=obj['localfile']
+            self.instrname=obj['instrname']
+            self.testnb=obj['testnb']
+            self.parvals=obj['parvals']
+            self.detector=obj['detector']
+            self.targetval=obj['targetval']
+            self.testval=obj['testval']
+            self.linted=obj['linted']
+            self.compiled=obj['compiled']
+            self.compiletime=obj['compiletime']
+            self.didrun=obj['didrun']
+            self.runtime=obj['runtime']
+            self.errmsg=obj['errmsg']
+            return True
+        else:
+            return False
+
     def get_display_name(self):
         if self.testnb > 1:
             return self.instrname + "_%d" % self.testnb
@@ -251,8 +255,8 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             populated=[]
             for t in instrtests:
                 if t.testnb >= 0:
-                    t.load(t.testnb)
-                    populated.append(t)
+                    if t.load(t.testnb)==True:
+                        populated.append(t)
             tests = tests + populated
             pass
 
