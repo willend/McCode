@@ -29,7 +29,7 @@ def create_deplist( cfg ):
 
     pyqt_with_version = 'pyqt6'
     if cfg.include_mcgui:
-        deps += [pyqt_with_version,'qscintilla2']
+        deps += [pyqt_with_version] # Qscintilla2 is disabled for now... ,'qscintilla2']
     if cfg.include_vis:
         deps += ['matplotlib-base',
                  'tornado >=5',
