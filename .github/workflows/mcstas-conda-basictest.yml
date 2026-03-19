@@ -55,7 +55,7 @@ jobs:
     - name: Get conda dependency list
       id: conda-deps
       run: |
-           ./src/devel/bin/mccode-create-conda-yml --nographics -m mcstas -n mcstas -o dependencies.yml
+           ./src/devel/bin/mccode-create-conda-yml -m mcstas -n mcstas -o dependencies.yml
            cat dependencies.yml
 
     - name: Update conda
