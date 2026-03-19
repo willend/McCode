@@ -3,6 +3,7 @@ Analysis tools for mcstas component files and instrument files.
 '''
 import re
 import os
+import sys
 from os.path import splitext, join
 import subprocess
 from datetime import datetime
@@ -773,12 +774,20 @@ def get_file_contents(filepath):
         return ''
 
 def run_subtool_noread(cmd, cwd=None, timeout=None):
-    """Run external command without reading output; kill if it runs longer than timeout (seconds).
+    """Run external command without reading output; kill whole process group on timeout.
     Returns (returncode, timed_out: bool).
     """
 
     if not cwd:
         cwd = os.getcwd()
+
+    # Platform-specific flags
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+        preexec_fn = None
+    else:
+        creationflags = 0
+        preexec_fn = os.setsid  # start new session -> new process group
 
     try:
         process = subprocess.Popen(
@@ -789,21 +798,30 @@ def run_subtool_noread(cmd, cwd=None, timeout=None):
             shell=True,
             universal_newlines=True,
             cwd=cwd,
+            preexec_fn=preexec_fn,
+            creationflags=creationflags,
         )
 
         try:
-            # communicate supports timeout (Python 3.3+)
             process.communicate(timeout=timeout)
             return process.returncode, False
         except subprocess.TimeoutExpired:
-            # force kill if still alive
+            # Kill the whole process group
             try:
-                process.kill()  # SIGKILL on Unix
+                if sys.platform == "win32":
+                    # send CTRL_BREAK_EVENT to the process group
+                    process.send_signal(signal.CTRL_BREAK_EVENT)
+                else:
+                    os.killpg(os.getpgid(process.pid), signal.SIGKILL)
             except Exception:
-                pass
+                # fallback to killing the process
+                try:
+                    process.kill()
+                except Exception:
+                    pass
+            # Wait for termination
             process.wait()
-
-        return process.returncode if process.returncode is not None else -1, True
+            return process.returncode if process.returncode is not None else -1, True
 
     except Exception as e:
         # unicode/read error safe-guard
