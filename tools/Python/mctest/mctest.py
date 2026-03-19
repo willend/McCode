@@ -94,6 +94,27 @@ class InstrExampleTest:
     def save(self, infolder):
         text = json.dumps(self.get_json_repr(), indent=2)
         f = open(join(infolder, self.get_display_name()) + ".json", 'w').write(text)
+    def load(self,testnb=0):
+        jsonfile=os.path.join(os.path.dirname(self.localfile),self.get_display_name()+'.json')
+        f = open(jsonfile, "r", encoding="utf-8")
+        obj = json.load(f)
+        # # Populate test
+        self.displayname=obj['displayname']
+        self.sourcefile=obj['sourcefile']
+        self.localfile=obj['localfile']
+        self.instrname=obj['instrname']
+        self.testnb=obj['testnb']
+        self.parvals=obj['parvals']
+        self.detector=obj['detector']
+        self.targetval=obj['targetval']
+        self.testval=obj['testval']
+        self.linted=obj['linted']
+        self.compiled=obj['compiled']
+        self.compiletime=obj['compiletime']
+        self.didrun=obj['didrun']
+        self.runtime=obj['runtime']
+        self.errmsg=obj['errmsg']
+        
     def get_display_name(self):
         if self.testnb > 1:
             return self.instrname + "_%d" % self.testnb
@@ -172,6 +193,7 @@ def extract_testvals(datafolder, monitorname):
 
 def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilter=None, version=None):
     ''' this main test function tests the given mccode branch/version '''
+    skipped=False
     global runLocal
     # copy instr files and record info
     if not runLocal:
@@ -202,17 +224,14 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         # copy the test folder for this instrument
         instrname = splitext(basename(f))[0]
         instrdir = join(testdir, instrname)
-
+        
+        # Read instr file content to look for tests
+        text = open(f, encoding='utf-8').read()
+        f_new=join(instrdir,os.path.basename(f))
+        # create a test object for every test defined in the instrument header
+        instrtests = create_instr_test_objs(sourcefile=f, localfile=f_new, header=text)
         try:
             shutil.copytree(os.path.dirname(f),instrdir)
-
-            f_new=join(instrdir,os.path.basename(f))
-
-            # Read instr file content to look for tests
-            text = open(f, encoding='utf-8').read()
-
-            # create a test object for every test defined in the instrument header
-            instrtests = create_instr_test_objs(sourcefile=f, localfile=f_new, header=text)
             tests = tests + instrtests
 
             # extract and record %Example info from text
@@ -228,6 +247,13 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 logging.debug(formatstr % instrname)
         except:
             print("\nWARNING: Skipped " + instrname + " test - did " + instrdir + " exist already??\n")
+            skipped=True
+            populated=[]
+            for t in instrtests:
+                if t.testnb >= 0:
+                    t.load(t.testnb)
+                    populated.append(t)
+            tests = tests + populated
             pass
 
 
@@ -297,8 +323,10 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                         f.close()
             else:
                 logging.info("Skipping compile of " + test.instrname)
+                skipped=True
         # save (incomplete) test results to disk
-        test.save(infolder=join(testdir, test.instrname))
+        if not skipped:
+            test.save(infolder=join(testdir, test.instrname))
 
     # run, record time
     logging.info("")
@@ -324,27 +352,36 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         # run the test, record time and runtime success/fail
         t1 = time.time()
         cmd = mccode_config.configuration["MCRUN"]
-        if nexus:
-            cmd = cmd + " --format=NeXus "
-        if mpi is not None:
-            if openacc is True:
-                if version:
-                    cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-                cmd = cmd + " -s 1000 %s %s -n%s --openacc --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
+
+        suffix=""
+        # Did test run already?
+        if not os.path.exists(join(testdir, test.instrname, str(test.testnb))):      
+            if nexus:
+                cmd = cmd + " --format=NeXus "
+            if mpi is not None:
+                if openacc is True:
+                    if version:
+                        cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
+                    cmd = cmd + " -s 1000 %s %s -n%s --openacc --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
+                else:
+                    if version:
+                        cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
+                    cmd = cmd + " -s 1000 %s %s -n%s --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
             else:
                 if version:
                     cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-                cmd = cmd + " -s 1000 %s %s -n%s --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
+                cmd = cmd + " -s 1000 %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, test.testnb, test.testnb)
+
+            retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=runmax)
+            t2 = time.time()
+            didwrite = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.sim"))
+            didwrite_nexus = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.h5"))
+            test.didrun = retcode != 0 or didwrite or didwrite_nexus
+            test.runtime = t2 - t1
         else:
-            if version:
-                cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-            cmd = cmd + " -s 1000 %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, test.testnb, test.testnb)
-        retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=runmax)
-        t2 = time.time()
-        didwrite = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.sim"))
-        didwrite_nexus = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.h5"))
-        test.didrun = retcode != 0 or didwrite or didwrite_nexus
-        test.runtime = t2 - t1
+            suffix=" (cached)"
+            didwrite = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.sim"))
+            didwrite_nexus = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.h5"))
 
         # log to terminal
         if not test.didrun:
@@ -377,13 +414,14 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
             if test.targetval!=0: # Normal situation, non-zero target value
-                logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " / " + str(test.targetval) + " = " + str(round(100.0*test.testval/test.targetval)) + " %]")
+                logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " / " + str(test.targetval) + " = " + str(round(100.0*test.testval/test.targetval)) + " %]" + suffix)
             else:                 # Special case, expected test target value is 0
-                logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]")
+                logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
 
         # save test result to disk
         test.testcomplete = True
-        test.save(infolder=join(testdir, test.instrname))
+        if not skipped:
+            test.save(infolder=join(testdir, test.instrname))
 
     #    cpu type: cat /proc/cpuinfo |grep name |uniq | cut -f2- -d: 
     #    gpu type: nvidia-smi -L | head -1 |cut -f2- -d: |cut -f1 -d\(
