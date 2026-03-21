@@ -787,7 +787,7 @@ def run_subtool_noread(cmd, cwd=None, timeout=None):
         preexec_fn = None
     else:
         creationflags = 0
-        preexec_fn = os.setsid  # start new session -> new process group
+        preexec_fn = os.setpgrp  # start new session -> new process group
 
     try:
         process = subprocess.Popen(
