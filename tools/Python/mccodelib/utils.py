@@ -4,6 +4,8 @@ Analysis tools for mcstas component files and instrument files.
 import re
 import os
 import sys
+import time
+import signal
 from os.path import splitext, join
 import subprocess
 from datetime import datetime
@@ -773,7 +775,61 @@ def get_file_contents(filepath):
     else:
         return ''
 
-def run_subtool_noread(cmd, cwd=None, timeout=None):
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
+def _kill_process_tree(pid, timeout=3.0):
+    """Kill process tree rooted at pid. Uses psutil if available, otherwise best-effort."""
+    if psutil:
+        try:
+            parent = psutil.Process(pid)
+        except psutil.NoSuchProcess:
+            return
+        children = parent.children(recursive=True)
+        # send sig to children first
+        for p in children:
+            try:
+                p.send_signal(signal.SIGKILL)
+            except Exception:
+                try:
+                    p.kill()
+                except Exception:
+                    pass
+        # then parent
+        try:
+            parent.send_signal(sig)
+        except Exception:
+            try:
+                parent.kill()
+            except Exception:
+                pass
+        # wait up to timeout for processes to disappear
+        gone, alive = psutil.wait_procs([parent] + children, timeout=timeout)
+        return alive
+    else:
+        # Fallback: on Unix killpg, on Windows try proc.kill
+        if sys.platform == "win32":
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except Exception:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except Exception:
+                    pass
+        else:
+            try:
+                os.killpg(os.getpgid(pid), signal.SIGTERM)
+            except Exception:
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except Exception:
+                    pass
+        # no reliable wait for children without psutil
+        return []
+
+def run_subtool_noread(cmd, cwd=None, timeout=None, kill_timeout=3.0):
     """Run external command without reading output; kill whole process group on timeout.
     Returns (returncode, timed_out: bool).
     """
@@ -790,7 +846,7 @@ def run_subtool_noread(cmd, cwd=None, timeout=None):
         preexec_fn = os.setpgrp  # start new session -> new process group
 
     try:
-        process = subprocess.Popen(
+        proc = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -803,25 +859,50 @@ def run_subtool_noread(cmd, cwd=None, timeout=None):
         )
 
         try:
-            process.communicate(timeout=timeout)
-            return process.returncode, False
+            proc.communicate(timeout=timeout)
+            return proc.returncode, False
         except subprocess.TimeoutExpired:
-            # Kill the whole process group
+            # escalate: try gentle signal first
             try:
                 if sys.platform == "win32":
-                    # send CTRL_BREAK_EVENT to the process group
-                    process.send_signal(signal.CTRL_BREAK_EVENT)
+                    try:
+                        proc.send_signal(signal.CTRL_BREAK_EVENT)
+                    except Exception:
+                        proc.terminate()
                 else:
-                    os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
             except Exception:
-                # fallback to killing the process
                 try:
-                    process.kill()
+                    proc.terminate()
                 except Exception:
                     pass
-            # Wait for termination
-            process.wait()
-            return process.returncode if process.returncode is not None else -1, True
+
+            # wait a short time
+            try:
+                proc.wait(timeout=kill_timeout)
+            except Exception:
+                # still alive -> force kill whole tree
+                _kill_process_tree(proc.pid, sig=signal.SIGKILL, timeout=kill_timeout)
+                try:
+                    proc.wait(timeout=kill_timeout)
+                except Exception:
+                    pass
+
+            return (proc.returncode if proc.returncode is not None else -1), True
+        finally:
+            # close fds
+            try:
+                proc.stdout.close()
+            except Exception:
+                pass
+            try:
+                proc.stderr.close()
+            except Exception:
+                pass
+            try:
+                proc.stdin.close()
+            except Exception:
+                pass
 
     except Exception as e:
         # unicode/read error safe-guard
