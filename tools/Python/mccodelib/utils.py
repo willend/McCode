@@ -780,7 +780,7 @@ try:
 except ImportError:
     psutil = None
 
-def _kill_process_tree(pid, sig=signal.SIGKILL, timeout=3.0):
+def _kill_process_tree(pid, timeout=3.0):
     """Kill process tree rooted at pid. Uses psutil if available, otherwise best-effort."""
     if psutil:
         try:
@@ -791,7 +791,7 @@ def _kill_process_tree(pid, sig=signal.SIGKILL, timeout=3.0):
         # send sig to children first
         for p in children:
             try:
-                p.send_signal(sig)
+                p.send_signal(signal.SIGKILL)
             except Exception:
                 try:
                     p.kill()
