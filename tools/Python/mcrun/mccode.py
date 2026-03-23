@@ -3,6 +3,7 @@ import pathlib
 import sys
 import re
 import shutil
+import psutil
 
 if not os.name == 'nt':
     import shlex as lexer
@@ -441,6 +442,7 @@ class McStas:
                 LOG.info('Using system default number of mpirun -np processes')
                 if os.name == 'nt':
                     mpi_flags = [''] # msmpi mpiexec.exe does not accept --
+                    mpi_flags = ['-np', str(psutil.cpu_count(logical=False))] # probe number of available (non-logical) CPU's
                 else:
                     mpi_flags = ['--'] # ... whereas openmpi mpirun does.
             elif int(self.options.mpi) >= 1:
