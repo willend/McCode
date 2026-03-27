@@ -317,7 +317,7 @@ INITIALIZE
     /* correction for projection along the beam / projection on the z=0 plane */
     cos_thermal=cos_beamport_angle;
     cos_cold=cos((fabs(internal_angle)-24.24)*DEG2RAD);
-    //printf("cosines are %g %g internal angle %g\n",cos_thermal,cos_cold,fabs(internal_angle));
+
     ColdWidths = ColdWidthSW;
     ThermalWidths = ThermalWidthSW;
     int j;
@@ -373,26 +373,36 @@ INITIALIZE
     C3_z=0; 
     isleft=1;
   } else {
-    fprintf(stderr,"%s: Sector %s is undefined, please use N, W, S or E!\n", NAME_CURRENT_COMP,sector);
+    MPI_MASTER(
+      fprintf(stderr,"%s: Sector %s is undefined, please use N, W, S or E!\n", NAME_CURRENT_COMP,sector);
+    );
     exit(-1);
   }
   if (beamline > jmax || beamline <= 0 ) {
-    fprintf(stderr,"%s: beamline no %i is undefined in sector %s, please use 1 <= beamline <= %i\n", NAME_CURRENT_COMP, beamline, sector, jmax);
+    MPI_MASTER(
+      fprintf(stderr,"%s: beamline no %i is undefined in sector %s, please use 1 <= beamline <= %i\n", NAME_CURRENT_COMP, beamline, sector, jmax);
+    );
     exit(-1);
   }
-
-  printf("%s: Setting up for sector %s, beamline %i, global orientation angle is %g, internal angle %g\n", NAME_CURRENT_COMP, sector,beamline,orientation_angle,beamportangle);
+  
+  MPI_MASTER(
+    printf("%s: Setting up for sector %s, beamline %i, global orientation angle is %g, internal angle %g\n", NAME_CURRENT_COMP, sector,beamline,orientation_angle,beamportangle);
+  );
   if (c_performance <= 0) {
     fprintf(stderr,"%s: Cold performance scalar of %g is not allowed. Please select 0 < c_performance\n", NAME_CURRENT_COMP, c_performance);
     exit(-1);
   }
   if (t_performance <= 0) {
-    fprintf(stderr,"%s: Thermal performance scalar of %g is not allowed. Please select 0 < t_performance\n", NAME_CURRENT_COMP, t_performance);
+    MPI_MASTER(
+      fprintf(stderr,"%s: Thermal performance scalar of %g is not allowed. Please select 0 < t_performance\n", NAME_CURRENT_COMP, t_performance);
+    );
     exit(-1);
   }
   if (Lmin>=Lmax || Lmin <= 0 || Lmax < 0) {
-    fprintf(stderr,"%s: Unmeaningful definition of wavelength range!\nPlease select Lmin, Lmax > 0 and Lmax > Lmin.\n ERROR - Exiting\n",
+    MPI_MASTER(
+      fprintf(stderr,"%s: Unmeaningful definition of wavelength range!\nPlease select Lmin, Lmax > 0 and Lmax > Lmin.\n ERROR - Exiting\n",
            NAME_CURRENT_COMP);
+    );
     exit(-1);
   }
   /* Figure out where to aim */
@@ -404,19 +414,28 @@ INITIALIZE
     coords_get(ToTarget, &tx, &ty, &tz);
     dist=sqrt(tx*tx+ty*ty+tz*tz);
   } else if (!target_index && !dist) {
-    fprintf(stderr,"%s: Please choose to set either the dist parameter or specify a target_index.\nExit\n", NAME_CURRENT_COMP);
+    MPI_MASTER(
+      fprintf(stderr,"%s: Please choose to set either the dist parameter or specify a target_index.\nExit\n", NAME_CURRENT_COMP);
+    );
     exit(-1);
   } else {
     tx=0; ty=0; tz=dist;
   }
-  printf("%s: Focusing at rectagle sized %g x %g \n  - positioned at location (x,y,z)=(%g m, %g m, %g m) \n", NAME_CURRENT_COMP, focus_xw, focus_yh, tx, ty, tz);
+  MPI_MASTER(
+    printf("%s: Focusing at rectagle sized %g x %g \n  - positioned at location (x,y,z)=(%g m, %g m, %g m) \n", NAME_CURRENT_COMP, focus_xw, focus_yh, tx, ty, tz);
+  );
   if (target_index) {
-    printf(" ( from target_index %i -> distance %g )\n", target_index, dist);
+    MPI_MASTER(
+      printf(" ( from target_index %i -> distance %g )\n", target_index, dist);
+    );
   } else {
-    printf(" ( from dist parameter -> distance %g )\n", dist);
+    MPI_MASTER(
+      printf(" ( from dist parameter -> distance %g )\n", dist);
+    );
   }
-  printf("%s: Cold and Thermal brilliance performance multiplicators are c_performance=%g and t_performance=%g\n", NAME_CURRENT_COMP, c_performance, t_performance);
-  
+  MPI_MASTER(
+    printf("%s: Cold and Thermal brilliance performance multiplicators are c_performance=%g and t_performance=%g\n", NAME_CURRENT_COMP, c_performance, t_performance);
+  );
   /* Calculate orientation matrix for the display and calculations */
   r11 = cos(DEG2RAD*orientation_angle);
   r12 = -sin(DEG2RAD*orientation_angle);
@@ -444,12 +463,18 @@ INITIALIZE
   Mwidth_t=(100.0*ThermalWidths[beamline-1]+0.7)/cos_thermal;
   
   if (tfocus_width && tfocus_time && tfocus_dist) {
-    printf("%s: Using time focusing: Directing neutrons to this time-window:\n   tfocus_width (%g s) wide at tfocus_time (%g s), tfocus_dist (%g m) downstream\n",NAME_CURRENT_COMP, tfocus_width, tfocus_time, tfocus_dist);
+    MPI_MASTER(
+      printf("%s: Using time focusing: Directing neutrons to this time-window:\n   tfocus_width (%g s) wide at tfocus_time (%g s), tfocus_dist (%g m) downstream\n",NAME_CURRENT_COMP, tfocus_width, tfocus_time, tfocus_dist);
+    );
   } else if (!tfocus_width && !tfocus_time && !tfocus_dist) {
-    printf("%s: NOT using time focusing\n",NAME_CURRENT_COMP);
+    MPI_MASTER(
+      printf("%s: NOT using time focusing\n",NAME_CURRENT_COMP);
+    );
   } else {
-    fprintf(stderr,"%s: Unmeaningful combination tfocus_width (%g s), tfocus_time (%g s) and tfocus_dist (%g m): \n    All must be either==0 (no time focusing) or !=0 (time focusing)\n ERROR - Exiting\n",
+    MPI_MASTER(
+      fprintf(stderr,"%s: Unmeaningful combination tfocus_width (%g s), tfocus_time (%g s) and tfocus_dist (%g m): \n    All must be either==0 (no time focusing) or !=0 (time focusing)\n ERROR - Exiting\n",
 	    NAME_CURRENT_COMP, tfocus_width, tfocus_time, tfocus_dist);
+    );
     exit(-1);
   }
 
