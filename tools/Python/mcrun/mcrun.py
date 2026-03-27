@@ -310,8 +310,11 @@ def add_mcstas_options(parser):
 
     add('-d', '--dir',
         metavar='DIR', type=str,
-        action='callback', callback=check_file(exist=False),
         help='Put all data files in directory DIR')
+
+    add('-a', '--append',
+        action='store_true', default=False,
+        help='Append data files to those already in directory DIR')
 
     add('--format',
         metavar='FORMAT', default='McCode',
@@ -406,6 +409,7 @@ def expand_options(options):
                        datetime.strftime(datetime.now(), DATE_FORMAT_PATH))
         # alert user
         LOG.info('No output directory specified (--dir)')
+
     # Output file
     if options.optimise_file is None:
         # use mccode.dat when unspecified
