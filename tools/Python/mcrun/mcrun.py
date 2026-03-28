@@ -604,6 +604,9 @@ def main():
         
     # Parameters for linear scanning present
     if interval_points and (options.scan_split is None):
+        # In case of list, update with number of list points
+        if options.list:
+            options.numpoints=len(pointlist[0])
         scanner = Scanner(mcstas, intervals)
         scanner.set_points(interval_points)
         if (not options.dir == ''):
