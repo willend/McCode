@@ -285,7 +285,6 @@ class Scanner:
         mcstas_dir = self.mcstas.options.dir
         if mcstas_dir == '':
             mcstas_dir = '.'
-            
 
         with open(self.outfile, 'w') as outfile:
             for i, point in enumerate(self.points):
@@ -295,11 +294,18 @@ class Scanner:
                     LOG.debug("%s: %s", key, point[key])
                     par_values.append(point[key])
 
-                LOG.info(', '.join(f'{name}: {value}' for name, value in point.items()))
-                # Change subdirectory as an extra option (dir/1 -> dir/2)
-                current_dir = f'{mcstas_dir}/{i}'
-                LOG.info(f"Output step into scan directory {current_dir}")
-                self.mcstas.run(pipe=False, extra_opts={'dir': current_dir})
+                if not self.mcstas.options.format.lower() == 'nexus':
+                    LOG.info(', '.join(f'{name}: {value}' for name, value in point.items()))
+                    # Change subdirectory as an extra option (dir/1 -> dir/2)
+                    current_dir = f'{mcstas_dir}/{i}'
+                    LOG.info(f"Output step into scan directory {current_dir}")
+                    self.mcstas.run(pipe=False, extra_opts={'dir': current_dir})
+                else:
+                    current_dir = mcstas_dir
+                    LOG.info(f"NeXus output step into scan directory {current_dir}")
+                    self.mcstas.options.append=True
+                    self.mcstas.run(pipe=False, extra_opts={'dir': current_dir})
+
                 LOG.info("Finish running step, get detectors")
                 detectors = mcsimdetectors(current_dir)
                 if detectors is not None:
