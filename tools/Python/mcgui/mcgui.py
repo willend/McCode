@@ -474,14 +474,7 @@ class McGuiState(QtCore.QObject):
 
         self.__emitter.status('Starting visualisation in background shell...')
         self.__emitter.message(runstr, gui=False)
-        if not os.name=='nt':
-        # run simulation in a background thread
-            self.__runthread = McRunQThread()
-            self.__runthread.cmd = runstr
-            self.__runthread.cwd = os.path.dirname(self.__instrFile)
-            self.__runthread.start()
-        else:
-            subprocess.Popen(runstr, shell=True)
+        subprocess.Popen(runstr, shell=True)
 
     def __runFinished(self, process_returncode):
         self.__fireSimStateUpdate()
