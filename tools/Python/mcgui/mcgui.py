@@ -741,9 +741,9 @@ class McGuiAppController():
             DISPLAY="mcdisplay"
         else:
             DISPLAY="mxdisplay"
-        self.emitter.status('Running ' + DISPLAY + '-webgl...')
+        self.emitter.status('Running ' + DISPLAY + '-webgl-classic...')
         try:
-            cmd = DISPLAY+'-webgl --default -n100 ' + os.path.basename(self.state.getInstrumentFile()) + '&'
+            cmd = DISPLAY+'-webgl-classic --default -n100 ' + os.path.basename(self.state.getInstrumentFile()) + '&'
             self.emitter.message(cmd, gui=True)
             self.emitter.message('', gui=True)
             
