@@ -743,7 +743,11 @@ class McGuiAppController():
             DISPLAY="mxdisplay"
         self.emitter.status('Running ' + DISPLAY + '-webgl-classic...')
         try:
-            cmd = DISPLAY+'-webgl-classic -y -n100 ' + os.path.basename(self.state.getInstrumentFile()) + '&'
+            cmd = DISPLAY+'-webgl-classic -y -n100 ' + os.path.basename(self.state.getInstrumentFile())
+            if os.name == 'nt':
+                cmd = 'start ' + cmd
+            else:
+                cmd = cmd + ' &'
             self.emitter.message(cmd, gui=True)
             self.emitter.message('', gui=True)
             
@@ -760,7 +764,11 @@ class McGuiAppController():
             DISPLAY="mxdisplay"
         self.emitter.status('Running ' + DISPLAY + '-pyqtgraph...')
         try:
-            cmd = DISPLAY+'-pyqtgraph --default -n100 ' + os.path.basename(self.state.getInstrumentFile()) + '&'
+            cmd = DISPLAY+'-pyqtgraph --default -n100 ' + os.path.basename(self.state.getInstrumentFile())
+            if os.name == 'nt':
+                cmd = 'start ' + cmd
+            else:
+                cmd = cmd + ' &'
             self.emitter.message(cmd, gui=True)
             self.emitter.message('', gui=True)
             
