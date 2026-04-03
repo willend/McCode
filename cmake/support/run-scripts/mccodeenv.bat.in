@@ -4,7 +4,7 @@
 @REM
 @REM Path related:
 @set BINDIR=%~dp0
-@SET PATH=%BINDIR%;%BINDIR%\..\miniconda3;%BINDIR%\..\miniconda3\Scripts\;%BINDIR%\..\miniconda3\Library\bin;%BINDIR%\..\miniconda3\Library\mingw-w64\bin;c:\Microsoft MPI\Bin;%PATH%
+@SET PATH=%BINDIR%;%BINDIR%\..\miniconda3;%BINDIR%\..\miniconda3\bin;%BINDIR%\..\miniconda3\Scripts\;%BINDIR%\..\miniconda3\Library\bin;%BINDIR%\..\miniconda3\Library\mingw-w64\bin;c:\Microsoft MPI\Bin;%PATH%
 @REM
 @REM @FLAVOR@ related:
 @SET @FLAVOR_UPPER@=%BINDIR%\@MCCODE_RELPATH_BINDIR2RESOURCEDIR@

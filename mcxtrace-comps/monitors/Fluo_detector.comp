@@ -246,37 +246,19 @@ TRACE %{
 
 SAVE
 %{
-  DETECTOR_OUT_1D(
-    "Energy monitor",
-    "Energy [keV]",
-    "Intensity",
-    "E", Emin, Emax, nE,
-    &E_N[0],&E_p[0],&E_p2[0],
-    filename);
-  if (escape_ratio)
-    {
-      char f_escape[1024];
-      snprintf(f_escape, 1024, "Escape_%s",filename);
-      DETECTOR_OUT_1D(
-      "Energy monitor (escape)",
-      "Energy [keV]",
-      "Intensity (escape)",
-      "E", Emin, Emax, nE,
-      &E_N_escape[0],&E_p_escape[0],&E_p2_escape[0],
-      f_escape);
-    }
-  if (pileup_ratio)
-    {
-      char f_pileup[1024];
-      snprintf(f_pileup, 1024, "PileUp_%s",filename);
-      DETECTOR_OUT_1D(
-      "Energy monitor (pile-up)",
-      "Energy [keV]",
-      "Intensity (pile-up)",
-      "E", Emin, Emax, nE,
-      &E_N_pileup[0],&E_p_pileup[0],&E_p2_pileup[0],
-      f_pileup);
-    }
+  DETECTOR_OUT_1D ("Energy monitor", "Energy [keV]", "Intensity", "E", Emin, Emax, nE, &E_N[0], &E_p[0], &E_p2[0], filename);
+  if (escape_ratio) {
+    char f_escape[1024];
+    snprintf (f_escape, 1024, "Escape_%s", filename);
+    DETECTOR_OUT_1D ("Energy monitor (escape)", "Energy [keV]", "Intensity (escape)", "E", Emin, Emax, nE, &E_N_escape[0], &E_p_escape[0], &E_p2_escape[0],
+                     f_escape);
+  }
+  if (pileup_ratio) {
+    char f_pileup[1024];
+    snprintf (f_pileup, 1024, "PileUp_%s", filename);
+    DETECTOR_OUT_1D ("Energy monitor (pile-up)", "Energy [keV]", "Intensity (pile-up)", "E", Emin, Emax, nE, &E_N_pileup[0], &E_p_pileup[0], &E_p2_pileup[0],
+                     f_pileup);
+  }
 %}
 
 DISPLAY %{

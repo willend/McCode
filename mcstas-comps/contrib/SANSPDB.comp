@@ -61,169 +61,163 @@ EXTEND %{
 
 DECLARE
 %{
-	double Absorption;
-	double NumberDensity;
+  double Absorption;
+  double NumberDensity;
 
-	// Protein properties
-	// cdouble Matrix[SANSPDBOrderOfHarmonics+1][SANSPDBOrderOfHarmonics+1];
-	ProteinStruct Protein;
+  // Protein properties
+  // cdouble Matrix[SANSPDBOrderOfHarmonics+1][SANSPDBOrderOfHarmonics+1];
+  ProteinStruct Protein;
 %}
 
 INITIALIZE
 %{
-	// Rescale concentration into number of aggregates per m^3 times 10^-4
-	NumberDensity = Concentration * 6.02214129e19;
+  // Rescale concentration into number of aggregates per m^3 times 10^-4
+  NumberDensity = Concentration * 6.02214129e19;
 
-	// Standard sample handling
-	if (!xwidth || !yheight || !zdepth) {
-	    exit(fprintf(stderr, "SANSPDB: %s: ERROR: Sample has no volume - check parameters.\n", NAME_CURRENT_COMP));
-	}
+  // Standard sample handling
+  if (!xwidth || !yheight || !zdepth) {
+    exit (fprintf (stderr, "SANSPDB: %s: ERROR: Sample has no volume - check parameters.\n", NAME_CURRENT_COMP));
+  }
 
   // count the number of residues
-	Absorption = AbsorptionCrosssection;
-  Protein.NumberOfResidues = CountResidues(PDBFilepath);
-  Protein.Beads            = calloc(Protein.NumberOfResidues,sizeof(BeadStruct));
-  if (Protein.Beads == NULL) 
-    exit(fprintf(stderr, "SANSPDB: %s: ERROR: memory allocation\n",  NAME_CURRENT_COMP));
+  Absorption = AbsorptionCrosssection;
+  Protein.NumberOfResidues = CountResidues (PDBFilepath);
+  Protein.Beads = calloc (Protein.NumberOfResidues, sizeof (BeadStruct));
+  if (Protein.Beads == NULL)
+    exit (fprintf (stderr, "SANSPDB: %s: ERROR: memory allocation\n", NAME_CURRENT_COMP));
 
   // initialize the protein from the PDB
-	ReadAminoPDB(PDBFilepath, &Protein);
-	MPI_MASTER(
-	printf("SANSPDB: %s: Scattering from %s with %d residues\n", 
-	  NAME_CURRENT_COMP, PDBFilepath, Protein.NumberOfResidues);
-  );
-	
+  ReadAminoPDB (PDBFilepath, &Protein);
+  MPI_MASTER (printf ("SANSPDB: %s: Scattering from %s with %d residues\n", NAME_CURRENT_COMP, PDBFilepath, Protein.NumberOfResidues););
 %}
 
 TRACE
 %{
-	// Declarations
-	double t0;
-	double t1;
-	double l_full;
-	double l;
-	double l1;
-	double q;
-	double Intensity;
-	double Weight;
-	double IntensityPart;
-	double SolidAngle;
-	double qx;
-	double qy;
-	double qz;
-	double v;
-	double dt;
-	double vx_i;
-	double vy_i;
-	double vz_i;
-	char Intersect = 0;
-	double Slope;
-	double Offset;
-	int    i,j,ResidueID;
-	cdouble** Matrix=(cdouble**)matrix2d_new(sizeof(cdouble),SANSPDBOrderOfHarmonics+1,SANSPDBOrderOfHarmonics+1);
+  // Declarations
+  double t0;
+  double t1;
+  double l_full;
+  double l;
+  double l1;
+  double q;
+  double Intensity;
+  double Weight;
+  double IntensityPart;
+  double SolidAngle;
+  double qx;
+  double qy;
+  double qz;
+  double v;
+  double dt;
+  double vx_i;
+  double vy_i;
+  double vz_i;
+  char Intersect = 0;
+  double Slope;
+  double Offset;
+  int i, j, ResidueID;
+  cdouble** Matrix = (cdouble**)matrix2d_new (sizeof (cdouble), SANSPDBOrderOfHarmonics + 1, SANSPDBOrderOfHarmonics + 1);
 
-	// Computation
-	Intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
+  // Computation
+  Intersect = box_intersect (&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
 
-	if (Intersect) {
+  if (Intersect) {
 
-		if (t0 < 0.0) {
-			fprintf(stderr, "SANSPDB %s: Photon already inside sample - absorbing...\n", NAME_CURRENT_COMP);
-			ABSORB;
-    	}
+    if (t0 < 0.0) {
+      fprintf (stderr, "SANSPDB %s: Photon already inside sample - absorbing...\n", NAME_CURRENT_COMP);
+      ABSORB;
+    }
 
-		// Compute properties of neutron
-		v = sqrt(pow(vx, 2) + pow(vy, 2) + pow(vz, 2));
-		l_full = v * (t1 - t0);
-		dt = rand01() * (t1 - t0) + t0;
-		PROP_DT(dt);
-	    l = v * (dt - t0);
+    // Compute properties of neutron
+    v = sqrt (pow (vx, 2) + pow (vy, 2) + pow (vz, 2));
+    l_full = v * (t1 - t0);
+    dt = rand01 () * (t1 - t0) + t0;
+    PROP_DT (dt);
+    l = v * (dt - t0);
 
-		// Store properties of incoming neutron
-		vx_i = vx;
-		vy_i = vy;
-		vz_i = vz;
+    // Store properties of incoming neutron
+    vx_i = vx;
+    vy_i = vy;
+    vz_i = vz;
 
-		// Generate new direction of neutron
-		randvec_target_circle(&vx, &vy, &vz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
+    // Generate new direction of neutron
+    randvec_target_circle (&vx, &vy, &vz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
 
-		NORM(vx, vy, vz);
+    NORM (vx, vy, vz);
 
-		vx *= v;
-		vy *= v;
-		vz *= v;
+    vx *= v;
+    vy *= v;
+    vz *= v;
 
-		// Compute q
-		qx = V2K * (vx_i - vx);
-		qy = V2K * (vy_i - vy);
-		qz = V2K * (vz_i - vz);
+    // Compute q
+    qx = V2K * (vx_i - vx);
+    qy = V2K * (vy_i - vy);
+    qz = V2K * (vz_i - vz);
 
-		q = sqrt(pow(qx, 2) + pow(qy, 2) + pow(qz, 2));
+    q = sqrt (pow (qx, 2) + pow (qy, 2) + pow (qz, 2));
 
-		// Compute scattering for a given q-value
-		// ResetMatrix(Matrix, SANSPDBOrderOfHarmonics);
-		for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i)
-		    for (j = 0; j <= SANSPDBOrderOfHarmonics; ++j)
-		        Matrix[i][j] = cplx(0,0);
+    // Compute scattering for a given q-value
+    // ResetMatrix(Matrix, SANSPDBOrderOfHarmonics);
+    for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i)
+      for (j = 0; j <= SANSPDBOrderOfHarmonics; ++j)
+        Matrix[i][j] = cplx (0, 0);
 
-		for (ResidueID = 0; ResidueID < Protein.NumberOfResidues; ++ResidueID) {
-	      // ExpandStructure(Matrix, &Protein, ResidueID, qDummy, RhoSolvent);		
-	      double Legendre[SANSPDBOrderOfHarmonics + 1];
-		    double Bessel[SANSPDBOrderOfHarmonics + 1];
+    for (ResidueID = 0; ResidueID < Protein.NumberOfResidues; ++ResidueID) {
+      // ExpandStructure(Matrix, &Protein, ResidueID, qDummy, RhoSolvent);
+      double Legendre[SANSPDBOrderOfHarmonics + 1];
+      double Bessel[SANSPDBOrderOfHarmonics + 1];
 
-		    // Residue information
-		    BeadStruct   Residue = Protein.Beads[ResidueID];
-		    const double Volume = Residue.Volume;
-		    const double DeltaRhoProtein = Residue.ScatteringLength - Volume * RhoSolvent;
-		    
-        double X,Y,Z;
-        Protein_Beads_get_coords(Residue, &X, &Y, &Z);
-		    X = (X * Protein.Beads[ResidueID].ScatteringLength - 
-                        RhoSolvent * Volume * Protein.Beads[ResidueID].xv) / DeltaRhoProtein;
+      // Residue information
+      BeadStruct Residue = Protein.Beads[ResidueID];
+      const double Volume = Residue.Volume;
+      const double DeltaRhoProtein = Residue.ScatteringLength - Volume * RhoSolvent;
 
-		    Y = (Y * Protein.Beads[ResidueID].ScatteringLength - 
-                        RhoSolvent * Volume * Protein.Beads[ResidueID].yv) / DeltaRhoProtein;
+      double X, Y, Z;
+      Protein_Beads_get_coords (Residue, &X, &Y, &Z);
+      X = (X * Protein.Beads[ResidueID].ScatteringLength - RhoSolvent * Volume * Protein.Beads[ResidueID].xv) / DeltaRhoProtein;
 
-		    Z = (Z * Protein.Beads[ResidueID].ScatteringLength - 
-                        RhoSolvent * Volume * Protein.Beads[ResidueID].zv) / DeltaRhoProtein;
+      Y = (Y * Protein.Beads[ResidueID].ScatteringLength - RhoSolvent * Volume * Protein.Beads[ResidueID].yv) / DeltaRhoProtein;
 
-		    // Convert bead position to spherical coordinates
-		    const double Radius = sqrt(pow(X, 2) + pow(Y, 2) + pow(Z, 2));
-		    const double Theta  = acos(Z / Radius);
-		    const double C      = acos(X / (Radius * sin(Theta))) * Sign(Y);
+      Z = (Z * Protein.Beads[ResidueID].ScatteringLength - RhoSolvent * Volume * Protein.Beads[ResidueID].zv) / DeltaRhoProtein;
 
-		    // Expand protein structure on harmonics
-		    gsl_sf_bessel_jl_array(SANSPDBOrderOfHarmonics, q * Radius, Bessel);
+      // Convert bead position to spherical coordinates
+      const double Radius = sqrt (pow (X, 2) + pow (Y, 2) + pow (Z, 2));
+      const double Theta = acos (Z / Radius);
+      const double C = acos (X / (Radius * sin (Theta))) * Sign (Y);
 
-		    for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i) {
-		        gsl_sf_legendre_sphPlm_array(SANSPDBOrderOfHarmonics, i, cos(Theta), &Legendre[i]);
+      // Expand protein structure on harmonics
+      gsl_sf_bessel_jl_array (SANSPDBOrderOfHarmonics, q * Radius, Bessel);
 
-		        for(j = i; j <= SANSPDBOrderOfHarmonics; ++j) {
-			  Matrix[j][i] = cadd(Matrix[j][i],rmul(sqrt(4.0 * PI) * DeltaRhoProtein * Bessel[j] * Legendre[j] , cmul(cpow(cplx(0,1), cplx(j,0)), Polar(1.0, -i * C))));
-		        }
-		    }
-		    
-	  } // for ResidueID
+      for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i) {
+        gsl_sf_legendre_sphPlm_array (SANSPDBOrderOfHarmonics, i, cos (Theta), &Legendre[i]);
 
-	 	Intensity = 0;
-	 	// ComputeIntensity(Matrix, SANSPDBOrderOfHarmonics);
-	 	for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i) {
-		    for (j = 0; j <= i; ++j) {
-		        Intensity += ((j > 0) + 1.0) * pow(cabs(Matrix[i][j]), 2);
-		    }
-		}
+        for (j = i; j <= SANSPDBOrderOfHarmonics; ++j) {
+          Matrix[j][i] = cadd (Matrix[j][i],
+                               rmul (sqrt (4.0 * PI) * DeltaRhoProtein * Bessel[j] * Legendre[j], cmul (cpow (cplx (0, 1), cplx (j, 0)), Polar (1.0, -i * C))));
+        }
+      }
 
-		// Compute new weight
-		l1 = v * t1;
-		p *= l_full * SolidAngle / (4.0 * PI) * NumberDensity * Intensity * exp(- Absorption * (l + l1) / v);
+    } // for ResidueID
 
-		SCATTER;
-	}
+    Intensity = 0;
+    // ComputeIntensity(Matrix, SANSPDBOrderOfHarmonics);
+    for (i = 0; i <= SANSPDBOrderOfHarmonics; ++i) {
+      for (j = 0; j <= i; ++j) {
+        Intensity += ((j > 0) + 1.0) * pow (cabs (Matrix[i][j]), 2);
+      }
+    }
+
+    // Compute new weight
+    l1 = v * t1;
+    p *= l_full * SolidAngle / (4.0 * PI) * NumberDensity * Intensity * exp (-Absorption * (l + l1) / v);
+
+    SCATTER;
+  }
 %}
 
 MCDISPLAY
 %{
-  box(0, 0, 0, xwidth, yheight, zdepth,0, 0, 1, 0);
+  box (0, 0, 0, xwidth, yheight, zdepth, 0, 0, 1, 0);
 %}
 
 END

@@ -61,25 +61,27 @@ DECLARE
 INITIALIZE
 %{
   // Check that input parameteters makes sense
-  if (mx==0 && my==0 && mz==0) {
-    fprintf(stderr, "Pol_monitor: %s: NULL vector defined!\n"
-      "ERROR      (mx, my, mz). Exiting",
-      NAME_CURRENT_COMP);
-    exit(1);
+  if (mx == 0 && my == 0 && mz == 0) {
+    fprintf (stderr,
+             "Pol_monitor: %s: NULL vector defined!\n"
+             "ERROR      (mx, my, mz). Exiting",
+             NAME_CURRENT_COMP);
+    exit (1);
   }
 
-  if ((xwidth<=0) || (yheight <= 0)) {
-    fprintf(stderr, "Pol_monitor: %s: Null detection area !\n"
-      "ERROR      (xwidth,yheight). Exiting",
-      NAME_CURRENT_COMP);
-    exit(1);
+  if ((xwidth <= 0) || (yheight <= 0)) {
+    fprintf (stderr,
+             "Pol_monitor: %s: Null detection area !\n"
+             "ERROR      (xwidth,yheight). Exiting",
+             NAME_CURRENT_COMP);
+    exit (1);
   }
-  sprintf(titlestring, "Polarisation monitor m=(%g %g %g) %s", mx, my, mz, NAME_CURRENT_COMP);
+  sprintf (titlestring, "Polarisation monitor m=(%g %g %g) %s", mx, my, mz, NAME_CURRENT_COMP);
 
   // Initialize variables
 
-  NORM(mx, my, mz);
-  Psum=0;
+  NORM (mx, my, mz);
+  Psum = 0;
   Pol_N = 0;
   Pol_p = 0;
   Pol_p2 = 0;
@@ -90,58 +92,58 @@ TRACE
   double pol_proj;
 
   PROP_Z0;
-  if (inside_rectangle(x, y, xwidth, yheight)){
+  if (inside_rectangle (x, y, xwidth, yheight)) {
 
-    pol_proj = scalar_prod(mx, my, mz, sx, sy, sz);
+    pol_proj = scalar_prod (mx, my, mz, sx, sy, sz);
 
-    if(fabs(pol_proj)>1) {
-        if (fabs(pol_proj)<1+FLT_EPSILON){
-            pol_proj=1;
-        }else{
-            ABSORB;
-        }
+    if (fabs (pol_proj) > 1) {
+      if (fabs (pol_proj) < 1 + FLT_EPSILON) {
+        pol_proj = 1;
+      } else {
+        ABSORB;
+      }
     }
-    double p2 = p*p;
-    double pp = pol_proj*p;
-    double p2p = pol_proj*pol_proj*p;
+    double p2 = p * p;
+    double pp = pol_proj * p;
+    double p2p = pol_proj * pol_proj * p;
     #pragma acc atomic
-    Pol_N = Pol_N+1;
+    Pol_N = Pol_N + 1;
 
     #pragma acc atomic
-    Psum = Psum+p;
+    Psum = Psum + p;
 
     #pragma acc atomic
-    Pol_p = Pol_p+pp;
+    Pol_p = Pol_p + pp;
 
     #pragma acc atomic
-    Pol_p2 = Pol_p2+p2p;
-    
+    Pol_p2 = Pol_p2 + p2p;
+
     SCATTER;
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-    if (!nowritefile) {
-  if (Psum && Pol_N){
-      Pol_p  /= Psum;
-#ifdef USE_MPI
+  if (!nowritefile) {
+    if (Psum && Pol_N) {
+      Pol_p /= Psum;
+      #ifdef USE_MPI
       Pol_p /= mpi_node_count;
-#endif
+      #endif
       Pol_p2 /= Psum;
-      Pol_p2 -= Pol_p*Pol_p;
+      Pol_p2 -= Pol_p * Pol_p;
       Pol_p2 /= Pol_N;
-  }
-  DETECTOR_OUT_0D(titlestring, Pol_N, Pol_p, Pol_p2);
     }
+    DETECTOR_OUT_0D (titlestring, Pol_N, Pol_p, Pol_p2);
+  }
 %}
 
 MCDISPLAY
 %{
-  rectangle("xy", 0, 0, 0, xwidth, yheight);
+  rectangle ("xy", 0, 0, 0, xwidth, yheight);
 %}
 
 END

@@ -48,15 +48,16 @@ SETTING PARAMETERS (xwidth, yheight, zdepth, B=0, fliplambda=0, flipangle=180)
 
 SHARE
 %{
-  double IntersectWall(double pos, double vel, double wallpos) {
+  double
+  IntersectWall (double pos, double vel, double wallpos) {
     /* Function to calculate where the neutron hit the wall */
-    if(vel==0)
+    if (vel == 0)
       return -1;
 
-    if(vel>0)
-      return (wallpos-pos)/vel;
+    if (vel > 0)
+      return (wallpos - pos) / vel;
     else
-      return (-wallpos-pos)/vel;
+      return (-wallpos - pos) / vel;
   }
 %}
 
@@ -72,29 +73,29 @@ INITIALIZE
 
   double velocity = 0, time = 0;
 
-  if ((xwidth<=0) || (yheight<=0) || (zdepth<=0)) {
-    fprintf(stderr, "Pol_filter: %s: Null or negative volume!\n"
-	    "ERROR      (xwidth, yheight, zdepth). Exiting\n",
-	    NAME_CURRENT_COMP);
-    exit(1);
+  if ((xwidth <= 0) || (yheight <= 0) || (zdepth <= 0)) {
+    fprintf (stderr,
+             "Pol_filter: %s: Null or negative volume!\n"
+             "ERROR      (xwidth, yheight, zdepth). Exiting\n",
+             NAME_CURRENT_COMP);
+    exit (1);
   }
 
   // neutron Larmor frequency: omegaL=29.16 MHz/Tesla * B(Neutron Data Booklet)
   // omegaL/B = -2*mu_n/hbar = -2.0*1.913*5.051e-27/1.055e-34
   omegaL = -2 * PI * 29.16e6 * B * 1e-4; // B is in Gauss
 
-  if(fliplambda>0){
-    velocity = K2V*2*PI/fliplambda;
-    time = zdepth/velocity;
+  if (fliplambda > 0) {
+    velocity = K2V * 2 * PI / fliplambda;
+    time = zdepth / velocity;
 
     // omegaL*time = flipangle
-    omegaL = flipangle*DEG2RAD/time;
+    omegaL = flipangle * DEG2RAD / time;
 
     // omegaL = 2*PI*29.16 MHz/T*B
     B = omegaL / -2 / 29.16e6 / PI / 1e-4; // Gauss
 
-    printf("Pol_constBfield: %s: Magnetic field set to B=%f Gauss\n",
-           NAME_CURRENT_COMP, B);
+    printf ("Pol_constBfield: %s: Magnetic field set to B=%f Gauss\n", NAME_CURRENT_COMP, B);
   }
 %}
 
@@ -103,30 +104,30 @@ TRACE
   double deltaT, deltaTx, deltaTy, sx_in, sz_in;
 
   PROP_Z0;
-  if (!inside_rectangle(x, y, xwidth, yheight))
+  if (!inside_rectangle (x, y, xwidth, yheight))
     ABSORB;
 
   // Time spent in B-field
-  deltaT = zdepth/vz;
+  deltaT = zdepth / vz;
 
   // check that track goes throgh without hitting the walls
-  if (!inside_rectangle(x+vx*deltaT, y+vy*deltaT, xwidth, yheight)) {
+  if (!inside_rectangle (x + vx * deltaT, y + vy * deltaT, xwidth, yheight)) {
 
     // Propagate to the wall and absorb
-    deltaTx = IntersectWall(x, vx, xwidth/2);
-    deltaTy = IntersectWall(y, vy, yheight/2);
+    deltaTx = IntersectWall (x, vx, xwidth / 2);
+    deltaTy = IntersectWall (y, vy, yheight / 2);
 
-    if (deltaTx>=0 && deltaTx<deltaTy)
+    if (deltaTx >= 0 && deltaTx < deltaTy)
       deltaT = deltaTx;
     else
       deltaT = deltaTy;
 
-    PROP_DT(deltaT);
+    PROP_DT (deltaT);
 
     ABSORB;
   }
 
-  PROP_DT(deltaT);
+  PROP_DT (deltaT);
 
   // The solution to neutron precession in a constant field along the
   // z-axis is:
@@ -139,13 +140,13 @@ TRACE
   sx_in = sx;
   sz_in = sz;
 
-  sz = cos(omegaL*deltaT)*sz_in - sin(omegaL*deltaT)*sx_in;
-  sx = sin(omegaL*deltaT)*sz_in + cos(omegaL*deltaT)*sx_in;
+  sz = cos (omegaL * deltaT) * sz_in - sin (omegaL * deltaT) * sx_in;
+  sx = sin (omegaL * deltaT) * sz_in + cos (omegaL * deltaT) * sx_in;
 %}
 
 MCDISPLAY
 %{
-  box(0, 0, zdepth/2, xwidth, yheight, zdepth,0, 0, 1, 0);
+  box (0, 0, zdepth / 2, xwidth, yheight, zdepth, 0, 0, 1, 0);
 %}
 
 END

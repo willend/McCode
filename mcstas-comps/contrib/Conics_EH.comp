@@ -62,67 +62,65 @@ SHARE
 
 DECLARE
 %{
-    //Scene where all geometry is added to
-    Scene s;
+  // Scene where all geometry is added to
+  Scene s;
 %}
 
 INITIALIZE
 %{
-    ConicSurf *pm;
-    double th_c, alpha_p, alpha_h, fp2, dr,rr, cH, theta_1, theta_2, theta_i;
-    int i;
+  ConicSurf* pm;
+  double th_c, alpha_p, alpha_h, fp2, dr, rr, cH, theta_1, theta_2, theta_i;
+  int i;
 
-    s=makeScene();
-    /* Mode a, vector of radii */
-    if (radii) {
-      for (i=0;i<nshells;i++){
-        rr=radii[i];
-  
-        Point pi = makePoint(0,rr,0);
-        pm=addEllipsoid(focal_length_d, -focal_length_u, pi, -le,  0, m, R0, Qc, W, alpha, &s);
-        addHyperboloid( focal_length_d, focal_length_d,  pi,   0, lh, m, R0, Qc, W, alpha, &s);
-      }
-    } else {
+  s = makeScene ();
+  /* Mode a, vector of radii */
+  if (radii) {
+    for (i = 0; i < nshells; i++) {
+      rr = radii[i];
+
+      Point pi = makePoint (0, rr, 0);
+      pm = addEllipsoid (focal_length_d, -focal_length_u, pi, -le, 0, m, R0, Qc, W, alpha, &s);
+      addHyperboloid (focal_length_d, focal_length_d, pi, 0, lh, m, R0, Qc, W, alpha, &s);
+    }
+  } else {
     /* Mode b, use quadratic law to distribute the shells */
-      dr=nshells>1?(rmax-rmin)/(nshells-1):0;
-    
-      double constant, quadratic;
-      quadratic = (rmax-rmin)/(rmax*rmax - rmin*rmin);
-      constant = rmax - quadratic*rmax*rmax;
-    
-      for (i=0;i<nshells;i++){
-        rr = rmax-dr*i;
-        rr = constant + quadratic*rr*rr; // Quadratic distribution of radius covers angular space better
-        //printf("--------------------------------------------------------------------");
-        printf("rr = %lf\n", rr);
-        //printf("--------------------------------------------------------------------");
+    dr = nshells > 1 ? (rmax - rmin) / (nshells - 1) : 0;
 
-        Point pi = makePoint(0,rr,0);
-        //pm=addEllipsoid(-focal_length_u, focal_length_d  ,  pi, -le,  0, m,R0,Qc,W,alpha,&s);
-        //addHyperboloid(  focal_length_d, focal_length_d*2,  pi,   0, lh, m,R0,Qc,W,alpha,&s);
-        
-        theta_1 = atan(rr/focal_length_u);
-        theta_2 = atan(rr/focal_length_d);
-        theta_i = 0.25*(theta_1 + theta_2);
-        
-        cH = fabs(0.5*(rr/tan(theta_2 - 2.0*theta_i) - focal_length_d));
+    double constant, quadratic;
+    quadratic = (rmax - rmin) / (rmax * rmax - rmin * rmin);
+    constant = rmax - quadratic * rmax * rmax;
 
-        pm=addEllipsoid(focal_length_d + 2.0*cH, -focal_length_u, pi, -le,  0, m, R0, Qc, W, alpha, &s);
-        addHyperboloid( focal_length_d, focal_length_d + 2.0*cH,  pi,   0, lh, m, R0, Qc, W, alpha, &s);
-      }
+    for (i = 0; i < nshells; i++) {
+      rr = rmax - dr * i;
+      rr = constant + quadratic * rr * rr; // Quadratic distribution of radius covers angular space better
+      // printf("--------------------------------------------------------------------");
+      printf ("rr = %lf\n", rr);
+      // printf("--------------------------------------------------------------------");
 
+      Point pi = makePoint (0, rr, 0);
+      // pm=addEllipsoid(-focal_length_u, focal_length_d  ,  pi, -le,  0, m,R0,Qc,W,alpha,&s);
+      // addHyperboloid(  focal_length_d, focal_length_d*2,  pi,   0, lh, m,R0,Qc,W,alpha,&s);
+
+      theta_1 = atan (rr / focal_length_u);
+      theta_2 = atan (rr / focal_length_d);
+      theta_i = 0.25 * (theta_1 + theta_2);
+
+      cH = fabs (0.5 * (rr / tan (theta_2 - 2.0 * theta_i) - focal_length_d));
+
+      pm = addEllipsoid (focal_length_d + 2.0 * cH, -focal_length_u, pi, -le, 0, m, R0, Qc, W, alpha, &s);
+      addHyperboloid (focal_length_d, focal_length_d + 2.0 * cH, pi, 0, lh, m, R0, Qc, W, alpha, &s);
     }
-    if (disk) {
-      addDisk(pm->zs,0.0,rConic(pm->ze,*pm),&s);
-    }
-
+  }
+  if (disk) {
+    addDisk (pm->zs, 0.0, rConic (pm->ze, *pm), &s);
+  }
 %}                            
 
 TRACE
 %{
   /* "_mctmp_a" defines a "silicon" state variable in underlying conic.h functions */
-  _mctmp_a=0;
-  traceSingleNeutron(_particle,s);
+  _mctmp_a = 0;
+  traceSingleNeutron (_particle, s);
 
   if (!_particle->_absorbed) {
     SCATTER;
@@ -136,50 +134,52 @@ FINALLY %{
 
 MCDISPLAY
 %{
-    double zz = 0;
-    //Enlarge xy-plane when mcdisplay is ran with --zoom
-    magnify("xy");
+  double zz = 0;
+  // Enlarge xy-plane when mcdisplay is ran with --zoom
+  magnify ("xy");
 
-    //Draw xy-axis contour for Conic Surfaces
-    int i;
-    for (i = 0; i < s.num_c; i++) {
-        double step = (s.c[i].ze-s.c[i].zs)/100;
-        double cz;
-	int draw=-1;
-        for (cz = s.c[i].zs+step; cz <= s.c[i].ze; cz+= step) {
-	    draw++;
-            double rp = rConic(cz-step,s.c[i]);
-            double rc = rConic(cz, s.c[i]);
-	    double rx,ry;
-	    int j;
-	    double theta;
-	    for (j = 0; j < 12; j++) {
-	      theta = 2.0*PI*j/12.0;
-	      rx = rp*cos(theta);
-	      ry = rp*sin(theta);
-	      line(rx,ry,cz-step-zz,rx,ry,cz-zz);
-	    }
-	    if (draw==0) {
-              circle("xy", 0, 0, cz-step-zz, rp);
-            }
-	    if (draw==19) draw=-1;
-        }
+  // Draw xy-axis contour for Conic Surfaces
+  int i;
+  for (i = 0; i < s.num_c; i++) {
+    double step = (s.c[i].ze - s.c[i].zs) / 100;
+    double cz;
+    int draw = -1;
+    for (cz = s.c[i].zs + step; cz <= s.c[i].ze; cz += step) {
+      draw++;
+      double rp = rConic (cz - step, s.c[i]);
+      double rc = rConic (cz, s.c[i]);
+      double rx, ry;
+      int j;
+      double theta;
+      for (j = 0; j < 12; j++) {
+        theta = 2.0 * PI * j / 12.0;
+        rx = rp * cos (theta);
+        ry = rp * sin (theta);
+        line (rx, ry, cz - step - zz, rx, ry, cz - zz);
+      }
+      if (draw == 0) {
+        circle ("xy", 0, 0, cz - step - zz, rp);
+      }
+      if (draw == 19)
+        draw = -1;
     }
+  }
 
-    //Draw xy-axis cross hairs for Disks
-    //Local variables to control maximal display-size of cross-hairs
-    for (i = 0; i < s.num_di; i++) {
-        double r0=s.di[i].r0;
-	double r1=s.di[i].r1;
-	double z0=s.di[i].z0;
-	if (r0>1.0) r0=1.0;
-	if (r1>1.0) r1=1.0;
-        line(r0, 0, z0-zz, r1, 0, z0-zz);
-        line(-r0, 0, z0-zz, -r1, 0, z0-zz);
-        line(0, r0, z0-zz, 0, r1,z0-zz);
-        line(0, -r0, z0-zz, 0, -r1,z0-zz);
-    }
-         
+  // Draw xy-axis cross hairs for Disks
+  // Local variables to control maximal display-size of cross-hairs
+  for (i = 0; i < s.num_di; i++) {
+    double r0 = s.di[i].r0;
+    double r1 = s.di[i].r1;
+    double z0 = s.di[i].z0;
+    if (r0 > 1.0)
+      r0 = 1.0;
+    if (r1 > 1.0)
+      r1 = 1.0;
+    line (r0, 0, z0 - zz, r1, 0, z0 - zz);
+    line (-r0, 0, z0 - zz, -r1, 0, z0 - zz);
+    line (0, r0, z0 - zz, 0, r1, z0 - zz);
+    line (0, -r0, z0 - zz, 0, -r1, z0 - zz);
+  }
 %}
 	
 END

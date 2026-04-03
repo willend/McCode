@@ -7,18 +7,16 @@
 * Origin: TUM
 * %INSTRUMENT_SITE: Tests_optics
 *
+* Implements a test instrument for the component FlatEllipse_finite_mirror.
+*
+* %D
 * Implements a test instrument for the component FlatEllipse_finite_mirror,
 * implementing Nested Mirror Optic (NMO) as suggested by B&ouml;ni et al.
 *
-* %D
-* <instrument description>
-*
-* Example: <parameters=values>
-*
 * %P
-* det_width:         [m]              Detector width
-* source_width:      [m]              Source width
-* source_height:     [m]              Source height
+* det_width: [m] Detector width
+* source_width: [m] Source width
+* source_height: [m] Source height
 * lam_source:        [AA]             Central source wavelength
 * dL:                [AA]             Source wavelength spread
 * v_divergence:      [deg]            Source vertical divergence

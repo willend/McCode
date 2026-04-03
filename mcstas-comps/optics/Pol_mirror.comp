@@ -108,34 +108,32 @@ DECLARE
 INITIALIZE
 %{
 
-  if (strlen(rUpData) && strcmp(rUpData,"NULL")){
-    if (Table_Read(&rUpTable, rUpData, 1) <= 0) {
-      fprintf(stderr,"Pol_mirror: %s: can not read file %s\n",
-          NAME_CURRENT_COMP, rUpData);
-      exit(1);
+  if (strlen (rUpData) && strcmp (rUpData, "NULL")) {
+    if (Table_Read (&rUpTable, rUpData, 1) <= 0) {
+      fprintf (stderr, "Pol_mirror: %s: can not read file %s\n", NAME_CURRENT_COMP, rUpData);
+      exit (1);
     }
-    rUpTableFlag=1;
-  }else{
-    rUpTableFlag=0;
+    rUpTableFlag = 1;
+  } else {
+    rUpTableFlag = 0;
   }
-  if (strlen(rUpData) && strcmp(rUpData,"NULL")){
-    if (Table_Read(&rDownTable, rDownData, 1) <= 0) {
-      fprintf(stderr,"Pol_mirror: %s: can not read file %s\n",
-          NAME_CURRENT_COMP, rDownData);
-      exit(1);
+  if (strlen (rUpData) && strcmp (rUpData, "NULL")) {
+    if (Table_Read (&rDownTable, rDownData, 1) <= 0) {
+      fprintf (stderr, "Pol_mirror: %s: can not read file %s\n", NAME_CURRENT_COMP, rDownData);
+      exit (1);
     }
-    rDownTableFlag=1;
-  }else{
-    rDownTableFlag=0;
+    rDownTableFlag = 1;
+  } else {
+    rDownTableFlag = 0;
   }
 
-  if ((zwidth<=0) || (yheight <= 0)) {
-    fprintf(stderr, "Pol_mirror: %s: NULL or negative length scale!\n"
-            "ERROR      (zwidth=%g,yheight=%g). Exiting\n",
-            NAME_CURRENT_COMP, zwidth, yheight);
-    exit(1);
+  if ((zwidth <= 0) || (yheight <= 0)) {
+    fprintf (stderr,
+             "Pol_mirror: %s: NULL or negative length scale!\n"
+             "ERROR      (zwidth=%g,yheight=%g). Exiting\n",
+             NAME_CURRENT_COMP, zwidth, yheight);
+    exit (1);
   }
-
 %}
 
 TRACE
@@ -147,94 +145,96 @@ TRACE
   // propagate to mirror plane
   PROP_X0;
 
-  if (inside_rectangle(z, y, zwidth, yheight)) {/* Intersect the crystal? */
+  if (inside_rectangle (z, y, zwidth, yheight)) { /* Intersect the crystal? */
 
     // calculate scattering vector magnitude
-    Q = fabs(2*vx*V2K);
+    Q = fabs (2 * vx * V2K);
 
     // calculate reflection probability
 
     // downgraded from defpars version
-    //rUpFunc(Q, rUpParPtr, &Rup);
-    if(rUpTableFlag){
-      Rup=Table_Value(rUpTable,Q,1);
-    }else{
-      StdReflecFunc(Q, rUpPar, &Rup);
+    // rUpFunc(Q, rUpParPtr, &Rup);
+    if (rUpTableFlag) {
+      Rup = Table_Value (rUpTable, Q, 1);
+    } else {
+      StdReflecFunc (Q, rUpPar, &Rup);
     }
     // downgraded from defpars version
-    //rDownFunc(Q, rDownParPtr, &Rdown);
-    if(rDownTableFlag){
-      Rdown=Table_Value(rDownTable,Q,1);
-    }else{
-      StdReflecFunc(Q, rDownPar, &Rdown);
+    // rDownFunc(Q, rDownParPtr, &Rdown);
+    if (rDownTableFlag) {
+      Rdown = Table_Value (rDownTable, Q, 1);
+    } else {
+      StdReflecFunc (Q, rDownPar, &Rdown);
     }
 
-    if(Rup != Rdown) {
+    if (Rup != Rdown) {
       isPolarising = 1;
-      GetMonoPolFNFM(Rup, Rdown, &FN, &FM);
-      GetMonoPolRefProb(FN, FM, sy, &refWeight);
+      GetMonoPolFNFM (Rup, Rdown, &FN, &FM);
+      GetMonoPolRefProb (FN, FM, sy, &refWeight);
       /* Output of PW discussions with Hal Lee 2024/03/08
        We have now done our QM "measurement", thus
        forcing the spin to assume up/down: */
-      sx=0; sz=0;
+      sx = 0;
+      sz = 0;
     } else
       refWeight = Rup;
 
     // check that refWeight is meaningfull
-    if (refWeight <  0) ABSORB;
-    if (refWeight >  1) refWeight =1 ;
+    if (refWeight < 0)
+      ABSORB;
+    if (refWeight > 1)
+      refWeight = 1;
 
     // find out if neutrons is reflected or transmitted
     if (p_reflect < 0 || p_reflect > 1) { // reflect OR transmit using mirror reflectivity
 
-      if (rand01()<refWeight) //reflect
+      if (rand01 () < refWeight) // reflect
         reflect = 1;
       else
         reflect = 0;
 
     } else { // reflect OR transmit using a specified weighting
 
-      if (rand01()<p_reflect) {
-        reflect = 1;          // reflect
-        p *= refWeight/p_reflect;
+      if (rand01 () < p_reflect) {
+        reflect = 1; // reflect
+        p *= refWeight / p_reflect;
       } else {
-        reflect = 0;          // transmit
-        p *= (1-refWeight)/(1-p_reflect);
+        reflect = 0; // transmit
+        p *= (1 - refWeight) / (1 - p_reflect);
       }
     }
 
     // set outgoing velocity and polarisation
-    if (reflect==1) { // reflect: SCATTERED==1 for reflection
+    if (reflect == 1) { // reflect: SCATTERED==1 for reflection
 
       vx = -vx;
-      if(isPolarising)
-        SetMonoPolRefOut(FN, FM, refWeight, &sx, &sy, &sz);
+      if (isPolarising)
+        SetMonoPolRefOut (FN, FM, refWeight, &sx, &sy, &sz);
 
-    } else {         // transmit: SCATTERED==2 for transmission
-      if(isPolarising)
-        SetMonoPolTransOut(FN, FM, refWeight, &sx, &sy, &sz);
+    } else { // transmit: SCATTERED==2 for transmission
+      if (isPolarising)
+        SetMonoPolTransOut (FN, FM, refWeight, &sx, &sy, &sz);
       SCATTER;
     }
 
-    if(isPolarising)
-      if(sx*sx+sy*sy+sz*sz>1.000001)
-        fprintf(stderr,"Pol_mirror: %s: Warning: polarisation |s| = %g > 1\n",
-              NAME_CURRENT_COMP, sx*sx+sy*sy+sz*sz); // check that polarisation is meaningfull
+    if (isPolarising)
+      if (sx * sx + sy * sy + sz * sz > 1.000001)
+        fprintf (stderr, "Pol_mirror: %s: Warning: polarisation |s| = %g > 1\n", NAME_CURRENT_COMP,
+                 sx * sx + sy * sy + sz * sz); // check that polarisation is meaningfull
 
     SCATTER;
 
   } /* End intersect the mirror */
-  else
-  {
+  else {
     /* neutron will miss the mirror, so don't propagate i.e restore it */
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 MCDISPLAY
 %{
 
-  rectangle("yz", 0, 0, 0, zwidth, yheight);
+  rectangle ("yz", 0, 0, 0, zwidth, yheight);
 %}
 
 END

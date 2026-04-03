@@ -57,110 +57,95 @@ SETTING PARAMETERS (int nh=20, int nv=20, int rad=0, string filename=0,
     /* Xray  parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */ 
 DECLARE
   %{
-    DArray2d Div_N;
-    DArray2d Div_p;
-    DArray2d Div_p2;
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
+  DArray2d Div_N;
+  DArray2d Div_p;
+  DArray2d Div_p2;
+  double xmin;
+  double xmax;
+  double ymin;
+  double ymax;
   %}
 INITIALIZE
   %{
-    int i,j;
+  int i, j;
 
-    xmax = xwidth/2;  xmin = -xmax;
-    ymax = yheight/2; ymin = -ymax;
+  xmax = xwidth / 2;
+  xmin = -xmax;
+  ymax = yheight / 2;
+  ymin = -ymax;
 
-    if ((xmin >= xmax) || (ymin >= ymax)) {
-            printf("ERROR: (%s): Null detection area! Exiting.\n",NAME_CURRENT_COMP);
-      exit(-1);
-    }
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("ERROR: (%s): Null detection area! Exiting.\n", NAME_CURRENT_COMP);
+    exit (-1);
+  }
 
-    Div_N= create_darr2d(nh,nv);
-    Div_p= create_darr2d(nh,nv);
-    Div_p2=create_darr2d(nh,nv);
+  Div_N = create_darr2d (nh, nv);
+  Div_p = create_darr2d (nh, nv);
+  Div_p2 = create_darr2d (nh, nv);
 
-    NORM(nx,ny,nz);
-    
-    // Use instance name for monitor output if no input was given
-    if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  NORM (nx, ny, nz);
+
+  // Use instance name for monitor output if no input was given
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
   %}
 TRACE
   %{
-    int i,j;
-    double h_div, v_div;
-    double k, kn;
+  int i, j;
+  double h_div, v_div;
+  double k, kn;
 
-    PROP_Z0;
-    if (x>xmin && x<xmax && y>ymin && y<ymax)
-    {
-      /* Find length of projection onto the [nx ny nz] axis */
-      kn = scalar_prod(kx, ky, kz, nx, ny, nz);
-      if (rad){
-          h_div = atan2(kx,kn);
-          v_div = atan2(ky,kn);
-      }else{
-          h_div = RAD2DEG*atan2(kx,kn);
-          v_div = RAD2DEG*atan2(ky,kn);
-      }
-      if (h_div < maxdiv_h && h_div > -maxdiv_h &&
-          v_div < maxdiv_v && v_div > -maxdiv_v)
-      {
-        i = floor((h_div + maxdiv_h)*nh/(2.0*maxdiv_h));
-        j = floor((v_div + maxdiv_v)*nv/(2.0*maxdiv_v));
-        double p2=p*p;
-#pragma acc atomic
-        Div_N[i][j] = Div_N[i][j] + 1;
-#pragma acc atomic
-        Div_p[i][j] = Div_p[i][j] + p;
-#pragma acc atomic
-        Div_p2[i][j] = Div_p2[i][j] + p2;
-        SCATTER;
-      }
-    }   
-    if (restore_xray) {
-        RESTORE_XRAY(INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+  PROP_Z0;
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
+    /* Find length of projection onto the [nx ny nz] axis */
+    kn = scalar_prod (kx, ky, kz, nx, ny, nz);
+    if (rad) {
+      h_div = atan2 (kx, kn);
+      v_div = atan2 (ky, kn);
+    } else {
+      h_div = RAD2DEG * atan2 (kx, kn);
+      v_div = RAD2DEG * atan2 (ky, kn);
     }
+    if (h_div < maxdiv_h && h_div > -maxdiv_h && v_div < maxdiv_v && v_div > -maxdiv_v) {
+      i = floor ((h_div + maxdiv_h) * nh / (2.0 * maxdiv_h));
+      j = floor ((v_div + maxdiv_v) * nv / (2.0 * maxdiv_v));
+      double p2 = p * p;
+      #pragma acc atomic
+      Div_N[i][j] = Div_N[i][j] + 1;
+      #pragma acc atomic
+      Div_p[i][j] = Div_p[i][j] + p;
+      #pragma acc atomic
+      Div_p2[i][j] = Div_p2[i][j] + p2;
+      SCATTER;
+    }
+  }
+  if (restore_xray) {
+    RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+  }
   %}
 SAVE
   %{
-    if(!nowritefile){
-      if (rad){
-          DETECTOR_OUT_2D(
-                  "Divergence monitor",
-                  "X divergence [rad]",
-                  "Y divergence [rad]",
-                  -maxdiv_h, maxdiv_h, -maxdiv_v, maxdiv_v,
-                  nh, nv,
-                  &Div_N[0][0],&Div_p[0][0],&Div_p2[0][0],
-                  filename);
-      } else {
-          DETECTOR_OUT_2D(
-                  "Divergence monitor",
-                  "X divergence [deg]",
-                  "Y divergence [deg]",
-                  -maxdiv_h, maxdiv_h, -maxdiv_v, maxdiv_v,
-                  nh, nv,
-                  &Div_N[0][0],&Div_p[0][0],&Div_p2[0][0],
-                  filename);
-      }
+  if (!nowritefile) {
+    if (rad) {
+      DETECTOR_OUT_2D ("Divergence monitor", "X divergence [rad]", "Y divergence [rad]", -maxdiv_h, maxdiv_h, -maxdiv_v, maxdiv_v, nh, nv, &Div_N[0][0],
+                       &Div_p[0][0], &Div_p2[0][0], filename);
+    } else {
+      DETECTOR_OUT_2D ("Divergence monitor", "X divergence [deg]", "Y divergence [deg]", -maxdiv_h, maxdiv_h, -maxdiv_v, maxdiv_v, nh, nv, &Div_N[0][0],
+                       &Div_p[0][0], &Div_p2[0][0], filename);
     }
+  }
   %}
 FINALLY
   %{
-    destroy_darr2d(Div_N);
-    destroy_darr2d(Div_p);
-    destroy_darr2d(Div_p2);
+  destroy_darr2d (Div_N);
+  destroy_darr2d (Div_p);
+  destroy_darr2d (Div_p2);
   %}
 MCDISPLAY
   %{
-    
-    multiline(5, (double)xmin, (double)ymin, 0.0,
-                 (double)xmax, (double)ymin, 0.0,
-                 (double)xmax, (double)ymax, 0.0,
-                 (double)xmin, (double)ymax, 0.0,
-                 (double)xmin, (double)ymin, 0.0);
+
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END

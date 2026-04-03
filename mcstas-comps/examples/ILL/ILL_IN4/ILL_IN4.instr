@@ -329,6 +329,10 @@ INITIALIZE %{
 
   #pragma acc update device( environment_thickness )
 
+  #ifdef USE_MPI
+  /* In case of MPI mode, add an MPI_Barrier to ensure no node runs on an uncompleted/non-existentt Dirac2D.sqw */
+  MPI_Barrier(MPI_COMM_WORLD);
+  #endif
 %}
 
 

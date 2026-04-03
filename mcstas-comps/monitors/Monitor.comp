@@ -49,62 +49,64 @@ xwidth=0, yheight=0, int restore_neutron=0)
 
 DECLARE
 %{
-double Nsum;
-double psum;
-double p2sum;
+  double Nsum;
+  double psum;
+  double p2sum;
 %}
 
 INITIALIZE
 %{
-psum = 0;
-p2sum = 0;
-Nsum = 0;
+  psum = 0;
+  p2sum = 0;
+  Nsum = 0;
 
-if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-    if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
+  }
 
-    if ((xmin >= xmax) || (ymin >= ymax)) {
-            printf("Monitor: %s: Null detection area !\n"
-                   "ERROR    (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-           NAME_CURRENT_COMP);
-      exit(0);
-    }
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("Monitor: %s: Null detection area !\n"
+            "ERROR    (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
   %}
 
 TRACE
   %{
-    PROP_Z0;
-    if (x>xmin && x<xmax && y>ymin && y<ymax)
-    {
-      double p2 = p*p;
-      #pragma acc atomic
-      Nsum = Nsum + 1;
-      #pragma acc atomic
-      psum = psum + p;
-      #pragma acc atomic
-      p2sum = p2sum + p2;
-      SCATTER;
-    }
-    if (restore_neutron) {
-      RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
-    }
+  PROP_Z0;
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
+    double p2 = p * p;
+    #pragma acc atomic
+    Nsum = Nsum + 1;
+    #pragma acc atomic
+    psum = psum + p;
+    #pragma acc atomic
+    p2sum = p2sum + p2;
+    SCATTER;
+  }
+  if (restore_neutron) {
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+  }
   %}
 
 SAVE
   %{
-    char title[1024];
-    sprintf(title, "Single monitor %s", NAME_CURRENT_COMP);
-    DETECTOR_OUT_0D(title, Nsum, psum, p2sum);
+  char title[1024];
+  sprintf (title, "Single monitor %s", NAME_CURRENT_COMP);
+  DETECTOR_OUT_0D (title, Nsum, psum, p2sum);
   %}
 
 MCDISPLAY
 %{
-  
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END

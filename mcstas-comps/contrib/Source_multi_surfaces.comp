@@ -94,33 +94,29 @@ Emin=0.0,Emax=0.0,Lmin=0.0,Lmax=0.0)
 SHARE
 %{
 
-%include "read_table-lib"
+  %include "read_table-lib"
 
-char *get_token(char **src, char *token_sep)
-{
-        char    *tok;
-        if (!src || !*src || !**src)
-                return(NULL);
-        while(**src && strchr(token_sep,**src))
-                (*src)++;
-        if (**src)
-                tok = *src;
-        else
-                return(NULL);
-        *src = strpbrk(*src,token_sep);
-        if (*src)
-        {
-                **src = 0;
-                (*src)++;
-                while(**src && strchr(token_sep,**src))
-                        (*src)++;
-        }
-        else
-                *src = "";
-        return(tok);
-}
-
-
+  char*
+  get_token (char** src, char* token_sep) {
+    char* tok;
+    if (!src || !*src || !**src)
+      return (NULL);
+    while (**src && strchr (token_sep, **src))
+      (*src)++;
+    if (**src)
+      tok = *src;
+    else
+      return (NULL);
+    *src = strpbrk (*src, token_sep);
+    if (*src) {
+      **src = 0;
+      (*src)++;
+      while (**src && strchr (token_sep, **src))
+        (*src)++;
+    } else
+      *src = "";
+    return (tok);
+  }
 %}
 
 DECLARE
@@ -132,230 +128,221 @@ DECLARE
 
 INITIALIZE
 %{
-  int n_surf=1,c_surf=1;                  	/*numbers of subsurfaces*/
-  int rows_surf;                          	/*number of Source_multi_surfaces.comp rows*/
-  int i, j, string_num,k;                 	/*filename_table indices*/
+  int n_surf = 1, c_surf = 1; /*numbers of subsurfaces*/
+  int rows_surf;              /*number of Source_multi_surfaces.comp rows*/
+  int i, j, string_num, k;    /*filename_table indices*/
 
-  char *token;
-  FILE *files_name;
+  char* token;
+  FILE* files_name;
   char fu[50];
-  struct filename_table{
-       int index1;
-       char spec_name[128];
-       char tmp_name[512];
-    };
-  struct filename_table values[50];       
+  struct filename_table {
+    int index1;
+    char spec_name[128];
+    char tmp_name[512];
+  };
+  struct filename_table values[50];
 
-  for (i=0;i<50;i++)
-  {
-    values[i].index1=i;
-    sprintf(values[i].spec_name,"empty"); 
-  }
-  
-  if ((yheight == 0) || (xwidth == 0))
-  {
-    fprintf(stderr,"Source_multi_surfaces: Error: Please precise source geometry (yheight, xwidth)\n");
-    exit(-1);
-  }
-  if (xw*yh == 0)   
-  {
-    fprintf(stderr,"Source_multi_surfaces: Error: Please precise source target (xw, yh)\n");
-    exit(-1);
-  }
-  if ((xdim >= 8) || (ydim >= 8))
-  {
-    fprintf(stderr,"Source_multi_surfaces: Error: Number of subdivision in x or y too big (>=8)\n");
-    exit(-1);
-  }
-  if (dist == 0)
-  {
-    fprintf(stderr,"Source_multi_surfaces: Error: dist = 0\n");
-    exit(-1);
-  }
-  if ((Emin < 0) || (Emax < 0))
-  {
-    fprintf(stderr,"Source_multi_surfaces: Error: Energy will reach negative values (Emin or Emax < 0)\n");
-    exit(-1);
-  }  
-  if ((Lmin < 0) || (Lmax < 0))
-  {
-    fprintf(stderr,"Source_multi_surfaces: Error: Wavelength will reach negative values (Lmin or Lmax < 0)\n");
-    exit(-1);
-  }
-  
-  if ((Emax != 0) && (Emin != 0))
-  {
-  Lmin=sqrt(81.82/Emax/1e3);             	/* wavelength in AA */
-  Lmax=sqrt(81.82/Emin/1e3);  
+  for (i = 0; i < 50; i++) {
+    values[i].index1 = i;
+    sprintf (values[i].spec_name, "empty");
   }
 
-  delta_lambda=Lmax-Lmin;
+  if ((yheight == 0) || (xwidth == 0)) {
+    fprintf (stderr, "Source_multi_surfaces: Error: Please precise source geometry (yheight, xwidth)\n");
+    exit (-1);
+  }
+  if (xw * yh == 0) {
+    fprintf (stderr, "Source_multi_surfaces: Error: Please precise source target (xw, yh)\n");
+    exit (-1);
+  }
+  if ((xdim >= 8) || (ydim >= 8)) {
+    fprintf (stderr, "Source_multi_surfaces: Error: Number of subdivision in x or y too big (>=8)\n");
+    exit (-1);
+  }
+  if (dist == 0) {
+    fprintf (stderr, "Source_multi_surfaces: Error: dist = 0\n");
+    exit (-1);
+  }
+  if ((Emin < 0) || (Emax < 0)) {
+    fprintf (stderr, "Source_multi_surfaces: Error: Energy will reach negative values (Emin or Emax < 0)\n");
+    exit (-1);
+  }
+  if ((Lmin < 0) || (Lmax < 0)) {
+    fprintf (stderr, "Source_multi_surfaces: Error: Wavelength will reach negative values (Lmin or Lmax < 0)\n");
+    exit (-1);
+  }
 
-  n_surf = xdim*ydim;
-  
-  /*read files_name.dat, generate a table with the files filename*/  
+  if ((Emax != 0) && (Emin != 0)) {
+    Lmin = sqrt (81.82 / Emax / 1e3); /* wavelength in AA */
+    Lmax = sqrt (81.82 / Emin / 1e3);
+  }
 
-  files_name = fopen(filename, "r");
+  delta_lambda = Lmax - Lmin;
 
-  i=0;
-  rows_surf=0;  
-  while(1) 
-  {
-    if (feof(files_name)) break;
-    fgets(values[i].tmp_name,512,files_name);
-    i=i+1;
-    rows_surf=i;
-  }                                            /*we do not consider the number of line*/
-  
-  j=0;i=0;k=0;
-  for (j=0;j<rows_surf;j++)
-  {
-     token =strtok(values[j].tmp_name," ");   
-     if (j>0) i=i+(7-xdim);
-     sprintf(values[i].spec_name,"%s\n",token); 
-     i=i+1;     
-     k=k+1;
-     while (token = strtok(0," "))
-     {
-        sprintf(values[i].spec_name,"%s\n",token);
-        i=i+1;
-        k=k+1;
-        c_surf=k;
-     }
-   } 
-  sprintf(values[i-1].spec_name,"%s","empty"); 
-  fclose(files_name);
-  rows_surf=rows_surf-1;
-  
-  if (n_surf!=c_surf)
-  {
-    fprintf(stderr,"Source_multi_surfaces: Error: Number of subdivision (xdim*ydim) and number of input file not equal (files_name.dat)\n");
-    exit(-1);
-  }  
-  
+  n_surf = xdim * ydim;
+
+  /*read files_name.dat, generate a table with the files filename*/
+
+  files_name = fopen (filename, "r");
+
+  i = 0;
+  rows_surf = 0;
+  while (1) {
+    if (feof (files_name))
+      break;
+    fgets (values[i].tmp_name, 512, files_name);
+    i = i + 1;
+    rows_surf = i;
+  } /*we do not consider the number of line*/
+
+  j = 0;
+  i = 0;
+  k = 0;
+  for (j = 0; j < rows_surf; j++) {
+    token = strtok (values[j].tmp_name, " ");
+    if (j > 0)
+      i = i + (7 - xdim);
+    sprintf (values[i].spec_name, "%s\n", token);
+    i = i + 1;
+    k = k + 1;
+    while (token = strtok (0, " ")) {
+      sprintf (values[i].spec_name, "%s\n", token);
+      i = i + 1;
+      k = k + 1;
+      c_surf = k;
+    }
+  }
+  sprintf (values[i - 1].spec_name, "%s", "empty");
+  fclose (files_name);
+  rows_surf = rows_surf - 1;
+
+  if (n_surf != c_surf) {
+    fprintf (stderr, "Source_multi_surfaces: Error: Number of subdivision (xdim*ydim) and number of input file not equal (files_name.dat)\n");
+    exit (-1);
+  }
+
   /*read each input file and fill in 49 arrays*/
-  
-  for (i=0;i<7;i++)
-  {
-    for (j=0;j<7;j++)
-    {
-      k=i*7+j;
-      if (strcmp(values[k].spec_name,"empty"))
-      {
-        switch(j)
-		{
-			case 0 :
-				if (xdim > 1) {
-        				string_num=strlen(values[k].spec_name)-1; 
-     				} else {
-       				string_num=strlen(values[k].spec_name)-2; 
-     				}  
-				break;
-			case 6 :
-				if (xdim==7) {     
-       				string_num=strlen(values[k].spec_name)-2; 
-    				}
-				break;
-			default :
-				if (xdim==j+1) {     
-           				string_num=strlen(values[k].spec_name)-2; 
-        			} else {
-           				string_num=strlen(values[k].spec_name)-1;
-        			}
-		}
-        strncpy(fu,values[k].spec_name ,string_num);
-        fu[string_num] = '\0'; 
-        Table_Read(&Tables[k], fu, 0); 
-        if (Lmax > Table_Index(Tables[k],0,0))  {
-          fprintf(stderr,"Source_multi_surfaces: Error: Lmax or Emin not present in %s",values[k].spec_name);
-          fprintf(stderr,"Source_multi_surfaces: Choosen Lmax or Emin is %2.8f larger as the given Lmax-value in the file %s . \n",(Lmax-Table_Index(Tables[k],(Tables[k].rows-1),0)),values[k].spec_name);
-          exit(-1);
-        }       
-        if (Lmin < Table_Index(Tables[k],(Tables[k].rows-1),0))  {
-          fprintf(stderr,"Source_multi_surfaces: Error: Lmin or Emax not present in %s",values[k].spec_name);
-          fprintf(stderr,"Source_multi_surfaces: Choosen Lmin or Emax is %2.8f smaller as the given Lmin-value in the file %s . \n",(Table_Index(Tables[k],0,0)-Lmin),values[k].spec_name);
-          exit(-1);               
-        } 
-      } 
+
+  for (i = 0; i < 7; i++) {
+    for (j = 0; j < 7; j++) {
+      k = i * 7 + j;
+      if (strcmp (values[k].spec_name, "empty")) {
+        switch (j) {
+        case 0:
+          if (xdim > 1) {
+            string_num = strlen (values[k].spec_name) - 1;
+          } else {
+            string_num = strlen (values[k].spec_name) - 2;
+          }
+          break;
+        case 6:
+          if (xdim == 7) {
+            string_num = strlen (values[k].spec_name) - 2;
+          }
+          break;
+        default:
+          if (xdim == j + 1) {
+            string_num = strlen (values[k].spec_name) - 2;
+          } else {
+            string_num = strlen (values[k].spec_name) - 1;
+          }
+        }
+        strncpy (fu, values[k].spec_name, string_num);
+        fu[string_num] = '\0';
+        Table_Read (&Tables[k], fu, 0);
+        if (Lmax > Table_Index (Tables[k], 0, 0)) {
+          fprintf (stderr, "Source_multi_surfaces: Error: Lmax or Emin not present in %s", values[k].spec_name);
+          fprintf (stderr, "Source_multi_surfaces: Choosen Lmax or Emin is %2.8f larger as the given Lmax-value in the file %s . \n",
+                   (Lmax - Table_Index (Tables[k], (Tables[k].rows - 1), 0)), values[k].spec_name);
+          exit (-1);
+        }
+        if (Lmin < Table_Index (Tables[k], (Tables[k].rows - 1), 0)) {
+          fprintf (stderr, "Source_multi_surfaces: Error: Lmin or Emax not present in %s", values[k].spec_name);
+          fprintf (stderr, "Source_multi_surfaces: Choosen Lmin or Emax is %2.8f smaller as the given Lmin-value in the file %s . \n",
+                   (Table_Index (Tables[k], 0, 0) - Lmin), values[k].spec_name);
+          exit (-1);
+        }
+      }
     }
   }
 
-  xwidth=fabs(xwidth); yheight=fabs(yheight);
-  xw = fabs(xw); yh=fabs(yh); dist=fabs(dist);
+  xwidth = fabs (xwidth);
+  yheight = fabs (yheight);
+  xw = fabs (xw);
+  yh = fabs (yh);
+  dist = fabs (dist);
 
   /*generate p_in*/
-  p_in = 1.0/mcget_ncount();
-  
+  p_in = 1.0 / mcget_ncount ();
 %}
 TRACE
 %{
-  double theta0,phi0,theta1,phi1,theta,phi;
-  double v,xpos,ypos;
-  double intensity,lambda;
-  double a,tan_v,tan_yheight;
-  int i,j,k;
+  double theta0, phi0, theta1, phi1, theta, phi;
+  double v, xpos, ypos;
+  double intensity, lambda;
+  double a, tan_v, tan_yheight;
+  int i, j, k;
 
-    z = 0;
-    x = xwidth*randpm1()*0.5;         		   /*select point on the source (uniform)*/
-    y = yheight*randpm1()*0.5;
-   
-    xpos = (x/xwidth+0.5)*xdim;       		   /*select the corresponding subsurface*/
-    ypos = (y/yheight+0.5)*ydim;
-    
-    /* printf("xpos %f, ypos %f \n", xpos, ypos);  */
-    
-    theta0= -atan((x-xw/2.0)/dist);                /*Angles to aim at target*/
-    phi0  = -atan((y-yh/2.0)/dist);
-    theta1= -atan((x+xw/2.0)/dist);
-    phi1  = -atan((y+yh/2.0)/dist);
-    
-    theta= theta0+(theta1- theta0)*rand01();       /*shot towards target*/
-    phi  = phi0  +(phi1  - phi0)  *rand01();     
-    
-    lambda=Lmin+delta_lambda*rand01();		   /*select the lambda randomly*/
+  z = 0;
+  x = xwidth * randpm1 () * 0.5; /*select point on the source (uniform)*/
+  y = yheight * randpm1 () * 0.5;
 
-    intensity=0; a=0;
+  xpos = (x / xwidth + 0.5) * xdim; /*select the corresponding subsurface*/
+  ypos = (y / yheight + 0.5) * ydim;
 
-    /*select the correct neutron in the correct table and give its intensity*/
+  /* printf("xpos %f, ypos %f \n", xpos, ypos);  */
 
-    /*assume a linear distribution between the values given in the files*/
+  theta0 = -atan ((x - xw / 2.0) / dist); /*Angles to aim at target*/
+  phi0 = -atan ((y - yh / 2.0) / dist);
+  theta1 = -atan ((x + xw / 2.0) / dist);
+  phi1 = -atan ((y + yh / 2.0) / dist);
 
-    k = floor(ypos)*7+floor(xpos);
+  theta = theta0 + (theta1 - theta0) * rand01 (); /*shot towards target*/
+  phi = phi0 + (phi1 - phi0) * rand01 ();
 
-    for (i=0;i<(Tables[k].rows+1);i++)
-      {
-        if ((lambda <= Table_Index(Tables[k],i,0)) && (lambda > Table_Index(Tables[k],i+1,0))) 
-        {        
-          a=(Table_Index(Tables[k],i+1,1)-Table_Index(Tables[k],i,1))/(Table_Index(Tables[k],i+1,0)-Table_Index(Tables[k],i,0));
-          intensity=a*lambda+(Table_Index(Tables[k],i,1)-a*Table_Index(Tables[k],i,0));
-        }
-      }
-    
-    /*calculate the speed*/
-    
-    v = K2V*(2*PI/lambda);
+  lambda = Lmin + delta_lambda * rand01 (); /*select the lambda randomly*/
 
-    /*calculate the p-value*/
-    
-    p = p*intensity*p_in*fabs((theta1 - theta0)*(phi1 - phi0));
-    
-    tan_yheight = tan(theta);
-    tan_v = tan(phi);
-    vz = v / sqrt(1 + tan_v*tan_v + tan_yheight*tan_yheight);
-    vy = tan_v * vz;
-    vx = tan_yheight * vz;    
-    
-    SCATTER;      
+  intensity = 0;
+  a = 0;
 
-    /*printf("intensity: %f lambda: %f \n", intensity, lambda);*/
+  /*select the correct neutron in the correct table and give its intensity*/
+
+  /*assume a linear distribution between the values given in the files*/
+
+  k = floor (ypos) * 7 + floor (xpos);
+
+  for (i = 0; i < (Tables[k].rows + 1); i++) {
+    if ((lambda <= Table_Index (Tables[k], i, 0)) && (lambda > Table_Index (Tables[k], i + 1, 0))) {
+      a = (Table_Index (Tables[k], i + 1, 1) - Table_Index (Tables[k], i, 1)) / (Table_Index (Tables[k], i + 1, 0) - Table_Index (Tables[k], i, 0));
+      intensity = a * lambda + (Table_Index (Tables[k], i, 1) - a * Table_Index (Tables[k], i, 0));
+    }
+  }
+
+  /*calculate the speed*/
+
+  v = K2V * (2 * PI / lambda);
+
+  /*calculate the p-value*/
+
+  p = p * intensity * p_in * fabs ((theta1 - theta0) * (phi1 - phi0));
+
+  tan_yheight = tan (theta);
+  tan_v = tan (phi);
+  vz = v / sqrt (1 + tan_v * tan_v + tan_yheight * tan_yheight);
+  vy = tan_v * vz;
+  vx = tan_yheight * vz;
+
+  SCATTER;
+
+  /*printf("intensity: %f lambda: %f \n", intensity, lambda);*/
 %}
 FINALLY
 %{
   int i;
-  for (i=0;i<49;i++)
-    Table_Free(&Tables[i]);
-    
-  fprintf(stderr,"Source_multi_surfaces: Memory cleared\n");
+  for (i = 0; i < 49; i++)
+    Table_Free (&Tables[i]);
+
+  fprintf (stderr, "Source_multi_surfaces: Memory cleared\n");
 %}
 MCDISPLAY
 %{
@@ -365,27 +352,24 @@ MCDISPLAY
   double ymax;
   double xline;
   double yline;
-  
-  xmin = -xwidth/2; xmax = xwidth/2;
-  ymin = -yheight/2; ymax = yheight/2;
 
-  
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-        	   (double)xmax, (double)ymin, 0.0,
-        	   (double)xmax, (double)ymax, 0.0,
-        	   (double)xmin, (double)ymax, 0.0,
-        	   (double)xmin, (double)ymin, 0.0);
-        	   
+  xmin = -xwidth / 2;
+  xmax = xwidth / 2;
+  ymin = -yheight / 2;
+  ymax = yheight / 2;
+
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
+
   /*the grid*/
-  
-  for (xline=(xwidth/xdim)-(xwidth/2); xline < xwidth/2; xline=xline+(xwidth/xdim)) {
-      line((double)xline, (double)ymin, 0.0, (double)xline, (double)ymax, 0.0);
-      }
-      
-  for (yline=(yheight/ydim)-(yheight/2); yline < yheight/2; yline=yline+(yheight/ydim)) {
-      line((double)xmin, (double)yline, 0.0, (double)xmax, (double)yline, 0.0);
-      }
 
+  for (xline = (xwidth / xdim) - (xwidth / 2); xline < xwidth / 2; xline = xline + (xwidth / xdim)) {
+    line ((double)xline, (double)ymin, 0.0, (double)xline, (double)ymax, 0.0);
+  }
+
+  for (yline = (yheight / ydim) - (yheight / 2); yline < yheight / 2; yline = yline + (yheight / ydim)) {
+    line ((double)xmin, (double)yline, 0.0, (double)xmax, (double)yline, 0.0);
+  }
 %}
 
 END

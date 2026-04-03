@@ -57,7 +57,7 @@ TRACE %{
 
 MCDISPLAY
 %{
-    mcdis_cone(0,0,0,radius,yheight, 0,1,0);
+  mcdis_cone (0, 0, 0, radius, yheight, 0, 1, 0);
 %}
 
 END

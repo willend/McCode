@@ -65,22 +65,22 @@ NOACC
 /*X-ray Parameters (x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p)*/
 SHARE
 %{
-#include <gsl/gsl_sf_bessel.h>
+  #include <gsl/gsl_sf_bessel.h>
 
   /* Functions used for compution the intensity from a given liposome */
-  double NDTFormfactorCylinder(double q, double MajorSemiAxis, double MinorSemiAxis, double Height, double Alpha, double Beta)
-  {
-    double ProjectedRadius = sqrt(pow(MajorSemiAxis * sin(Beta), 2) + pow(MinorSemiAxis * cos(Beta), 2));
+  double
+  NDTFormfactorCylinder (double q, double MajorSemiAxis, double MinorSemiAxis, double Height, double Alpha, double Beta) {
+    double ProjectedRadius = sqrt (pow (MajorSemiAxis * sin (Beta), 2) + pow (MinorSemiAxis * cos (Beta), 2));
 
-    double Formfactor1 = gsl_sf_bessel_J1(q * ProjectedRadius * sin(Alpha)) / (q * ProjectedRadius * sin(Alpha));
-    double Formfactor2 = sin(q * Height * cos(Alpha) / 2.0) / (q * Height * cos(Alpha) / 2.0);
+    double Formfactor1 = gsl_sf_bessel_J1 (q * ProjectedRadius * sin (Alpha)) / (q * ProjectedRadius * sin (Alpha));
+    double Formfactor2 = sin (q * Height * cos (Alpha) / 2.0) / (q * Height * cos (Alpha) / 2.0);
 
     return 2 * Formfactor1 * Formfactor2;
   }
 
   // Functions used to compute the characteristics of the histidine tags
-  double NDTDebye(double q, double r)
-  {
+  double
+  NDTDebye (double q, double r) {
     // Variables needed in functions
     double ReturnValue;
 
@@ -90,41 +90,40 @@ SHARE
 
     // Computation
     Dummy1 = (q * q) * (r * r);
-    Dummy2 = 2 * ((exp(-Dummy1) + Dummy1 - 1) / (Dummy1 * Dummy1));
+    Dummy2 = 2 * ((exp (-Dummy1) + Dummy1 - 1) / (Dummy1 * Dummy1));
 
     ReturnValue = Dummy2;
 
     return ReturnValue;
   }
 
-
-  double NDTXiRodWithoutEndcaps(double q, double r, double l, double Alpha)
-  {
+  double
+  NDTXiRodWithoutEndcaps (double q, double r, double l, double Alpha) {
     // Variables needed in function
     double ReturnValue;
 
     // Computation
-    ReturnValue = gsl_sf_bessel_J0(q * r * sin(Alpha)) * sin(q * l * cos(Alpha) / 2.f) / (q * l * cos(Alpha) / 2.f);
+    ReturnValue = gsl_sf_bessel_J0 (q * r * sin (Alpha)) * sin (q * l * cos (Alpha) / 2.f) / (q * l * cos (Alpha) / 2.f);
 
     return ReturnValue;
   }
 
-  double NDTPsiHammouda(double x)
-  {
+  double
+  NDTPsiHammouda (double x) {
     // Variables used in function
     double ReturnValue;
 
     // Computation
-    ReturnValue = (1.0 - exp(-pow(x, 2))) / pow(x, 2);
+    ReturnValue = (1.0 - exp (-pow (x, 2))) / pow (x, 2);
 
     return ReturnValue;
   }
 
   /* Computation of the intensity from a given nanodisc */
-  double NDT_IntensityOfEmptyNanodiscsWithTags(double q, double MajorSemiAxis, double MinorSemiAxis, double ThicknessOfBelt,
-					       double HeightOfBelt, double HeightOfLipids, double HeightOfTails, double HeightOfCH3, double RadiusOfGyrationForHisTag, double VolumeOfOneHisTag,
-					       double DeltaRhoBelt, double DeltaRhoHead, double DeltaRhoCH2Tail, double DeltaRhoCH3Tail, double DeltaRhoTag)
-  {
+  double
+  NDT_IntensityOfEmptyNanodiscsWithTags (double q, double MajorSemiAxis, double MinorSemiAxis, double ThicknessOfBelt, double HeightOfBelt, double HeightOfLipids,
+                                         double HeightOfTails, double HeightOfCH3, double RadiusOfGyrationForHisTag, double VolumeOfOneHisTag,
+                                         double DeltaRhoBelt, double DeltaRhoHead, double DeltaRhoCH2Tail, double DeltaRhoCH3Tail, double DeltaRhoTag) {
     double Intensity;
     double IntensityPart;
     double IntensityDisc;
@@ -141,11 +140,11 @@ SHARE
 
     double OuterMajorSemiAxis = MajorSemiAxis + ThicknessOfBelt;
     double OuterMinorSemiAxis = MinorSemiAxis + ThicknessOfBelt;
-    double AverageRadiusOfBelt = sqrt(pow(OuterMajorSemiAxis, 2) + pow(OuterMinorSemiAxis, 2));
+    double AverageRadiusOfBelt = sqrt (pow (OuterMajorSemiAxis, 2) + pow (OuterMinorSemiAxis, 2));
 
-    double VolumeOfBelt    = PI * HeightOfBelt * OuterMajorSemiAxis * OuterMinorSemiAxis - PI * HeightOfBelt * MajorSemiAxis * MinorSemiAxis;
-    double VolumeOfHeads   = PI * HeightOfLipids * MajorSemiAxis * MinorSemiAxis         - PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis;
-    double VolumeOfCH2Tail = PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis          - PI * HeightOfCH3 * MajorSemiAxis * MinorSemiAxis;
+    double VolumeOfBelt = PI * HeightOfBelt * OuterMajorSemiAxis * OuterMinorSemiAxis - PI * HeightOfBelt * MajorSemiAxis * MinorSemiAxis;
+    double VolumeOfHeads = PI * HeightOfLipids * MajorSemiAxis * MinorSemiAxis - PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis;
+    double VolumeOfCH2Tail = PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis - PI * HeightOfCH3 * MajorSemiAxis * MinorSemiAxis;
     double VolumeOfCH3Tail = PI * HeightOfCH3 * MajorSemiAxis * MinorSemiAxis;
 
     double Autocorrelation;
@@ -176,46 +175,50 @@ SHARE
       Alpha = (i + 0.5) * AlphaStep;
 
       for (j = 0; j < NumberOfStepsInBeta; ++j) {
-	Beta = (j + 0.5) * BetaStep;
+        Beta = (j + 0.5) * BetaStep;
 
-	// Compute formfactors
-	FormfactorOfBelt = (PI * HeightOfBelt * OuterMajorSemiAxis * OuterMinorSemiAxis * NDTFormfactorCylinder(q, OuterMajorSemiAxis, OuterMinorSemiAxis, HeightOfBelt, Alpha, Beta) -
-			    PI * HeightOfBelt * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder(q, MajorSemiAxis, MinorSemiAxis, HeightOfBelt, Alpha, Beta)) /
-	  (PI * HeightOfBelt * OuterMajorSemiAxis * OuterMinorSemiAxis - PI * HeightOfBelt * MajorSemiAxis * MinorSemiAxis);
+        // Compute formfactors
+        FormfactorOfBelt
+            = (PI * HeightOfBelt * OuterMajorSemiAxis * OuterMinorSemiAxis
+                   * NDTFormfactorCylinder (q, OuterMajorSemiAxis, OuterMinorSemiAxis, HeightOfBelt, Alpha, Beta)
+               - PI * HeightOfBelt * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder (q, MajorSemiAxis, MinorSemiAxis, HeightOfBelt, Alpha, Beta))
+              / (PI * HeightOfBelt * OuterMajorSemiAxis * OuterMinorSemiAxis - PI * HeightOfBelt * MajorSemiAxis * MinorSemiAxis);
 
-	FormfactorOfHeads = (PI * HeightOfLipids * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder(q, MajorSemiAxis, MinorSemiAxis, HeightOfLipids, Alpha, Beta) -
-			     PI * HeightOfTails  * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder(q, MajorSemiAxis, MinorSemiAxis, HeightOfTails , Alpha, Beta)) /
-	  (PI * HeightOfLipids * MajorSemiAxis * MinorSemiAxis - PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis);
+        FormfactorOfHeads
+            = (PI * HeightOfLipids * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder (q, MajorSemiAxis, MinorSemiAxis, HeightOfLipids, Alpha, Beta)
+               - PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder (q, MajorSemiAxis, MinorSemiAxis, HeightOfTails, Alpha, Beta))
+              / (PI * HeightOfLipids * MajorSemiAxis * MinorSemiAxis - PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis);
 
-	FormfactorOfCH2Tail = (PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder(q, MajorSemiAxis, MinorSemiAxis, HeightOfTails, Alpha, Beta) -
-			       PI * HeightOfCH3   * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder(q, MajorSemiAxis, MinorSemiAxis, HeightOfCH3  , Alpha, Beta)) /
-	  (PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis - PI * HeightOfCH3 * MajorSemiAxis * MinorSemiAxis);
+        FormfactorOfCH2Tail
+            = (PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder (q, MajorSemiAxis, MinorSemiAxis, HeightOfTails, Alpha, Beta)
+               - PI * HeightOfCH3 * MajorSemiAxis * MinorSemiAxis * NDTFormfactorCylinder (q, MajorSemiAxis, MinorSemiAxis, HeightOfCH3, Alpha, Beta))
+              / (PI * HeightOfTails * MajorSemiAxis * MinorSemiAxis - PI * HeightOfCH3 * MajorSemiAxis * MinorSemiAxis);
 
-	FormfactorOfCH3Tail = NDTFormfactorCylinder(q, MajorSemiAxis, MinorSemiAxis, HeightOfCH3, Alpha, Beta);
+        FormfactorOfCH3Tail = NDTFormfactorCylinder (q, MajorSemiAxis, MinorSemiAxis, HeightOfCH3, Alpha, Beta);
 
-	// Compute amplitudes
-	AmplitudeOfBelt    = DeltaRhoBelt * VolumeOfBelt * FormfactorOfBelt;
-	AmplitudeOfHeads   = DeltaRhoHead * VolumeOfHeads * FormfactorOfHeads;
-	AmplitudeOfCH2Tail = DeltaRhoCH2Tail * VolumeOfCH2Tail * FormfactorOfCH2Tail;
-	AmplitudeOfCH3Tail = DeltaRhoCH3Tail * VolumeOfCH3Tail * FormfactorOfCH3Tail;
+        // Compute amplitudes
+        AmplitudeOfBelt = DeltaRhoBelt * VolumeOfBelt * FormfactorOfBelt;
+        AmplitudeOfHeads = DeltaRhoHead * VolumeOfHeads * FormfactorOfHeads;
+        AmplitudeOfCH2Tail = DeltaRhoCH2Tail * VolumeOfCH2Tail * FormfactorOfCH2Tail;
+        AmplitudeOfCH3Tail = DeltaRhoCH3Tail * VolumeOfCH3Tail * FormfactorOfCH3Tail;
 
-	// Perform integration
-	IntensityDisc = pow(AmplitudeOfBelt + AmplitudeOfHeads + AmplitudeOfCH2Tail + AmplitudeOfCH3Tail, 2);
+        // Perform integration
+        IntensityDisc = pow (AmplitudeOfBelt + AmplitudeOfHeads + AmplitudeOfCH2Tail + AmplitudeOfCH3Tail, 2);
 
-	// Add the histidine tags
-	FormfactorOfTags = NDTXiRodWithoutEndcaps(q, AverageRadiusOfBelt + RadiusOfGyrationForHisTag, HeightOfBelt, Alpha);
+        // Add the histidine tags
+        FormfactorOfTags = NDTXiRodWithoutEndcaps (q, AverageRadiusOfBelt + RadiusOfGyrationForHisTag, HeightOfBelt, Alpha);
 
-	Crosscorrelation = 2.0 * pow(DeltaRhoTag * VolumeOfOneHisTag, 2) * pow(FormfactorOfTags, 2) * pow(NDTPsiHammouda(q * RadiusOfGyrationForHisTag), 2);
+        Crosscorrelation = 2.0 * pow (DeltaRhoTag * VolumeOfOneHisTag, 2) * pow (FormfactorOfTags, 2) * pow (NDTPsiHammouda (q * RadiusOfGyrationForHisTag), 2);
 
-	Autocorrelation  = 2.0 * pow(DeltaRhoTag * VolumeOfOneHisTag, 2) * NDTDebye(q, RadiusOfGyrationForHisTag);
+        Autocorrelation = 2.0 * pow (DeltaRhoTag * VolumeOfOneHisTag, 2) * NDTDebye (q, RadiusOfGyrationForHisTag);
 
-	Disccorrelation  = 4.0 * (AmplitudeOfBelt + AmplitudeOfHeads + AmplitudeOfCH2Tail + AmplitudeOfCH3Tail) *
-	  DeltaRhoTag * VolumeOfOneHisTag * FormfactorOfTags * NDTPsiHammouda(q * RadiusOfGyrationForHisTag);
+        Disccorrelation = 4.0 * (AmplitudeOfBelt + AmplitudeOfHeads + AmplitudeOfCH2Tail + AmplitudeOfCH3Tail) * DeltaRhoTag * VolumeOfOneHisTag
+                          * FormfactorOfTags * NDTPsiHammouda (q * RadiusOfGyrationForHisTag);
 
-	IntensityPart = IntensityDisc + Crosscorrelation + Autocorrelation + Disccorrelation;
+        IntensityPart = IntensityDisc + Crosscorrelation + Autocorrelation + Disccorrelation;
 
-	// Return the final intensity
-	Intensity += 2 / PI * sin(Alpha) * IntensityPart * AlphaStep * BetaStep;
+        // Return the final intensity
+        Intensity += 2 / PI * sin (Alpha) * IntensityPart * AlphaStep * BetaStep;
       }
     }
 
@@ -225,149 +228,151 @@ SHARE
 
 DECLARE
 %{
-	// Declarations
-	double RhoWater;
-	double RhoBelt;
-	double RhoHead;
-	double RhoCH2Tail;
-	double RhoCH3Tail;
-	double RhoTag;
+  // Declarations
+  double RhoWater;
+  double RhoBelt;
+  double RhoHead;
+  double RhoCH2Tail;
+  double RhoCH3Tail;
+  double RhoTag;
 
-	double DeltaRhoHead;
-	double DeltaRhoBelt;
-	double DeltaRhoCH2Tail;
-	double DeltaRhoCH3Tail;
-	double DeltaRhoTag;
+  double DeltaRhoHead;
+  double DeltaRhoBelt;
+  double DeltaRhoCH2Tail;
+  double DeltaRhoCH3Tail;
+  double DeltaRhoTag;
 
-	double MajorSemiAxis;
-	double MinorSemiAxis;
-	double ThicknessOfBelt;
+  double MajorSemiAxis;
+  double MinorSemiAxis;
+  double ThicknessOfBelt;
 
-	double HeightOfBelt;
-	double HeightOfLipids;
-	double HeightOfTails;
-	double HeightOfCH3;
+  double HeightOfBelt;
+  double HeightOfLipids;
+  double HeightOfTails;
+  double HeightOfCH3;
 
-	double NumberDensity;
-	double Absorption;
+  double NumberDensity;
+  double Absorption;
 %}
 
 INITIALIZE
 %{
-	const double ScatteringLengthOfWater = 2.82E-12;
-	const double VolumeOfWater = 30.0;
+  const double ScatteringLengthOfWater = 2.82E-12;
+  const double VolumeOfWater = 30.0;
 
-	// Rescale concentration into number of aggregates per m^3 times 10^-4
-	NumberDensity = Concentration * 6.02214129e19;
+  // Rescale concentration into number of aggregates per m^3 times 10^-4
+  NumberDensity = Concentration * 6.02214129e19;
 
-	// Computations
-	if (!xwidth || !yheight || !zdepth) {
-		printf("%s: Sample has no volume, check parameters!\n", NAME_CURRENT_COMP);
-	}
+  // Computations
+  if (!xwidth || !yheight || !zdepth) {
+    printf ("%s: Sample has no volume, check parameters!\n", NAME_CURRENT_COMP);
+  }
 
-	Absorption = AbsorptionCrosssection;
+  Absorption = AbsorptionCrosssection;
 
-	// Scattering properties of different components
-	RhoWater   = ScatteringLengthOfWater     / VolumeOfWater;
-	RhoBelt    = ScatteringLengthOfOneMSP    / VolumeOfOneMSP;
-	RhoHead    = ScatteringLengthOfHeadgroup / VolumeOfHeadgroup;
-	RhoCH2Tail = ScatteringLengthOfCH2Tail   / VolumeOfCH2Tail;
-	RhoCH3Tail = ScatteringLengthOfCH3Tail   / VolumeOfCH3Tail;
-	RhoTag     = ScatteringLengthOfOneHisTag / VolumeOfOneHisTag;
+  // Scattering properties of different components
+  RhoWater = ScatteringLengthOfWater / VolumeOfWater;
+  RhoBelt = ScatteringLengthOfOneMSP / VolumeOfOneMSP;
+  RhoHead = ScatteringLengthOfHeadgroup / VolumeOfHeadgroup;
+  RhoCH2Tail = ScatteringLengthOfCH2Tail / VolumeOfCH2Tail;
+  RhoCH3Tail = ScatteringLengthOfCH3Tail / VolumeOfCH3Tail;
+  RhoTag = ScatteringLengthOfOneHisTag / VolumeOfOneHisTag;
 
-	DeltaRhoBelt	= RhoBelt    - RhoWater;
-	DeltaRhoHead    = RhoHead    - RhoWater;
-	DeltaRhoCH2Tail = RhoCH2Tail - RhoWater;
-	DeltaRhoCH3Tail = RhoCH3Tail - RhoWater;
-	DeltaRhoTag     = RhoTag     - RhoWater;
+  DeltaRhoBelt = RhoBelt - RhoWater;
+  DeltaRhoHead = RhoHead - RhoWater;
+  DeltaRhoCH2Tail = RhoCH2Tail - RhoWater;
+  DeltaRhoCH3Tail = RhoCH3Tail - RhoWater;
+  DeltaRhoTag = RhoTag - RhoWater;
 
-	// Geometric properties of different components
-	const double AreaOfLipids = NumberOfLipids * AreaPerLipidHeadgroup / 2.0;
+  // Geometric properties of different components
+  const double AreaOfLipids = NumberOfLipids * AreaPerLipidHeadgroup / 2.0;
 
-	MinorSemiAxis = sqrt(AreaOfLipids / (PI * AxisRatio));
-	MajorSemiAxis = MinorSemiAxis * AxisRatio;
+  MinorSemiAxis = sqrt (AreaOfLipids / (PI * AxisRatio));
+  MajorSemiAxis = MinorSemiAxis * AxisRatio;
 
-	HeightOfLipids = 2.0 * (VolumeOfHeadgroup + VolumeOfCH2Tail + VolumeOfCH3Tail) / AreaPerLipidHeadgroup;
-	HeightOfTails  = 2.0 * (VolumeOfCH2Tail + VolumeOfCH3Tail) / AreaPerLipidHeadgroup;
-	HeightOfCH3    = 2.0 * VolumeOfCH3Tail / AreaPerLipidHeadgroup;
+  HeightOfLipids = 2.0 * (VolumeOfHeadgroup + VolumeOfCH2Tail + VolumeOfCH3Tail) / AreaPerLipidHeadgroup;
+  HeightOfTails = 2.0 * (VolumeOfCH2Tail + VolumeOfCH3Tail) / AreaPerLipidHeadgroup;
+  HeightOfCH3 = 2.0 * VolumeOfCH3Tail / AreaPerLipidHeadgroup;
 
-	ThicknessOfBelt = sqrt(pow(MinorSemiAxis + MajorSemiAxis, 2) / 4.0 + 2.0 * VolumeOfOneMSP / (PI * HeightOfMSP)) - (MajorSemiAxis + MinorSemiAxis) / 2.0;
+  ThicknessOfBelt = sqrt (pow (MinorSemiAxis + MajorSemiAxis, 2) / 4.0 + 2.0 * VolumeOfOneMSP / (PI * HeightOfMSP)) - (MajorSemiAxis + MinorSemiAxis) / 2.0;
 %}
 
 TRACE
 %{
-	// Declarations	
-	double l0; 
-	double l1; 
-	double l_full;
-	double l;
-	double l_1;
-	double Intensity;
-	double Weight;
-	double IntensityPart;
-	double SolidAngle;
-	double q;
-        double qx;
-	double qy;
-	double qz;
-	double k;
-	double dl;
-	double kx_i;
-	double ky_i;
-	double kz_i;
-	char Intersect = 0;
+  // Declarations
+  double l0;
+  double l1;
+  double l_full;
+  double l;
+  double l_1;
+  double Intensity;
+  double Weight;
+  double IntensityPart;
+  double SolidAngle;
+  double q;
+  double qx;
+  double qy;
+  double qz;
+  double k;
+  double dl;
+  double kx_i;
+  double ky_i;
+  double kz_i;
+  char Intersect = 0;
 
-	// Computation
-	Intersect = box_intersect(&l0, &l1, x, y, z, kx, ky, kz, xwidth, yheight, zdepth);
+  // Computation
+  Intersect = box_intersect (&l0, &l1, x, y, z, kx, ky, kz, xwidth, yheight, zdepth);
 
-	if (Intersect) {
+  if (Intersect) {
 
-		if (l0 < 0.0) {
-			fprintf(stderr, "Photon already inside sample %s - absorbing...\n", NAME_CURRENT_COMP);
-			ABSORB;
-                }
+    if (l0 < 0.0) {
+      fprintf (stderr, "Photon already inside sample %s - absorbing...\n", NAME_CURRENT_COMP);
+      ABSORB;
+    }
 
-		/* Compute properties of photon */
-		k = sqrt(pow(kx, 2) + pow(ky, 2) + pow(kz, 2));
-		l_full = l1 - l0;
-		dl = rand01() * (l1 - l0) + l0; 
-		PROP_DL(dl);                  
-		l = dl - l0;
+    /* Compute properties of photon */
+    k = sqrt (pow (kx, 2) + pow (ky, 2) + pow (kz, 2));
+    l_full = l1 - l0;
+    dl = rand01 () * (l1 - l0) + l0;
+    PROP_DL (dl);
+    l = dl - l0;
 
-		// Store properties of incoming photon
-		kx_i = kx;
-		ky_i = ky;
-		kz_i = kz;
+    // Store properties of incoming photon
+    kx_i = kx;
+    ky_i = ky;
+    kz_i = kz;
 
-		// Generate new direction of photon
-		randvec_target_circle(&kx, &ky, &kz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
+    // Generate new direction of photon
+    randvec_target_circle (&kx, &ky, &kz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
 
-		NORM(kx, ky, kz);
+    NORM (kx, ky, kz);
 
-		kx *= k;
-		ky *= k;
-		kz *= k;
+    kx *= k;
+    ky *= k;
+    kz *= k;
 
-		// Compute q
-		qx = kx_i - kx;
-		qy = ky_i - ky;
-		qz = kz_i - kz;
+    // Compute q
+    qx = kx_i - kx;
+    qy = ky_i - ky;
+    qz = kz_i - kz;
 
-		q = sqrt(pow(qx, 2) + pow(qy, 2) + pow(qz, 2));
+    q = sqrt (pow (qx, 2) + pow (qy, 2) + pow (qz, 2));
 
-		/* Compute scattering */
-		Intensity = exp(- pow(q * Roughness, 2)) * NDT_IntensityOfEmptyNanodiscsWithTags(q, MajorSemiAxis, MinorSemiAxis, ThicknessOfBelt, HeightOfMSP, HeightOfLipids, HeightOfTails, HeightOfCH3,
-			RadiusOfGyrationForHisTag, VolumeOfOneHisTag, DeltaRhoBelt, DeltaRhoHead, DeltaRhoCH2Tail, DeltaRhoCH3Tail, DeltaRhoTag);
+    /* Compute scattering */
+    Intensity = exp (-pow (q * Roughness, 2))
+                * NDT_IntensityOfEmptyNanodiscsWithTags (q, MajorSemiAxis, MinorSemiAxis, ThicknessOfBelt, HeightOfMSP, HeightOfLipids, HeightOfTails,
+                                                         HeightOfCH3, RadiusOfGyrationForHisTag, VolumeOfOneHisTag, DeltaRhoBelt, DeltaRhoHead, DeltaRhoCH2Tail,
+                                                         DeltaRhoCH3Tail, DeltaRhoTag);
 
-		p *= l_full * SolidAngle / (4.0 * PI) * NumberDensity * Intensity * exp(- Absorption * (l + l1));
+    p *= l_full * SolidAngle / (4.0 * PI) * NumberDensity * Intensity * exp (-Absorption * (l + l1));
 
-		SCATTER;
-	}
+    SCATTER;
+  }
 %}
 
 MCDISPLAY
 %{
-  box(0, 0, 0, xwidth, yheight, zdepth,0, 0, 1, 0);
+  box (0, 0, 0, xwidth, yheight, zdepth, 0, 0, 1, 0);
 %}
 
 END

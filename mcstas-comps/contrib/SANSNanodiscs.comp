@@ -59,148 +59,149 @@ NOACC
 
 SHARE
 %{
-#ifndef NANODISCS
-#define NANODISCS
-%include "nanodiscs.h"
-#endif
+  #ifndef NANODISCS
+  #define NANODISCS
+  %include "nanodiscs.h"
+  #endif
 %}
 
 DECLARE
 %{
-	// Declarations
-	double Absorption;
-	double q;
-	double NumberDensity;
+  // Declarations
+  double Absorption;
+  double q;
+  double NumberDensity;
 
-	// Scattering lengths
-	double RhoBelt;
-	double RhoHead;
-	double RhoCH2Tail;
-	double RhoCH3Tail;
+  // Scattering lengths
+  double RhoBelt;
+  double RhoHead;
+  double RhoCH2Tail;
+  double RhoCH3Tail;
 
-	double DeltaRhoHead;
-	double DeltaRhoBelt;
-	double DeltaRhoCH2Tail;
-	double DeltaRhoCH3Tail;
+  double DeltaRhoHead;
+  double DeltaRhoBelt;
+  double DeltaRhoCH2Tail;
+  double DeltaRhoCH3Tail;
 
-	// Geometric properties
-	double MajorSemiAxis;
-	double MinorSemiAxis;
-	double ThicknessOfBelt;
+  // Geometric properties
+  double MajorSemiAxis;
+  double MinorSemiAxis;
+  double ThicknessOfBelt;
 
-	double HeightOfBelt;
-	double HeightOfLipids;
-	double HeightOfTails;
-	double HeightOfCH3;
+  double HeightOfBelt;
+  double HeightOfLipids;
+  double HeightOfTails;
+  double HeightOfCH3;
 %}
 
 INITIALIZE
 %{
-	// Rescale concentration into number of aggregates per m^3 times 10^-4
-	NumberDensity = Concentration * 6.02214129e19;
+  // Rescale concentration into number of aggregates per m^3 times 10^-4
+  NumberDensity = Concentration * 6.02214129e19;
 
-	// Computations
-	if (!xwidth || !yheight || !zdepth) {
-		printf("%s: Sample has no volume, check parameters!\n", NAME_CURRENT_COMP);
-	}
+  // Computations
+  if (!xwidth || !yheight || !zdepth) {
+    printf ("%s: Sample has no volume, check parameters!\n", NAME_CURRENT_COMP);
+  }
 
-	Absorption = AbsorptionCrosssection;
+  Absorption = AbsorptionCrosssection;
 
-	// Scattering properties of different components
-	DeltaRhoBelt	= RhoBelt    - RhoSolvent;
-	DeltaRhoHead    = RhoHead    - RhoSolvent;
-	DeltaRhoCH2Tail = RhoCH2Tail - RhoSolvent;
-	DeltaRhoCH3Tail = RhoCH3Tail - RhoSolvent;
+  // Scattering properties of different components
+  DeltaRhoBelt = RhoBelt - RhoSolvent;
+  DeltaRhoHead = RhoHead - RhoSolvent;
+  DeltaRhoCH2Tail = RhoCH2Tail - RhoSolvent;
+  DeltaRhoCH3Tail = RhoCH3Tail - RhoSolvent;
 
-	// Geometric properties of different components
-	const double AreaOfLipids = NumberOfLipids * AreaPerLipidHeadgroup / 2.0;
+  // Geometric properties of different components
+  const double AreaOfLipids = NumberOfLipids * AreaPerLipidHeadgroup / 2.0;
 
-    MinorSemiAxis = sqrt(AreaOfLipids / (PI * AxisRatio));
-    MajorSemiAxis = MinorSemiAxis * AxisRatio;
+  MinorSemiAxis = sqrt (AreaOfLipids / (PI * AxisRatio));
+  MajorSemiAxis = MinorSemiAxis * AxisRatio;
 
-    HeightOfLipids = 2.0 * (VolumeOfHeadgroup + VolumeOfCH2Tail + VolumeOfCH3Tail) / AreaPerLipidHeadgroup;
-    HeightOfTails  = 2.0 * (VolumeOfCH2Tail + VolumeOfCH3Tail) / AreaPerLipidHeadgroup;
-    HeightOfCH3    = 2.0 * VolumeOfCH3Tail / AreaPerLipidHeadgroup;
+  HeightOfLipids = 2.0 * (VolumeOfHeadgroup + VolumeOfCH2Tail + VolumeOfCH3Tail) / AreaPerLipidHeadgroup;
+  HeightOfTails = 2.0 * (VolumeOfCH2Tail + VolumeOfCH3Tail) / AreaPerLipidHeadgroup;
+  HeightOfCH3 = 2.0 * VolumeOfCH3Tail / AreaPerLipidHeadgroup;
 
-	ThicknessOfBelt = sqrt(pow(MinorSemiAxis + MajorSemiAxis, 2) / 4.0 + 2.0 * VolumeOfOneMSP / (PI * HeightOfMSP)) - (MajorSemiAxis + MinorSemiAxis) / 2.0;
+  ThicknessOfBelt = sqrt (pow (MinorSemiAxis + MajorSemiAxis, 2) / 4.0 + 2.0 * VolumeOfOneMSP / (PI * HeightOfMSP)) - (MajorSemiAxis + MinorSemiAxis) / 2.0;
 %}
 
 TRACE
 %{
-	// Declarations
-	double t0;
-	double t1;
-	double l_full;
-	double l;
-	double l1;
-	double Intensity;
-	double Weight;
-	double IntensityPart;
-	double SolidAngle;
-	double qx;
-	double qy;
-	double qz;
-	double v;
-	double dt;
-	double vx_i;
-	double vy_i;
-	double vz_i;
-	char Intersect = 0;
+  // Declarations
+  double t0;
+  double t1;
+  double l_full;
+  double l;
+  double l1;
+  double Intensity;
+  double Weight;
+  double IntensityPart;
+  double SolidAngle;
+  double qx;
+  double qy;
+  double qz;
+  double v;
+  double dt;
+  double vx_i;
+  double vy_i;
+  double vz_i;
+  char Intersect = 0;
 
-	// Computation
-	Intersect = box_intersect(&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
+  // Computation
+  Intersect = box_intersect (&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
 
-	if (Intersect) {
+  if (Intersect) {
 
-		if (t0 < 0.0) {
-			fprintf(stderr, "Neutron already inside sample %s - absorbing...\n", NAME_CURRENT_COMP);
-			ABSORB;
-    	}
+    if (t0 < 0.0) {
+      fprintf (stderr, "Neutron already inside sample %s - absorbing...\n", NAME_CURRENT_COMP);
+      ABSORB;
+    }
 
-		// Compute properties of neutron
-		v = sqrt(pow(vx, 2) + pow(vy, 2) + pow(vz, 2));
-		l_full = v * (t1 - t0);
-		dt = rand01() * (t1 - t0) + t0;
-		PROP_DT(dt);
-	    l = v * (dt - t0);
+    // Compute properties of neutron
+    v = sqrt (pow (vx, 2) + pow (vy, 2) + pow (vz, 2));
+    l_full = v * (t1 - t0);
+    dt = rand01 () * (t1 - t0) + t0;
+    PROP_DT (dt);
+    l = v * (dt - t0);
 
-		// Store properties of incoming neutron
-		vx_i = vx;
-		vy_i = vy;
-		vz_i = vz;
+    // Store properties of incoming neutron
+    vx_i = vx;
+    vy_i = vy;
+    vz_i = vz;
 
-		// Generate new direction of neutron
-		randvec_target_circle(&vx, &vy, &vz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
+    // Generate new direction of neutron
+    randvec_target_circle (&vx, &vy, &vz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
 
-		NORM(vx, vy, vz);
+    NORM (vx, vy, vz);
 
-		vx *= v;
-		vy *= v;
-		vz *= v;
+    vx *= v;
+    vy *= v;
+    vz *= v;
 
-		// Compute q
-		qx = V2K * (vx_i - vx);
-		qy = V2K * (vy_i - vy);
-		qz = V2K * (vz_i - vz);
+    // Compute q
+    qx = V2K * (vx_i - vx);
+    qy = V2K * (vy_i - vy);
+    qz = V2K * (vz_i - vz);
 
-		q = sqrt(pow(qx, 2) + pow(qy, 2) + pow(qz, 2));
+    q = sqrt (pow (qx, 2) + pow (qy, 2) + pow (qz, 2));
 
-		// Compute scattering
-		l1 = v * t1;
+    // Compute scattering
+    l1 = v * t1;
 
-		Intensity = exp(- pow(q * Roughness, 2)) * IntensityOfEmptyNanodiscs(q, MajorSemiAxis, MinorSemiAxis, ThicknessOfBelt, HeightOfMSP, HeightOfLipids,
-											                                 HeightOfTails, HeightOfCH3, DeltaRhoBelt, DeltaRhoHead, DeltaRhoCH2Tail, DeltaRhoCH3Tail);
+    Intensity = exp (-pow (q * Roughness, 2))
+                * IntensityOfEmptyNanodiscs (q, MajorSemiAxis, MinorSemiAxis, ThicknessOfBelt, HeightOfMSP, HeightOfLipids, HeightOfTails, HeightOfCH3,
+                                             DeltaRhoBelt, DeltaRhoHead, DeltaRhoCH2Tail, DeltaRhoCH3Tail);
 
-		p *= l_full * SolidAngle / (4.0 * PI) * NumberDensity * Intensity * exp(- Absorption * (l + l1) / v);
+    p *= l_full * SolidAngle / (4.0 * PI) * NumberDensity * Intensity * exp (-Absorption * (l + l1) / v);
 
-		SCATTER;
-	}
+    SCATTER;
+  }
 %}
 
 MCDISPLAY
 %{
-	
-  box(0, 0, 0, xwidth, yheight, zdepth,0, 0, 1, 0);
+
+  box (0, 0, 0, xwidth, yheight, zdepth, 0, 0, 1, 0);
 %}
 
 END

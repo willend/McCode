@@ -60,121 +60,121 @@ DECLARE
 
 INITIALIZE
 %{
-	// Rescale concentration into number of aggregates per m^3 times 10^-4
-	NumberDensity = Concentration * 6.02214129e19;
+  // Rescale concentration into number of aggregates per m^3 times 10^-4
+  NumberDensity = Concentration * 6.02214129e19;
 
-	// Computations
-	if (!xwidth || !yheight || !zdepth) {
-		printf("%s: Sample has no volume, check parameters!\n", NAME_CURRENT_COMP);
-	}
+  // Computations
+  if (!xwidth || !yheight || !zdepth) {
+    printf ("%s: Sample has no volume, check parameters!\n", NAME_CURRENT_COMP);
+  }
 
-	Prefactor = NumberDensity * pow(PI * Height * R1 * R2, 2) * pow(DeltaRho, 2);
+  Prefactor = NumberDensity * pow (PI * Height * R1 * R2, 2) * pow (DeltaRho, 2);
 
-	Absorption = AbsorptionCrosssection;
+  Absorption = AbsorptionCrosssection;
 %}
 
 TRACE
 %{
-	double l0; 
-	double l1; 
-	double l_full;
-	double l;
-	double l_1;
-	double Formfactor1;
-	double Formfactor2;
-	double Intensity;
-	double SolidAngle;
-	double qx; 
-	double qy; 
-	double qz;
-	double q;
-	double k;
-	double dl;
-	double kx_i;
-	double ky_i;
-	double kz_i;
-	double ProjectedRadius;
-	char Intersect = 0;
+  double l0;
+  double l1;
+  double l_full;
+  double l;
+  double l_1;
+  double Formfactor1;
+  double Formfactor2;
+  double Intensity;
+  double SolidAngle;
+  double qx;
+  double qy;
+  double qz;
+  double q;
+  double k;
+  double dl;
+  double kx_i;
+  double ky_i;
+  double kz_i;
+  double ProjectedRadius;
+  char Intersect = 0;
 
-	/* variables needed for integration over alpha */
-	int i;
-	const int NumberOfStepsInAlpha = 30;
-	double Alpha;
-	const double AlphaMin = 0.0;
-	const double AlphaMax = PI / 2.0;
-	const double AlphaStep = (AlphaMax - AlphaMin) / (1.0 * NumberOfStepsInAlpha);
+  /* variables needed for integration over alpha */
+  int i;
+  const int NumberOfStepsInAlpha = 30;
+  double Alpha;
+  const double AlphaMin = 0.0;
+  const double AlphaMax = PI / 2.0;
+  const double AlphaStep = (AlphaMax - AlphaMin) / (1.0 * NumberOfStepsInAlpha);
 
-	/* Variables needed in integration over beta */
-	int j;
-	const int NumberOfStepsInBeta = 30;
-	double Beta;
-	const double BetaMin = 0.0;
-	const double BetaMax = PI / 2.0;
-	const double BetaStep = (BetaMax - BetaMin) / (1.0 * NumberOfStepsInBeta);
+  /* Variables needed in integration over beta */
+  int j;
+  const int NumberOfStepsInBeta = 30;
+  double Beta;
+  const double BetaMin = 0.0;
+  const double BetaMax = PI / 2.0;
+  const double BetaStep = (BetaMax - BetaMin) / (1.0 * NumberOfStepsInBeta);
 
-	Intersect = box_intersect(&l0, &l1, x, y, z, kx, ky, kz, xwidth, yheight, zdepth);
+  Intersect = box_intersect (&l0, &l1, x, y, z, kx, ky, kz, xwidth, yheight, zdepth);
 
-	if (Intersect) {
+  if (Intersect) {
 
-		if (l0 < 0.0) {
-			fprintf(stderr, "Photon already inside sample %s - absorbing...\n", NAME_CURRENT_COMP);
-			ABSORB;
-		}
+    if (l0 < 0.0) {
+      fprintf (stderr, "Photon already inside sample %s - absorbing...\n", NAME_CURRENT_COMP);
+      ABSORB;
+    }
 
-		// Compute properties of photon
-		k = sqrt(pow(kx, 2) + pow(ky, 2) + pow(kz, 2));
-		l_full = l1 - l0;
-		dl = rand01() * (l1 - l0) + l0; 
-		PROP_DL(dl);                  
-		l = dl - l0;
+    // Compute properties of photon
+    k = sqrt (pow (kx, 2) + pow (ky, 2) + pow (kz, 2));
+    l_full = l1 - l0;
+    dl = rand01 () * (l1 - l0) + l0;
+    PROP_DL (dl);
+    l = dl - l0;
 
-		// Store properties of incoming photon
-		kx_i = kx;
-		ky_i = ky;
-		kz_i = kz;
+    // Store properties of incoming photon
+    kx_i = kx;
+    ky_i = ky;
+    kz_i = kz;
 
-		/* Generate new direction of photon */
-		randvec_target_circle(&kx, &ky, &kz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
+    /* Generate new direction of photon */
+    randvec_target_circle (&kx, &ky, &kz, &SolidAngle, 0, 0, SampleToDetectorDistance, DetectorRadius);
 
-		NORM(kx, ky, kz);
+    NORM (kx, ky, kz);
 
-		kx *= k;
-		ky *= k;
-		kz *= k;
+    kx *= k;
+    ky *= k;
+    kz *= k;
 
-		/* Compute q */
-		qx = kx_i - kx;
-		qy = ky_i - ky;
-		qz = kz_i - kz;
+    /* Compute q */
+    qx = kx_i - kx;
+    qy = ky_i - ky;
+    qz = kz_i - kz;
 
-		q = sqrt(pow(qx, 2) + pow(qy, 2) + pow(qz, 2));
+    q = sqrt (pow (qx, 2) + pow (qy, 2) + pow (qz, 2));
 
-		/* Compute scattering */
-		Intensity = 0.0;
+    /* Compute scattering */
+    Intensity = 0.0;
 
-		for (i = 0; i < NumberOfStepsInAlpha; ++i) {
-			Alpha = (i + 0.5) * AlphaStep;
+    for (i = 0; i < NumberOfStepsInAlpha; ++i) {
+      Alpha = (i + 0.5) * AlphaStep;
 
-			for (j = 0; j < NumberOfStepsInBeta; ++j) {
-				Beta = (j + 0.5) * BetaStep;
-				ProjectedRadius = sqrt(pow(R1 * sin(Beta), 2) + pow(R2 * cos(Beta), 2));
+      for (j = 0; j < NumberOfStepsInBeta; ++j) {
+        Beta = (j + 0.5) * BetaStep;
+        ProjectedRadius = sqrt (pow (R1 * sin (Beta), 2) + pow (R2 * cos (Beta), 2));
 
-				Formfactor1 = gsl_sf_bessel_J1(q * ProjectedRadius * sin(Alpha)) / (q * ProjectedRadius * sin(Alpha));
-				Formfactor2 = sin(q * Height * cos(Alpha) / 2.0) / (q * Height * cos(Alpha) / 2.0);
+        Formfactor1 = gsl_sf_bessel_J1 (q * ProjectedRadius * sin (Alpha)) / (q * ProjectedRadius * sin (Alpha));
+        Formfactor2 = sin (q * Height * cos (Alpha) / 2.0) / (q * Height * cos (Alpha) / 2.0);
 
-				Intensity += 2 / PI * sin(Alpha) * Prefactor * pow(2 * Formfactor1 * Formfactor2, 2) * AlphaStep * BetaStep;
-			}
-		}
+        Intensity += 2 / PI * sin (Alpha) * Prefactor * pow (2 * Formfactor1 * Formfactor2, 2) * AlphaStep * BetaStep;
+      }
+    }
 
-		p *= l_full * SolidAngle / (4.0 * PI) * Intensity * exp(- Absorption * (l + l1));
+    p *= l_full * SolidAngle / (4.0 * PI) * Intensity * exp (-Absorption * (l + l1));
 
-		SCATTER;
-	}
+    SCATTER;
+  }
 %}
 
 MCDISPLAY
 %{
-  box(0, 0, 0, xwidth, yheight, zdepth,0, 0, 1, 0);
+  box (0, 0, 0, xwidth, yheight, zdepth, 0, 0, 1, 0);
 %}
 
 END

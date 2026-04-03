@@ -71,51 +71,55 @@ DECLARE
 %}
 INITIALIZE
 %{
-    enum shapes {NONE=0, BOX, WINDOW, CYLINDER, SPHERE, ANY};
-    /*if a start component is given, and no geometry is set, inherent geometry from start comp.*/
-    if(geometry && strlen(geometry)){
-        shape=ANY;
-    }else if(xwidth && yheight && zdepth){
-        shape=BOX;
-    }else if (xwidth && yheight && !zdepth){
-        shape=WINDOW;
-    }else if(radius && yheight){
-        shape=CYLINDER;
-    }else if (radius) {
-        shape=SPHERE;
-    }else{
-        shape=NONE;
-    }
+  enum shapes { NONE = 0, BOX, WINDOW, CYLINDER, SPHERE, ANY };
+  /*if a start component is given, and no geometry is set, inherent geometry from start comp.*/
+  if (geometry && strlen (geometry)) {
+    shape = ANY;
+  } else if (xwidth && yheight && zdepth) {
+    shape = BOX;
+  } else if (xwidth && yheight && !zdepth) {
+    shape = WINDOW;
+  } else if (radius && yheight) {
+    shape = CYLINDER;
+  } else if (radius) {
+    shape = SPHERE;
+  } else {
+    shape = NONE;
+  }
 %}
 
 TRACE
 %{
-    double t0,t1;
-    int nofield=0;
-    enum shapes {NONE=0, BOX, WINDOW, CYLINDER, SPHERE, ANY};
-    /*enter through whatever object we are*/
-    switch (shape){
-        case BOX:
-            box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,zdepth);
-	    if (t0>FLT_EPSILON) PROP_DT(t0);/*this is to get a hollow inside the field.*/
-            else PROP_DT(t1);
-            break;
-        case CYLINDER:
-            cylinder_intersect(&t0,&t1,x,y,z,vx,vy,vz,radius,yheight);/*this is to get a hollow inside the field.*/
-            if (t0>FLT_EPSILON) PROP_DT(t0);
-            else PROP_DT(t1);
-            break;
-        case WINDOW:
-            PROP_Z0;
-            /*terminate neutrons which miss the exit window*/
-            if (2*x>xwidth || 2*x<-xwidth || 2*y>yheight || 2*y<-yheight){
-                ABSORB;
-            }
-            break;
-        default:
-            PROP_Z0;
+  double t0, t1;
+  int nofield = 0;
+  enum shapes { NONE = 0, BOX, WINDOW, CYLINDER, SPHERE, ANY };
+  /*enter through whatever object we are*/
+  switch (shape) {
+  case BOX:
+    box_intersect (&t0, &t1, x, y, z, vx, vy, vz, xwidth, yheight, zdepth);
+    if (t0 > FLT_EPSILON)
+      PROP_DT (t0); /*this is to get a hollow inside the field.*/
+    else
+      PROP_DT (t1);
+    break;
+  case CYLINDER:
+    cylinder_intersect (&t0, &t1, x, y, z, vx, vy, vz, radius, yheight); /*this is to get a hollow inside the field.*/
+    if (t0 > FLT_EPSILON)
+      PROP_DT (t0);
+    else
+      PROP_DT (t1);
+    break;
+  case WINDOW:
+    PROP_Z0;
+    /*terminate neutrons which miss the exit window*/
+    if (2 * x > xwidth || 2 * x < -xwidth || 2 * y > yheight || 2 * y < -yheight) {
+      ABSORB;
     }
-    mcmagnet_pop(_particle);
+    break;
+  default:
+    PROP_Z0;
+  }
+  mcmagnet_pop (_particle);
 %}
 
 END

@@ -62,7 +62,7 @@ TRACE %{
 
 MCDISPLAY
 %{
-    mcdis_annulus(0,0,0,outer_radius, inner_radius, 0,1,0);
+  mcdis_annulus (0, 0, 0, outer_radius, inner_radius, 0, 1, 0);
 %}
 
 END

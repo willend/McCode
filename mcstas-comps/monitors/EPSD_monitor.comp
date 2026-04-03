@@ -63,67 +63,70 @@ DECLARE
 
 INITIALIZE
 %{
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-  if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
-
-  if ((xmin >= xmax) || (ymin >= ymax)) {
-    printf("EPSD_monitor: %s: Null detection area !\n"
-           "ERROR         (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-           NAME_CURRENT_COMP);
-    exit(0);
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
   }
 
-  PSD_N = create_darr2d(nx, nE);
-  PSD_p = create_darr2d(nx, nE);
-  PSD_p2 = create_darr2d(nx, nE);
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("EPSD_monitor: %s: Null detection area !\n"
+            "ERROR         (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
+
+  PSD_N = create_darr2d (nx, nE);
+  PSD_p = create_darr2d (nx, nE);
+  PSD_p2 = create_darr2d (nx, nE);
 
   // Use instance name for monitor output if no input was given
-  if (!strcmp(filename,"\0")) sprintf(filename,"%s",NAME_CURRENT_COMP);
+  if (!strcmp (filename, "\0"))
+    sprintf (filename, "%s", NAME_CURRENT_COMP);
 %}
 TRACE
 %{
-  int i,j;
-  double E,v;
+  int i, j;
+  double E, v;
 
   PROP_Z0;
-  v=vx*vx+vy*vy+vz*vz;
-  E=VS2E*(vx*vx+vy*vy+vz*vz);
+  v = vx * vx + vy * vy + vz * vz;
+  E = VS2E * (vx * vx + vy * vy + vz * vz);
 
-  if (x>xmin && x<xmax && y>ymin && y<ymax && E>Emin && E<Emax)
-  {
-    i = floor((x - xmin)*nx/(xmax - xmin));
-    j = floor((E - Emin)*nE/(Emax - Emin));
+  if (x > xmin && x < xmax && y > ymin && y < ymax && E > Emin && E < Emax) {
+    i = floor ((x - xmin) * nx / (xmax - xmin));
+    j = floor ((E - Emin) * nE / (Emax - Emin));
 
-    double p2 = p*p;
+    double p2 = p * p;
     #pragma acc atomic
-    PSD_N[i][j] = PSD_N[i][j]+1;
-
-    #pragma acc atomic
-    PSD_p[i][j] = PSD_p[i][j]+p;
+    PSD_N[i][j] = PSD_N[i][j] + 1;
 
     #pragma acc atomic
-    PSD_p2[i][j] = PSD_p2[i][j]+p2;
+    PSD_p[i][j] = PSD_p[i][j] + p;
+
+    #pragma acc atomic
+    PSD_p2[i][j] = PSD_p2[i][j] + p2;
   }
   if (restore_neutron) {
-    RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
   }
 %}
 
 SAVE
 %{
-if (!nowritefile) {
-  DETECTOR_OUT_2D("EPSD monitor", "Position [m]", "Energy [meV]",
-      xmin, xmax, Emin, Emax, nx, nE,
-      &PSD_N[0][0], &PSD_p[0][0], &PSD_p2[0][0],
-      filename);
-}
+  if (!nowritefile) {
+    DETECTOR_OUT_2D ("EPSD monitor", "Position [m]", "Energy [meV]", xmin, xmax, Emin, Emax, nx, nE, &PSD_N[0][0], &PSD_p[0][0], &PSD_p2[0][0], filename);
+  }
 %}
 
 FINALLY
 %{
-  destroy_darr2d(PSD_N);
-  destroy_darr2d(PSD_p);
-  destroy_darr2d(PSD_p2);
+  destroy_darr2d (PSD_N);
+  destroy_darr2d (PSD_p);
+  destroy_darr2d (PSD_p2);
 %}
 
 MCDISPLAY

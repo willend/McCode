@@ -55,133 +55,133 @@ SHARE
 
 DECLARE
 %{
-double  beta1;                       /* parabola half-axis */
-double  gamma1;
-t_Table pTable;
-int err;                                     /* counts neutron absorbed for anormal reasons */
-int nom;
-int vz_neg;
+  double beta1; /* parabola half-axis */
+  double gamma1;
+  t_Table pTable;
+  int err; /* counts neutron absorbed for anormal reasons */
+  int nom;
+  int vz_neg;
 %}
 
 INITIALIZE
 %{
-double alpha1;                       /* width of the parabola */
-if (reflect && strlen(reflect) && strcmp(reflect, "NULL") && strcmp(reflect,"0")) {
-    if (Table_Read(&pTable, reflect, 1) <= 0) /* read 1st block data from file into pTable */
-      exit(fprintf(stderr,"Mirror_Parabolic: %s: can not read file %s\n", NAME_CURRENT_COMP, reflect));
+  double alpha1; /* width of the parabola */
+  if (reflect && strlen (reflect) && strcmp (reflect, "NULL") && strcmp (reflect, "0")) {
+    if (Table_Read (&pTable, reflect, 1) <= 0) /* read 1st block data from file into pTable */
+      exit (fprintf (stderr, "Mirror_Parabolic: %s: can not read file %s\n", NAME_CURRENT_COMP, reflect));
   }
-  alpha1 = xwidth+xshift;
-  gamma1 = -1/(4*focus);
-  beta1 = -gamma1*alpha1*alpha1;
+  alpha1 = xwidth + xshift;
+  gamma1 = -1 / (4 * focus);
+  beta1 = -gamma1 * alpha1 * alpha1;
   err = 0;
-  nom = 0;                      /* number of reflections on the mirror */
+  nom = 0; /* number of reflections on the mirror */
   vz_neg = 0;
-  yheight/=2;  
+  yheight /= 2;
 %}
 
 TRACE
 %{
-  double  angle;
+  double angle;
   double q, B;
-  double div,z1,x1,z2,x2;
+  double div, z1, x1, z2, x2;
   double v;
-  double vx_2,vz_2;
-  int i=-1;
-  double oa,ob,ab,xa,za;
-  double a, b;                       /* parameters for neutron propagation */
-  double old_x,old_y,old_z;
-  double  delta;                         /* angle: angle between themirror and z-axis */
-  double par[5] = {R0, Qc, alpha, m, W};
+  double vx_2, vz_2;
+  int i = -1;
+  double oa, ob, ab, xa, za;
+  double a, b; /* parameters for neutron propagation */
+  double old_x, old_y, old_z;
+  double delta; /* angle: angle between themirror and z-axis */
+  double par[5] = { R0, Qc, alpha, m, W };
 
   /* First check if neutron has the right direction. */
-  if((vz != 0.0 && -z/vz >= 0) && x-xwidth-xshift < 0)
-  {
-    do{
+  if ((vz != 0.0 && -z / vz >= 0) && x - xwidth - xshift < 0) {
+    do {
       i++;
-      old_z=z;
-      old_x=x;
-      old_y=y;
-      a=vz/vx;
-      b=z-a*x;
+      old_z = z;
+      old_x = x;
+      old_y = y;
+      a = vz / vx;
+      b = z - a * x;
 
       /*calculation of intersection with the parabola*/
-      delta = sqrt(4*gamma1*(b-beta1)+a*a);
-      x1 = (a - delta)/(2*gamma1);
-      x2 = (a + delta)/(2*gamma1);
-      z1 = gamma1*x1*x1+beta1;
-      z2 = gamma1*x2*x2+beta1;
+      delta = sqrt (4 * gamma1 * (b - beta1) + a * a);
+      x1 = (a - delta) / (2 * gamma1);
+      x2 = (a + delta) / (2 * gamma1);
+      z1 = gamma1 * x1 * x1 + beta1;
+      z2 = gamma1 * x2 * x2 + beta1;
 
       /*choose the correct answer*/
-      if(z1>z2){
-          z=z1;
-          x=x1;
-      }
-      else{
-          z=z2;
-          x=x2;
+      if (z1 > z2) {
+        z = z1;
+        x = x1;
+      } else {
+        z = z2;
+        x = x2;
       }
       /* absorbs the neutron if the difference between the 2 calculation methods is larger than 1% */
-      if(fabs(z-a*x-b)>0.01){
-	    #pragma acc atomic
-            err = err +1;
-            ABSORB;
+      if (fabs (z - a * x - b) > 0.01) {
+        #pragma acc atomic
+        err = err + 1;
+        ABSORB;
       }
-        
-        
+
       /* calculation of y*/
-      y+=vy*(z-old_z)/vz;
+      y += vy * (z - old_z) / vz;
 
       /*reflection*/
-      if((x-xshift)>0 && fabs(y)<=yheight){
-	#pragma acc atomic
+      if ((x - xshift) > 0 && fabs (y) <= yheight) {
+        #pragma acc atomic
         nom = nom + 1;
 
         /* reflection angle in the xz plane */
-        div = -atan(vx/vz);
-        angle = atan(1/(2*gamma1*x));
+        div = -atan (vx / vz);
+        angle = atan (1 / (2 * gamma1 * x));
 
         /* vx and vz calculation after reflection */
-        v=sqrt(vx*vx+vz*vz);
-        vz = v*cos(2*angle+div);
-        vx = v*sin(2*angle+div);
+        v = sqrt (vx * vx + vz * vz);
+        vz = v * cos (2 * angle + div);
+        vx = v * sin (2 * angle + div);
 
         /*incidence angle in 3D*/
-        ob = sqrt((old_x-x)*(old_x-x)+(old_z-z)*(old_z-z));
-        ab = ob*cos(-div+angle);
+        ob = sqrt ((old_x - x) * (old_x - x) + (old_z - z) * (old_z - z));
+        ab = ob * cos (-div + angle);
         /*           printf("%e = %e * cos(%e)",ab,ob,div+angle); */
-        xa = x+ab*sin(-angle);
-        za = z+ab*cos(-angle);
-        oa = sqrt((old_x-xa)*(old_x-xa)+(old_z-za)*(old_z-za));
-        ob = sqrt((old_x-x)*(old_x-x)+(old_y-y)*(old_y-y)+(old_z-z)*(old_z-z));
-        /*         printf("\nob : %e / ab : %e\nO: %e / %f / %f\nA : %e / %f / %f\nB : %e / %f / %f\nAngle : %e rad / Div : %e rad\n",ob,ab,old_x,old_y,old_z,xa,old_y,za,x,y,z,angle,div); */
+        xa = x + ab * sin (-angle);
+        za = z + ab * cos (-angle);
+        oa = sqrt ((old_x - xa) * (old_x - xa) + (old_z - za) * (old_z - za));
+        ob = sqrt ((old_x - x) * (old_x - x) + (old_y - y) * (old_y - y) + (old_z - z) * (old_z - z));
+        /*         printf("\nob : %e / ab : %e\nO: %e / %f / %f\nA : %e / %f / %f\nB : %e / %f / %f\nAngle : %e rad / Div : %e
+         * rad\n",ob,ab,old_x,old_y,old_z,xa,old_y,za,x,y,z,angle,div); */
 
-        ab = sqrt((xa-x)*(xa-x)+(old_y-y)*(old_y-y)+(za-z)*(za-z));
-        angle = acos((-ab*ab-ob*ob+oa*oa)/(2*ab*ob));
+        ab = sqrt ((xa - x) * (xa - x) + (old_y - y) * (old_y - y) + (za - z) * (za - z));
+        angle = acos ((-ab * ab - ob * ob + oa * oa) / (2 * ab * ob));
 
-        v=sqrt(vx*vx+vy*vy+vz*vz);
-        q = fabs(2*sin(angle)*v*V2Q);
+        v = sqrt (vx * vx + vy * vy + vz * vz);
+        q = fabs (2 * sin (angle) * v * V2Q);
         /* Reflectivity (see component Guide). */
-        if (reflect && strlen(reflect) && strcmp(reflect, "NULL") && strcmp(reflect,"0"))
-          TableReflecFunc(q, &pTable, &B);
+        if (reflect && strlen (reflect) && strcmp (reflect, "NULL") && strcmp (reflect, "0"))
+          TableReflecFunc (q, &pTable, &B);
         else {
-          StdReflecFunc(q, par, &B);
+          StdReflecFunc (q, par, &B);
         }
-        if (B <= 0) { ABSORB; }
-        else p *= B;
+        if (B <= 0) {
+          ABSORB;
+        } else
+          p *= B;
       }
-      if(vz<0){
-           #pragma acc atomic
-	   vz_neg = vz_neg + 1;
-           ABSORB;
+      if (vz < 0) {
+        #pragma acc atomic
+        vz_neg = vz_neg + 1;
+        ABSORB;
       }
-    }while((x-xshift)>0 && fabs(y)<=yheight);
-    if (i<0) fprintf(stderr,"Mirror_Parabolic: %s: out mirror\n", NAME_CURRENT_COMP);
-    y=old_y;
-    x=old_x;
-    z=old_z;    
+    } while ((x - xshift) > 0 && fabs (y) <= yheight);
+    if (i < 0)
+      fprintf (stderr, "Mirror_Parabolic: %s: out mirror\n", NAME_CURRENT_COMP);
+    y = old_y;
+    x = old_x;
+    z = old_z;
     SCATTER;
-  }
-  else{
+  } else {
     ABSORB;
   }
 %}
@@ -189,29 +189,29 @@ TRACE
 FINALLY
 %{
   /*   printf("\n %d neutrons were reflected on the component %s.\n",nom,NAME_CURRENT_COMP);*/
-  if(err!=0||vz_neg!=0){
-    fprintf(stderr,"Mirror_Parabolic: %s: %d lost neutrons for inadapted divergence\n"
-      "\t%d for vz <0 \n neutrons absorbed inside the component.\n",
-    NAME_CURRENT_COMP,err,vz_neg);
+  if (err != 0 || vz_neg != 0) {
+    fprintf (stderr,
+             "Mirror_Parabolic: %s: %d lost neutrons for inadapted divergence\n"
+             "\t%d for vz <0 \n neutrons absorbed inside the component.\n",
+             NAME_CURRENT_COMP, err, vz_neg);
   }
 %}
 
 MCDISPLAY
 %{
-  double delta0,xi,xf,zi,zf;
-  
-  delta0 = xwidth/99;
-  xi = xwidth+xshift;
-  line (xi,-yheight,0, xi,yheight,0);
-  do
-  {
-       xf = xi - delta0;
-       zi = gamma1*xi*xi+beta1;
-       zf = gamma1*xf*xf+beta1;
-       line (xi,yheight,zi, xf,yheight,zf);
-       line (xi,-yheight,zi, xf,-yheight,zf);
-       line (xf,yheight,zf, xf,-yheight,zf);
-       xi = xf;
-  }while(xf>=xshift);
+  double delta0, xi, xf, zi, zf;
+
+  delta0 = xwidth / 99;
+  xi = xwidth + xshift;
+  line (xi, -yheight, 0, xi, yheight, 0);
+  do {
+    xf = xi - delta0;
+    zi = gamma1 * xi * xi + beta1;
+    zf = gamma1 * xf * xf + beta1;
+    line (xi, yheight, zi, xf, yheight, zf);
+    line (xi, -yheight, zi, xf, -yheight, zf);
+    line (xf, yheight, zf, xf, -yheight, zf);
+    xi = xf;
+  } while (xf >= xshift);
 %}
 END
