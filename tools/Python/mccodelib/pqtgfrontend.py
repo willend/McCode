@@ -81,6 +81,90 @@ class ViewModel():
     def get_sourcedir(self):
         return self.sourcedir
 
+# Various helper-functions for PyQt6/PySide6/PyQt5 support
+# of event modifier handling...
+
+# Single modifer -> int
+def _to_int(x):
+    try:
+        return int(x)
+    except Exception:
+        try:
+            return int(getattr(x, "value", x))
+        except Exception:
+            return 0
+
+# Convert a set of modifiers to int
+def mods_to_int(m):
+    try:
+        return int(m)
+    except Exception:
+        try:
+            return int(getattr(m, "value", m))
+        except Exception:
+            try:
+                v = 0
+                for part in m:
+                    v |= int(part)
+                return v
+            except Exception:
+                return 0
+
+# Look up int constant corresponding to given modifier
+def qt_mod_constant(name):
+    # Try Qt6 nested enum first, then Qt5 attributes
+    try:
+        return int(getattr(QtCore.Qt.KeyboardModifier, name))
+    except Exception:
+        try:
+            return int(getattr(QtCore.Qt, name))
+        except Exception:
+            return 0
+
+# Create a dict of "all intersting" modifiers
+def _discover_qt_mod_masks():
+    """Return dict with integer masks for Control, Meta, Alt, Shift and ALL_MODS."""
+    # Try to read constants in standard locations first
+    def try_get(name):
+        try:
+            # Qt6: nested enum
+            return int(getattr(QtCore.Qt.KeyboardModifier, name))
+        except Exception:
+            try:
+                return int(getattr(QtCore.Qt, name))
+            except Exception:
+                return None
+
+    CTRL = try_get("ControlModifier")
+    META = try_get("MetaModifier")
+    ALT = try_get("AltModifier")
+    SHIFT = try_get("ShiftModifier")
+
+    # If any are None or zero, try to infer by probing event-generated values:
+    # We will build a fallback mapping using common Qt6 flag values if available.
+    # Known Qt6 modifier flag raw values on some builds (fallback):
+    # (AI-assisted hack for macOS...)
+    FALLBACK = {
+        "ControlModifier": 0x10000000,   # 268435456
+        "AltModifier":     0x04000000,   # 67108864
+        "ShiftModifier":   0x08000000,   # 134217728
+        "MetaModifier":    0x20000000,   # 536870912  (some builds use other values; we'll use detected below)
+    }
+
+    # Replace None or 0 with fallback if event flags appear to match those
+    if not CTRL:
+        CTRL = FALLBACK.get("ControlModifier")
+    if not ALT:
+        ALT = FALLBACK.get("AltModifier")
+    if not SHIFT:
+        SHIFT = FALLBACK.get("ShiftModifier")
+    if not META:
+        # On macOS Command may map to different Meta value; try the common one
+        META = FALLBACK.get("MetaModifier")
+
+    ALL = (CTRL or 0) | (META or 0) | (ALT or 0) | (SHIFT or 0)
+    return {"CTRL": int(CTRL or 0), "META": int(META or 0),
+            "ALT": int(ALT or 0), "SHIFT": int(SHIFT or 0), "ALL": int(ALL)}
 
 class McPyqtgraphPlotter():
     '''
@@ -105,20 +189,26 @@ class McPyqtgraphPlotter():
         self.graph = plotgraph
         self.sourcedir = sourcedir
         self.plot_func = plot_func
-        self.isQt6 = None
-        
-        # Qt app
-        self.app = QtWidgets.QApplication(sys.argv)
+        self.isQt6 = True
 
-        # start
-        if hasattr(self.app, "exec_"):
+        try:
+            import PyQt6 as _pyqt6  # prefer PyQt6 if installed
+            BINDING = "PyQt6"
+        except Exception:
             try:
-                import PySide6
-                self.isQt6 = False
-            except:
-                self.isQt6 = False
-        else:
-            self.isQt6 = False
+                import PySide6 as _pyside6
+                BINDING = "PySide6"
+            except Exception:
+                try:
+                    import PyQt5 as _pyqt5
+                    BINDING = "PyQt5"
+                except Exception:
+                    BINDING = None
+                    self.isQt6 = (BINDING in ("PyQt6", "PySide6"))
+
+        print("Plotter activated Qt with binding: " + BINDING)
+        self.app = QtWidgets.QApplication(sys.argv)
+        self.QT_MASKS = _discover_qt_mod_masks()
 
         if invcanvas:
             # switch to using white background and black foreground
@@ -195,22 +285,23 @@ class McPyqtgraphPlotter():
 
         def get_modifiers(modname):
             ''' Get int codes for keyboardmodifiers. WARNING: String codes may be used directly in code. '''
-            if (self.isQt6):   # Qt6
-              k = QtCore.Qt.KeyboardModifier
-            else:             # Qt5
-              k = QtCore.Qt
-              
-            if modname == "none":
-                return 0
-            if modname == "ctrl":
-                return k.ControlModifier
-            if modname == "shft":
-                return k.ShiftModifier
-            if modname == "ctrl-shft":
-                return k.ControlModifier | k.ShiftModifier
-            if modname == "alt":
-                return k.AltModifier
-              
+            name = (modname or "").lower()
+            CTRL = self.QT_MASKS["CTRL"]
+            META = self.QT_MASKS["META"]
+            ALT = self.QT_MASKS["ALT"]
+            SHIFT = self.QT_MASKS["SHIFT"]
+            if sys.platform == "darwin":
+                CTRL_MASK = CTRL | META
+            else:
+                CTRL_MASK = CTRL
+            return {
+                "none": 0,
+                "ctrl": CTRL_MASK,
+                "meta": META,
+                "shft": SHIFT,
+                "ctrl-shft": CTRL_MASK | SHIFT,
+                "alt": ALT,
+                }.get(name, 0)
 
         # init
         self.clear_window_and_handlers()
@@ -370,9 +461,20 @@ class McPyqtgraphPlotter():
 
     def set_handler(self, node_list, node_cb, click, modifier):
         ''' sets a clickhandler according to input '''
+        if len(list(node_list)) == 0:
+            return
 
-        def click_handler(event, node_list, node_cb, click, mod, debug=False):
-            ''' generic conditional-branch-tree, catch-all, mouse click event handler  '''
+        mod_mask = _to_int(modifier)
+        CTRL = qt_mod_constant("ControlModifier")
+        META = qt_mod_constant("MetaModifier")
+        ALT = qt_mod_constant("AltModifier")
+        SHIFT = qt_mod_constant("ShiftModifier")
+        ALL_MODS = self.QT_MASKS["ALL"]
+
+        is_qt6 = hasattr(QtCore.Qt, "KeyboardModifier")
+        ButtonEnum = QtCore.Qt.MouseButton if is_qt6 else None
+
+        def click_handler(event, node_list, node_cb, click, mod_mask, debug=False):
             posItem = None
             posScene = None
             plotIdx = -1
@@ -380,34 +482,34 @@ class McPyqtgraphPlotter():
                 posItem = event.pos()
                 posScene = event.scenePos()
                 plotIdx = self.get_plot_index(posScene)
-            except AttributeError:
+            except Exception:
                 pass
-
-            # print debug info
             if debug:
-                print("click modifier: %s" % str(event.modifiers()))
+                print("raw event.modifiers():", event.modifiers())
+            ev_mods = mods_to_int(event.modifiers())
 
+            print("ev_mods:", ev_mods, "CTRL:", self.QT_MASKS['CTRL'], "META:", self.QT_MASKS['META'], "ALT:", self.QT_MASKS['ALT'], "SHIFT:", self.QT_MASKS['SHIFT'], "mod_mask:", mod_mask)
+            
             # prevent action for modifiers mismatch
-            if (self.isQt6 and hasattr(QtCore.Qt,"KeyboardModifier")):   # Qt6
-                if not isinstance(mod, int):
-                    if event.modifiers() != mod: # Qt5: int(event.modifiers()) != mod fails in Qt6
-                        return
+            if mod_mask:
+                if (ev_mods & mod_mask) != mod_mask:
+                    return
+            else:
+                if (ev_mods & ALL_MODS) != 0:
+                    return
+            if is_qt6:
                 # prevent action for mouse button mismatch
-                if click == "rclick" and (str(event.button()) != 'MouseButton.RightButton'):
+                if click == "rclick" and event.button() != ButtonEnum.RightButton:
                     return
-                if click == "click" and (str(event.button()) != 'MouseButton.LeftButton'):
+                if click == "click" and event.button() != ButtonEnum.LeftButton:
                     return
-
-            else: # Qt5
-                if int(event.modifiers()) != mod:
-                    return
+            else:
                 # prevent action for mouse button mismatch
                 if click == "rclick" and event.button() != 2:
                     return
                 if click == "click" and event.button() != 1:
                     return
-
-            if plotIdx >= 0 and plotIdx < len(node_list):
+            if 0 <= plotIdx < len(node_list):
                 node = node_list[plotIdx]
 
                 # replot
@@ -416,13 +518,9 @@ class McPyqtgraphPlotter():
                 # update status message
                 self.update_statusbar(None, node, posItem)
 
-        if len(list(node_list)) == 0:
-            return
-
         self.plot_layout.scene().sigMouseClicked.connect(
             lambda event: click_handler(
-                event, node_list=node_list, node_cb=node_cb, click=click, mod=modifier))
-
+                event, node_list=node_list, node_cb=node_cb, click=click, mod_mask=mod_mask))
 
     def get_plot_func_opts(self, fromzero, log, legend, icolormap, verbose, fontsize, cbmin=None, cbmax=None):
         ''' returns a dict for holding the plot options relevant for this plotting frontend '''
