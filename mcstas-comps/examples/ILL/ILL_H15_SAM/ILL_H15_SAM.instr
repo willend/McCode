@@ -22,17 +22,21 @@
 * Instrument parameters:
 *
 * Typical wavelength range: 3.25-24 AA
-* Guides cross section: 30 x 30 mm² (three moveable elements within collimator)
+* Guides cross section: 30 x 30 mm<sup>2</sup> (three moveable elements within collimator)
 * Collimation lengths: [9, 7, 5, 2.5] m
 * Adjustable 'reflectometer-type' diaphragms located at [9, 5, 2.5] m upstream of sample position.
 * Sample-to-detector distance: 0.75-6.85 m
-* Detector: 64 x 64 cm² monoblock 3He PSD
+* Detector: 64 x 64 cm<sup>2</sup> monoblock 3He PSD
 * See the <a href="https://www.ill.eu/for-all-users/instruments/instruments-list/sam/description/instrument-layout">instrument page</a> on the ILL website for more details.
 *
 * Example (typical "real-life" measurement sequence):
 *
 *	mcrun ILL_H15_SAM.instr --gravity -n1e7 -dLargeQ lambda=5.2
 *	mcrun ILL_H15_SAM.instr --gravity -n1e7 -dSmallQ guide1=0 guide2=0 guide3=0 lsd=6.8
+*
+* (Corresponding test-suite entries:)
+* %Example ILL_H15_SAM.instr --gravity lambda=5.2 Detector: psd_I=1272.79
+* %Example ILL_H15_SAM.instr --gravity guide1=0 guide2=0 guide3=0 lsd=6.8 Detector: psd_I=1980.7
 *
 * %P
 * lambda:      	[AA]	Wavelength mean value
