@@ -45,6 +45,7 @@
 * D: [meV]                  uniaxial anisotropy; easy axis is c-axis. Non-positive value assumed
 * B: [T]                    field strength of external magnetic field applied along z-axis
 * FM: [1]                   tag for ferromagnetic system if FM==1
+* Fq: [1]                   -> PLEASE FILL IN <-
 * DW: [1]                   Debye-Waller factor
 * T: [K]                    Temperature
 * mode_input: [1]           Index of mode(s) to simulate
