@@ -4,9 +4,9 @@
 *  Copyright(C) 2000 Risoe National Laboratory.
 *
 * %I
-* Written by: Silas Schack (algoritme based on "phonon_simple" by Kim Lefmann)
+* Written by: Silas Schack (algorithm based on "Phonon_simple" by Kim Lefmann)
 * Date: 13.06.25
-* Origin: KU
+* Origin: NBI
 *
 * A sample for FM and AFM magnon scattering from a oI lattice based on cross section expressions from Marshall and Lovesey ch.9.
 *
