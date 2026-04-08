@@ -32,19 +32,19 @@
 * yheight: [m]              Height of sample in y direction
 * sigma_abs: [barns]        Absorption cross section at 2200 m/s per atom
 * sigma_inc: [barns]        Incoherent scattering cross section per atom
-* a1: [AA]                  lattice constants of orthorhombic body centred lattice
-* a2: [AA]                  lattice constants of orthorhombic body centred lattice
-* a3: [AA]                  lattice constants of orthorhombic body centred lattice
-* S: [1]                    spin 
-* j: [meV]                  coupling constant to body centered spins
-* ja: [meV]                 coupling constant to nearest neighbours along a
-* jb: [meV]                 coupling constant to nearest neighbours along b
-* jc: [meV]                 coupling constant to nearest neighbours along c
-* j_110: [meV]              coupling constant to nearest neighbours +x+y
-* j_110_prime: [meV]        coupling constant to nearest neighbours +x-y
-* D: [meV]                  uniaxial anisotropy; easy axis is c-axis. Non-positive value assumed
-* B: [T]                    field strength of external magnetic field applied along z-axis
-* FM: [1]                   tag for ferromagnetic system if FM==1
+* a1: [AA]                  Lattice constants of orthorhombic body centred lattice
+* a2: [AA]                  Lattice constants of orthorhombic body centred lattice
+* a3: [AA]                  Lattice constants of orthorhombic body centred lattice
+* S: [1]                    Spin <-- PLEASE ELABORATE
+* j: [meV]                  Coupling constant to body centered spins
+* ja: [meV]                 Coupling constant to nearest neighbours along a
+* jb: [meV]                 Coupling constant to nearest neighbours along b
+* jc: [meV]                 Coupling constant to nearest neighbours along c
+* j_110: [meV]              Coupling constant to nearest neighbours +x+y
+* j_110_prime: [meV]        Coupling constant to nearest neighbours +x-y
+* D: [meV]                  Uniaxial anisotropy; easy axis is c-axis. Non-positive value assumed
+* B: [T]                    Field strength of external magnetic field applied along z-axis
+* FM: [1]                   Tag for ferromagnetic system if FM==1
 * Fq: [1]                   -> PLEASE FILL IN <-
 * DW: [1]                   Debye-Waller factor
 * T: [K]                    Temperature
@@ -52,14 +52,14 @@
 * e_steps_low [1]           Number of low-energy steps in zrid
 * e_steps_high [1]          Number of high-energy steps in zrid
 * focus_r: [m]              Radius of sphere containing target.
-* focus_xw: [m]             horiz. dimension of a rectangular area
-* focus_yh: [m]             vert. dimension of a rectangular area
-* focus_aw: [deg]           horiz. angular dimension of a rectangular area
-* focus_ah: [deg]           vert. angular dimension of a rectangular area
-* target_x: [m]             position of target to focus at. Transverse coordinate
-* target_y: [m]             position of target to focus at. Vertical coordinate
-* target_z: [m]             position of target to focus at. Straight ahead.
-* target_index: [1]         relative index of component to focus at, e.g. next is +1 
+* focus_xw: [m]             Horiz. dimension of a rectangular area
+* focus_yh: [m]             Vert. dimension of a rectangular area
+* focus_aw: [deg]           Horiz. angular dimension of a rectangular area
+* focus_ah: [deg]           Vert. angular dimension of a rectangular area
+* target_x: [m]             Position of target to focus at. Transverse coordinate
+* target_y: [m]             Position of target to focus at. Vertical coordinate
+* target_z: [m]             Position of target to focus at. Straight ahead.
+* target_index: [1]         Relative index of component to focus at, e.g. next is +1 
 * verbose [1]               Verbosity level
 *
 * CALCULATED PARAMETERS:
