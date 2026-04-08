@@ -47,7 +47,7 @@
 * FM: [1]                   tag for ferromagnetic system if FM==1
 * DW: [1]                   Debye-Waller factor
 * T: [K]                    Temperature
-* mode_input                Index of mode(s) to simulate
+* mode_input: [1]           Index of mode(s) to simulate
 * e_steps_low [1]           Number of low-energy steps in zrid
 * e_steps_high [1]          Number of high-energy steps in zrid
 * focus_r: [m]              Radius of sphere containing target.
