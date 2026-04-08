@@ -4,10 +4,9 @@
 * Instrument: Samples_SpinWave_BCO
 *
 * %Identification
-* Written by: <a href="mailto:kim.lefmann@risoe.dk">Kim Lefmann</a>
-* Date: Feb 2004
-* Origin: <a href="http://www.risoe.dk/">RISOE</a>
-* Written by: K. Lefmann <kim.lefmann@risoe.dk> RISOE, Feb 2004
+* Written by: Silas Schack
+* Date: Spring 2026
+* Origin: NBI
 * %INSTRUMENT_SITE: Tests_samples
 *
 * Simple test instrument for the SpinWave_BCO component
