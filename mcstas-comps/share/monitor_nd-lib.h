@@ -119,6 +119,7 @@
     double Cylinder_Height   ;
     char   Flag_With_Borders ;   /* 2 means xy borders too */
     char   Flag_List         ;   /* 1 store 1 buffer, 2 is list all, 3 list all+append */
+    char   Flag_nexusbins    ;   /* Only relevant in NeXus mode. -1 fully disable, 0 store BINS arrays if list mode, 1 store always */
     char   Flag_Multiple     ;   /* 1 when n1D, 0 for 2D */
     char   Flag_Verbose      ;
     int    Flag_Shape        ;
@@ -189,7 +190,7 @@
 /* monitor_nd-lib function prototypes */
 /* ========================================================================= */
 
-void Monitor_nD_Init(MonitornD_Defines_type *, MonitornD_Variables_type *, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, int);
+void Monitor_nD_Init(MonitornD_Defines_type *, MonitornD_Variables_type *, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, int, int);
 #pragma acc routine
 int Monitor_nD_Trace(MonitornD_Defines_type *, MonitornD_Variables_type *, _class_particle* _particle);
 MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *, MonitornD_Variables_type *);
