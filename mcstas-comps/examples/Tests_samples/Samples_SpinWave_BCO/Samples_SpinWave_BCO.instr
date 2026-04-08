@@ -19,7 +19,7 @@
 * %Example: h=1 l=0 Detector: Emon_I=0.0517575
 * %Example: h=0 l=0.5 E=6.73 Detector: Emon_I=0.0108855
 * %Example: h=1 l=1 Detector: Emon_I=0.000655744
-
+*
 * %Parameters
 * E:    [meV] Mean energy at source   
 * DE:   [meV] Energy spread at source 
