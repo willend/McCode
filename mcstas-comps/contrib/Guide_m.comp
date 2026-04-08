@@ -68,7 +68,7 @@
 * m:       [1]          Overall m-value of supermirrors, overwrites values from individual mirrors
 * alpha:   [AA]         Overall slope of reflectivity, overwrites values from individual mirrors
 * R0: [1]        Overall, low-angle reflectivity, overwrites values from individual mirrors
-* Qc: [AA-1]      Oerall, critical scattering vector, overwrites values from individual mirrors
+* Qc: [AA-1]      Overall, critical scattering vector, overwrites values from individual mirrors
 * reflect: [str]  Reflectivity file name. Format [q(Angs-1) R(0-1)]
 *
 * %D
