@@ -16,9 +16,9 @@
 * Simple test instrument for the SpinWave_BCO component.
 * Refer to the component documentation for further instructions.
 *
-* %Example: h=1 l=0 -n 1e6 Detector: Emon_I=0.0517575
-* %Example: h=0 l=0.5 E=6.73 -n 1e6 Detector: Emon_I=0.0108855
-* %Example: h=1 l=1 -n 1e6 Detector: Emon_I=0.000655744
+* %Example: h=1 l=0 Detector: Emon_I=0.0517575
+* %Example: h=0 l=0.5 E=6.73 Detector: Emon_I=0.0108855
+* %Example: h=1 l=1 Detector: Emon_I=0.000655744
 
 * %Parameters
 * E:    [meV] Mean energy at source   
@@ -27,7 +27,7 @@
 * VDIV: [deg] Vertical divergence produced from source
 * TT:   [deg] Two-theta detetector-angle
 * OM:   [deg] Sample rotation angle
-* C:    [meV/AA^(-1)] Sample velocity of sound
+* C:    [meV/AA<sup>-1</sup>] Sample velocity of sound
 *
 * %End
 ******************************************************************************/
@@ -138,16 +138,6 @@ COMPONENT collimator_linear1 = Collimator_linear(
     divergence=40)
 AT (0, 0, 0.7) RELATIVE arm1
 
-/*COMPONENT e_monitor_before_sample = E_monitor(
-    nE=100, 
-    filename="E_before_sample", 
-    Emin=Ei-2, 
-    Emax=Ei+2,
-    xwidth=width,
-    yheight=2*width,
-    restore_neutron=1)
-AT (0, 0, 0.99) RELATIVE arm1*/
-
 COMPONENT arm2 = Arm()
 AT (0, 0, 1) RELATIVE arm1
 ROTATED (0, 0, 0) RELATIVE arm1
@@ -198,16 +188,6 @@ COMPONENT slit = Slit(
     xwidth=0.005, 
     yheight=0.005)
 AT (0, 0, 1) RELATIVE arm3
-
-/*COMPONENT e_monitor_beforeana = E_monitor(
-    nE=250, 
-    filename="Ebeforeana", 
-    xwidth=width, 
-    yheight=width, 
-    Emin=0, 
-    Emax=25,
-    restore_neutron=1)
-AT (0, 0, 0.001) RELATIVE PREVIOUS*/
 
 COMPONENT analyzer = Monochromator_flat(
     zwidth=width, 
