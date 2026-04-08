@@ -2306,6 +2306,7 @@ int cogen_rt_funnel(struct instr_def *instr)
   coutf("#endif // FUNNEL");
   coutf("");
   printf("\n-----------------------------------------------------------\n");
+  return(warnings);
 } /* cogen_rt_funnel */
 
 /*******************************************************************************
@@ -2494,7 +2495,7 @@ cogen_header(struct instr_def *instr, char *output_name)
       cliter2 = list_iterate(ctypes);
       char *cvar;
       char *ctpe;
-      while(cvar = list_next(cliter)) {
+      while((cvar = list_next(cliter))) {
         ctpe = list_next(cliter2);
         char *Numberedvar = malloc(256*sizeof(char));
 	/* We need to attach comp index to cvar */
@@ -3115,7 +3116,7 @@ void detect_skipable_transforms(struct instr_def *instr) {
             // Its target can not be skipped either
             struct jump_struct *this_jump;
             List_handle literJ = list_iterate(comp->jump);
-            while (this_jump = list_next(literJ)) {
+            while ((this_jump = list_next(literJ))) {
                 
                 // Find target (not initialized yet)
                 List_handle liter3 = list_iterate(instr->complist);

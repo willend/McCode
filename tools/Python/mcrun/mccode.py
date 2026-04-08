@@ -385,7 +385,7 @@ class McStas:
                 args.extend([f'--{opt}=' + str(val)])
 
         # Handle proxy options without values (flags)
-        proxy_opts_flags = ['no-output-files', 'info', 'list-parameters', 'meta-list', 'yes']
+        proxy_opts_flags = ['no-output-files', 'info', 'list-parameters', 'meta-list', 'yes','append']
         if mccode_config.configuration["MCCODE"] == 'mcstas':
             proxy_opts_flags.append('gravitation')
 
