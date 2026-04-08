@@ -21,17 +21,23 @@
 * %Example: h=1 l=1 Detector: Emon_I=0.000655744
 *
 * %Parameters
-* E:    [meV] Mean energy at source   
-* DE:   [meV] Energy spread at source 
-* HDIV: [deg] Horizontal divergence produced from source
-* VDIV: [deg] Vertical divergence produced from source
-* TT:   [deg] Two-theta detetector-angle
-* OM:   [deg] Sample rotation angle
-* C:    [meV/AA<sup>-1</sup>] Sample velocity of sound
+* E:            [meV] Mean energy at source
+* Ef:           [meV] Final energy
+* Dlambda:      [AA]  Wavelength spread at source
+* h:            [1]   1st sample Miller index
+* l:            [1]   3rd sample Miller index
+* B:            [T]   Field strength of external magnetic field applied along z-axis
+* dA3:          [deg] Offset from A3 nominal value
+* Temp:         [K]   Sample temperature
+* width:        [deg] Width of sample
+* E_steps_low:  [ ] -> PLEASE FILL IN <-
+* E_steps_high: [ ] -> PLEASE FILL IN <-
+* mode:         [1] -> PLEASE FILL IN <-
+* verbose:      [1] Verbosity flag
 *
 * %End
 ******************************************************************************/
-DEFINE INSTRUMENT Samples_SpinWave_BCO(E=1.06,Ef=14.7,Dlambda=0.1, h=1, l=0,B=0,dA3=-90, Temp=2, width = 0.005, E_steps_low = 50, E_steps_high = 50,mode = 2,verbose=0)
+DEFINE INSTRUMENT Samples_SpinWave_BCO(E=1.06,Ef=14.7,Dlambda=0.1, h=1, l=0,B=0,dA3=-90, Temp=2, width = 0.005, E_steps_low = 50, E_steps_high = 50, int mode = 2,verbose=0)
 
 DECLARE
 %{
