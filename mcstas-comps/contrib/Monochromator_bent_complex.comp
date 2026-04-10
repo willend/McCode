@@ -132,12 +132,12 @@ INITIALIZE
   mono_arr.verbosity = verbose;             // [#]
 
   // Separate the string into individual crystals
-  // If only 5 characters are given, and number of crystals are larger than 1,
-  // assume that they want to use the same plane on all the crystals.
+  // If no semicolon is present, parse the string as a single plane of reflection
+  // and apply that to all crystals
 
   char* input_string = NULL;
 
-  if (strlen (plane_of_reflection) == 5 && n_crystals > 1) {
+  if (strchr (plane_of_reflection, ";") == NULL && n_crystals > 1) {
     // Apply the same plane to all crystals
     input_string = repeat_with_semicolon (plane_of_reflection, n_crystals);
   } else {
