@@ -2,20 +2,17 @@
 * Instrument: Test_Monochromator_bent_complex
 *
 * %Identification
-* Written by: Jakob Lass (jakob.lass@psi.ch)
+* Written by: Jakob Lass (jakob.lass@psi.ch) and modified by Daniel Lomholt Christensen (daniel.lomholt.2000@gmail.com)
 * Date: 20250702
 * Origin: PSI/LSN
 * %INSTRUMENT_SITE: Tests_optics
-*
-* This is a first draft for the WARP instrument proposal, as created by
-* Daniel Gabriel Mazzone (daniel.mazzone@psi.ch) and Jakob Lass 
-* (jakob.lass@psi.ch). This proposal will include a new component which utilizes
-* the marmot geometery. The instrument only looks at the backend of the instrument
-* from the sample to the detector, as the guide part of the instrument is not 
-* fully planned out yet.
+* A test instrument that highlights Monochromator Bent complex's capabilities
 *
 * %D
-* Used as a test instrument to highlight Monochromator Bent complex's capabilities
+* This is a first draft for the WARP instrument proposal, as created by
+* Daniel Gabriel Mazzone (daniel.mazzone@psi.ch) and Jakob Lass 
+* (jakob.lass@psi.ch). This instrument introduces how to use the Monochromator_bent_complex
+* component in an instrument draft.
 *
 * %Example: Test_Monochromator_bent_complex.instr mos=60 Detector: E_PSD_mon_end_I=0.000215194
 * %Example: Test_Monochromator_bent_complex.instr mos=60 use_single_plane=1 Detector: E_PSD_mon_end_I=0.000215194
@@ -29,6 +26,7 @@
 * det_rot:  [m] Detector rotation
 * mos: [arcmin] Monochromator mosaicity
 * extra:  [deg] Perturbation rotation angle
+* use_single_plane: [flag] Flag indicating whether the crystal should be instantiated with a single plane of reflection, instead of 92 planes
 *
 * %End
 *******************************************************************************/
