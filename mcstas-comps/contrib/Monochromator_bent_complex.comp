@@ -137,7 +137,7 @@ INITIALIZE
 
   char* input_string = NULL;
 
-  if (strchr (plane_of_reflection, ";") == NULL && n_crystals > 1) {
+  if (strchr (plane_of_reflection, ';') == NULL && n_crystals > 1) {
     // Apply the same plane to all crystals
     input_string = repeat_with_semicolon (plane_of_reflection, n_crystals);
   } else {
