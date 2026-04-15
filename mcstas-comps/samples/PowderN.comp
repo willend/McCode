@@ -389,27 +389,24 @@ SHARE
   #endif
 
   double
-  ncrystalpowdern_determine_sigma_inc ( ncrystal_info_t ncobj ) {
+  ncrystalpowdern_determine_sigma_inc (ncrystal_info_t ncobj) {
     // Digging out sigma_inc via the NCrystal C API is not as easy as it
     // should be yet, so for now we do it the hard way.
-    unsigned ncomps = ncrystal_info_ncomponents( ncobj );
+    unsigned ncomps = ncrystal_info_ncomponents (ncobj);
     double sum = 0.0;
-    for ( unsigned icomp = 0; icomp < ncomps; ++icomp ) {
-      //Get component fraction and atomdata:
+    for (unsigned icomp = 0; icomp < ncomps; ++icomp) {
+      // Get component fraction and atomdata:
       double fraction;
-      unsigned atomdataidx;//unused
-      ncrystal_info_getcomponent( ncobj, icomp, &atomdataidx, &fraction );
-      ncrystal_atomdata_t atomdata
-        = ncrystal_create_component_atomdata( ncobj, icomp );
-      //Get incoherent xsect from atomdata:
+      unsigned atomdataidx; // unused
+      ncrystal_info_getcomponent (ncobj, icomp, &atomdataidx, &fraction);
+      ncrystal_atomdata_t atomdata = ncrystal_create_component_atomdata (ncobj, icomp);
+      // Get incoherent xsect from atomdata:
       const char* displaylabel;
       const char* description;
       double mass, incxs, cohsl_fm, absxs;
       unsigned nsubcomponents, zval, aval;
-      ncrystal_atomdata_getfields( atomdata, &displaylabel, &description,
-                                   &mass, &incxs, &cohsl_fm, &absxs,
-                                   &nsubcomponents, &zval, &aval );
-      ncrystal_unref(&atomdata);
+      ncrystal_atomdata_getfields (atomdata, &displaylabel, &description, &mass, &incxs, &cohsl_fm, &absxs, &nsubcomponents, &zval, &aval);
+      ncrystal_unref (&atomdata);
       sum += incxs * fraction;
     }
     return sum;
@@ -417,36 +414,35 @@ SHARE
 
   int
   read_line_data_ncrystal (const char* cfgstr, struct line_info_struct* info) {
-    ncrystal_info_t ncobj = ncrystal_create_info(cfgstr);
-    if ( ncrystal_info_nphases(ncobj) != 0 ) {
-      exit (fprintf (stderr,"PowderN: %s: Error: Only single phase NCrystal "
+    ncrystal_info_t ncobj = ncrystal_create_info (cfgstr);
+    if (ncrystal_info_nphases (ncobj) != 0) {
+      exit (fprintf (stderr,
+                     "PowderN: %s: Error: Only single phase NCrystal "
                      "materials are currently supported by PowderN\n",
                      info->compname));
     }
-    const double numberdensity = ncrystal_info_getnumberdensity(ncobj);
-    const int nhkl = ncrystal_info_nhkl( ncobj );
-    if ( nhkl == 0 ) {
-      printf("PowderN: %s: WARNING: NCrystal material "
-             "does not contain reflections\n",info->compname);
+    const double numberdensity = ncrystal_info_getnumberdensity (ncobj);
+    const int nhkl = ncrystal_info_nhkl (ncobj);
+    if (nhkl == 0) {
+      printf ("PowderN: %s: WARNING: NCrystal material "
+              "does not contain reflections\n",
+              info->compname);
     } else {
-      MPI_MASTER (printf ("PowderN: %s: Loading %d reflections from %s\n",
-                          info->compname, nhkl, cfgstr););
+      MPI_MASTER (printf ("PowderN: %s: Loading %d reflections from %s\n", info->compname, nhkl, cfgstr););
     }
     unsigned spacegroup, n_atoms;
     double lattice_a, lattice_b, lattice_c, alpha, beta, gamma, cell_volume;
-    int has_structure
-      = ncrystal_info_getstructure( ncobj, &spacegroup,
-                                    &lattice_a, &lattice_b, &lattice_c,
-                                    &alpha, &beta, &gamma,
-                                    &cell_volume, &n_atoms );
-    if ( !has_structure ) {
-      exit (fprintf (stderr,"PowderN: %s: Error: NCrystal material "
-                     "does not contain crystal structure\n",info->compname));
+    int has_structure = ncrystal_info_getstructure (ncobj, &spacegroup, &lattice_a, &lattice_b, &lattice_c, &alpha, &beta, &gamma, &cell_volume, &n_atoms);
+    if (!has_structure) {
+      exit (fprintf (stderr,
+                     "PowderN: %s: Error: NCrystal material "
+                     "does not contain crystal structure\n",
+                     info->compname));
     }
 
-    //Note we use V_0=n_atoms/numdens and not V_0 = cell_volume. This way, it
-    //supports density scaling that the user might have performed with the
-    //NCrystal cfg-string parameters (e.g. "...;density=0.6x").
+    // Note we use V_0=n_atoms/numdens and not V_0 = cell_volume. This way, it
+    // supports density scaling that the user might have performed with the
+    // NCrystal cfg-string parameters (e.g. "...;density=0.6x").
 
     info->V_0 = n_atoms / numberdensity;
     info->at_nb = n_atoms;
@@ -455,25 +451,22 @@ SHARE
     /* allocate line_data array */
     struct line_data* list = NULL;
     list = (struct line_data*)malloc (nhkl * sizeof (struct line_data));
-    info->sigma_a = ncrystal_info_getxsectabsorption(ncobj);
-    info->sigma_i = ncrystalpowdern_determine_sigma_inc(ncobj);
-    const double w = ( info->Dd >= 0.0 ? info->Dd : 0.0 );
-    const double Epsilon = ( ( info->Epsilon && fabs (Epsilon) < 1e6 )
-                             ? info->Epsilon * 1e-6
-                             : 0.0 );
-    for ( int idx = 0; idx < nhkl; ++idx ) {
+    info->sigma_a = ncrystal_info_getxsectabsorption (ncobj);
+    info->sigma_i = ncrystalpowdern_determine_sigma_inc (ncobj);
+    const double w = (info->Dd >= 0.0 ? info->Dd : 0.0);
+    const double Epsilon = ((info->Epsilon && fabs (Epsilon) < 1e6) ? info->Epsilon * 1e-6 : 0.0);
+    for (int idx = 0; idx < nhkl; ++idx) {
       int h, k, l, mult;
       double dsp, fsq;
-      ncrystal_info_gethkl( ncobj, idx, &h, &k, &l, &mult, &dsp, &fsq );
+      ncrystal_info_gethkl (ncobj, idx, &h, &k, &l, &mult, &dsp, &fsq);
       list[idx].j = mult;
-      double q = (2.0*PI)/dsp;
+      double q = (2.0 * PI) / dsp;
       if (Epsilon)
         q -= Epsilon * q;
       list[idx].q = q;
       list[idx].DWfactor = 1.0;
       list[idx].w = w;
       list[idx].F2 = fsq;
-
     }
     ncrystal_unref (&ncobj);
     info->list = list;
@@ -495,7 +488,7 @@ SHARE
     char* filename = NULL;
 
     if (!SC_file) {
-      //Should not be possible, was checked by calling code in INITIALIZE.
+      // Should not be possible, was checked by calling code in INITIALIZE.
       fprintf (stderr, "PowderN: logic error (SC_file is NULL)!\n");
       exit (-1);
     }
@@ -579,11 +572,10 @@ SHARE
       free (parsing);
     }
 
-    //First round of laz/lau files from ncrystal_ncmat2hkl had an n_atoms factor
-    //wrong in sigma_a/sigma_i. Luckily we can detect such files.
-    const int is_buggy_ncmat2hkl_laz = ( has_ncrystal_cfgstr
-                                         && ncmat2hklversion < 2 );
-    if ( is_buggy_ncmat2hkl_laz ) {
+    // First round of laz/lau files from ncrystal_ncmat2hkl had an n_atoms factor
+    // wrong in sigma_a/sigma_i. Luckily we can detect such files.
+    const int is_buggy_ncmat2hkl_laz = (has_ncrystal_cfgstr && ncmat2hklversion < 2);
+    if (is_buggy_ncmat2hkl_laz) {
       info->sigma_a /= info->at_nb;
       info->sigma_i /= info->at_nb;
     }
@@ -928,10 +920,9 @@ INITIALIZE
   }
 
   if (reflections && strlen (reflections) && strcmp (reflections, "NULL") && strcmp (reflections, "0")) {
-    if ( strstr(reflections, ".ncmat") != NULL || strstr(reflections, "::") != NULL ) {
-      MPI_MASTER (printf ("PowderN: %s: NCrystal cfg-string detected (\"%s\").\n",
-                          NAME_CURRENT_COMP,reflections););
-      i = read_line_data_ncrystal(reflections, &line_info);
+    if (strstr (reflections, ".ncmat") != NULL || strstr (reflections, "::") != NULL) {
+      MPI_MASTER (printf ("PowderN: %s: NCrystal cfg-string detected (\"%s\").\n", NAME_CURRENT_COMP, reflections););
+      i = read_line_data_ncrystal (reflections, &line_info);
     } else {
       i = read_line_data (reflections, &line_info);
     }
@@ -941,7 +932,7 @@ INITIALIZE
                      "ERROR    Please check file format (laz or lau or NCrystal).\n",
                      NAME_CURRENT_COMP, reflections));
   } else {
-    MPI_MASTER (printf ("PowderN: %s: Using incoherent elastic scattering only.\n", NAME_CURRENT_COMP ););
+    MPI_MASTER (printf ("PowderN: %s: Using incoherent elastic scattering only.\n", NAME_CURRENT_COMP););
     line_info.count = 0;
     i = 0;
   }
