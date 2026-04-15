@@ -929,8 +929,8 @@ INITIALIZE
 
   if (reflections && strlen (reflections) && strcmp (reflections, "NULL") && strcmp (reflections, "0")) {
     if ( strstr(reflections, ".ncmat") != NULL || strstr(reflections, "::") != NULL ) {
-      MPI_MASTER (printf ("PowderN: %s: NCrystal cfg-string detected.\n",
-                          NAME_CURRENT_COMP););
+      MPI_MASTER (printf ("PowderN: %s: NCrystal cfg-string detected (\"%s\").\n",
+                          NAME_CURRENT_COMP,reflections););
       i = read_line_data_ncrystal(reflections, &line_info);
     } else {
       i = read_line_data (reflections, &line_info);
