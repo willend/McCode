@@ -451,10 +451,15 @@ SHARE
     /* allocate line_data array */
     struct line_data* list = NULL;
     list = (struct line_data*)malloc (nhkl * sizeof (struct line_data));
+    if (!list) {
+      exit (fprintf (stderr,
+                     "PowderN: %s: Error: Could not allocate line array\n",
+                     info->compname));
+    }
     info->sigma_a = ncrystal_info_getxsectabsorption (ncobj);
     info->sigma_i = ncrystalpowdern_determine_sigma_inc (ncobj);
     const double w = (info->Dd >= 0.0 ? info->Dd : 0.0);
-    const double Epsilon = ((info->Epsilon && fabs (Epsilon) < 1e6) ? info->Epsilon * 1e-6 : 0.0);
+    const double Epsilon = ((info->Epsilon && fabs (info->Epsilon) < 1e6) ? info->Epsilon * 1e-6 : 0.0);
     for (int idx = 0; idx < nhkl; ++idx) {
       int h, k, l, mult;
       double dsp, fsq;
@@ -602,6 +607,11 @@ SHARE
     }
     /* allocate line_data array */
     list = (struct line_data*)malloc (size * sizeof (struct line_data));
+    if (!list) {
+      exit (fprintf (stderr,
+                     "PowderN: %s: Error: Could not allocate line array\n",
+                     info->compname));
+    }
 
     for (i = 0; i < size; i++) {
       /*      printf("Reading in line %i\n",i);*/
