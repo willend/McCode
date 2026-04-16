@@ -1187,7 +1187,7 @@ TRACE
   for (iterator = 0; iterator < number_of_masks; iterator++) {
     // CPU Only
     // if(Volumes[mask_volume_index_list.elements[iterator]]->geometry.within_function(ray_position,&Volumes[mask_volume_index_list.elements[iterator]]->geometry)
-    // == 1) { 
+    // == 1) {
     // GPU
     if (r_within_function (ray_position, &Volumes[mask_volume_index_list.elements[iterator]]->geometry) == 1) {
       mask_status_list.elements[iterator] = 1;
@@ -1733,8 +1733,8 @@ TRACE
           } else {
             if (fysik->sampling_points == 0) {
               real_transmission_probability = exp (-length_to_boundary * my_sum_plus_abs);
-            } else if (fysik->sampling_points != 0 ){
-                          // Calculate the probabilities and then add them cumulatively
+            } else if (fysik->sampling_points != 0) {
+              // Calculate the probabilities and then add them cumulatively
               memset (fysik->total_mus, 0, sizeof (double) * fysik->sampling_points);
 
               for (int i = 0; i < Volumes[current_volume]->p_physics->number_of_processes; i++) {
@@ -1765,7 +1765,6 @@ TRACE
               }
 
               real_transmission_probability = fysik->cumul_transmission_prob[fysik->sampling_points - 1];
-
             }
             // printf("Trans prop = %g\n", real_transmission_probability);
             if (Volumes[current_volume]->geometry.geometry_p_interact != 0) {
@@ -1809,7 +1808,7 @@ TRACE
                 selected_sampling = i;
                 break;
               }
-              abs_weight_factor *= (fysik->total_mus[selected_sampling] - mu_at_speed * fysik->dist)/fysik->total_mus[selected_sampling];
+              abs_weight_factor *= (fysik->total_mus[selected_sampling] - mu_at_speed * fysik->dist) / fysik->total_mus[selected_sampling];
 
               // printf("\nSelected_sampling = %d\n", selected_sampling);
 
@@ -1914,7 +1913,7 @@ TRACE
       time_old = t;
       // Apply absorption
       // if (abs_weight_factor != 1){
-        // printf("Abs weight factor = %g\n", abs_weight_factor);
+      // printf("Abs weight factor = %g\n", abs_weight_factor);
       // }
       p *= abs_weight_factor;
 
