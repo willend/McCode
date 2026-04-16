@@ -1,0 +1,101 @@
+# The `Guide_gravity_psd` Component
+
+*McStas: Neutron straight guide with gravity. Can be channeled and focusing.
+Waviness may be specified, as well as side chamfers (on substrate).*
+
+## Identification
+
+- **Site:** 
+- **Author:** <a href="mailto:farhi@ill.fr">Emmanuel Farhi</a>
+- **Origin:** <a href="http://www.ill.fr">ILL (France)</a>.
+- **Date:** Aug 03 2001
+
+## Description
+
+```text
+Models a rectangular straight guide tube centered on the Z axis, with
+gravitation handling. The entrance lies in the X-Y plane.
+The guide can be channeled (nslit,d,nhslit parameters). The guide coating
+specifications may be entered via different ways (global, or for
+each wall m-value).
+
+Waviness (random) may be specified either globally or for each mirror type.
+Side chamfers (due to substrate processing) may be specified the same way.
+In order to model a realistic straight guide assembly, a long guide of
+length 'l' may be splitted into 'nelements' between which chamfers/gaps are
+positioned.
+
+The reflectivity may be specified either using an analytical mode (see
+Component manual) or as a text file in free format, with 1st
+column as q[Angs-1] and 2nd column as the reflectivity R in [0-1].
+For details on the geometry calculation see the description in the McStas
+component manual.
+
+There is a special rotating mode in order to approximate a Fermi Chopper
+behaviour, in the case the neutron trajectory is nearly linear inside the
+chopper slits, i.e. the neutrons are fast w/r/ to the chopper speed.
+Slits are straight, but may be super-mirror coated. In this case, the
+component is NOT centered, but located at its entry window. It should then
+be shifted by -l/2.
+
+Example: Guide_gravity_psd(w1=0.1, h1=0.1, w2=0.1, h2=0.1, l=12,
+R0=0.99, Qc=0.0219, alpha=6.07, m=1.0, W=0.003)
+
+%VALIDATION
+May 2005: extensive internal test, all problems solved
+Validated by: K. Lieutenant
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| **nxpsd** | 1 | Number of bins in the built-in mirror parallel monitors |  |
+| **filenameT** | str | Filename for top-mirror-monitor |  |
+| **filenameB** | str | Filename for bottom-mirror-monitor |  |
+| **filenameL** | str | Filename for left-mirror-monitor |  |
+| **filenameR** | str | Filename for right-mirror-monitor |  |
+| **w1** | m | Width at the guide entry |  |
+| **h1** | m | Height at the guide entry |  |
+| w2 | m | Width at the guide exit. If 0, use w1. | 0 |
+| h2 | m | Height at the guide exit. If 0, use h1. | 0 |
+| **l** | m | length of guide |  |
+| R0 | 1 | Low-angle reflectivity | 0.995 |
+| Qc | AA-1 | Critical scattering vector | 0.0218 |
+| alpha | AA | Slope of reflectivity | 4.38 |
+| m | 1 | m-value of material. Zero means completely absorbing. m=0.65 | 1.0 |
+| W | AA-1 | Width of supermirror cut-off | 0.003 |
+| nslit | 1 | Number of vertical channels in the guide (>= 1) (nslit-1 vertical dividing walls). | 1 |
+| d | m | Thickness of subdividing walls | 0.0005 |
+| mleft | 1 | m-value of material for left.   vert. mirror | -1 |
+| mright | 1 | m-value of material for right.  vert. mirror | -1 |
+| mtop | 1 | m-value of material for top.    horz. mirror | -1 |
+| mbottom | 1 | m-value of material for bottom. horz. mirror | -1 |
+| nhslit | 1 | Number of horizontal channels in the guide (>= 1). (nhslit-1 horizontal dividing walls). this enables to have nslit*nhslit rectangular channels | 1 |
+| G | m/s2 | Gravitation norm. 0 value disables G effects. | 0 |
+| aleft | 1 | alpha-value of left  vert. mirror | -1 |
+| aright | 1 | alpha-value of right vert. mirror | -1 |
+| atop | 1 | alpha-value of top   horz. mirror | -1 |
+| abottom | 1 | alpha-value of left  horz. mirror | -1 |
+| wavy | deg | Global guide waviness | 0 |
+| wavy_z | deg | Partial waviness along propagation axis | 0 |
+| wavy_tb | deg | Partial waviness in transverse direction for top/bottom mirrors | 0 |
+| wavy_lr | deg | Partial waviness in transverse direction for left/right mirrors | 0 |
+| chamfers | m | Global chamfers specifications (in/out/mirror sides). | 0 |
+| chamfers_z | m | Input and output chamfers | 0 |
+| chamfers_lr | m | Chamfers on left/right mirror sides | 0 |
+| chamfers_tb | m | Chamfers on top/bottom mirror sides | 0 |
+| nelements | 1 | Number of sections in the guide (length l/nelements). | 1 |
+| nu | Hz | Rotation frequency (round/s) for Fermi Chopper approximation | 0 |
+| phase | deg | Phase shift for the Fermi Chopper approximation | 0 |
+| reflect | str | Reflectivity file name. Format q(Angs-1) R(0-1) | "NULL" |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Guide_gravity_psd.comp) for `Guide_gravity_psd.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

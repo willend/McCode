@@ -1,0 +1,80 @@
+# The `Union_logger_2D_kf_time` Component
+
+*McStas: Two dimensional logger of wavevector for a range of time bins*
+
+## Identification
+
+- **Site:** 
+- **Author:** Mads Bertelsen
+- **Origin:** University of Copenhagen
+- **Date:** 20.08.15
+
+## Description
+
+```text
+Part of the Union components, a set of components that work together and thus
+sperates geometry and physics within McStas.
+The use of this component requires other components to be used.
+
+1) One specifies a number of processes using process components
+2) These are gathered into material definitions using Union_make_material
+3) Geometries are placed using Union_box/cylinder/sphere, assigned a material
+4) A Union_master component placed after all of the above
+
+Only in step 4 will any simulation happen, and per default all geometries
+defined before this master, but after the previous will be simulated here.
+
+There is a dedicated manual available for the Union_components
+
+This logger logs a 2D projection of the final wavevector after each scattering
+in the lab frame. It will do so for a number of time_bins, making it possible
+to make a animation, but beware of memory / diskspace requirements.
+
+A logger will log something for scattering events happening to certain volumes,
+which are specified in the target_geometry string. By leaving it blank, all
+geometries are logged, even the ones not defined at this point in the
+instrument file. If a list og target_geometries is selected, one can further
+narrow the events logged by providing a list of process names in target_process
+which need to correspond with names of defined Union_process components.
+
+To use the logger_conditional_extend function, set it to some integer value n
+and make and extend section to the master component that runs the geometry.
+In this extend function, logger_conditional_extend[n] is 1 if the conditional
+stack evaluated to true, 0 if not. This way one can check what rays is logged
+using regular McStas monitors. Only works if a conditional is applied to this
+logger.
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| target_geometry | string | Comma seperated list of geometry names that will be logged, leave empty for all volumes (even not defined yet) | "NULL" |
+| target_process | string | Comma seperated names of physical processes, if volumes are selected, one can select Union_process names | "NULL" |
+| Q1_min | A^-1 | Histogram boundery, min kf value for first axis | -5 |
+| Q1_max | A^-1 | Histogram boundery, max kf value for first axis | 5 |
+| Q2_min | A^-1 | Histogram boundery, min kf value for second axis | -5 |
+| Q2_max | A^-1 | Histogram boundery, max kf value for second axis | 5 |
+| time_min | s | Minimum time | 0 |
+| time_max | s | Maximum time | 1 |
+| Q_direction_1 | string | kf direction for first axis ("x", "y" or "z") | "x" |
+| Q_direction_2 | string | kf direction for second axis ("x", "y" or "z") | "z" |
+| filename | string | Filename of produced data file | "NULL" |
+| n1 | 1 | Number of bins for first axis | 90 |
+| n2 | 1 | Number of bins for second axis | 90 |
+| time_bins | 1 | Number of time bins | 10 |
+| order_total | 1 | Only log rays that scatter for the n'th time, 0 for all orders | 0 |
+| order_volume | 1 | Only log rays that scatter for the n'th time in the same geometry | 0 |
+| order_volume_process | 1 | Only log rays that scatter for the n'th time in the same geometry, using the same process | 0 |
+| logger_conditional_extend_index | 1 | If a conditional is used with this logger, the result of each conditional calculation can be made available in extend as a array called "logger_conditional_extend", and one would then acces logger_conditional_extend[n] if logger_conditional_extend_index is set to n | -1 |
+| init | string | Name of Union_init component (typically "init", default) | "init" |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_logger_2D_kf_time.comp) for `Union_logger_2D_kf_time.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

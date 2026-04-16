@@ -1,0 +1,58 @@
+# The `Conics_PH` Component
+
+*McStas: Release: McStas 2.7
+Date: September 2021
+
+Parabolid-Hyperbolic shells for Wolter optic*
+
+## Identification
+
+- **Site:** 
+- **Author:** Peter Wilendrup and Erik Knudsen <br>(derived from Giacomo Resta skeleton-component)
+- **Origin:** DTU
+- **Date:** September 2021
+
+## Description
+
+```text
+Implements a set of nshells Wolter I Paraboloid/Hyperboloid pairs using conics.h from ConicTracer.
+
+The component has two distinct modes of specifying the geometry:
+a) Via the radii vector, parametrized from largest to smallest radius with a length of 'nshells'
+
+b) By specifying radii rmax and rmin, between which a quadratic law distributes 'nshells' surfaces.
+
+The mirrors are assumed to be touching at the mid-optic plane, i.e. there is no gap between primary
+and secondary mirror.* By definition the ratio between primary and secondary mirror glancing angles is 1/3.
+At present a single m-value is used for all mirrors.
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| rmin | m | Midoptic plane radius of innermost mirror pair. | 0.325 |
+| rmax | m | Midoptic plane radius of outermost mirror pair. | 0.615 |
+| focal_length | m | Focal length of the mirror pairs. | 10.070 |
+| lp | m | Paraboloid mirror length. | 0.84 |
+| lh | m | Hyperboloid mirror length. | 0.84 |
+| nshells | 1 | Number of nested shells to expect | 4 |
+| m | 1 | Critical angle of mirrors as multiples of Ni. | 1 |
+| mirr_thick | m | Thickness of mirror shell surfaces - NOT YET IMPLEMENTED | 0 |
+| disk |  | Flag. If nonzero, insert a disk to block the central area within the innermost mirror. | 1 |
+| radii | m | Optional vector of radii (length should match nshells) | NULL |
+| R0 | 1 | Reflectivity at Low angles for reflectivity curve approximation | 0.99 |
+| Qc | AA-1 | Critical scattering vector | 0.021 |
+| W | AA-1 | Width of supermirror cut-off | 0.003 |
+| alpha | AA | Slope of reflectivity for reflectivity curve approximation | 6.07 |
+| transmit | 1 | Fraction of statistics to assign to transmitted beam - NOT YET IMPLEMENTED | 0 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Conics_PH.comp) for `Conics_PH.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

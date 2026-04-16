@@ -1,0 +1,116 @@
+# The `Union_abs_logger_1D_space_tof_to_lambda` Component
+
+*McStas: A logger of absorption along 1D of space and 1D of tof, but converted to lambda*
+
+## Identification
+
+- **Site:** 
+- **Author:** Mads Bertelsen
+- **Origin:** ESS DMSC
+- **Date:** 19.06.20
+
+## Description
+
+```text
+Part of the Union components, a set of components that work together and thus
+separates geometry and physics within McStas.
+The use of this component requires other components to be used.
+
+1) One specifies a number of processes using process components
+2) These are gathered into material definitions using Union_make_material
+3) Geometries are placed using Union_box/cylinder/sphere, assigned a material
+4) Logger and conditional components can be placed which will record what happens
+5) A Union_master component placed after all of the above
+
+Only in step 5 will any simulation happen, and per default all geometries
+defined before this master, but after the previous will be simulated here.
+
+There is a dedicated manual available for the Union_components
+
+This component is an absorption logger, and thus placed in point 4) above.
+
+A absorption logger will log something for each absorption event happening
+in the geometry or geometries on which it is attached. These are specified
+in the target_geometry string. By leaving it blank, all geometries are
+logged, even the ones not defined at this point in the instrument file.
+Multiple geometries are specified as a comma separated list.
+
+This absorption logger records the absorbed intensity as a function of the
+measured and true wavelength. The measured wavelength is calculated from
+the time of flight and distance travelled. This distance is a constant from
+source to sample added to the distance from the sample position to the
+detector pixel in which the event is detected. The true wavelength is
+calculated directly from the velocity. This information shows any error in
+conversion from tof to wavelength, especially from any added travelled
+distance from multiple scattering.
+
+The lambda_min, max and bin parameters are used to set both the range for
+measured and true wavelength. If either of these, denoted lambda_m and
+lambda_t respectively, is set they will overwrite the lambda setting for
+that part. Sine most data will be along the line lambda_m = lambda_t, it
+is possible to record lambda_m / lambda_t as a function of lambda_t, which
+will be close to 1.0. This mode is selected by setting relative_measured
+to 1, and then the range can be selected with relative_min, max and bins.
+
+This absorption logger needs to be placed in space, the position is recorded in
+the coordinate system of the logger component. Note the detection is along the
+y axis of the component, so it is natural to place it relative to a cylinder.
+
+This component works as other absorption loggers, but converts the tof and
+position data to wavelength, which is then compared to the actual wavelength
+calculated from the neutron state. The neutron position used to calculate
+the wavelength is pixelated while the time of flight is continous. The
+distance from source to sample is an input parameter, and the distance from
+sample to a detector pixel is calculated using the reference component position
+which should be specified with a relative component index.
+
+It is possible to attach one or more conditional components to this absorption
+logger. Such a conditional component would impose a condition on the state of
+the neutron after the Union_master component that executes the simulation,
+and the absorption logger will only record the event if this condition is true.
+
+To use the logger_conditional_extend function, set it to some integer value n
+and make and extend section to the master component that runs the geometry.
+In this extend function, logger_conditional_extend[n] is 1 if the conditional
+stack evaluated to true, 0 if not. This way one can check what rays is logged
+using regular McStas monitors. Only works if a conditional is applied to this
+logger.
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| target_geometry | string | Comma separated list of geometry names that will be logged, leave empty for all volumes (even not defined yet) | "NULL" |
+| **ref_component** | 1 | Reference component instance index, sample position for distance calculation |  |
+| **yheight** | m | Height of absorption logger |  |
+| **yn** | 1 | Number of bins along y axis |  |
+| source_sample_dist | m | Travel distance between source and sample position, used to calculate total travelled distance | 0.0 |
+| lambda_min | AA | Minimum wavelength recorded (sets both lambda_m_min and lambda_t_min) | -1 |
+| lambda_max | AA | Maximum wavelength recorded (sets both lambda_m_max and lambda_t_max) | -1 |
+| lambda_bins | 1 | Number of wavelength bins | -1 |
+| lambda_m_min | AA | Minimum measured wavelength recorded from tof and travelled distance (overwrites lambda_min) | -1 |
+| lambda_m_max | AA | Maximum measured wavelength recorded from tof and travelled distance (overwrites lambda_max) | -1 |
+| lambda_m_bins | 1 | Number of measured wavelength bins | -1 |
+| lambda_t_min | AA | Minimum true wavelength recorded from tof and travelled distance (overwrites lambda_min) | -1 |
+| lambda_t_max | AA | Maximum true wavelength recorded from tof and travelled distance (overwrites lambda_max) | -1 |
+| lambda_t_bins | 1 | Number of true wavelength bins | -1 |
+| relative_measured | 1 | Default 0, records measured as function of true wavelength, if this is enabled, records measured relative to true wavelength | 0 |
+| relative_min | 1 | Smallest value of measured / true wavelength in histogram | 0.5 |
+| relative_max | 1 | Largest value of measured / true wavelength in histogram | 1.5 |
+| relative_bins | 1 | Number of bins on histogram axis with measured divided by true wavelength | 100 |
+| filename | string | Filename of produced data file | "NULL" |
+| order_total | 1 | Only log rays that have scattered n times, -1 for all orders | -1 |
+| order_volume | 1 | Only log rays that have scattered n times in the same geometry, -1 for all orders | -1 |
+| logger_conditional_extend_index | 1 | If a conditional is used with this logger, the result of each conditional calculation can be made available in extend as a array called "logger_conditional_extend", and one would then access logger_conditional_extend[n] if logger_conditional_extend_index is set to n | -1 |
+| init | string | Name of Union_init component (typically "init", default) | "init" |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_abs_logger_1D_space_tof_to_lambda.comp) for `Union_abs_logger_1D_space_tof_to_lambda.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

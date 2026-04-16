@@ -1,0 +1,72 @@
+# The `Union_conditional_standard` Component
+
+*McStas: A conditional component that filter on basic variables of exit state*
+
+## Identification
+
+- **Site:** 
+- **Author:** Mads Bertelsen
+- **Origin:** University of Copenhagen
+- **Date:** 20.08.15
+
+## Description
+
+```text
+Part of the Union components, a set of components that work together and thus
+sperates geometry and physics within McStas.
+The use of this component requires other components to be used.
+
+1) One specifies a number of processes using process components
+2) These are gathered into material definitions using Union_make_material
+3) Geometries are placed using Union_box / Union_cylinder, assigned a material
+4) A Union_master component placed after all of the above
+
+Only in step 4 will any simulation happen, and per default all geometries
+defined before this master, but after the previous will be simulated here.
+
+There is a dedicated manual available for the Union_components
+
+This is a conditional component that affects the loggers in the target_loggers
+string. When a logger is affected, it will only record events if the
+conditional is true at the end of the simulation of a ray in the master.
+Conditionals can be used to for example limit the loggers to rays that end
+within a certain energy range, time interval or similar.
+
+One can apply several conditionals to each logger if desired.
+
+In the extend section of a master, the tagging conditional can be acsessed by
+the variable name tagging_conditional_extend. Beware, that it only works as
+long as the tagging system is active, so you may want to increase the number
+of histories allowed by that master component before stopping.
+
+overwrite_logger_weight can be used to force the loggers this conditional
+controls to write the final weight for each scattering event, instead of the
+recorded value.
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| target_loggers | string | Comma seperated list of loggers this conditional should affect | "NULL" |
+| master_tagging | 1 | Apply this conditional to the tagging system in next master | 0 |
+| tagging_extend_index | 1 | Not currently used | -1 |
+| time_min | s | Min time, if not set ignored | 0 |
+| time_max | s | Max time, if not set ignored | 0 |
+| E_min | meV | Max energy, if not set ignored | 0 |
+| E_max | meV | Min energy, if not set ignored | 0 |
+| total_order_min | 1 | Min scattering order, if not set ignored | 0 |
+| total_order_max | 1 | Max scattering order, if not set ignored | 0 |
+| last_volume_index | 1 | Not used yet | -1 |
+| overwrite_logger_weight | 1 | Default = 0, overwrite = 1 | 0 |
+| init | string | Name of Union_init component (typically "init", default) | "init" |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_conditional_standard.comp) for `Union_conditional_standard.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

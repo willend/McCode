@@ -1,0 +1,103 @@
+# The `Source_Optimizer` Component
+
+*McStas: A component that optimizes the neutron flux passing through the
+Source_Optimizer in order to have the maximum flux at the
+<b>Monitor_Optimizer</b> position.*
+
+## Identification
+
+- **Site:** 
+- **Author:** <a href="mailto:farhi@ill.fr">Emmanuel Farhi</a>
+- **Origin:** <a href="http://www.ill.fr">ILL (France)</a>
+- **Date:** 17 Sept 1999
+
+## Description
+
+```text
+Principle: The optimizer first (step 1) computes neutron state parameter
+limits passing in the Source_Optimizer, and then (step 2) records a Reference
+source as well as the state (at Source_Optimizer position) of neutrons
+reaching Monitor. The optimized source is defined as a fraction of the
+Reference source plus the distribution of 'good' neutrons reaching the
+Monitor. The optimization then starts (step 3), and focuses new neutrons on
+the Monitor_Optimizer. In fact it changes 'bad' neutrons into 'good' ones
+(that reach the Monitor), acting on their position, spin and divergence or
+velocity. The overall Monitor flux is kept during process. The energy and
+polarisation distributions are kept during optimization as far as possible
+during optimisation. The optimization method considers that all neutron
+parameters - (x,y), (vx,vy,vz) or (vx/v2,vy/v2,v2), (sx,sy,sz) or
+(sx/s2,sy/s2,s2) - are independent.
+
+Options: The optimized source can be computed regularly ('continuous'
+option) or only once ('not continuous'). The time spent in steps 1 and 2 can
+be reduced for a shorter optimization ('auto').  The neutrons passing during
+steps 1 and 2 can be smoothed for a better neutron weight distribution
+('smooth' option).
+
+Source_optimizer can be placed at any position where you want to act on the
+flux, for instance just after the source.
+Monitor_Optimizer should be placed at position(s) to optimize.
+I prefer to put one just before the sample.
+
+Default parameters bins, step, and keep are 10, 10%  and 10% respectively.
+The option string can be empty (""), which stands for default configuration
+that works fine in usual cases:
+
+options="continuous optimization, auto mode, smooth, SetXY+SetDivV+SetDivS"
+
+<b>Possible options are</b>
+continuous      for continuous source optimization (default).
+verbose         displays optimization process (debug purpose).
+auto            uses the shortest possible 'step 1' and 'step 2' and sets 'step' value as required (default).
+smooth          remove possible spikes generated in steps 1 and 2 (default is smooth).
+inactivate      to inactivate the Optimizer.
+no or not       revert next option
+bins=[value=10] set the Number of cells for sampling neutron states
+step=[value=10] Optimizer step in % of simulation.
+keep=[value=10] Percentage of initial source distribution that is kept
+file=[name]     Filename where to save optimized source distributions (no file is generated if not given. Default ext. is .src)
+SetXY           Keywords to indicate what may be changed during
+SetV            optimisation. Default is position, divergence and spin
+SetS            direction ("SetXY+SetDivV+SetdivS"). Choosing the speed
+SetDivV         or spin optimization (SetV or SetS) may modify the energy
+SetDivS         or polarisation distribution (norm of V and S) as the three components are then independent.
+
+Parameters bins, step and keep can also be entered as optional parameters.
+
+<b>EXAMPLE</b>: I use the following settings
+
+optim_s = Source_Optimizer(options="please be clever") (same as empty)
+(...)
+Monitor_Optimizer(xmin=-0.05, xmax=0.05, ymin=-0.05, ymax=0.05,
+optim_comp = "optim_s")
+
+A good optimization needs to record enough non optimized neutrons on Monitor
+during step 2. Typical enhancement in computation speed is by a factor 20.
+This component usually works well.
+
+<b>NOTE:</b> You must be aware that in some cases (SetV and SetS),
+the optimization might sligtly afect the energy or spin distribution of the
+source. The optimizer tries to do its best anyway.
+Also, some 'spikes' may sometime appear in monitor signals in the course of
+the optimization, coming from non-optimized neutrons with original weight.
+The 'smooth' option minimises this effect (on by default).
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| bins | 1 | Number of cells for sampling neutron states. | 10 |
+| step | 0-100 | Optimizer step in percent of simulation. | 0.1 |
+| keep | 0-100 | Percentage of initial source distribution that is kept. | 0.1 |
+| options | str | string of options. See <b>Description<b> | 0 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sources/Source_Optimizer.comp) for `Source_Optimizer.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

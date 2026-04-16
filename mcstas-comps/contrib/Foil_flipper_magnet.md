@@ -1,0 +1,57 @@
+# The `Foil_flipper_magnet` Component
+
+*McStas: A magnet with a spin-flip foil inside*
+
+## Identification
+
+- **Site:** 
+- **Author:** Erik B Knudsen
+- **Origin:** DTU Physics
+- **Date:** Sep. 2015
+
+## Description
+
+```text
+ESCRIPTION
+A magnet with a spin-flip foil inside
+
+This component models a magnet with a constant magnetic field and a slanted
+magnetized foil inside acting as a spin-flipper. This arrangement may be used to
+target the geometry of a Spin-Echo SANS instrument (Rekveldt, NIMB, 1997 || Rekveldt, Rev Sci Instr. 2005).
+In its most basic form a SE-SANS instrument nrelies  on inclined field regions of
+constant magnetic field, which can be difficult to realize. Instead it is possible to emulate
+such regions using a magnetized foil.
+
+In this component th emagntzied foil is modelled as a canted (by the angle phi) mathematical plane inside a region
+of constant magnetic field of dimensions (xwidth,yheight,zdepth). Furthermore, exponetially decaying stray fields from
+the constant field region may be specified by giving parameters (Bxwidth,Byheight,Bzdepth) > (xwidth,yheight,zdepth).
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| stray_field |  | Toggle for modelling of stray fields. | 1 |
+| **xwidth** | m | width of the magnet |  |
+| **yheight** | m | height of the magnet |  |
+| **zdepth** | m | thickness of the magnet |  |
+| Bxwidth | m | width of the B-field of thev component | -1 |
+| Byheight | m | height of the B-field of the component | -1 |
+| Bzdepth | m | thickness of the B-field of the component | -1 |
+| phi | rd | angle (from the xz-plane) of the foil-spinflipper inside the magnet | 0.0 |
+| foilthick | um | Thickness of the magnetized foil | 0.0 |
+| **Bx** | T | Parameter used for x composant of field. |  |
+| **By** | T | Parameter used for y composant of field. |  |
+| **Bz** | T | Parameter used for z composant of field. |  |
+| foil_in |  | Toggle for optional foil in the flipper. | 1 |
+| verbose |  | Toggle verbose mode | 0 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Foil_flipper_magnet.comp) for `Foil_flipper_magnet.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

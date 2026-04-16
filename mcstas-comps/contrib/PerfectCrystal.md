@@ -1,0 +1,89 @@
+# The `PerfectCrystal` Component
+
+*McStas: Based on a perfect crystal component by: Miguel A. Gonzalez, A. Dianoux June 2013 (ILL)
+
+Changelog:
+Version 1.1
+- BUGFIX: correct neutron energy shift in Doppler mode
+- added option 'debyescherrer' to select analyzer geometry
+- added option 'facette' to approximate analyzer sphere by small, flat crystals
+
+Version 1.0
+- inital release*
+
+## Identification
+
+- **Site:** 
+- **Author:** Markus Appel
+- **Origin:** ILL / FAU Erlangen-Nuernberg
+- **Date:** 2015-12-21
+
+## Description
+
+```text
+Perfect crystal component, primarily for use as monochromator and analyzer in
+backscattering spectrometers. Reflection from a single Bragg reflex of a flat or
+spherical surface is simulated using a Darwin, Ewald or Gaussian profile. Doppler
+movement of the monochromator is supported as well.
+
+Orientation of the crystal surface is *different* from other monochromator components!
+Gravitational energy shift for tall analyzers should work in principle, but it not tested yet.
+See the parameter description on how to define the geometry and properties.
+
+[1] Website for Backscattering Spectroscopy: http://www.ill.eu/sites/BS-review/index.htm
+
+Examples:
+IN16B (ILL) Si111 large angle analyzers (approximate dimensions):
+PerfectCrystal(radius=2, lambda=6.2708, sigma=0.24e-3,
+ttmin=40, ttmax=165, phimin=-45, phimax=+45, centerfocus=1)
+
+IN16B (ILL) Si111 Doppler monochromator:
+PerfectCrystal(radius=2.165, lambda=6.2708, sigma=0.24e-3,
+width = 0.500, height = 0.250, centerfocus=0,
+speed = 4.7, amplitude = 0.075, exclusive=1)
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| ttmin | deg |  | NAN |
+| ttmax | deg | analyzer coverage angle in horizontal xz-plane between -180 and 180 | NAN |
+| tt0 | deg |  | NAN |
+| ttwidth | deg | horizontal coverage as center and full width | NAN |
+| width | m | absolute width | NAN |
+| phimin | deg |  | NAN |
+| phimax | deg | vertical analyzer coverage between -90 and 90 (-180 and 180 if debyescherrer==1) | NAN |
+| phi0 | deg |  | NAN |
+| phiwidth | deg | vertical coverage as center and full width | NAN |
+| height | m | absolute height (only if debyescherrer==0) | NAN |
+| debyescherrer | -180...180 | (0/1)   bend analyzer following a Debye-Scherrer ring along scattering angle tt (twotheta) (phi = | 0 |
+| facette | m | width of square crystal facettes arranged on the spherical surface (set 0 to disable). Default: 0 Warning: Facettation will fail at the poles along +-y axis. | 0 |
+| facette_xi | deg | random misalignemt of each facette. Default: 0 | 0 |
+| centerfocus | 0/1 | Component origin is the center of the analyzer sphere if 1, if set to 0 the origin is on the analyzer surface. Default: 0 | 0 |
+| radius | m | Radius of curvature, set to 0 for a flat surface. Default: 0 | 0 |
+| tau | A^-1 | Scattering vector of the reflex (sometimes also called Q...) | NAN |
+| lambda | A | Alternatively to tau: backscattered wavelength | NAN |
+| R0 |  | Peak reflectivity. Default: 1 | 1.0 |
+| dtauovertau | 1 | Plateau width of the Ewald/Darwin curve (see | NAN |
+| dtauovertau_ext |  | Relative variation of tau (randomized for each trajectory, full width) | 0 |
+| ewald | 0/1 | Use Ewald curve if 1, Darwin curve if 0. Default: 1 (Ewald) | 1 |
+| sigma | meV | Width of the Gaussian reflectivity curve in meV (corresponding to the energy resolution). (The width will be transformed and the Gaussian is actually calculated in k-space.) | NAN |
+| ismirror | 0/1 | Simply reflect all neutrons if 1. Good for debugging/visualization. Default: 0 | 0 |
+| speed | m/s | Maximum Doppler speed. The actual monochromator velocity is randomized between -speed and +speed. Default: 0 | 0 |
+| amplitude | m | Amplitude of the Doppler movement. Default: 0 | 0 |
+| smartphase | 0/1 | Optimize Doppler phase for better MC efficiency if set to 1. *WARNING:* Experimental option! Always compare to a simulation without smartphase. Better do not use smartwidth with Ewald/Darwin curves due to their endless tails. Default: 0 | 0 |
+| smartwidth | meV | Half width of the possible energy reflection window for smartphase. Default: 5*sigma OR 10*2*dtauovertau*E0 | NAN |
+| exclusive | 0/1 | If set to 1, absorb all neutrons that missed the monochromator/analyzer surface. Default: 0 | 0 |
+| transmit | 0...1 | Monte-Carlo probability of transmitting an event through the monochromator/analyzer surface. (Events with R=1.0 for DarwinE/Ewald curves are always reflected!). Default: 0 | 0 |
+| verbose |  |  | 0 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/PerfectCrystal.comp) for `PerfectCrystal.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

@@ -1,0 +1,64 @@
+# The `Virtual_input` Component
+
+*McStas: Source-like component that generates neutron events from an ascii
+'virtual source' filename.*
+
+## Identification
+
+- **Site:** 
+- **Author:** <a href="mailto:farhi@ill.fr">E. Farhi</a>
+- **Origin:** <a href="http://www.ill.fr">ILL</a>
+- **Date:** Sep 28th, 2001
+
+## Description
+
+```text
+This component reads neutron events stored from a file, and sends them into
+the instrument. It thus replaces a Source component, using a previously
+computed neutron set. The 'source' file type is an ascii text file with the
+format listed below. The number of neutron events for the
+simulation is set to the length of the 'source' file times the
+repetition parameter 'repeat_count' (1 by default).
+It is particularly useful to generate a virtual source at a point that few
+neutron reach. A long simulation will then only be performed once, to create
+the 'source' filename. Further simulations are much faster if they start from
+this low flux position with the 'source' filename.
+
+The input file format is:
+text column formatted with lines containing 11 values in the order:
+p x y z vx vy vz t sx sy sz stored into about 83 bytes/n.
+
+%BUGS
+We recommend NOT to use parallel execution (MPI) with this component. If you
+need to, set parameter 'smooth=1'.
+
+EXAMPLE:
+To create a 'source' file collecting all neutron states, use:
+COMPONENT MySourceCreator = Virtual_output(filename = "MySource.list")
+at the position where will be the Virtual_input.
+Then inactivate the part of the simulation description before (and including)
+the component MySourceCreator. Put the new instrument source:
+COMPONENT Source = Virtual_input(filename="MySource.list")
+at the same position as 'MySourceCreator'.
+A Vitess filename may be obtained from the 'Vitess_output' component or from a
+Vitess simulation (104 bytes per neutron) and read with Vitess_input.
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| filename | str | Name of the neutron input file. Empty string "" inactivates component | 0 |
+| verbose | 0/1 | Display additional information about source, recommended | 0 |
+| repeat_count | 1 | Number of times the source must be generated/repeated | 1 |
+| smooth | 0/1 | Smooth sparsed event files for filename repetitions. Use this option with MPI. This will apply gaussian distributions around initial events from the file | 1 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Virtual_input.comp) for `Virtual_input.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

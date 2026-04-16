@@ -1,0 +1,96 @@
+# The `Vitess_ChopperFermi` Component
+
+*McStas: Fermi chopper with absorbing walls using the VITESS module 'chopper_fermi'*
+
+## Identification
+
+- **Site:** 
+- **Author:** Geza Zsigmond
+- **Origin:** VITESS module 'chopper_fermi'
+- **Date:** Sep 2004
+
+## Description
+
+```text
+This component simulates a Fermi chopper with absorbing walls. The rotation axis is
+vertical (y-axis), i.e. the path length through the channels is given by the length
+'depth' along the z-axis.
+The shape of the channels can be straight, curved with circular, or curved with ideal
+(i.e. close to a parabolic) shape. This is determined by the parameter 'GeomOption'.
+
+Geometry for straight and circular channels:
+The geometry of the chopper consists of a rectangular shaped object with a channel
+system. In transmission position, there are 'Nchannels' slits along the x-axis,
+separated by absorbing walls of thickness 'wallwidth' giving a total width 'width'.
+The rectangular channel system is surrounded by a so-called shadowing cylinder
+(cf component manual).
+
+Geometry for parabolic channels:
+In this case, the Fermi chopper is supposed to be a full cylinder, i.e. the central
+channels are longer than those on the edges (cf. figure in the component manual).
+The other features are the same as for the other options.
+
+Apart from the frequency of rotation, the phase of the chopper at t=0 has to be given;
+phase = 0 means transmission orientation.
+
+The option 'zerotime' may be used to reset the time at the chopper position. The
+consequence is that only 1 pulse is generated instead of several.
+
+NOTE: This component must NOT be located at the same position as the previous one.
+This also stands for monitors and Arms. A non zero distance must be defined.
+
+Examples:
+straight Fermi chopper, 18000 rpm, 20 channels a 0.9 mm separated by 0.1 mm walls,
+16 mm channel length, minimal shadowing cylinder, phased to be open at 1 ms,
+generation of only 1 pulse, normal precision (for short wavelength neutrons)
+Vitess_ChopperFermi(GeomOption=0, zerotime=1,  Nchannels=20,  Ngates=4,
+freq=300.0,   height=0.06, width=0.0201,
+depth=0.016,  r_curv=0.0,  diameter=0.025691, Phase=-108.0,
+wallwidth=0.0001, sGeomFileName="FC_geom_str.dat")
+
+Fermi chopper with circular channels, 12000 rpm, optimized for 6 Ang, several pulses,
+highest accuracy (because of long wavelength neutrons used), rest as above
+Vitess_ChopperFermi(GeomOption=2, zerotime=0,    Nchannels=20,  Ngates=8,
+freq=200.0,   height=0.06,   width=0.0201,
+depth=0.016,  r_curv=0.2623, diameter=0.025691, Phase=-72.0,
+wallwidth=0.0001, sGeomFileName="FC_geom_circ.dat")
+
+%VALIDATION
+Apr 2005: extensive external test, most problems solved (cf. 'Bugs' and source header)
+Validated by: K. Lieutenant
+
+limitations: slow (10 times slower than FermiChopper), especially for a high number of channels
+
+%BUGS
+reduction of transmission by a large shadowing cylinder underestimated
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| sGeomFileName | str | name of output file for geometry information | 0 |
+| GeomOption | 1 | option: 0:straight 1:parabolic 2:circular | 0 |
+| zerotime | 1 | option: 1:'set time to zero'  0: 'do not' | 0 |
+| Nchannels | 1 | number of channels of the Fermi chopper | 20 |
+| Ngates | 1 | number of gates defining the channel: 4=default, 6 or 8 for long wavelengths | 4 |
+| freq | Hz | number of rotations per second | 300.0 |
+| height | m | height of the Fermi chopper | 0.05 |
+| width | m | total width of the Fermi chopper | 0.04 |
+| depth | m | channel length of the Fermi chopper | 0.03 |
+| r_curv | m | radius of curvature of the curved Fermi chopper | 0.5 |
+| diameter | m | diameter of the shadowing cylinder | 0.071 |
+| Phase | deg | dephasing angle at zero time | 0.0 |
+| wallwidth | m | thickness of walls separating the channels | 0.0002 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Vitess_ChopperFermi.comp) for `Vitess_ChopperFermi.comp`.
+- <a href="http://www.hmi.de/projects/ess/vitess/DOC/chopper_fermi_str.html">straight VITESS Fermi chopper</a>
+- <a href="http://www.hmi.de/projects/ess/vitess/DOC/chopper_fermi_cur.html">curved VITESS Fermi chopper</a>
+
+---
+
+*Generated on mcstas 3.99.99.*

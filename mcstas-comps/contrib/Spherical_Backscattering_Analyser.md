@@ -1,0 +1,50 @@
+# The `Spherical_Backscattering_Analyser` Component
+
+*McStas: Spherical backscattering analyser*
+
+## Identification
+
+- **Site:** 
+- **Author:** Nikolaos Tsapatsaris with P Willendrup, R Lechner, H Bordallo
+- **Origin:** NBI/ESS
+- **Date:** 2015
+
+## Description
+
+```text
+Spherical backscattering analyser with variable reflectivity, and mosaic gaussian response.
+
+Based on earlier developments by Miguel A. Gonzalez 2000, Tilo Seydel 2007, Henrik Jacobsen 2011.
+
+Example:
+COMPONENT doppler = Spherical_Backscattering_Analyser(
+xmin=0, xmax=0, ymin=0, ymax=0, mosaic=21.0, dspread=0.00035, Q=2.003886241, DM=0, radius=2.5, f_doppler=0, A_doppler=0, R0=1, debug=0)
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| xmin | m | Minimum absolute value of x =~ 0.5 * Width of the monochromator | 0 |
+| xmax | m | Maximum absolute value of x =~ 0.5 * Width of the monochromator | 0 |
+| ymin | m | Minimum absolute value of x =~ 0.5 * Width of the monochromator | 0 |
+| ymax | m | Maximum absolute value of y =~ 0.5 * Height of the monochromator | 0 |
+| mosaic | arc min | Mosaicity, FWHM | 21.0 |
+| dspread | 1 | Relative d-sprea, FWHM | 0.00035 |
+| Q | AA-1 | Magnitude of scattering vector | 2.003886241 |
+| DM | AA | monochromator d-spacing instead of Q = 2*pi/DM | 0 |
+| radius | m | Curvature radius | 2.5 |
+| f_doppler | Hz | Frequency of doppler drive | 0 |
+| A_doppler | m | Amplitude of doppler drive | 0 |
+| R0 | 1 | Scalar, maximum reflectivity of neutrons | 1 |
+| debug | 1 | if debug > 0 print out some info about the calculations | 0 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Spherical_Backscattering_Analyser.comp) for `Spherical_Backscattering_Analyser.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

@@ -1,0 +1,97 @@
+# The `Single_magnetic_crystal` Component
+
+*McStas: Release: McStas 2.6
+
+Mosaic magnetic single crystal with multiple scattering vectors.*
+
+## Identification
+
+- **Site:** 
+- **Author:** Erik B Knudsen and Linda Udby
+- **Origin:** DTU Physics
+- **Date:** Jan 2020
+
+## Description
+
+```text
+WARNING: This is an experimental component - no experimental validation has yet been done
+
+Single magnetic crystal with mosaic. Delta-D/D option for finite-size effects.
+Multiple scattering and secondary extinction included.
+The mosaic may EITHER be specified isotropic by setting the mosaic input
+parameter, OR anisotropic by setting the mosaic_h, mosaic_v, and mosaic_n
+parameters.
+
+The scattering is computed solely in an spin up-down configuration. That is the
+scattering is considered in relation to the externally defined vector (mx,my,mz), where it
+can be either SF or NSF.
+Simplifications and comments :
+Lande splitting factor is assumed to be g=2
+Magnetic form factors are set =1
+
+<b>Sample shape:</b>
+Sample shape may be a cylinder, a sphere, a box or any other shape
+box/plate:       xwidth x yheight x zdepth
+cylinder:        radius x yheight
+sphere:          radius (yheight=0)
+any shape:       geometry=OFF file
+
+The complex geometry option handles any closed non-convex polyhedra.
+It computes the intersection points of the neutron ray with the object
+transparently, so that it can be used like a regular sample object.
+It supports the OFF and NOFF file format but not COFF (colored faces).
+Such files may be generated from XYZ data using qhull/powercrust, and
+viewed with geomview
+The default size of the object depends of the OFF file data, but its
+bounding box may be resized using xwidth,yheight and zdepth.
+
+Also, always use a non-zero value of delta_d_d.
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| atom_sites | str | File name containing the atoms present in the unit cell. Use empty ("") or NULL for sigma_inc scattering only | 0 |
+| geometry | str | Name of an Object File Format (OFF) file for complex geometry. The OFF file may be generated from XYZ coordinates using qhull/powercrust | NULL |
+| xwidth | m | Width of crystal | 0 |
+| yheight | m | Height of crystal | 0 |
+| zdepth | m | Depth of crystal (no extinction simulated) | 0 |
+| radius | m | Outer radius of sample in (x,z) plane | 0 |
+| delta_d_d | 1 | Lattice spacing variance, gaussian RMS | 1e-4 |
+| mosaic | arcmin | Crystal mosaic (isotropic), gaussian RMS | -1 |
+| mosaic_h | arcmin | Horizontal (rotation around Y) mosaic (anisotropic), gaussian RMS | -1 |
+| mosaic_v | arcmin | Vertical (rotation around Z) mosaic (anisotropic), gaussian RMS | -1 |
+| mosaic_n | arcmin | Out-of-plane (Rotation around X) mosaic (anisotropic), gaussian RMS | -1 |
+| recip_cell | 1 | Choice of direct/reciprocal (0/1) unit cell definition | 0 |
+| q_min | AA^-1 | lower boundary of momentum transfer range to generate hkls in | 0 |
+| q_max | AA^-1 | upper boundary of momentum transfer range to generate hkls in | -1 |
+| mx | 1 |  | 0 |
+| my | 1 | Coordinates of vector defining the SF/NSF direction | 1 |
+| mz | 1 |  | 0 |
+| na | 1 |  | 1 |
+| nb | 1 | Unit cell multipliers. The specified unit cell vectors are scaled by these factors. Note that the mulitpliers are applied directly to the raw input data. I.e. if recip. cell vectors  are given, multipliers should be <1 (= 1/n). F.i. used to specify a magnetic unit cell which is larger than the chemical unit cell. | 1 |
+| nc | 1 |  | 1 |
+| ax | AA or AA^-1 |  | 0 |
+| ay | AA or AA^-1 | Coordinates of first (direct/recip) unit cell vector | 0 |
+| az | AA or AA^-1 |  | 0 |
+| bx | AA or AA^-1 |  | 0 |
+| by | AA or AA^-1 | Coordinates of second (direct/recip) unit cell vector | 0 |
+| bz | AA or AA^-1 |  | 0 |
+| cx | AA or AA^-1 |  | 0 |
+| cy | AA or AA^-1 | Coordinates of third (direct/recip) unit cell vector | 0 |
+| cz | AA or AA^-1 |  | 0 |
+| p_transmit | 1 | Monte Carlo probability for neutrons to be transmitted without any scattering. Used to improve statistics from weak reflections | -1 |
+| sigma_abs | barns | absorption cross-section per unit cell at 2200 m/s | 0 |
+| sigma_inc | barns | incoherent scattering cross-section per unit cell | 0 |
+| order | 1 | limit multiple scattering up to given order (0: all, 1: first, 2: second, ...) | 0 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Single_magnetic_crystal.comp) for `Single_magnetic_crystal.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*

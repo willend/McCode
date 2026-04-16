@@ -1,0 +1,62 @@
+# The `Virtual_output` Component
+
+*McStas: Detector-like component that writes neutron state parameters into an ascci-format
+'virtual source' neutron file.*
+
+## Identification
+
+- **Site:** 
+- **Author:** <a href="mailto:farhi@ill.fr">E. Farhi</a>
+- **Origin:** <a href="http://www.ill.fr">ILL</a>
+- **Date:** Dec 17th, 2002
+
+## Description
+
+```text
+Detector-like component writing neutron state parameters to a
+virtual source neutron filename. The component geometry is the full
+plane, and saves the neutron state as it exits from the previous
+component.
+
+It is particularly useful to generate a virtual source at a point that few
+neutron reach. A long simulation will then only be performed once, to create
+the upstream 'source' file. Further simulations are much faster if they start
+from this low flux position with the 'source' filename.
+
+The output file format is:
+text column formatted with lines containing 11 values in the order:
+p x y z vx vy vz t sx sy sz stored into about 83 bytes/n.
+
+Beware the size of generated files ! When saving all events (bufsize=0) the
+required memory has been optimized and remains very small. On the other hand
+using large bufsize values (not recommended) requires huge storage memory.
+Moreover, using the 'bufsize' parameter will often lead to wrong intensities.
+Both methods will generate huge files.
+
+A Vitess file may be obtained from the 'Vitess_output' component or from a
+Vitess simulation (104 bytes per neutron) and read with Vitess_input.
+
+Example: Virtual_output(filename="MySource.dat")
+will generate a 9 Mo text file for 1e5 events stored.
+
+%BUGS
+Using bufsize non-zero may generate a virtual source with wrong intensity. This
+component works with MPI (parallel execution mode).
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| filename | str | Name of neutron file to write. Default is standard output [string]. If not given, a unique name will be used. | 0 |
+| bufsize | 1 | Size of neutron output buffer default is 0, i.e. save all - recommended. | 0 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Virtual_output.comp) for `Virtual_output.comp`.
+
+---
+
+*Generated on mcstas 3.99.99.*
