@@ -80,7 +80,13 @@ INITIALIZE
     sprintf(ciffile,"Al.cif");
     sprintf(ncmatfile,"autogen_Al_sg225_cod1502689.ncmat");
   } else if (!strcmp("LaMnO3",material)) {
+    /* PWFIXME:
+       Temporary workaround to not run cif2hkl on LaMnO3 on Windows... */
+    #ifdef _MSC_EXTENSIONS
+    sprintf(ciffile,"LaMnO3.lau");
+    #else
     sprintf(ciffile,"LaMnO3.cif");
+    #endif
     sprintf(ncmatfile,"autogen_LaMnO3_sg62_cod1006141.ncmat");
   } else if (!strcmp("NaCl",material)) {
     sprintf(ciffile,"NaCl.cif");
