@@ -63,7 +63,7 @@ or contact the authors.
 The recommended installation method for all supported platforms---Linux,
 macOS, and Windows---is via the \texttt{conda-forge} channel.  Once a
 conda-compatible environment manager such as Miniforge or Mambaforge is
-available, \McStas can be installed into a fresh conda environment:
+available, \MCS can be installed into a fresh conda environment:
 
 \begin{verbatim}
   conda create -n mcstas -c conda-forge mcstas
@@ -273,7 +273,7 @@ included in the instrument.
 \subsubsection{Alternative code generator: \texttt{mccode-antlr}}
 \label{s:antlr}
 
-From \McStas~3.5 onwards an alternative code generator,
+From \MCS~3.5 onwards an alternative code generator,
 \texttt{mcstas-antlr}, is available alongside the classic generator.
 It is built on the ANTLR parser framework rather than the traditional
 \texttt{lex}/\texttt{yacc} toolchain, is implemented primarily in Python,
@@ -292,7 +292,7 @@ accessible from the command line with:
 \end{verbatim}
 or via the \emph{Save/Edit configuration} dialogue inside \texttt{mcgui}.
 
-At the time of the \McStas~3.6 release, \texttt{mcstas-antlr} is close to
+At the time of the \MCS~3.6 release, \texttt{mcstas-antlr} is close to
 feature-complete for CPU simulations with a few more issues for GPU/OpenACC
 simulations.
 
@@ -1302,7 +1302,7 @@ requires a working installation of Perl to run.
 \subsection{GPU acceleration via OpenACC}
 \label{s:gpu}
 
-\McStas~3.x supports GPU-accelerated simulations through the OpenACC
+\MCS~3.x supports GPU-accelerated simulations through the OpenACC
 framework, enabling substantial speed-ups over CPU-only execution on
 compatible NVIDIA hardware.
 
@@ -1337,7 +1337,7 @@ your \texttt{mccode\_config.json}:
 
 \subsubsection{Further information}
 
-GPU terminology specific to \McStas/McXtrace~3 and detailed debugging
+GPU terminology specific to \MCS/McXtrace~3 and detailed debugging
 tips are documented on the McCode wiki:
 \begin{itemize}
   \item GPU terminology table:\\
@@ -1639,7 +1639,7 @@ is maintained on the McCode GitHub wiki~\cite{Wiki}:
   \url{https://github.com/mccode-dev/McCode/wiki}
 \end{center}
 The wiki includes end-user guides, component development howtos, GPU
-acceleration information, and migration guides from \McStas~2.x to 3.x.
+acceleration information, and migration guides from \MCS~2.x to 3.x.
 
 
 %-------------------------------------------------------------------------------
