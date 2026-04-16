@@ -1566,13 +1566,17 @@ def write_overview_docs(comp_infos, instr_infos, comp_infos_local, instr_infos_l
         writer = WriterCls(comp_infos, instr_infos, comp_infos_local, instr_infos_local, libdir, docdir)
         text = writer.create()
         path = '%s.%s' % (base, fmt)
-        if printlog:
-            print('writing master doc file... %s' % path)
-        try:
-            write_file(path, text)
-            results[fmt] = path
-        except Exception as e:
-            print('ERROR writing master doc file (%s): %s' % (fmt, e))
+        print("Docdir is " + docdir)
+        if out_basepath is not None:
+            if printlog:
+                print('writing master doc file... %s' % path)
+            try:
+                write_file(path, text)
+                results[fmt] = path
+            except Exception as e:
+                print('ERROR writing master doc file (%s): %s' % (fmt, e))
+        else:
+            print('in-repo use, no master document')
     return results
 
 
@@ -1581,7 +1585,11 @@ def main(args):
 
     # Resolve requested formats. HTML is always included so existing
     # behaviour (browser-based viewing) is preserved.
-    requested = ['html']
+    if getattr(args, 'in_repo', True):
+        requested = ['md']
+        args.install=True
+    else:
+        requested = ['html']
     if getattr(args, 'md', False) or getattr(args, 'all_formats', False):
         requested.append('md')
     if getattr(args, 'tex', False) or getattr(args, 'all_formats', False):
@@ -1632,14 +1640,16 @@ def main(args):
         comp_infos, instr_infos, comp_files, instr_files = parse_and_filter(usedir, recursive=True, printlog=args.verbose)
         write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files,
                                     printlog=args.verbose, formats=formats)
-
-        mcdoc_html_filepath = os.path.join(docdir, mccode_config.get_mccode_prefix()+'doc.html')
+        if args.in_repo==False:
+            mcdoc_html_filepath = os.path.join(docdir, mccode_config.get_mccode_prefix()+'doc.html')
+        else:
+            mcdoc_html_filepath = None
         written = write_overview_docs(comp_infos, instr_infos, [], [],
-                                      mccode_config.configuration['MCCODE_LIB_DIR'],
-                                      mccode_config.directories['docdir'],
-                                      mcdoc_html_filepath,
-                                      formats=formats,
-                                      printlog=True)
+                                    mccode_config.configuration['MCCODE_LIB_DIR'],
+                                    mccode_config.directories['docdir'],
+                                    mcdoc_html_filepath,
+                                    formats=formats,
+                                    printlog=True)
         for fmt, path in written.items():
             print("master doc file (%s): %s" % (fmt, path))
 
@@ -1674,7 +1684,10 @@ def main(args):
 
                 instr = re.search(r'[\w0-9]+\.instr', args.searchterm)
                 comp = re.search(r'[\w0-9]+\.comp', args.searchterm)
-                docdir = mccode_config.directories["docdir"]
+                if getattr(args, 'in_repo', True):
+                    docdir = mccode_config.directories["docdir"]
+                else:
+                    docdir=''
 
                 if instr:
                     f_base = os.path.splitext(os.path.basename(f))[0]
@@ -1713,7 +1726,10 @@ def main(args):
             print("no matches found")
             quit()
 
-        mcdoc_html_filepath = os.path.join('.', mccode_config.get_mccode_prefix()+'doc.html')
+        if args.in_repo==False:
+            mcdoc_html_filepath = os.path.join(docdir, mccode_config.get_mccode_prefix()+'doc.html')
+        else:
+            mcdoc_html_filepath = None
         write_overview_docs(comp_infos, instr_infos, comp_infos_local, instr_infos_local,
                             usedir, mccode_config.directories['docdir'],
                             mcdoc_html_filepath,
@@ -1736,7 +1752,8 @@ if __name__ == '__main__':
     parser.add_argument('--tex', '-T', action='store_true', help='also emit LaTeX (.tex) doc files')
     parser.add_argument('--all-formats', '-A', action='store_true', dest='all_formats',
                         help='emit HTML, Markdown and LaTeX doc files')
-
+    parser.add_argument('--in-repo', action='store_true', dest='in_repo',
+                        help='Place generated output(s) next to comp files (no master doc page)')
     args = parser.parse_args()
 
     try:
