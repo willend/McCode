@@ -1,0 +1,61 @@
+# The `Mask` Component
+
+*McXtrace: A masking image object*
+
+## Identification
+
+- **Site:** 
+- **Author:** Erik Knudsen
+- **Origin:** DTU Physics
+- **Date:** March  2014
+
+## Description
+
+```text
+The Mask component takes an image as input either as an standard image file in png or pnm format, or as an ascii file (see below for format),
+and uses the image as a mask. For instance as a manner of measuring resolution for imaging applications.
+If the image is supplied as a png or pnm file, they interpretation of the pixels varies depending on the file. If the image is grayscale the pixel values are directly mapped
+to opacity (or transparency if invert is set) values in the range [0..1]. If the image has RGB channels the R channel is considered most significant, the B channel least significant.
+The resulting number, e.g. R*255^2 + G*255 + B, is then mapped to a real valued opacity.
+Additionally png images may have an alpha channel - which is then considered the least significant channel. Palette mapped pngs are as of yet _not_ supported.
+A regular ascii file may be supplied - in which case the file is like the one below
+#any initial line starting with a hash is silently ignored
+0.0 1.0 0.0 1.0 0.0
+0.5 0.0 0.5 0.0 0.5
+0.0 0.25 0.0 0.25 0.0
+0.75 0.0 0.75 0.0 0.75
+1.0 0.0 1.0 0.0 1.0
+
+...which defines a 5x5 mask with a kind of checkerboard pattern.
+
+By default the values from the masking image are interepreted as opacity (1 is fully blocking). If invert is nonzero this is inverted and the values are
+considered as transparency (1 is fully transmissive)
+
+N.b. If you want to use the png-option of the component you must have libpng installed _and_ link your compiled instrument to it. Assuming libpng is installed you may do this
+by adding "-DUSE_PNG=1 -lpng" to 1) the MCXTRACE_CFLAGS environment variable or 2) to the compiler flags textbox in the GUI. Open File->Configuration and edit the textbox.
+
+The virtual option of the Mask, is intended as a help to use a png-image as a grayscale distribution. If the virtual flag is set, rays are propagated to the mask plane
+and the pixel value at the intersection point is read, but the rays remain unaffected. The pixel value is stored in the variable named in the string maskvar. This should be a USERVAR set from the instrument file.
+
+Example: Mask(xwidth=0.1, yheight=0.1, mask=Test_Mask_input_file.mask)
+```
+
+## Input parameters
+
+Parameters in **boldface** are required; the others are optional.
+
+| Name | Unit | Description | Default |
+|------|------|-------------|---------|
+| xwidth | m | Width of the masking object | 0.1 |
+| yheight | m | Height of the masking object | 0.1 |
+| mask | str | Name of file containing the masking image | "Test_Mask_input_file.mask" |
+| invert | 0/1 | When 0 => masked values are opaque, when 1 => masked values are transparent. | 0 |
+| virtual | 0/1 | Mask does not affect the x-ray, but does still read the pixel value of the pixel hit and stores it in masking. | 0 |
+
+## Links
+
+- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcxtrace-comps/optics/Mask.comp) for `Mask.comp`.
+
+---
+
+*Generated on mcxtrace 3.99.99.*
