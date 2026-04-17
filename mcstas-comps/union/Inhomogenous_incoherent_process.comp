@@ -29,10 +29,63 @@
 * Only in step 4 will any simulation happen, and per default all geometries
 *  defined before the master, but after the previous will be simulated here.
 *
-* There is a dedicated manual available for the Union_components
+* There is a dedicated manual available for the Union components
 *
 * Algorithm:
-* Described elsewhere
+* The general algorithm for the Union system is described elsewhere.
+*
+* I here give a brief introduction as to what changes occur when using an 
+* inhomogenous process in your Union make material. It is expected that you
+* understand the basic algorithm of the Union system before reading this.
+*
+* In Union, the neutron moves through a network of objects in a 3 dimensional world.
+* When the neutron hits a material, the probability to scatter is calculated,
+* and a Monte Carlo choice is taken, as to whether that neutron should scatter,
+* or pass through. For a homogenous material (i.e constant attenuation coefficient <span class="latex">$\mu$</span>),
+* this probability is the Beer-Lambert law,
+*
+* <div class="latex">
+* $P_s = 1 - e^{-\mu l}$
+* </div>
+*
+* Where <span class="latex">$P_s$</span> is the scattering probability, 
+* and <span class="latex">$l$</span> is length of the neutron path throughout the object.
+*
+*
+* For an inhomogenous material, this Beer-Lambert law must be modified, as <span class="latex">$\mu$</span> is a function of the position.
+* Therefore the Beer-Lambert law becomes,
+*
+* <div class="latex">
+* $P_s = \int^l_0 1 -  e^{-\mu(l')l'}dl'$
+* </div>
+*
+* Calculating this <span class="latex">$\mu$</span> in the inhomogenous case is often trivial, but not feasible,
+* from a software development point of view (seeing as many different functions of <span class="latex">$\mu$</span> might be wanted).
+* Instead the inhomogenous processes performs an approximate integral, by 
+* evaluating <span class="latex">$\mu$</span> at a number of points along the neutron path (This number is in fact number_of_sample_points).
+* 
+* For this incoherent process, the linear attenuation coefficient is,
+*
+* <div class="latex">
+* $\mu = pack/V_u * 100 * \sigma$
+* </div>
+*
+* Where <span class="latex">$pack$</span> is the packing factor of the material (defaults to 1), <span class="latex">$V_u$</span> is the
+* Unit cell volume, and <span class="latex">$\sigma$</span> is the scattering cross section in barns.
+* <span class="latex">$\mu$</span> therefore has units of <span class="latex">$m^{-1}$</span>.
+*
+* For this component each factor in the attenuation coefficient can be a "tiny expression".
+* This means that it can be a mathematical equation such as <span class="latex">$\sigma_{expr} = "5.08 + 1000 * z * 2.35"$</span>.
+* When the attenuation coefficient is calculated, then the current value of <span class="latex">$z$</span> is used to get <span class="latex">$\sigma$</span>.
+* 
+* The parameters that the tiny expression can rely upon are currently:
+* The positions, <span class="latex">$x, y, z$</span>
+* The velocities <span class="latex">$vx, vy, vz$</span>
+* and the time <span class="latex">$t$</span>
+* 
+* For more information on tiny expressions, see the link below.
+*
+*
 *
 * %P
 * INPUT PARAMETERS:
