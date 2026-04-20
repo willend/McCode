@@ -953,7 +953,7 @@ void Monitor_nd_noaccInit(Monitornd_noaccDefines_type *DEFS,
 	  sprintf(detector.zvar,"%s","");
 	  sprintf(detector.statistics,"%s","None");
 	  sprintf(detector.variables,"%s","None");
-	  sprintf(detector.signal,"%s","None");
+	  sprintf(detector.signal,"%s","Pixel index");
 	  sprintf(detector.filename,"BINS");
 	  sprintf(detector.component,"%s",Vars->compcurname);
 	  sprintf(detector.nexuscomp,"%s%d_%s",pref,Vars->compcurindex-1,detector.component);
