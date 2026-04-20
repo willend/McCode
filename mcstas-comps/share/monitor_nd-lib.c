@@ -936,7 +936,16 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
 	  detector.p0 = NULL;
 	  detector.p1 = NULL;
 	  detector.p2 = NULL;
-	  
+	  sprintf(detector.ncount,"%s","");
+	  sprintf(detector.xvar,"%s","");
+	  sprintf(detector.xlabel,"%s","");
+	  sprintf(detector.yvar,"%s","");
+	  sprintf(detector.ylabel,"%s","");
+	  sprintf(detector.zvar,"%s","");
+	  sprintf(detector.zvar,"%s","");
+	  sprintf(detector.statistics,"%s","None");
+	  sprintf(detector.variables,"%s","None");
+	  sprintf(detector.signal,"%s","Pixel index");
 	  sprintf(detector.filename,"BINS");
 	  sprintf(detector.component,"%s",Vars->compcurname);
 	  sprintf(detector.nexuscomp,"%s%d_%s",pref,Vars->compcurindex-1,detector.component);
