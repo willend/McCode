@@ -1190,7 +1190,7 @@ class InstrMdDocWriter:
         lines.append('')
         lines.append('## Links')
         lines.append('')
-        lines.append('- [Source code](%s) for `%s`.' % (i.filepath, os.path.basename(i.filepath)))
+        lines.append('- [Source code](%s) for `%s`.' % (os.path.basename(i.filepath), os.path.basename(i.filepath)))
         for l in i.links:
             lines.append('- %s' % _md_text(l))
         lines.append('')
