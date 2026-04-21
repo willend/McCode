@@ -1,0 +1,9 @@
+mcdoc --tex --in-repo -i --dir=mcstas-comps/contrib --outdir=doc/manuals/mcstas/
+mcdoc --tex --in-repo -i --dir=mcstas-comps/misc --outdir=doc/manuals/mcstas/
+mcdoc --tex --in-repo -i --dir=mcstas-comps/monitors --outdir=doc/manuals/mcstas/
+mcdoc --tex --in-repo -i --dir=mcstas-comps/obsolete --outdir=doc/manuals/mcstas/
+mcdoc --tex --in-repo -i --dir=mcstas-comps/optics --outdir=doc/manuals/mcstas/
+mcdoc --tex --in-repo -i --dir=mcstas-comps/samples --outdir=doc/manuals/mcstas/
+mcdoc --tex --in-repo -i --dir=mcstas-comps/sasmodels --outdir=doc/manuals/mcstas/
+mcdoc --tex --in-repo -i --dir=mcstas-comps/sources --outdir=doc/manuals/mcstas/
+mcdoc --tex --in-repo -i --dir=mcstas-comps/union --outdir=doc/manuals/mcstas/
