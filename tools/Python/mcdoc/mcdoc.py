@@ -38,10 +38,14 @@ FORMAT_EXTENSIONS = {
 }
 
 
-def get_doc_filepath(filepath, ext='html'):
+def get_doc_filepath(filepath, ext='html', outdir=None):
     ''' transform from .anything to .<ext>, swapping resourcedir -> docdir '''
     h = pathlib.Path(os.path.splitext(filepath)[0] + '.' + ext)
-    h = pathlib.Path(str(h).replace(mccode_config.directories['resourcedir'],
+    if not outdir:
+        h = pathlib.Path(str(h).replace(mccode_config.directories['resourcedir'],
+                                    mccode_config.directories['docdir']))
+    else:
+        h = pathlib.Path(str(h).replace(str(h.parent.parent),
                                     mccode_config.directories['docdir']))
     return h
 
@@ -1496,11 +1500,12 @@ def _normalize_formats(formats):
 
 
 def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files,
-                                printlog=False, formats=('html',)):
+                                printlog=False, formats=('html',), outdir=None):
     ''' Writes component and instrument docs files in the requested formats. '''
     formats = _normalize_formats(formats)
 
     for i in range(len(comp_infos)):
+        print("Working on comp " + str(i) + " of " + str(len(comp_infos)) + ": " + comp_infos[i].name)        
         try:
             p = comp_infos[i]
             try:
@@ -1511,7 +1516,8 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
                 ext, InstrW, CompW = _PER_FILE_WRITERS[fmt]
                 doc = CompW(p)
                 text = doc.create()
-                h = get_doc_filepath(f, ext)
+                h = get_doc_filepath(f, ext, outdir=outdir)
+                print("Meant to be dumped in " + str(h))
                 if printlog:
                     print("writing doc file... %s" % h)
                 write_file(h, text, failsilent=True)
@@ -1530,7 +1536,7 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
                 ext, InstrW, CompW = _PER_FILE_WRITERS[fmt]
                 doc = InstrW(p)
                 text = doc.create()
-                h = get_doc_filepath(f, ext)
+                h = get_doc_filepath(f, ext, outdir=outdir)
                 if printlog:
                     print("writing doc file... %s" % h)
                 write_file(h, text, failsilent=True)
@@ -1576,7 +1582,7 @@ def main(args):
     # Resolve requested formats. HTML is always included so existing
     # behaviour (browser-based viewing) is preserved.
     if getattr(args, 'in_repo', True):
-        requested = ['md']
+        requested = []
         args.install=True
     else:
         requested = ['html']
@@ -1587,7 +1593,17 @@ def main(args):
     formats = _normalize_formats(requested)
 
     usedir = mccode_config.configuration["MCCODE_LIB_DIR"]
-    docdir = mccode_config.directories["docdir"]
+    outdir = None
+
+    if not args.outdir:
+        docdir = mccode_config.directories["docdir"]
+    else:
+        if not getattr(args, 'in_repo', True):
+            print("Outdir is meant for in-repo use only, e.g. for generating TeX manual snippets.")
+            quit()
+        docdir = args.outdir
+        outdir = args.outdir
+        mccode_config.directories["docdir"] = docdir
 
     if args.dir==None and args.install==False and args.searchterm==None and args.manual==False and args.comps==False and args.web==False:
         ''' browse system docs and exit '''
@@ -1628,8 +1644,9 @@ def main(args):
             print("using custom dir: %s" % usedir)
 
         comp_infos, instr_infos, comp_files, instr_files = parse_and_filter(usedir, recursive=True, printlog=args.verbose)
+        print("DOC dir is " + mccode_config.directories["docdir"])
         write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files,
-                                    printlog=args.verbose, formats=formats)
+                                    printlog=args.verbose, formats=formats, outdir=outdir)
         if args.in_repo==False:
             mcdoc_html_filepath = os.path.join(docdir, mccode_config.get_mccode_prefix()+'doc.html')
         else:
@@ -1675,7 +1692,7 @@ def main(args):
                 instr = re.search(r'[\w0-9]+\.instr', args.searchterm)
                 comp = re.search(r'[\w0-9]+\.comp', args.searchterm)
                 if getattr(args, 'in_repo', True):
-                    docdir = mccode_config.directories["docdir"]
+                        docdir = mccode_config.directories["docdir"]
                 else:
                     docdir=''
 
@@ -1744,6 +1761,7 @@ if __name__ == '__main__':
                         help='emit HTML, Markdown and LaTeX doc files')
     parser.add_argument('--in-repo', action='store_true', dest='in_repo',
                         help='Place generated output(s) next to comp files (no master doc page)')
+    parser.add_argument('--outdir', '-o', help='write generated results to this directory (in-repo use only)')
     args = parser.parse_args()
 
     try:
