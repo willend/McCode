@@ -1,0 +1,49 @@
+\section{The \texttt{TOF2E\_monitor} McStas Component}
+TOF-sensitive monitor, converting to energy
+
+\subsection*{Identification}
+\begin{itemize}
+  \item \textbf{Site:} 
+  \item \textbf{Author:} Kim Lefmann and Helmuth Schoeber
+  \item \textbf{Origin:} Risoe
+  \item \textbf{Date:} Sept. 13, 2006
+\end{itemize}
+
+\subsection*{Description}
+\begin{lstlisting}
+A square single monitor that measures the energy of the incoming neutrons
+from their time-of-flight
+
+Example: TOF2E_monitor(xmin=-0.1, xmax=0.1, ymin=-0.1, ymax=0.1, Emin=1, Emax=50, nE=20, filename="Output.nrj", L_flight=20, T_zero=0)
+\end{lstlisting}
+
+\subsection*{Input parameters}
+Parameters in \textbf{boldface} are required; the others are optional.
+
+\begin{longtable}{p{0.22\textwidth}p{0.12\textwidth}p{0.46\textwidth}p{0.14\textwidth}}
+\toprule
+\textbf{Name} & \textbf{Unit} & \textbf{Description} & \textbf{Default} \\
+\midrule
+\endhead
+nE & 1 & Number of energy channels & 20 \\
+filename & string & Name of file in which to store the detector image & 0 \\
+nowritefile & 1 & If set, monitor will skip writing to disk & 0 \\
+xmin & m & Lower x bound of detector opening & -0.05 \\
+xmax & m & Upper x bound of detector opening & 0.05 \\
+ymin & m & Lower y bound of detector opening & -0.05 \\
+ymax & m & Upper y bound of detector opening & 0.05 \\
+xwidth & m & Width of detector. Overrides xmin, xmax & 0 \\
+yheight & m & Height of detector. Overrides ymin, ymax & 0 \\
+\textbf{Emin} & meV & Minimum energy to detect &  \\
+\textbf{Emax} & meV & Maximum energy to detect &  \\
+\textbf{T\_zero} & s & Zero point in time &  \\
+\textbf{L\_flight} & m & flight length user in conversion &  \\
+restore\_neutron & 1 & If set, the monitor does not influence the neutron state & 0 \\
+\bottomrule
+\end{longtable}
+
+\subsection*{Links}
+\begin{itemize}
+  \item \href{run:/home/willend/willend-McCode/mcstas-comps/monitors/TOF2E_monitor.comp}{Source code} for \texttt{TOF2E\_monitor.comp}.
+\end{itemize}
+\IfFileExists{TOF2E_monitor_static.tex}{\input{TOF2E_monitor_static.tex}}{}

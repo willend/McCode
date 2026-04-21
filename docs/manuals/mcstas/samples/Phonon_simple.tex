@@ -1,0 +1,70 @@
+\section{The \texttt{Phonon\_simple} McStas Component}
+A sample for phonon scattering based on cross section expressions from Squires, Ch.3.
+Possibility for adding an (unphysical) bandgap.
+
+\subsection*{Identification}
+\begin{itemize}
+  \item \textbf{Site:} 
+  \item \textbf{Author:} Kim Lefmann
+  \item \textbf{Origin:} Risoe
+  \item \textbf{Date:} 04.02.04
+\end{itemize}
+
+\subsection*{Description}
+\begin{lstlisting}
+Single-cylinder shape.
+Absorption included.
+No multiple scattering.
+No incoherent scattering emitted.
+No attenuation from coherent scattering. No Bragg scattering.
+fcc crystal n.n. interactions only
+One phonon branch only -> phonon polarization not accounted for.
+Bravais lattice only. (i.e. just one atom per unit cell)
+
+Algorithm:
+0. Always perform the scattering if possible (otherwise ABSORB)
+1. Choose direction within a focusing solid angle
+2. Calculate the zeros of (E_i-E_f-hbar omega(kappa)) as a function of k_f
+3. Choose one value of k_f (always at least one is possible!)
+4. Perform the correct weight transformation
+\end{lstlisting}
+
+\subsection*{Input parameters}
+Parameters in \textbf{boldface} are required; the others are optional.
+
+\begin{longtable}{p{0.22\textwidth}p{0.12\textwidth}p{0.46\textwidth}p{0.14\textwidth}}
+\toprule
+\textbf{Name} & \textbf{Unit} & \textbf{Description} & \textbf{Default} \\
+\midrule
+\endhead
+\textbf{radius} & m & Outer radius of sample in (x,z) plane &  \\
+\textbf{yheight} & m & Height of sample in y direction &  \\
+\textbf{sigma\_abs} & barns & Absorption cross section at 2200 m/s per atom &  \\
+\textbf{sigma\_inc} & barns & Incoherent scattering cross section per atom &  \\
+\textbf{a} & AA & fcc Lattice constant &  \\
+\textbf{b} & fm & Scattering length &  \\
+\textbf{M} & a.u. & Atomic mass &  \\
+\textbf{c} & meV/AA\textasciicircum{}(-1) & Velocity of sound &  \\
+\textbf{DW} & 1 & Debye-Waller factor &  \\
+\textbf{T} & K & Temperature &  \\
+target\_x & m & position of target to focus at . Transverse coordinate & 0 \\
+target\_y & m & position of target to focus at. Vertical coordinate & 0 \\
+target\_z & m & position of target to focus at. Straight ahead. & 0 \\
+target\_index & 1 & relative index of component to focus at, e.g. next is +1 & 0 \\
+focus\_r & m & Radius of sphere containing target. & 0 \\
+focus\_xw & m & horiz. dimension of a rectangular area & 0 \\
+focus\_yh & m & vert.  dimension of a rectangular area & 0 \\
+focus\_aw & deg & horiz. angular dimension of a rectangular area & 0 \\
+focus\_ah & deg & vert.  angular dimension of a rectangular area & 0 \\
+gap & meV & Bandgap energy (unphysical) & 0 \\
+e\_steps\_low & 1 & Amount of possible intersections beneath the elastic line & 50 \\
+e\_steps\_high & 1 & Amount of possible intersections above the elastic line & 50 \\
+\bottomrule
+\end{longtable}
+
+\subsection*{Links}
+\begin{itemize}
+  \item \href{run:/home/willend/willend-McCode/mcstas-comps/samples/Phonon_simple.comp}{Source code} for \texttt{Phonon\_simple.comp}.
+  \item The test/example instrument \textless{}a href="../examples/Test\_Phonon.instr"\textgreater{}Test\_Phonon.instr\textless{}/a\textgreater{}.
+\end{itemize}
+\IfFileExists{Phonon_simple_static.tex}{\input{Phonon_simple_static.tex}}{}

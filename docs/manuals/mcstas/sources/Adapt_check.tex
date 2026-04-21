@@ -1,0 +1,41 @@
+\section{The \texttt{Adapt\_check} McStas Component}
+Optimization specifier for the Source\_adapt component.
+
+\subsection*{Identification}
+\begin{itemize}
+  \item \textbf{Site:} 
+  \item \textbf{Author:} Kristian Nielsen
+  \item \textbf{Origin:} Risoe
+  \item \textbf{Date:} 1999
+\end{itemize}
+
+\subsection*{Description}
+\begin{lstlisting}
+This components works together with the Source_adapt component, and
+is used to define the criteria for selecting which neutrons are
+considered "good" in the adaptive algorithm. The name of the
+associated Source_adapt component in the instrument definition is
+given as parameter. The component is special in that its position
+does not matter; all neutrons that have not been absorbed prior to
+the component are considered "good".
+
+Example: Adapt_check(source_comp="MySource")
+\end{lstlisting}
+
+\subsection*{Input parameters}
+Parameters in \textbf{boldface} are required; the others are optional.
+
+\begin{longtable}{p{0.22\textwidth}p{0.12\textwidth}p{0.46\textwidth}p{0.14\textwidth}}
+\toprule
+\textbf{Name} & \textbf{Unit} & \textbf{Description} & \textbf{Default} \\
+\midrule
+\endhead
+\textbf{source\_comp} & string & The name of the Source\_adapt component in the instrument definition. &  \\
+\bottomrule
+\end{longtable}
+
+\subsection*{Links}
+\begin{itemize}
+  \item \href{run:/home/willend/willend-McCode/mcstas-comps/sources/Adapt_check.comp}{Source code} for \texttt{Adapt\_check.comp}.
+\end{itemize}
+\IfFileExists{Adapt_check_static.tex}{\input{Adapt_check_static.tex}}{}
