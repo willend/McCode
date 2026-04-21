@@ -57,11 +57,12 @@ message( "LaTeX configuration" )
 file(GLOB LIST RELATIVE "${CMAKE_CURRENT_LIST_DIR}" "*.tex" "*.sty" "*.bib" "*.bst" "[m-s]*/*.tex" "[m-s]*/*.parms" "figures/*")
 
 foreach(NAME sources samples optics monitors misc)
-  add_custom_command(
-    OUTPUT "${NAME}.done"
-    COMMAND "${PROJECT_SOURCE_DIR}/get_mcdoc_snippets.sh" "${NAME}" "${PROJECT_SOURCE_DIR}"
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
-    )
+   add_custom_command(
+     OUTPUT "${NAME}.done"
+     COMMAND "mcdoc" "--tex" "--in-repo" "--dir=mcstas-comps/${NAME}" "--outdir=doc/manuals/mcstas/"
+     COMMAND "touch" "${NAME}.done"
+     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+     )
 endforeach()
 
 set(LATEX_OUTPUT_PATH "${PROJECT_BINARY_DIR}")
