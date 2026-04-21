@@ -60,7 +60,6 @@ foreach(NAME sources samples optics monitors misc)
    add_custom_command(
      OUTPUT "${NAME}.done"
      COMMAND "mcdoc" "--tex" "--in-repo" "--dir=mcstas-comps/${NAME}" "--outdir=doc/manuals/mcstas/"
-     COMMAND "touch" "${NAME}.done"
      WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
      )
 endforeach()
