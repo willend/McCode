@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/External_component_test/External_component_test.instr) for `External_component_test.instr`.
+- [Source code](External_component_test.instr) for `External_component_test.instr`.
 
 ---
 

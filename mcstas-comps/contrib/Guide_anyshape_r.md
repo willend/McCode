@@ -59,7 +59,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Guide_anyshape_r.comp) for `Guide_anyshape_r.comp`.
+- [Source code](Guide_anyshape_r.comp) for `Guide_anyshape_r.comp`.
 - <a href="http://www.geomview.org">Geomview and Object File Format (OFF)</a>
 - Java version of Geomview (display only) <a href="http://www.holmes3d.net/graphics/roffview/">jroff.jar</a>
 - <a href="http://qhull.org">qhull</a>

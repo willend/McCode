@@ -86,7 +86,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Incoherent.comp) for `Incoherent.comp`.
+- [Source code](Incoherent.comp) for `Incoherent.comp`.
 - <a href="http://www.ncnr.nist.gov/resources/n-lengths/">Cross sections for single elements</a>
 - <a href="http://www.ncnr.nist.gov/resources/sldcalc.html>Cross sections for compounds</a>
 - <a href="http://www.webelements.com/">Web Elements</a>

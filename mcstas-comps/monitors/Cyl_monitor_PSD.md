@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Cyl_monitor_PSD.comp) for `Cyl_monitor_PSD.comp`.
+- [Source code](Cyl_monitor_PSD.comp) for `Cyl_monitor_PSD.comp`.
 
 ---
 

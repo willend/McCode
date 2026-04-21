@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sources/Adapt_check.comp) for `Adapt_check.comp`.
+- [Source code](Adapt_check.comp) for `Adapt_check.comp`.
 
 ---
 

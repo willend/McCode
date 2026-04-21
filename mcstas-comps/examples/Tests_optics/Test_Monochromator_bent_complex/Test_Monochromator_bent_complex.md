@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_Monochromator_bent_complex/Test_Monochromator_bent_complex.instr) for `Test_Monochromator_bent_complex.instr`.
+- [Source code](Test_Monochromator_bent_complex.instr) for `Test_Monochromator_bent_complex.instr`.
 
 ---
 

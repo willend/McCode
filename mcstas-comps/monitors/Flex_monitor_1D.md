@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Flex_monitor_1D.comp) for `Flex_monitor_1D.comp`.
+- [Source code](Flex_monitor_1D.comp) for `Flex_monitor_1D.comp`.
 
 ---
 

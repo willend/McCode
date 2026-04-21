@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/Cone.comp) for `Cone.comp`.
+- [Source code](Cone.comp) for `Cone.comp`.
 - mcdoc page of <a href="Shape.html">Shape</a></b> component
 
 ---

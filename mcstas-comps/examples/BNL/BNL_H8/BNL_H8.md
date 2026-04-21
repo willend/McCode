@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/BNL/BNL_H8/BNL_H8.instr) for `BNL_H8.instr`.
+- [Source code](BNL_H8.instr) for `BNL_H8.instr`.
 - Neutron News 13 (No. 4), 24-29 (2002).
 
 ---

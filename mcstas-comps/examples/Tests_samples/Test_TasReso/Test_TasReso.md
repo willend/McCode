@@ -52,7 +52,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_TasReso/Test_TasReso.instr) for `Test_TasReso.instr`.
+- [Source code](Test_TasReso.instr) for `Test_TasReso.instr`.
 
 ---
 

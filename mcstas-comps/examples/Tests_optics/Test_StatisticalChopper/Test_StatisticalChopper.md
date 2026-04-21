@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_StatisticalChopper/Test_StatisticalChopper.instr) for `Test_StatisticalChopper.instr`.
+- [Source code](Test_StatisticalChopper.instr) for `Test_StatisticalChopper.instr`.
 - R. Von Jan and R. Scherm. The statistical chopper for neutron time-of-flight spectroscopy. Nuclear Instruments and Methods, 80 (1970) 69-76.
 
 ---

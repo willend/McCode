@@ -43,7 +43,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/NPI_tof_theta_monitor.comp) for `NPI_tof_theta_monitor.comp`.
+- [Source code](NPI_tof_theta_monitor.comp) for `NPI_tof_theta_monitor.comp`.
 
 ---
 

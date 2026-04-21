@@ -60,7 +60,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/FermiChopper.comp) for `FermiChopper.comp`.
+- [Source code](FermiChopper.comp) for `FermiChopper.comp`.
 - <a href="Vitess_ChopperFermi.html">Vitess_ChopperFermi</a> component by
 - G. Zsigmond, imported from Vitess by K. Lieutenant.
 

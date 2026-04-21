@@ -52,7 +52,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/IncoherentPhonon_process.comp) for `IncoherentPhonon_process.comp`.
+- [Source code](IncoherentPhonon_process.comp) for `IncoherentPhonon_process.comp`.
 - See <a href="https://doi.org/10.3233/JNR-190117">https://doi.org/10.3233/JNR-190117</a>
 
 ---

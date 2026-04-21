@@ -52,7 +52,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_correlation_length.comp) for `SasView_correlation_length.comp`.
+- [Source code](SasView_correlation_length.comp) for `SasView_correlation_length.comp`.
 
 ---
 

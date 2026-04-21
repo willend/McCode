@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sources/Monitor_Optimizer.comp) for `Monitor_Optimizer.comp`.
+- [Source code](Monitor_Optimizer.comp) for `Monitor_Optimizer.comp`.
 - <a href="Source_Optimizer.html">Source_Optimizer</a>
 
 ---

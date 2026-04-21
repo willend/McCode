@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/templateSANS_MCPL/templateSANS_MCPL.instr) for `templateSANS_MCPL.instr`.
+- [Source code](templateSANS_MCPL.instr) for `templateSANS_MCPL.instr`.
 
 ---
 

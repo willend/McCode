@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Al_window.comp) for `Al_window.comp`.
+- [Source code](Al_window.comp) for `Al_window.comp`.
 
 ---
 

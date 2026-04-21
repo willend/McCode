@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Mirror_Curved_Bispectral.comp) for `Mirror_Curved_Bispectral.comp`.
+- [Source code](Mirror_Curved_Bispectral.comp) for `Mirror_Curved_Bispectral.comp`.
 
 ---
 

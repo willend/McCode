@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/TOFLambda_monitor.comp) for `TOFLambda_monitor.comp`.
+- [Source code](TOFLambda_monitor.comp) for `TOFLambda_monitor.comp`.
 
 ---
 

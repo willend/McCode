@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Monochromator_bent_complex.comp) for `Monochromator_bent_complex.comp`.
+- [Source code](Monochromator_bent_complex.comp) for `Monochromator_bent_complex.comp`.
 - <a href="https://doi.org/10.1016/j.nima.2004.04.197">Jan &Scaron;aroun NIM A Volume 529, Issue 1-3 (2004), pp162-165</a>
 - <a href="https://doi.org/10.3390/qubs10010006">Christensen, D.L.; Cabeza, S.; Pirling, T.; Lefmann, K.; &Scaron;aroun, J. Simulating Neutron Diffraction from Deformed Mosaic Crystals in McStas. Quantum Beam Sci. 2026, 10, 6. https://doi.org/10.3390/qubs10010006</a>
 

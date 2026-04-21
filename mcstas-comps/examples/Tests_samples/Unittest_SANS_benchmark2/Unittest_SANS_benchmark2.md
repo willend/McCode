@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Unittest_SANS_benchmark2/Unittest_SANS_benchmark2.instr) for `Unittest_SANS_benchmark2.instr`.
+- [Source code](Unittest_SANS_benchmark2.instr) for `Unittest_SANS_benchmark2.instr`.
 
 ---
 

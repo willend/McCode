@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Mantid/ILL_H16_Mantid/ILL_H16_Mantid.instr) for `ILL_H16_Mantid.instr`.
+- [Source code](ILL_H16_Mantid.instr) for `ILL_H16_Mantid.instr`.
 
 ---
 

@@ -86,7 +86,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_BRISP/ILL_BRISP.instr) for `ILL_BRISP.instr`.
+- [Source code](ILL_BRISP.instr) for `ILL_BRISP.instr`.
 - The BRISP spectrometer at the ILL <a href="www.ill.fr/brisp">BRISP</a>
 
 ---

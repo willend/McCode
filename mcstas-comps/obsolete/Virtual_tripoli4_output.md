@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Virtual_tripoli4_output.comp) for `Virtual_tripoli4_output.comp`.
+- [Source code](Virtual_tripoli4_output.comp) for `Virtual_tripoli4_output.comp`.
 - <a href="http://www.nea.fr/html/dbprog/tripoli-abs.html">Tripoli</a>
 - Virtual_tripoli4_input
 

@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/PSDlin_monitor.comp) for `PSDlin_monitor.comp`.
+- [Source code](PSDlin_monitor.comp) for `PSDlin_monitor.comp`.
 
 ---
 

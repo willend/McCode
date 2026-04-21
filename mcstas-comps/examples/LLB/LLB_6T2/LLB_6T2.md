@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/LLB/LLB_6T2/LLB_6T2.instr) for `LLB_6T2.instr`.
+- [Source code](LLB_6T2.instr) for `LLB_6T2.instr`.
 
 ---
 

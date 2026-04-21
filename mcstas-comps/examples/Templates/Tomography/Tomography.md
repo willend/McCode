@@ -43,7 +43,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/Tomography/Tomography.instr) for `Tomography.instr`.
+- [Source code](Tomography.instr) for `Tomography.instr`.
 - http://shape.cs.princeton.edu/benchmark/documentation/off_format.html
 
 ---

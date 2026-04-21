@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/EPSD_monitor.comp) for `EPSD_monitor.comp`.
+- [Source code](EPSD_monitor.comp) for `EPSD_monitor.comp`.
 
 ---
 

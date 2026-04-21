@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_lamellar_hg.comp) for `SasView_lamellar_hg.comp`.
+- [Source code](SasView_lamellar_hg.comp) for `SasView_lamellar_hg.comp`.
 
 ---
 

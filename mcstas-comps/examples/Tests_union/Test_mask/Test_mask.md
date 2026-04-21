@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Test_mask/Test_mask.instr) for `Test_mask.instr`.
+- [Source code](Test_mask.instr) for `Test_mask.instr`.
 
 ---
 

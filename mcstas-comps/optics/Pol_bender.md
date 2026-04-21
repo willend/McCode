@@ -85,7 +85,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Pol_bender.comp) for `Pol_bender.comp`.
+- [Source code](Pol_bender.comp) for `Pol_bender.comp`.
 
 ---
 

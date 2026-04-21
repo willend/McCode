@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Derotator.comp) for `Derotator.comp`.
+- [Source code](Derotator.comp) for `Derotator.comp`.
 
 ---
 

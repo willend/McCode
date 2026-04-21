@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_RNG/Test_RNG_randtriangle/Test_RNG_randtriangle.instr) for `Test_RNG_randtriangle.instr`.
+- [Source code](Test_RNG_randtriangle.instr) for `Test_RNG_randtriangle.instr`.
 - <reference/HTML link>
 
 ---

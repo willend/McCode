@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/Test_Magnetic_Majorana/Test_Magnetic_Majorana.instr) for `Test_Magnetic_Majorana.instr`.
+- [Source code](Test_Magnetic_Majorana.instr) for `Test_Magnetic_Majorana.instr`.
 
 ---
 

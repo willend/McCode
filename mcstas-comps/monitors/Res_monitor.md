@@ -55,7 +55,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Res_monitor.comp) for `Res_monitor.comp`.
+- [Source code](Res_monitor.comp) for `Res_monitor.comp`.
 
 ---
 

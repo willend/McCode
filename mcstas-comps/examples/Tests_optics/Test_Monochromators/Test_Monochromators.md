@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_Monochromators/Test_Monochromators.instr) for `Test_Monochromators.instr`.
+- [Source code](Test_Monochromators.instr) for `Test_Monochromators.instr`.
 
 ---
 

@@ -73,7 +73,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Filter_gen.comp) for `Filter_gen.comp`.
+- [Source code](Filter_gen.comp) for `Filter_gen.comp`.
 - <a href="../data/HOPG.trm">HOPG.trm</a> filename as an example.
 
 ---

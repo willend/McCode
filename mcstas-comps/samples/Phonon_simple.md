@@ -61,7 +61,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Phonon_simple.comp) for `Phonon_simple.comp`.
+- [Source code](Phonon_simple.comp) for `Phonon_simple.comp`.
 - The test/example instrument <a href="../examples/Test_Phonon.instr">Test_Phonon.instr</a>.
 
 ---

@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Conditional_test/Conditional_test.instr) for `Conditional_test.instr`.
+- [Source code](Conditional_test.instr) for `Conditional_test.instr`.
 
 ---
 

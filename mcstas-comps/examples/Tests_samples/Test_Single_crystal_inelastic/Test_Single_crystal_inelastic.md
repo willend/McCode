@@ -41,7 +41,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_Single_crystal_inelastic/Test_Single_crystal_inelastic.instr) for `Test_Single_crystal_inelastic.instr`.
+- [Source code](Test_Single_crystal_inelastic.instr) for `Test_Single_crystal_inelastic.instr`.
 - Duc Le (2015) - duc.le@stfc.ac.uk
 
 ---

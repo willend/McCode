@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/Test_Pol_FieldBox/Test_Pol_FieldBox.instr) for `Test_Pol_FieldBox.instr`.
+- [Source code](Test_Pol_FieldBox.instr) for `Test_Pol_FieldBox.instr`.
 
 ---
 

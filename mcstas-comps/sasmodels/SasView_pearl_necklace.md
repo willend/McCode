@@ -55,7 +55,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_pearl_necklace.comp) for `SasView_pearl_necklace.comp`.
+- [Source code](SasView_pearl_necklace.comp) for `SasView_pearl_necklace.comp`.
 
 ---
 

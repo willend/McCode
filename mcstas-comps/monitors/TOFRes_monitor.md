@@ -55,7 +55,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/TOFRes_monitor.comp) for `TOFRes_monitor.comp`.
+- [Source code](TOFRes_monitor.comp) for `TOFRes_monitor.comp`.
 
 ---
 

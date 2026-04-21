@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_demos/Time_of_flight/Time_of_flight.instr) for `Time_of_flight.instr`.
+- [Source code](Time_of_flight.instr) for `Time_of_flight.instr`.
 
 ---
 

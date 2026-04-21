@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Pol_monitor.comp) for `Pol_monitor.comp`.
+- [Source code](Pol_monitor.comp) for `Pol_monitor.comp`.
 
 ---
 

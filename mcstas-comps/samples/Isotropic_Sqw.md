@@ -218,7 +218,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Isotropic_Sqw.comp) for `Isotropic_Sqw.comp`.
+- [Source code](Isotropic_Sqw.comp) for `Isotropic_Sqw.comp`.
 - E. Farhi, V. Hugouvieux, M.R. Johnson, and W. Kob, Journal of Computational Physics 228 (2009) 5251-5261 "Virtual experiments: Combining realistic neutron scattering instrument and sample simulations"
 - Hugouvieux V, Farhi E, Johnson MR, Physica B, 350 (2004) 151 "Virtual neutron scattering experiments"
 - Hugouvieux V, PhD, University of Montpellier II, France (2004).

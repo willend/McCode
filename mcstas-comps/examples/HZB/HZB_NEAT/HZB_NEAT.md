@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/HZB/HZB_NEAT/HZB_NEAT.instr) for `HZB_NEAT.instr`.
+- [Source code](HZB_NEAT.instr) for `HZB_NEAT.instr`.
 - <a href="http://www.helmholtz-berlin.de/user/neutrons/instrumentation/neutron-instruments/v3/index_en.html">NEAT at HZB/BENSC</a>
 
 ---

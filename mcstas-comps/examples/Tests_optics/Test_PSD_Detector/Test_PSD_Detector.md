@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_PSD_Detector/Test_PSD_Detector.instr) for `Test_PSD_Detector.instr`.
+- [Source code](Test_PSD_Detector.instr) for `Test_PSD_Detector.instr`.
 - The PSD_Detector component
 
 ---

@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_LET/ISIS_LET.instr) for `ISIS_LET.instr`.
+- [Source code](ISIS_LET.instr) for `ISIS_LET.instr`.
 
 ---
 

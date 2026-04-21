@@ -54,7 +54,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Mirror_surface.comp) for `Mirror_surface.comp`.
+- [Source code](Mirror_surface.comp) for `Mirror_surface.comp`.
 
 ---
 

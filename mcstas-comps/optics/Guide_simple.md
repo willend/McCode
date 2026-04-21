@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Guide_simple.comp) for `Guide_simple.comp`.
+- [Source code](Guide_simple.comp) for `Guide_simple.comp`.
 
 ---
 

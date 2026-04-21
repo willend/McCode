@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/TUDelft/SESANS_Delft/SESANS_Delft.instr) for `SESANS_Delft.instr`.
+- [Source code](SESANS_Delft.instr) for `SESANS_Delft.instr`.
 - <reference/HTML link>
 - <a href="https://doi.org/10.1107/S1600576720015496">https://doi.org/10.1107/S1600576720015496</a>
 

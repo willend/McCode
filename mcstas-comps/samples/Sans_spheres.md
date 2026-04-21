@@ -46,7 +46,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Sans_spheres.comp) for `Sans_spheres.comp`.
+- [Source code](Sans_spheres.comp) for `Sans_spheres.comp`.
 - The test/example instrument <a href="../examples/SANS.instr">SANS.instr</a>.
 
 ---

@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_SANS2d/ISIS_SANS2d.instr) for `ISIS_SANS2d.instr`.
+- [Source code](ISIS_SANS2d.instr) for `ISIS_SANS2d.instr`.
 
 ---
 

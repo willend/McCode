@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/SNS/Gallmeier_SNS_decoupled_poisoned/Gallmeier_SNS_decoupled_poisoned.instr) for `Gallmeier_SNS_decoupled_poisoned.instr`.
+- [Source code](Gallmeier_SNS_decoupled_poisoned.instr) for `Gallmeier_SNS_decoupled_poisoned.instr`.
 
 ---
 

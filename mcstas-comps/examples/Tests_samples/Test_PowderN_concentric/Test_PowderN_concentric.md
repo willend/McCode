@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_PowderN_concentric/Test_PowderN_concentric.instr) for `Test_PowderN_concentric.instr`.
+- [Source code](Test_PowderN_concentric.instr) for `Test_PowderN_concentric.instr`.
 
 ---
 

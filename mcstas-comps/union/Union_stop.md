@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_stop.comp) for `Union_stop.comp`.
+- [Source code](Union_stop.comp) for `Union_stop.comp`.
 
 ---
 

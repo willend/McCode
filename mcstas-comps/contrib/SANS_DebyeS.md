@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SANS_DebyeS.comp) for `SANS_DebyeS.comp`.
+- [Source code](SANS_DebyeS.comp) for `SANS_DebyeS.comp`.
 - Sans_spheres component
 
 ---

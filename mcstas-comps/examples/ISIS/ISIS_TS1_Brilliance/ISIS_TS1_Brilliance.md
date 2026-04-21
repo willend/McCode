@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_TS1_Brilliance/ISIS_TS1_Brilliance.instr) for `ISIS_TS1_Brilliance.instr`.
+- [Source code](ISIS_TS1_Brilliance.instr) for `ISIS_TS1_Brilliance.instr`.
 
 ---
 

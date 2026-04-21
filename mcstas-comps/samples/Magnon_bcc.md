@@ -71,7 +71,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Magnon_bcc.comp) for `Magnon_bcc.comp`.
+- [Source code](Magnon_bcc.comp) for `Magnon_bcc.comp`.
 - The test/example instrument <a href="../examples/Test_Magnon.instr">Test_Magnon.instr</a>.
 
 ---

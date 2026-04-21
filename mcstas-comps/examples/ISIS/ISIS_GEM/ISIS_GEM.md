@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_GEM/ISIS_GEM.instr) for `ISIS_GEM.instr`.
+- [Source code](ISIS_GEM.instr) for `ISIS_GEM.instr`.
 - The <a href="http://essworkshop.org">ESS Instrument workshops</a> website.
 - The <a href="http://www.isis.stfc.ac.uk/instruments/gem/">GEM instrument</a> at ISIS
 

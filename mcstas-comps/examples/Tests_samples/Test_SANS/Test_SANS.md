@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_SANS/Test_SANS.instr) for `Test_SANS.instr`.
+- [Source code](Test_SANS.instr) for `Test_SANS.instr`.
 
 ---
 

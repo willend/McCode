@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_TOSCA_preupgrade/ISIS_TOSCA_preupgrade.instr) for `ISIS_TOSCA_preupgrade.instr`.
+- [Source code](ISIS_TOSCA_preupgrade.instr) for `ISIS_TOSCA_preupgrade.instr`.
 - <a href="https://www.isis.stfc.ac.uk/Pages/tosca.aspx">TOSCA instrument webpage</a>
 - <a href="https://http://mdanse2018.essworkshop.org">MDANSE 2018 school webpage</a>
 

@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sources/Source_Maxwell_3.comp) for `Source_Maxwell_3.comp`.
+- [Source code](Source_Maxwell_3.comp) for `Source_Maxwell_3.comp`.
 
 ---
 

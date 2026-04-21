@@ -213,7 +213,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Monitor_nD.comp) for `Monitor_nD.comp`.
+- [Source code](Monitor_nD.comp) for `Monitor_nD.comp`.
 - <a href="PreMonitor_nD.html">PreMonitor_nD</a>
 
 ---

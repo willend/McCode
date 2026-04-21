@@ -52,7 +52,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_linear_pearls.comp) for `SasView_linear_pearls.comp`.
+- [Source code](SasView_linear_pearls.comp) for `SasView_linear_pearls.comp`.
 
 ---
 

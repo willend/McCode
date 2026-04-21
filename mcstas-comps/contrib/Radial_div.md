@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Radial_div.comp) for `Radial_div.comp`.
+- [Source code](Radial_div.comp) for `Radial_div.comp`.
 
 ---
 

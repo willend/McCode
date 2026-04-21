@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/PSI/PSI_Focus/PSI_Focus.instr) for `PSI_Focus.instr`.
+- [Source code](PSI_Focus.instr) for `PSI_Focus.instr`.
 - Written by U.Filges <uwe.filges@psi.ch> PSI, Jan 2004
 
 ---

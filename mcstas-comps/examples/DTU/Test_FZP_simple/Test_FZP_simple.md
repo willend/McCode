@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/DTU/Test_FZP_simple/Test_FZP_simple.instr) for `Test_FZP_simple.instr`.
+- [Source code](Test_FZP_simple.instr) for `Test_FZP_simple.instr`.
 - <reference/HTML link>
 
 ---

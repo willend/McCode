@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Many_meshes/Many_meshes.instr) for `Many_meshes.instr`.
+- [Source code](Many_meshes.instr) for `Many_meshes.instr`.
 
 ---
 

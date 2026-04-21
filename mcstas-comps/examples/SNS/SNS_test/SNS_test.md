@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/SNS/SNS_test/SNS_test.instr) for `SNS_test.instr`.
+- [Source code](SNS_test.instr) for `SNS_test.instr`.
 - Written by G. Granroth
 - SNS_source component
 - <A href="http://neutrons.ornl.gov/instrument_systems/components/moderators.shtml">Source files </A>

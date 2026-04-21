@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_grammar/Unittest_SPLIT/Unittest_SPLIT.instr) for `Unittest_SPLIT.instr`.
+- [Source code](Unittest_SPLIT.instr) for `Unittest_SPLIT.instr`.
 - <reference/HTML link>
 
 ---

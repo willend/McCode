@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/templateSANS/templateSANS.instr) for `templateSANS.instr`.
+- [Source code](templateSANS.instr) for `templateSANS.instr`.
 
 ---
 

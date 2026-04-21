@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/NCrystal_sample.comp) for `NCrystal_sample.comp`.
+- [Source code](NCrystal_sample.comp) for `NCrystal_sample.comp`.
 - The NCrystal wiki at <a href="https://github.com/mctools/ncrystal/wiki">https://github.com/mctools/ncrystal/wiki</a>.
 
 ---

@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_mass_fractal.comp) for `SasView_mass_fractal.comp`.
+- [Source code](SasView_mass_fractal.comp) for `SasView_mass_fractal.comp`.
 
 ---
 

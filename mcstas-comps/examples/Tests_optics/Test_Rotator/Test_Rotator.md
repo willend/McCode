@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_Rotator/Test_Rotator.instr) for `Test_Rotator.instr`.
+- [Source code](Test_Rotator.instr) for `Test_Rotator.instr`.
 - A reference/HTML link for more information
 
 ---

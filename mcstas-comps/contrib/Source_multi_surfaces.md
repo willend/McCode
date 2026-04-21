@@ -87,7 +87,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Source_multi_surfaces.comp) for `Source_multi_surfaces.comp`.
+- [Source code](Source_multi_surfaces.comp) for `Source_multi_surfaces.comp`.
 
 ---
 

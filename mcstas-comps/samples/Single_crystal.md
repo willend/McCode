@@ -189,7 +189,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Single_crystal.comp) for `Single_crystal.comp`.
+- [Source code](Single_crystal.comp) for `Single_crystal.comp`.
 - See <a href="http://icsd.ill.fr">ICSD</a> Inorganic Crystal Structure Database
 - <a href="http://www.ncnr.nist.gov/resources/n-lengths/">Cross sections for single elements</a>
 - <a href="http://www.ncnr.nist.gov/resources/sldcalc.html>Cross sections for compounds</a>

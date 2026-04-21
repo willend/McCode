@@ -41,7 +41,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/PSD_monitor_psf_eff.comp) for `PSD_monitor_psf_eff.comp`.
+- [Source code](PSD_monitor_psf_eff.comp) for `PSD_monitor_psf_eff.comp`.
 
 ---
 

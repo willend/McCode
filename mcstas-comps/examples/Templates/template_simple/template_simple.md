@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/template_simple/template_simple.instr) for `template_simple.instr`.
+- [Source code](template_simple.instr) for `template_simple.instr`.
 - <reference/HTML link>
 
 ---

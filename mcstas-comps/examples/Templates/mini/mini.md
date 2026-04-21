@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/mini/mini.instr) for `mini.instr`.
+- [Source code](mini.instr) for `mini.instr`.
 - A reference/HTML link for more information
 
 ---

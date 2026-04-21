@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Mirror.comp) for `Mirror.comp`.
+- [Source code](Mirror.comp) for `Mirror.comp`.
 
 ---
 

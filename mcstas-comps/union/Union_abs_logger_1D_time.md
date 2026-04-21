@@ -76,7 +76,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_abs_logger_1D_time.comp) for `Union_abs_logger_1D_time.comp`.
+- [Source code](Union_abs_logger_1D_time.comp) for `Union_abs_logger_1D_time.comp`.
 
 ---
 

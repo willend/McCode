@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sources/Moderator.comp) for `Moderator.comp`.
+- [Source code](Moderator.comp) for `Moderator.comp`.
 
 ---
 

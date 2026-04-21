@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/templateTOF/templateTOF.instr) for `templateTOF.instr`.
+- [Source code](templateTOF.instr) for `templateTOF.instr`.
 - The Isotropic_Sqw sample
 - The Samples_Isotropic_Sqw example instrument
 

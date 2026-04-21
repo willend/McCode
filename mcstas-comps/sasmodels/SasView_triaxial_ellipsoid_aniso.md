@@ -60,7 +60,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_triaxial_ellipsoid_aniso.comp) for `SasView_triaxial_ellipsoid_aniso.comp`.
+- [Source code](SasView_triaxial_ellipsoid_aniso.comp) for `SasView_triaxial_ellipsoid_aniso.comp`.
 
 ---
 

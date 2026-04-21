@@ -62,7 +62,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/TUDelft/SEMSANS_instrument/SEMSANS_instrument.instr) for `SEMSANS_instrument.instr`.
+- [Source code](SEMSANS_instrument.instr) for `SEMSANS_instrument.instr`.
 
 ---
 

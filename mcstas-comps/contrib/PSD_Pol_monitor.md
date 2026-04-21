@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/PSD_Pol_monitor.comp) for `PSD_Pol_monitor.comp`.
+- [Source code](PSD_Pol_monitor.comp) for `PSD_Pol_monitor.comp`.
 
 ---
 

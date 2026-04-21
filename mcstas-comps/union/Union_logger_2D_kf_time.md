@@ -73,7 +73,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_logger_2D_kf_time.comp) for `Union_logger_2D_kf_time.comp`.
+- [Source code](Union_logger_2D_kf_time.comp) for `Union_logger_2D_kf_time.comp`.
 
 ---
 

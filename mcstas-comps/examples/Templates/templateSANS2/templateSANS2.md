@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/templateSANS2/templateSANS2.instr) for `templateSANS2.instr`.
+- [Source code](templateSANS2.instr) for `templateSANS2.instr`.
 
 ---
 

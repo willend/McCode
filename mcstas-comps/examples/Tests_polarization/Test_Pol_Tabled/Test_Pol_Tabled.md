@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/Test_Pol_Tabled/Test_Pol_Tabled.instr) for `Test_Pol_Tabled.instr`.
+- [Source code](Test_Pol_Tabled.instr) for `Test_Pol_Tabled.instr`.
 - A reference/HTML link for more information
 
 ---

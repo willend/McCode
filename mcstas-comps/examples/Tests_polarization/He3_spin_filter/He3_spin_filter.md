@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/He3_spin_filter/He3_spin_filter.instr) for `He3_spin_filter.instr`.
+- [Source code](He3_spin_filter.instr) for `He3_spin_filter.instr`.
 - <reference/HTML link>
 
 ---

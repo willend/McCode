@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_grammar/Unittest_ALLOW_BACKPROP/Unittest_ALLOW_BACKPROP.instr) for `Unittest_ALLOW_BACKPROP.instr`.
+- [Source code](Unittest_ALLOW_BACKPROP.instr) for `Unittest_ALLOW_BACKPROP.instr`.
 - A reference/HTML link for more information
 
 ---

@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/Test_Pol_Bender/Test_Pol_Bender.instr) for `Test_Pol_Bender.instr`.
+- [Source code](Test_Pol_Bender.instr) for `Test_Pol_Bender.instr`.
 
 ---
 

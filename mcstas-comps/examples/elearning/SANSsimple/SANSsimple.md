@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/elearning/SANSsimple/SANSsimple.instr) for `SANSsimple.instr`.
+- [Source code](SANSsimple.instr) for `SANSsimple.instr`.
 - A reference/HTML link for more information
 
 ---

@@ -43,7 +43,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_D4/ILL_D4.instr) for `ILL_D4.instr`.
+- [Source code](ILL_D4.instr) for `ILL_D4.instr`.
 - The <a href="http://www.ill.eu/d4">D4 diffractometer</a> at the ILL
 
 ---

@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_sample_environments/SE_usage_example/SE_usage_example.instr) for `SE_usage_example.instr`.
+- [Source code](SE_usage_example.instr) for `SE_usage_example.instr`.
 
 ---
 

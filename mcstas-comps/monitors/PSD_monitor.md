@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/PSD_monitor.comp) for `PSD_monitor.comp`.
+- [Source code](PSD_monitor.comp) for `PSD_monitor.comp`.
 
 ---
 

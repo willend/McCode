@@ -80,7 +80,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Vertical_Bender.comp) for `Vertical_Bender.comp`.
+- [Source code](Vertical_Bender.comp) for `Vertical_Bender.comp`.
 
 ---
 

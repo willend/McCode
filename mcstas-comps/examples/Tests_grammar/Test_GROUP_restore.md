@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_grammar/Test_GROUP_restore.instr) for `Test_GROUP_restore.instr`.
+- [Source code](Test_GROUP_restore.instr) for `Test_GROUP_restore.instr`.
 - A reference/HTML link for more information
 
 ---

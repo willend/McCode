@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/SINE2020/McStas_Single_crystal/McStas_Single_crystal.instr) for `McStas_Single_crystal.instr`.
+- [Source code](McStas_Single_crystal.instr) for `McStas_Single_crystal.instr`.
 - Website for the <a href="https://mctools.github.io/mcpl">MCPL</a> particle exchange format
 - Website for the <a href="http://neutron.ujf.cas.cz/ restrax/">SIMRES</a> package
 - Website for <a href="https://www.sine2020.eu/randd-activities/e-tools.html">WP8 in EU-SINE2020</a>

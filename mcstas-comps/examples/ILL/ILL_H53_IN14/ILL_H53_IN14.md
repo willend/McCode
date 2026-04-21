@@ -63,7 +63,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H53_IN14/ILL_H53_IN14.instr) for `ILL_H53_IN14.instr`.
+- [Source code](ILL_H53_IN14.instr) for `ILL_H53_IN14.instr`.
 - The <a href="http://www.ill.fr/in14">IN14 TAS</a> at the ILL
 
 ---

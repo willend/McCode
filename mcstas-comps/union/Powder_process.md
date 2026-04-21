@@ -55,7 +55,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Powder_process.comp) for `Powder_process.comp`.
+- [Source code](Powder_process.comp) for `Powder_process.comp`.
 
 ---
 

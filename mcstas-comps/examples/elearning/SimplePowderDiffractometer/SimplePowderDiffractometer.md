@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/elearning/SimplePowderDiffractometer/SimplePowderDiffractometer.instr) for `SimplePowderDiffractometer.instr`.
+- [Source code](SimplePowderDiffractometer.instr) for `SimplePowderDiffractometer.instr`.
 - http://vnt.nmi3.org/mcstas-web
 
 ---

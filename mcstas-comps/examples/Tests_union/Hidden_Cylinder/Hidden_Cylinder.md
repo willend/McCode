@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Hidden_Cylinder/Hidden_Cylinder.instr) for `Hidden_Cylinder.instr`.
+- [Source code](Hidden_Cylinder.instr) for `Hidden_Cylinder.instr`.
 
 ---
 

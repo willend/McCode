@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/Annulus.comp) for `Annulus.comp`.
+- [Source code](Annulus.comp) for `Annulus.comp`.
 - mcdoc page of <a href="Shape.html">Shape</a></b> component
 
 ---

@@ -67,7 +67,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Guide_multichannel.comp) for `Guide_multichannel.comp`.
+- [Source code](Guide_multichannel.comp) for `Guide_multichannel.comp`.
 
 ---
 

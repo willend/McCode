@@ -75,7 +75,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_box.comp) for `Union_box.comp`.
+- [Source code](Union_box.comp) for `Union_box.comp`.
 
 ---
 

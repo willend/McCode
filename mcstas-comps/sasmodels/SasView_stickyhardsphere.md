@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_stickyhardsphere.comp) for `SasView_stickyhardsphere.comp`.
+- [Source code](SasView_stickyhardsphere.comp) for `SasView_stickyhardsphere.comp`.
 
 ---
 

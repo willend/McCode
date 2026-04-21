@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SANS_AnySamp.comp) for `SANS_AnySamp.comp`.
+- [Source code](SANS_AnySamp.comp) for `SANS_AnySamp.comp`.
 - Sans_spheres component
 
 ---

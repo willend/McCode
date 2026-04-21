@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/He3_cell.comp) for `He3_cell.comp`.
+- [Source code](He3_cell.comp) for `He3_cell.comp`.
 
 ---
 

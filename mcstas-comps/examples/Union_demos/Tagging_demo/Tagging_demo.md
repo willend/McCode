@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_demos/Tagging_demo/Tagging_demo.instr) for `Tagging_demo.instr`.
+- [Source code](Tagging_demo.instr) for `Tagging_demo.instr`.
 
 ---
 

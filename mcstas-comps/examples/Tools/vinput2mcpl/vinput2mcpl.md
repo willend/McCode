@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tools/vinput2mcpl/vinput2mcpl.instr) for `vinput2mcpl.instr`.
+- [Source code](vinput2mcpl.instr) for `vinput2mcpl.instr`.
 - <reference/HTML link>
 
 ---

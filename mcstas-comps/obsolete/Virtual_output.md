@@ -55,7 +55,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Virtual_output.comp) for `Virtual_output.comp`.
+- [Source code](Virtual_output.comp) for `Virtual_output.comp`.
 
 ---
 

@@ -81,7 +81,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Monochromator_pol.comp) for `Monochromator_pol.comp`.
+- [Source code](Monochromator_pol.comp) for `Monochromator_pol.comp`.
 
 ---
 

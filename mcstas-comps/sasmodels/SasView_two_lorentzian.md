@@ -54,7 +54,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_two_lorentzian.comp) for `SasView_two_lorentzian.comp`.
+- [Source code](SasView_two_lorentzian.comp) for `SasView_two_lorentzian.comp`.
 
 ---
 

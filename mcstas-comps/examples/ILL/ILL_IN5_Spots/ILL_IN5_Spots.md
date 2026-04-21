@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_IN5_Spots/ILL_IN5_Spots.instr) for `ILL_IN5_Spots.instr`.
+- [Source code](ILL_IN5_Spots.instr) for `ILL_IN5_Spots.instr`.
 - The <a href="http://www.ill.eu/in5">IN5@ILL</a> cold time of flight instrument
 
 ---

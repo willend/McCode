@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Monitor_4PI.comp) for `Monitor_4PI.comp`.
+- [Source code](Monitor_4PI.comp) for `Monitor_4PI.comp`.
 
 ---
 

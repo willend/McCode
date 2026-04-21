@@ -55,7 +55,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/PhononSimple_process.comp) for `PhononSimple_process.comp`.
+- [Source code](PhononSimple_process.comp) for `PhononSimple_process.comp`.
 
 ---
 

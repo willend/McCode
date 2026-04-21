@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sources/Source_4PI.comp) for `Source_4PI.comp`.
+- [Source code](Source_4PI.comp) for `Source_4PI.comp`.
 
 ---
 

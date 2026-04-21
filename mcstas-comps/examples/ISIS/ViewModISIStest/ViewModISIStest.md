@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ViewModISIStest/ViewModISIStest.instr) for `ViewModISIStest.instr`.
+- [Source code](ViewModISIStest.instr) for `ViewModISIStest.instr`.
 - Written by D. Champion <D.Champion@rl.ac.uk> ISIS, Feb 2004
 
 ---

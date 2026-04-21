@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Unit_test_abs_logger_1D_space_tof_to_lambda/Unit_test_abs_logger_1D_space_tof_to_lambda.instr) for `Unit_test_abs_logger_1D_space_tof_to_lambda.instr`.
+- [Source code](Unit_test_abs_logger_1D_space_tof_to_lambda.instr) for `Unit_test_abs_logger_1D_space_tof_to_lambda.instr`.
 
 ---
 

@@ -55,7 +55,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Monochromator_bent.comp) for `Monochromator_bent.comp`.
+- [Source code](Monochromator_bent.comp) for `Monochromator_bent.comp`.
 - <a href="https://doi.org/10.1016/j.nima.2004.04.197">Jan &Scaron;aroun NIM A Volume 529, Issue 1-3 (2004), pp162-165</a>
 
 ---

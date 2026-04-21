@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Unit_test_abs_logger_nD/Unit_test_abs_logger_nD.instr) for `Unit_test_abs_logger_nD.instr`.
+- [Source code](Unit_test_abs_logger_nD.instr) for `Unit_test_abs_logger_nD.instr`.
 
 ---
 

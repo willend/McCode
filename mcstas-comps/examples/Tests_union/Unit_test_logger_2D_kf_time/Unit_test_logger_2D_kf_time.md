@@ -24,7 +24,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Unit_test_logger_2D_kf_time/Unit_test_logger_2D_kf_time.instr) for `Unit_test_logger_2D_kf_time.instr`.
+- [Source code](Unit_test_logger_2D_kf_time.instr) for `Unit_test_logger_2D_kf_time.instr`.
 
 ---
 

@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_mono_gauss_coil.comp) for `SasView_mono_gauss_coil.comp`.
+- [Source code](SasView_mono_gauss_coil.comp) for `SasView_mono_gauss_coil.comp`.
 
 ---
 

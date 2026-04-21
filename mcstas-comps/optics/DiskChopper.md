@@ -61,7 +61,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/DiskChopper.comp) for `DiskChopper.comp`.
+- [Source code](DiskChopper.comp) for `DiskChopper.comp`.
 
 ---
 

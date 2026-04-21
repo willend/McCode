@@ -41,7 +41,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/templateSasView/templateSasView.instr) for `templateSasView.instr`.
+- [Source code](templateSasView.instr) for `templateSasView.instr`.
 
 ---
 

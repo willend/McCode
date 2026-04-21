@@ -46,7 +46,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/Supermirror_thin_substrate/Supermirror_thin_substrate.instr) for `Supermirror_thin_substrate.instr`.
+- [Source code](Supermirror_thin_substrate.instr) for `Supermirror_thin_substrate.instr`.
 - A reference/HTML link for more information
 
 ---

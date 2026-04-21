@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Pol_tabled_field.comp) for `Pol_tabled_field.comp`.
+- [Source code](Pol_tabled_field.comp) for `Pol_tabled_field.comp`.
 
 ---
 

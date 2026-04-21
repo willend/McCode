@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Mantid/templateVanadiumMultipleScat_Mantid/templateVanadiumMultipleScat_Mantid.instr) for `templateVanadiumMultipleScat_Mantid.instr`.
+- [Source code](templateVanadiumMultipleScat_Mantid.instr) for `templateVanadiumMultipleScat_Mantid.instr`.
 - A reference/HTML link for more information
 
 ---

@@ -45,7 +45,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Texture_process.comp) for `Texture_process.comp`.
+- [Source code](Texture_process.comp) for `Texture_process.comp`.
 - See <a href="https://doi.org/10.3233/JNR-190117">https://doi.org/10.3233/JNR-190117</a>
 
 ---

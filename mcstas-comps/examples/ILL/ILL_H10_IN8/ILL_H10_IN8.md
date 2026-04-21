@@ -75,7 +75,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H10_IN8/ILL_H10_IN8.instr) for `ILL_H10_IN8.instr`.
+- [Source code](ILL_H10_IN8.instr) for `ILL_H10_IN8.instr`.
 - Rescal for Matlab at http://www.ill.eu/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/
 - Restrax at http://omega.ujf.cas.cz/restrax/
 

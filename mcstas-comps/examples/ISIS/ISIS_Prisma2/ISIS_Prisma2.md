@@ -41,7 +41,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_Prisma2/ISIS_Prisma2.instr) for `ISIS_Prisma2.instr`.
+- [Source code](ISIS_Prisma2.instr) for `ISIS_Prisma2.instr`.
 - The McStas User manual
 - <a href="http://www.isis.rl.ac.uk/excitations/prisma/">PRISMA</a>
 

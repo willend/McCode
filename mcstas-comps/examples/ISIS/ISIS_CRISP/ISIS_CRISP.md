@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_CRISP/ISIS_CRISP.instr) for `ISIS_CRISP.instr`.
+- [Source code](ISIS_CRISP.instr) for `ISIS_CRISP.instr`.
 
 ---
 

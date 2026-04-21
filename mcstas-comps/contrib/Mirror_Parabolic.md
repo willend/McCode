@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Mirror_Parabolic.comp) for `Mirror_Parabolic.comp`.
+- [Source code](Mirror_Parabolic.comp) for `Mirror_Parabolic.comp`.
 
 ---
 

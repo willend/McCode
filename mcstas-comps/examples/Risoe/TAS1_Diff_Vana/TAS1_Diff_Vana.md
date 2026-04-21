@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Risoe/TAS1_Diff_Vana/TAS1_Diff_Vana.instr) for `TAS1_Diff_Vana.instr`.
+- [Source code](TAS1_Diff_Vana.instr) for `TAS1_Diff_Vana.instr`.
 - The McStas User manual
 - A. Abrahamsen, N. B. Christensen, and E. Lauridsen. McStas simulations of the TAS1 spectrometer. Student's report, Niels Bohr Institute, University of Copenhagen, 1998.
 

@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/PSI/PSI_source/PSI_source.instr) for `PSI_source.instr`.
+- [Source code](PSI_source.instr) for `PSI_source.instr`.
 - The <a href="http://lns00.psi.ch/montecarlo/">PSI Monte-Carlo</a> website.
 - P Willendrup, U Filges, L Keller, E Farhi, K Lefmann: Validation of a realistic powder sample using data from DMC at PSI, ICNS 2005 (Physica B, 386, (2006), 1032.)
 

@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/TUDelft/SEMSANS_Delft/SEMSANS_Delft.instr) for `SEMSANS_Delft.instr`.
+- [Source code](SEMSANS_Delft.instr) for `SEMSANS_Delft.instr`.
 - <reference/HTML link>
 - <a href="https://doi.org/10.1107/S1600576720015496">https://doi.org/10.1107/S1600576720015496</a>
 

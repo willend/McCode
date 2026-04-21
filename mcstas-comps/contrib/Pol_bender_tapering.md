@@ -66,7 +66,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Pol_bender_tapering.comp) for `Pol_bender_tapering.comp`.
+- [Source code](Pol_bender_tapering.comp) for `Pol_bender_tapering.comp`.
 
 ---
 

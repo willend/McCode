@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/FZ_Juelich/FZJ_BenchmarkSfin2/FZJ_BenchmarkSfin2.instr) for `FZJ_BenchmarkSfin2.instr`.
+- [Source code](FZJ_BenchmarkSfin2.instr) for `FZJ_BenchmarkSfin2.instr`.
 
 ---
 

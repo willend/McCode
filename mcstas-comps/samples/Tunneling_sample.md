@@ -67,7 +67,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Tunneling_sample.comp) for `Tunneling_sample.comp`.
+- [Source code](Tunneling_sample.comp) for `Tunneling_sample.comp`.
 - <A HREF="http://neutron.risoe.dk/mcstas/components/tests/v_sample/">Test
 - results</A> (not up-to-date).
 

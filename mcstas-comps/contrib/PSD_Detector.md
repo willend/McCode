@@ -160,7 +160,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/PSD_Detector.comp) for `PSD_Detector.comp`.
+- [Source code](PSD_Detector.comp) for `PSD_Detector.comp`.
 - The test/example instrument <a href="../examples/Test_PSD_Detector.instr">Test_PSD_Detector.instr</a>.
 
 ---

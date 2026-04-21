@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_grammar/Test_GROUP/Test_GROUP.instr) for `Test_GROUP.instr`.
+- [Source code](Test_GROUP.instr) for `Test_GROUP.instr`.
 
 ---
 

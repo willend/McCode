@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/BNL/h8_test_legacy/h8_test_legacy.instr) for `h8_test_legacy.instr`.
+- [Source code](h8_test_legacy.instr) for `h8_test_legacy.instr`.
 - Neutron News 13 (No. 4), 24-29 (2002).
 
 ---

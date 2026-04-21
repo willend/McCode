@@ -120,7 +120,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Elliptic_guide_gravity.comp) for `Elliptic_guide_gravity.comp`.
+- [Source code](Elliptic_guide_gravity.comp) for `Elliptic_guide_gravity.comp`.
 
 ---
 

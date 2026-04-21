@@ -45,7 +45,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tools/Histogrammer/Histogrammer.instr) for `Histogrammer.instr`.
+- [Source code](Histogrammer.instr) for `Histogrammer.instr`.
 - <a href="../sources/Virtual_input.html">Virtual_input</a> component (McStas event file)
 - <a href="../misc/Vitess_input.html">Vitess_input</a> component (Vitess event file)
 - <a href="../contrib/Virtual_mcnp_input.html">Virtual_mcnp_input</a> component (MCNP PTRAC event file)

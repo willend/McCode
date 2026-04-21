@@ -115,7 +115,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sources/Source_gen.comp) for `Source_gen.comp`.
+- [Source code](Source_gen.comp) for `Source_gen.comp`.
 - P. Ageron, Nucl. Inst. Meth. A 284 (1989) 197
 
 ---

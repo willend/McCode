@@ -45,7 +45,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Divergence_monitor.comp) for `Divergence_monitor.comp`.
+- [Source code](Divergence_monitor.comp) for `Divergence_monitor.comp`.
 
 ---
 

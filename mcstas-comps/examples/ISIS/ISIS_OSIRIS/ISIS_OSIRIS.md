@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_OSIRIS/ISIS_OSIRIS.instr) for `ISIS_OSIRIS.instr`.
+- [Source code](ISIS_OSIRIS.instr) for `ISIS_OSIRIS.instr`.
 
 ---
 

@@ -41,7 +41,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Sqw_monitor.comp) for `Sqw_monitor.comp`.
+- [Source code](Sqw_monitor.comp) for `Sqw_monitor.comp`.
 
 ---
 

@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_RNG/Test_RNG_rand01/Test_RNG_rand01.instr) for `Test_RNG_rand01.instr`.
+- [Source code](Test_RNG_rand01.instr) for `Test_RNG_rand01.instr`.
 - <reference/HTML link>
 
 ---

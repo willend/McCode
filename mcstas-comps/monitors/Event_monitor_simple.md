@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Event_monitor_simple.comp) for `Event_monitor_simple.comp`.
+- [Source code](Event_monitor_simple.comp) for `Event_monitor_simple.comp`.
 
 ---
 

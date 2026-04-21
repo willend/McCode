@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/TOFlog_monitor.comp) for `TOFlog_monitor.comp`.
+- [Source code](TOFlog_monitor.comp) for `TOFlog_monitor.comp`.
 
 ---
 

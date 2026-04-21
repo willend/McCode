@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/multi_pipe.comp) for `multi_pipe.comp`.
+- [Source code](multi_pipe.comp) for `multi_pipe.comp`.
 
 ---
 

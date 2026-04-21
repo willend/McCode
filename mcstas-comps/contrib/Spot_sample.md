@@ -52,7 +52,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Spot_sample.comp) for `Spot_sample.comp`.
+- [Source code](Spot_sample.comp) for `Spot_sample.comp`.
 
 ---
 

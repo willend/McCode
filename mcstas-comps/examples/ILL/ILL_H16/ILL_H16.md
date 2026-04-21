@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H16/ILL_H16.instr) for `ILL_H16.instr`.
+- [Source code](ILL_H16.instr) for `ILL_H16.instr`.
 
 ---
 

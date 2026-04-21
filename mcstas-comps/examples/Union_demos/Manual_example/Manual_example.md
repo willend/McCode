@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_demos/Manual_example/Manual_example.instr) for `Manual_example.instr`.
+- [Source code](Manual_example.instr) for `Manual_example.instr`.
 
 ---
 

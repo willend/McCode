@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/L_monitor.comp) for `L_monitor.comp`.
+- [Source code](L_monitor.comp) for `L_monitor.comp`.
 
 ---
 

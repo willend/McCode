@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_Sqw/Test_Sqw.instr) for `Test_Sqw.instr`.
+- [Source code](Test_Sqw.instr) for `Test_Sqw.instr`.
 
 ---
 

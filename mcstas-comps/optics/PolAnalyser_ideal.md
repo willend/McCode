@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/PolAnalyser_ideal.comp) for `PolAnalyser_ideal.comp`.
+- [Source code](PolAnalyser_ideal.comp) for `PolAnalyser_ideal.comp`.
 
 ---
 

@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_gaussian_peak.comp) for `SasView_gaussian_peak.comp`.
+- [Source code](SasView_gaussian_peak.comp) for `SasView_gaussian_peak.comp`.
 
 ---
 

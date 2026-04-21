@@ -77,7 +77,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Guide_tapering.comp) for `Guide_tapering.comp`.
+- [Source code](Guide_tapering.comp) for `Guide_tapering.comp`.
 
 ---
 

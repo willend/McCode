@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_Powders/Test_Powders.instr) for `Test_Powders.instr`.
+- [Source code](Test_Powders.instr) for `Test_Powders.instr`.
 
 ---
 

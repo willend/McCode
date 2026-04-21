@@ -62,7 +62,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Guide_channeled.comp) for `Guide_channeled.comp`.
+- [Source code](Guide_channeled.comp) for `Guide_channeled.comp`.
 
 ---
 

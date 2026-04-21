@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/TOF_Reflectometer/TOF_Reflectometer.instr) for `TOF_Reflectometer.instr`.
+- [Source code](TOF_Reflectometer.instr) for `TOF_Reflectometer.instr`.
 
 ---
 

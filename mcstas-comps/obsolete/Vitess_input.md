@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Vitess_input.comp) for `Vitess_input.comp`.
+- [Source code](Vitess_input.comp) for `Vitess_input.comp`.
 
 ---
 

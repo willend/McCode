@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_focus/Test_focus.instr) for `Test_focus.instr`.
+- [Source code](Test_focus.instr) for `Test_focus.instr`.
 
 ---
 

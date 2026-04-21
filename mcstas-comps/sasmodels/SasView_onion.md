@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_onion.comp) for `SasView_onion.comp`.
+- [Source code](SasView_onion.comp) for `SasView_onion.comp`.
 
 ---
 

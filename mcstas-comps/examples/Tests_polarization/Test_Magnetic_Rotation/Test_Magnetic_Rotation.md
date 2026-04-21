@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/Test_Magnetic_Rotation/Test_Magnetic_Rotation.instr) for `Test_Magnetic_Rotation.instr`.
+- [Source code](Test_Magnetic_Rotation.instr) for `Test_Magnetic_Rotation.instr`.
 
 ---
 

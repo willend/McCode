@@ -54,7 +54,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_adsorbed_layer.comp) for `SasView_adsorbed_layer.comp`.
+- [Source code](SasView_adsorbed_layer.comp) for `SasView_adsorbed_layer.comp`.
 
 ---
 

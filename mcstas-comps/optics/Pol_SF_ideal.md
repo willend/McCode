@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Pol_SF_ideal.comp) for `Pol_SF_ideal.comp`.
+- [Source code](Pol_SF_ideal.comp) for `Pol_SF_ideal.comp`.
 
 ---
 

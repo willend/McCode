@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_MERLIN/ISIS_MERLIN.instr) for `ISIS_MERLIN.instr`.
+- [Source code](ISIS_MERLIN.instr) for `ISIS_MERLIN.instr`.
 - <a href="http://www.isis.stfc.ac.uk/instruments/merlin">http://www.isis.stfc.ac.uk/instruments/merlin</a>
 
 ---

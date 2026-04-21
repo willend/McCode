@@ -65,7 +65,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/ViewModISIS.comp) for `ViewModISIS.comp`.
+- [Source code](ViewModISIS.comp) for `ViewModISIS.comp`.
 
 ---
 

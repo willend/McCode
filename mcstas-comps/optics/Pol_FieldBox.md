@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Pol_FieldBox.comp) for `Pol_FieldBox.comp`.
+- [Source code](Pol_FieldBox.comp) for `Pol_FieldBox.comp`.
 
 ---
 

@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_teubner_strey.comp) for `SasView_teubner_strey.comp`.
+- [Source code](SasView_teubner_strey.comp) for `SasView_teubner_strey.comp`.
 
 ---
 

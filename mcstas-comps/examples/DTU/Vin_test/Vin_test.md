@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/DTU/Vin_test/Vin_test.instr) for `Vin_test.instr`.
+- [Source code](Vin_test.instr) for `Vin_test.instr`.
 - A reference/HTML link for more information
 
 ---

@@ -69,7 +69,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/FermiChopper_ILL.comp) for `FermiChopper_ILL.comp`.
+- [Source code](FermiChopper_ILL.comp) for `FermiChopper_ILL.comp`.
 
 ---
 

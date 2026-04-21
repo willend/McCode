@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_MCPL_etc/Test_MCPL_input_once/Test_MCPL_input_once.instr) for `Test_MCPL_input_once.instr`.
+- [Source code](Test_MCPL_input_once.instr) for `Test_MCPL_input_once.instr`.
 
 ---
 

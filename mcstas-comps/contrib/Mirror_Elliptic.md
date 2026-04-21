@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Mirror_Elliptic.comp) for `Mirror_Elliptic.comp`.
+- [Source code](Mirror_Elliptic.comp) for `Mirror_Elliptic.comp`.
 
 ---
 

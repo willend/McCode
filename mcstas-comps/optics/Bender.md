@@ -78,7 +78,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Bender.comp) for `Bender.comp`.
+- [Source code](Bender.comp) for `Bender.comp`.
 - <a href="../contrib/Guide_curved.comp.html>Guide_curved</a> (contributed)
 - See also <a href="http://mailman.risoe.dk/pipermail/neutron-mc/1999q1/000052.html">Additional note</a> from <a href="mailto:philipp.bernhardt@siemens.com">Philipp Bernhardt</a>.
 

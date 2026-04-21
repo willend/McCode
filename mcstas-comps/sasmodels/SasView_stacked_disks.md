@@ -57,7 +57,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_stacked_disks.comp) for `SasView_stacked_disks.comp`.
+- [Source code](SasView_stacked_disks.comp) for `SasView_stacked_disks.comp`.
 
 ---
 

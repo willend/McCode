@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_demos/Demonstration/Demonstration.instr) for `Demonstration.instr`.
+- [Source code](Demonstration.instr) for `Demonstration.instr`.
 
 ---
 

@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/NMO.comp) for `NMO.comp`.
+- [Source code](NMO.comp) for `NMO.comp`.
 - Christoph Herb et al., Nucl. Instrum. Meth. A 1040, 1671564 (1-18) 2022.
 
 ---

@@ -93,7 +93,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Lens.comp) for `Lens.comp`.
+- [Source code](Lens.comp) for `Lens.comp`.
 - M. L. Goldberger et al, Phys. Rev. 71, 294 - 310 (1947)
 - Sears V.F. Neutron optics. An introduction to the theory of neutron optical phenomena and their applications. Oxford University Press, 1989.
 - H. Park et al. Measured operationnal neutron energies of compound refractive lenses. Nuclear Instruments and Methods B, 251:507-511, 2006.

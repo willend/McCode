@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Set_pol.comp) for `Set_pol.comp`.
+- [Source code](Set_pol.comp) for `Set_pol.comp`.
 
 ---
 

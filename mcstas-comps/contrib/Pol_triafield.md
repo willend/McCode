@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Pol_triafield.comp) for `Pol_triafield.comp`.
+- [Source code](Pol_triafield.comp) for `Pol_triafield.comp`.
 
 ---
 

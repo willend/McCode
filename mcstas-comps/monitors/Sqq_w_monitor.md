@@ -56,7 +56,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Sqq_w_monitor.comp) for `Sqq_w_monitor.comp`.
+- [Source code](Sqq_w_monitor.comp) for `Sqq_w_monitor.comp`.
 
 ---
 

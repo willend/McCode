@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/templateLaue/templateLaue.instr) for `templateLaue.instr`.
+- [Source code](templateLaue.instr) for `templateLaue.instr`.
 
 ---
 

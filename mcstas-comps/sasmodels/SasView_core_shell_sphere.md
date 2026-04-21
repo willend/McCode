@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_core_shell_sphere.comp) for `SasView_core_shell_sphere.comp`.
+- [Source code](SasView_core_shell_sphere.comp) for `SasView_core_shell_sphere.comp`.
 
 ---
 

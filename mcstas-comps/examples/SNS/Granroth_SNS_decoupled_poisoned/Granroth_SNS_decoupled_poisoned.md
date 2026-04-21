@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/SNS/Granroth_SNS_decoupled_poisoned/Granroth_SNS_decoupled_poisoned.instr) for `Granroth_SNS_decoupled_poisoned.instr`.
+- [Source code](Granroth_SNS_decoupled_poisoned.instr) for `Granroth_SNS_decoupled_poisoned.instr`.
 
 ---
 

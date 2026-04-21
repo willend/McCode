@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Geometry_test/Geometry_test.instr) for `Geometry_test.instr`.
+- [Source code](Geometry_test.instr) for `Geometry_test.instr`.
 
 ---
 

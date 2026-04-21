@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/DTU/Vout_test/Vout_test.instr) for `Vout_test.instr`.
+- [Source code](Vout_test.instr) for `Vout_test.instr`.
 - A reference/HTML link for more information
 
 ---

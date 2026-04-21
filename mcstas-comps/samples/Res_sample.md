@@ -58,7 +58,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Res_sample.comp) for `Res_sample.comp`.
+- [Source code](Res_sample.comp) for `Res_sample.comp`.
 
 ---
 

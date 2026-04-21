@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tools/MCPL2Mantid_flat/MCPL2Mantid_flat.instr) for `MCPL2Mantid_flat.instr`.
+- [Source code](MCPL2Mantid_flat.instr) for `MCPL2Mantid_flat.instr`.
 - <reference/HTML link>
 - MCPL website at <a href="https://mctools.github.io/mcpl/">https://mctools.github.io/mcpl/</a>
 

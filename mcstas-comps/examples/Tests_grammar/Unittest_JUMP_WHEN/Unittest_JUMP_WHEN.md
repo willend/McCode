@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_grammar/Unittest_JUMP_WHEN/Unittest_JUMP_WHEN.instr) for `Unittest_JUMP_WHEN.instr`.
+- [Source code](Unittest_JUMP_WHEN.instr) for `Unittest_JUMP_WHEN.instr`.
 - <reference/HTML link>
 
 ---

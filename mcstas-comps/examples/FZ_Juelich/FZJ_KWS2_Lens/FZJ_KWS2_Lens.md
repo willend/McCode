@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/FZ_Juelich/FZJ_KWS2_Lens/FZJ_KWS2_Lens.instr) for `FZJ_KWS2_Lens.instr`.
+- [Source code](FZJ_KWS2_Lens.instr) for `FZJ_KWS2_Lens.instr`.
 - The Lens_simple component
 
 ---

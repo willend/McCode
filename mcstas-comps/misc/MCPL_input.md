@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/MCPL_input.comp) for `MCPL_input.comp`.
+- [Source code](MCPL_input.comp) for `MCPL_input.comp`.
 
 ---
 

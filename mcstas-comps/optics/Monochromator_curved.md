@@ -77,7 +77,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Monochromator_curved.comp) for `Monochromator_curved.comp`.
+- [Source code](Monochromator_curved.comp) for `Monochromator_curved.comp`.
 - <a href="http://mcstas.risoe.dk/pipermail/neutron-mc/1999q1/000133.html">Additional note</a> from Peter Link.
 - Obsolete Mosaic_anisotropic by Kristian Nielsen
 - Contributed Monochromator_2foc by Peter Link

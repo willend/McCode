@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Collimator_ROC.comp) for `Collimator_ROC.comp`.
+- [Source code](Collimator_ROC.comp) for `Collimator_ROC.comp`.
 - <a href="http://www.ill.fr/d20/">D20 diffractometer at the ILL</a>
 
 ---

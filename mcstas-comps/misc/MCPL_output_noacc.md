@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/MCPL_output_noacc.comp) for `MCPL_output_noacc.comp`.
+- [Source code](MCPL_output_noacc.comp) for `MCPL_output_noacc.comp`.
 
 ---
 

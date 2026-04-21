@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/MeanPolLambda_monitor.comp) for `MeanPolLambda_monitor.comp`.
+- [Source code](MeanPolLambda_monitor.comp) for `MeanPolLambda_monitor.comp`.
 
 ---
 

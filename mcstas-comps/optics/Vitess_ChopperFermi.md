@@ -87,7 +87,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Vitess_ChopperFermi.comp) for `Vitess_ChopperFermi.comp`.
+- [Source code](Vitess_ChopperFermi.comp) for `Vitess_ChopperFermi.comp`.
 - <a href="http://www.hmi.de/projects/ess/vitess/DOC/chopper_fermi_str.html">straight VITESS Fermi chopper</a>
 - <a href="http://www.hmi.de/projects/ess/vitess/DOC/chopper_fermi_cur.html">curved VITESS Fermi chopper</a>
 

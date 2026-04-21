@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_sources/Test_Source_quasi/Test_Source_quasi.instr) for `Test_Source_quasi.instr`.
+- [Source code](Test_Source_quasi.instr) for `Test_Source_quasi.instr`.
 
 ---
 

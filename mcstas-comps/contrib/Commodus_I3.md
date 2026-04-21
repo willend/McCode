@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Commodus_I3.comp) for `Commodus_I3.comp`.
+- [Source code](Commodus_I3.comp) for `Commodus_I3.comp`.
 
 ---
 

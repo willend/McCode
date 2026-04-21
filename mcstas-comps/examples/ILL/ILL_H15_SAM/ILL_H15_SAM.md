@@ -63,7 +63,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H15_SAM/ILL_H15_SAM.instr) for `ILL_H15_SAM.instr`.
+- [Source code](ILL_H15_SAM.instr) for `ILL_H15_SAM.instr`.
 - <https://www.ill.eu/for-all-users/instruments/instruments-list/sam/description/instrument-layout>
 
 ---

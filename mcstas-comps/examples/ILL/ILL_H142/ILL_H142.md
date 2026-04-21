@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H142/ILL_H142.instr) for `ILL_H142.instr`.
+- [Source code](ILL_H142.instr) for `ILL_H142.instr`.
 - The <a href="http://www.ill.fr/YellowBook/IN12">IN12 TAS</a> at the ILL
 
 ---

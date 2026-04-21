@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/Disc.comp) for `Disc.comp`.
+- [Source code](Disc.comp) for `Disc.comp`.
 - mcdoc page of <a href="Shape.html">Shape</a></b> component
 
 ---

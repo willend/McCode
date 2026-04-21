@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_grammar/Unittest_JUMP_ITERATE/Unittest_JUMP_ITERATE.instr) for `Unittest_JUMP_ITERATE.instr`.
+- [Source code](Unittest_JUMP_ITERATE.instr) for `Unittest_JUMP_ITERATE.instr`.
 - <reference/HTML link>
 
 ---

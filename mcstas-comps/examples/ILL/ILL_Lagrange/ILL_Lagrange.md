@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_Lagrange/ILL_Lagrange.instr) for `ILL_Lagrange.instr`.
+- [Source code](ILL_Lagrange.instr) for `ILL_Lagrange.instr`.
 - The <a href="http://www.ill.eu/d4">D4 diffractometer</a> at the ILL
 
 ---

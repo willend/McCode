@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_sample_environments/cryostat_example/cryostat_example.instr) for `cryostat_example.instr`.
+- [Source code](cryostat_example.instr) for `cryostat_example.instr`.
 
 ---
 

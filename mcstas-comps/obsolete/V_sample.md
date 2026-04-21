@@ -69,7 +69,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/V_sample.comp) for `V_sample.comp`.
+- [Source code](V_sample.comp) for `V_sample.comp`.
 - <A HREF="http://neutron.risoe.dk/mcstas/components/tests/v_sample/">Test
 - results</A> (not up-to-date).
 - The test/example instrument <a href="../examples/vanadium_example.instr">vanadium_example.instr</a>.

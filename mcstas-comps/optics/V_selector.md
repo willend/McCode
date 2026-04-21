@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/V_selector.comp) for `V_selector.comp`.
+- [Source code](V_selector.comp) for `V_selector.comp`.
 
 ---
 

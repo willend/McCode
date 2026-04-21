@@ -74,7 +74,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_logger_3D_space.comp) for `Union_logger_3D_space.comp`.
+- [Source code](Union_logger_3D_space.comp) for `Union_logger_3D_space.comp`.
 
 ---
 

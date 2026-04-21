@@ -66,7 +66,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Collimator_radial.comp) for `Collimator_radial.comp`.
+- [Source code](Collimator_radial.comp) for `Collimator_radial.comp`.
 
 ---
 

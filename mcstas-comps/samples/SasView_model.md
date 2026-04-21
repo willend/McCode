@@ -2142,7 +2142,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/SasView_model.comp) for `SasView_model.comp`.
+- [Source code](SasView_model.comp) for `SasView_model.comp`.
 - http://www.sasview.org/sasview/user/models/model_functions.html
 
 ---

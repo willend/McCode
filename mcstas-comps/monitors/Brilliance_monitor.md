@@ -62,7 +62,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/Brilliance_monitor.comp) for `Brilliance_monitor.comp`.
+- [Source code](Brilliance_monitor.comp) for `Brilliance_monitor.comp`.
 
 ---
 

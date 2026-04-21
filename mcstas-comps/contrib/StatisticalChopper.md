@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/StatisticalChopper.comp) for `StatisticalChopper.comp`.
+- [Source code](StatisticalChopper.comp) for `StatisticalChopper.comp`.
 - R. Von Jan and R. Scherm. The statistical chopper for neutron time-of-flight spectroscopy. Nuclear Instruments and Methods, 80 (1970) 69-76.
 
 ---

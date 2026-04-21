@@ -46,7 +46,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Powder1.comp) for `Powder1.comp`.
+- [Source code](Powder1.comp) for `Powder1.comp`.
 - <A HREF="http://neutron.risoe.dk/mcstas/components/tests/powder/">
 - Test results</A> (not up-to-date).
 - See also: Powder1, Powder2 and PowderN

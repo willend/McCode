@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Necsa/SAFARI_PITSI/SAFARI_PITSI.instr) for `SAFARI_PITSI.instr`.
+- [Source code](SAFARI_PITSI.instr) for `SAFARI_PITSI.instr`.
 - The South African Nuclear Energy Corporation <a href="http://www.necsa.co.za"> website</a>
 
 ---

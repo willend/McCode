@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_demos/Sample_picture_replica/Sample_picture_replica.instr) for `Sample_picture_replica.instr`.
+- [Source code](Sample_picture_replica.instr) for `Sample_picture_replica.instr`.
 
 ---
 

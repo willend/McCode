@@ -98,7 +98,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_abs_logger_nD.comp) for `Union_abs_logger_nD.comp`.
+- [Source code](Union_abs_logger_nD.comp) for `Union_abs_logger_nD.comp`.
 - See also <a href="../monitors/Monitor_nD.html">the Monitor_nD mcdoc page"</a>
 
 ---

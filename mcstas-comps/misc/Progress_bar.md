@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/Progress_bar.comp) for `Progress_bar.comp`.
+- [Source code](Progress_bar.comp) for `Progress_bar.comp`.
 
 ---
 

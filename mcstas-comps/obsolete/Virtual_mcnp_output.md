@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Virtual_mcnp_output.comp) for `Virtual_mcnp_output.comp`.
+- [Source code](Virtual_mcnp_output.comp) for `Virtual_mcnp_output.comp`.
 - <a href="http://mcnp-green.lanl.gov/index.html">MCNP</a>
 - MCNP -- A General Monte Carlo N-Particle Transport Code, Version 5, Volume II: User's Guide, p177
 

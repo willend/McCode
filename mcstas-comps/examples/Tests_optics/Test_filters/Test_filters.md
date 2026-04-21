@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_filters/Test_filters.instr) for `Test_filters.instr`.
+- [Source code](Test_filters.instr) for `Test_filters.instr`.
 - <a href="https://doi.org/10.1107/S0567739478000121">Acta Cryst. (1978). A34, 61-65</a>
 - <a href="https://doi.org/10.1063/1.1140212">Rev. Sci. Instrum. 59, 380-381 (1988)</a>
 - Test instrument written by P Willendrup <peter.willendrup@ess.eu> ESS, March 2026

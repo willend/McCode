@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_MCPL_etc/Test_MCPL_output/Test_MCPL_output.instr) for `Test_MCPL_output.instr`.
+- [Source code](Test_MCPL_output.instr) for `Test_MCPL_output.instr`.
 
 ---
 

@@ -46,7 +46,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/ISIS_moderator.comp) for `ISIS_moderator.comp`.
+- [Source code](ISIS_moderator.comp) for `ISIS_moderator.comp`.
 - Further <A HREF="http://www.isis.rl.ac.uk/Computing/Software/MC/index.htm">information</A> should be
 - downloaded from the ISIS MC website.
 - *******************************************************************************/

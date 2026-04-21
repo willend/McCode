@@ -64,7 +64,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_D2B/ILL_D2B.instr) for `ILL_D2B.instr`.
+- [Source code](ILL_D2B.instr) for `ILL_D2B.instr`.
 - G. Caglioti, A. Paoletti, F.P. Ricci, Nucl. Instr. and. Meth. 3 (1958) 223
 - L.D. Cussen, Nucl. Instr. and. Meth. A 554 (2005) 406
 - M. Morhac, NIM A 600 (2009) 478

@@ -52,7 +52,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_hollow_rectangular_prism_thin_walls.comp) for `SasView_hollow_rectangular_prism_thin_walls.comp`.
+- [Source code](SasView_hollow_rectangular_prism_thin_walls.comp) for `SasView_hollow_rectangular_prism_thin_walls.comp`.
 
 ---
 

@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Exact_radial_coll.comp) for `Exact_radial_coll.comp`.
+- [Source code](Exact_radial_coll.comp) for `Exact_radial_coll.comp`.
 
 ---
 

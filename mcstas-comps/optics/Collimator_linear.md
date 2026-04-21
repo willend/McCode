@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Collimator_linear.comp) for `Collimator_linear.comp`.
+- [Source code](Collimator_linear.comp) for `Collimator_linear.comp`.
 
 ---
 

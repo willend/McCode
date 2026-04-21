@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/NCrystal/NCrystal_example/NCrystal_example.instr) for `NCrystal_example.instr`.
+- [Source code](NCrystal_example.instr) for `NCrystal_example.instr`.
 - https://github.com/mctools/ncrystal/wiki/
 
 ---

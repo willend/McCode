@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SANSCurve.comp) for `SANSCurve.comp`.
+- [Source code](SANSCurve.comp) for `SANSCurve.comp`.
 
 ---
 

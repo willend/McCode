@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Mantid/ISIS_SANS2d_Mantid/ISIS_SANS2d_Mantid.instr) for `ISIS_SANS2d_Mantid.instr`.
+- [Source code](ISIS_SANS2d_Mantid.instr) for `ISIS_SANS2d_Mantid.instr`.
 
 ---
 

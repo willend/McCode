@@ -66,7 +66,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/NPI_tof_dhkl_detector.comp) for `NPI_tof_dhkl_detector.comp`.
+- [Source code](NPI_tof_dhkl_detector.comp) for `NPI_tof_dhkl_detector.comp`.
 
 ---
 

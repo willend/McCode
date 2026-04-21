@@ -163,7 +163,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/PowderN.comp) for `PowderN.comp`.
+- [Source code](PowderN.comp) for `PowderN.comp`.
 - "Validation of a realistic powder sample using data from DMC at PSI" Willendrup P, Filges U, Keller L, Farhi E, Lefmann K, Physica B-Cond Matt 385 (2006) 1032.
 - See also: Powder1, Single_crystal
 - See <a href="http://icsd.ill.fr">ICSD</a> Inorganic Crystal Structure Database

@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ESS/ESS_Testbeamline_HZB_V20/ESS_Testbeamline_HZB_V20.instr) for `ESS_Testbeamline_HZB_V20.instr`.
+- [Source code](ESS_Testbeamline_HZB_V20.instr) for `ESS_Testbeamline_HZB_V20.instr`.
 - <a href="https://www.helmholtz-berlin.de/pubbin/igama_output?modus=einzel&gid=1845">V20 page</a> at the HZB website
 - <a href="https://europeanspallationsource.se/workshops-facilities#v20-test-beamline">V20 info section</a> at the ESS website
 

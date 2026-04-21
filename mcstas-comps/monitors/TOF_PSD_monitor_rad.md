@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/TOF_PSD_monitor_rad.comp) for `TOF_PSD_monitor_rad.comp`.
+- [Source code](TOF_PSD_monitor_rad.comp) for `TOF_PSD_monitor_rad.comp`.
 
 ---
 

@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_master.comp) for `Union_master.comp`.
+- [Source code](Union_master.comp) for `Union_master.comp`.
 
 ---
 

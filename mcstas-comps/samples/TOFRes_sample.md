@@ -67,7 +67,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/TOFRes_sample.comp) for `TOFRes_sample.comp`.
+- [Source code](TOFRes_sample.comp) for `TOFRes_sample.comp`.
 
 ---
 

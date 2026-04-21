@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Incoherent_process.comp) for `Incoherent_process.comp`.
+- [Source code](Incoherent_process.comp) for `Incoherent_process.comp`.
 - The test/example instrument <a href="../examples/Test_Phonon.instr">Test_Phonon.instr</a>.
 
 ---

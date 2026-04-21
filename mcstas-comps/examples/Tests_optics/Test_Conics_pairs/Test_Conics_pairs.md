@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_Conics_pairs/Test_Conics_pairs.instr) for `Test_Conics_pairs.instr`.
+- [Source code](Test_Conics_pairs.instr) for `Test_Conics_pairs.instr`.
 - <reference/HTML link>
 
 ---

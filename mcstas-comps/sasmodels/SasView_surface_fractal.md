@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_surface_fractal.comp) for `SasView_surface_fractal.comp`.
+- [Source code](SasView_surface_fractal.comp) for `SasView_surface_fractal.comp`.
 
 ---
 

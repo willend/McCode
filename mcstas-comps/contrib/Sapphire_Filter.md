@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Sapphire_Filter.comp) for `Sapphire_Filter.comp`.
+- [Source code](Sapphire_Filter.comp) for `Sapphire_Filter.comp`.
 
 ---
 

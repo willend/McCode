@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Spin_random.comp) for `Spin_random.comp`.
+- [Source code](Spin_random.comp) for `Spin_random.comp`.
 
 ---
 

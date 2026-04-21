@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_gel_fit.comp) for `SasView_gel_fit.comp`.
+- [Source code](SasView_gel_fit.comp) for `SasView_gel_fit.comp`.
 
 ---
 

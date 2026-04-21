@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Multilayer_Sample.comp) for `Multilayer_Sample.comp`.
+- [Source code](Multilayer_Sample.comp) for `Multilayer_Sample.comp`.
 
 ---
 

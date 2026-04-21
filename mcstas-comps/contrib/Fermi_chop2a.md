@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Fermi_chop2a.comp) for `Fermi_chop2a.comp`.
+- [Source code](Fermi_chop2a.comp) for `Fermi_chop2a.comp`.
 
 ---
 

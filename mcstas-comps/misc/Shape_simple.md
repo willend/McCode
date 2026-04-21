@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/Shape_simple.comp) for `Shape_simple.comp`.
+- [Source code](Shape_simple.comp) for `Shape_simple.comp`.
 - Geomview and Object File Format (OFF) <http|://www.geomview.org>
 - Powercrust/qhull <http://www.cs.utexas.edu/users/amenta/powercrust>
 

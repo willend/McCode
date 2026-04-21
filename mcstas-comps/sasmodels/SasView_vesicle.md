@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_vesicle.comp) for `SasView_vesicle.comp`.
+- [Source code](SasView_vesicle.comp) for `SasView_vesicle.comp`.
 
 ---
 

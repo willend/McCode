@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Test_texture/Test_texture.instr) for `Test_texture.instr`.
+- [Source code](Test_texture.instr) for `Test_texture.instr`.
 
 ---
 

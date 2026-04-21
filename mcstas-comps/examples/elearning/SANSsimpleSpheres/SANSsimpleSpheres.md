@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/elearning/SANSsimpleSpheres/SANSsimpleSpheres.instr) for `SANSsimpleSpheres.instr`.
+- [Source code](SANSsimpleSpheres.instr) for `SANSsimpleSpheres.instr`.
 - https://sim.e-neutrons.org/instrument/intro-ns/SANSsimple
 
 ---

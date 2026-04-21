@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Guide_honeycomb.comp) for `Guide_honeycomb.comp`.
+- [Source code](Guide_honeycomb.comp) for `Guide_honeycomb.comp`.
 
 ---
 

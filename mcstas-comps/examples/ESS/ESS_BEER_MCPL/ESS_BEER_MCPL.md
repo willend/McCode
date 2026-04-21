@@ -75,7 +75,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ESS/ESS_BEER_MCPL/ESS_BEER_MCPL.instr) for `ESS_BEER_MCPL.instr`.
+- [Source code](ESS_BEER_MCPL.instr) for `ESS_BEER_MCPL.instr`.
 
 ---
 

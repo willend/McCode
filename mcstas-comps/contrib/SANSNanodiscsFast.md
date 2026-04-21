@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SANSNanodiscsFast.comp) for `SANSNanodiscsFast.comp`.
+- [Source code](SANSNanodiscsFast.comp) for `SANSNanodiscsFast.comp`.
 
 ---
 

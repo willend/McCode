@@ -56,7 +56,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Template_surface.comp) for `Template_surface.comp`.
+- [Source code](Template_surface.comp) for `Template_surface.comp`.
 
 ---
 

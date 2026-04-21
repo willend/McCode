@@ -61,7 +61,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/MultiDiskChopper.comp) for `MultiDiskChopper.comp`.
+- [Source code](MultiDiskChopper.comp) for `MultiDiskChopper.comp`.
 
 ---
 

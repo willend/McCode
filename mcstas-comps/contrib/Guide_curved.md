@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Guide_curved.comp) for `Guide_curved.comp`.
+- [Source code](Guide_curved.comp) for `Guide_curved.comp`.
 - <a href="../optics/Bender.comp.html">Bender</a>
 
 ---

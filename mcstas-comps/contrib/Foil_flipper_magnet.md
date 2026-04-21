@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Foil_flipper_magnet.comp) for `Foil_flipper_magnet.comp`.
+- [Source code](Foil_flipper_magnet.comp) for `Foil_flipper_magnet.comp`.
 
 ---
 

@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/Demo_shape_primitives_simple/Demo_shape_primitives_simple.instr) for `Demo_shape_primitives_simple.instr`.
+- [Source code](Demo_shape_primitives_simple.instr) for `Demo_shape_primitives_simple.instr`.
 
 ---
 

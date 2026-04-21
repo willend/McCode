@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Template_process.comp) for `Template_process.comp`.
+- [Source code](Template_process.comp) for `Template_process.comp`.
 
 ---
 

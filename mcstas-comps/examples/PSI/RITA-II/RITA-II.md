@@ -143,7 +143,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/PSI/RITA-II/RITA-II.instr) for `RITA-II.instr`.
+- [Source code](RITA-II.instr) for `RITA-II.instr`.
 - Rescal for Matlab at http://www.ill.fr/tas/matlab
 - Restrax at http://omega.ujf.cas.cz/restrax/
 

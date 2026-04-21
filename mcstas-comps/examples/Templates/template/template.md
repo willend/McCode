@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/template/template.instr) for `template.instr`.
+- [Source code](template.instr) for `template.instr`.
 - A reference/HTML link for more information
 
 ---

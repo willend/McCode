@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_validation/Incoherent_validation/Incoherent_validation.instr) for `Incoherent_validation.instr`.
+- [Source code](Incoherent_validation.instr) for `Incoherent_validation.instr`.
 
 ---
 

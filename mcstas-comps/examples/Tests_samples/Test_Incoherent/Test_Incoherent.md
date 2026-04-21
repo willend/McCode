@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_Incoherent/Test_Incoherent.instr) for `Test_Incoherent.instr`.
+- [Source code](Test_Incoherent.instr) for `Test_Incoherent.instr`.
 
 ---
 

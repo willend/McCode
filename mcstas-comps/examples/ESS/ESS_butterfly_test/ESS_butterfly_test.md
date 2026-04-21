@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ESS/ESS_butterfly_test/ESS_butterfly_test.instr) for `ESS_butterfly_test.instr`.
+- [Source code](ESS_butterfly_test.instr) for `ESS_butterfly_test.instr`.
 - <reference/HTML link>
 - Benchmarking website available at <a href="http://ess_butterfly.mcstas.org">http://ess_butterfly.mcstas.org</a>
 

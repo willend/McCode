@@ -68,7 +68,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Samples_Incoherent/Samples_Incoherent.instr) for `Samples_Incoherent.instr`.
+- [Source code](Samples_Incoherent.instr) for `Samples_Incoherent.instr`.
 - Validation of Single_crystal is now in progress!
 
 ---

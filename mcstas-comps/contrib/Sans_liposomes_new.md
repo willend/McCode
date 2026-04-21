@@ -45,7 +45,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Sans_liposomes_new.comp) for `Sans_liposomes_new.comp`.
+- [Source code](Sans_liposomes_new.comp) for `Sans_liposomes_new.comp`.
 - The test/example instrument <a href="../examples/SANS.instr">SANS.instr</a>.
 
 ---

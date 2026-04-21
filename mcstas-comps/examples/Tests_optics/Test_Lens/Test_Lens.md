@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_Lens/Test_Lens.instr) for `Test_Lens.instr`.
+- [Source code](Test_Lens.instr) for `Test_Lens.instr`.
 
 ---
 

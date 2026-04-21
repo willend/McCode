@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/IncoherentPhonon_test/IncoherentPhonon_test.instr) for `IncoherentPhonon_test.instr`.
+- [Source code](IncoherentPhonon_test.instr) for `IncoherentPhonon_test.instr`.
 
 ---
 

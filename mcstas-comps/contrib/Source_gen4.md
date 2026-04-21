@@ -109,7 +109,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Source_gen4.comp) for `Source_gen4.comp`.
+- [Source code](Source_gen4.comp) for `Source_gen4.comp`.
 - <a href="http://www.ill.fr/Yellowbook">The ILL Yellow book</a>
 - P. Ageron, Nucl. Inst. Meth. A 284 (1989) 197
 

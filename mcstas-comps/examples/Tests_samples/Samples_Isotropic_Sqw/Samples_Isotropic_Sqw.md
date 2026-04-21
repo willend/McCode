@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Samples_Isotropic_Sqw/Samples_Isotropic_Sqw.instr) for `Samples_Isotropic_Sqw.instr`.
+- [Source code](Samples_Isotropic_Sqw.instr) for `Samples_Isotropic_Sqw.instr`.
 - The Isotropic_Sqw sample
 
 ---

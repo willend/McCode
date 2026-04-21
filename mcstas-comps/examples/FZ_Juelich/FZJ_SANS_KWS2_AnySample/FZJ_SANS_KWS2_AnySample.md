@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/FZ_Juelich/FZJ_SANS_KWS2_AnySample/FZJ_SANS_KWS2_AnySample.instr) for `FZJ_SANS_KWS2_AnySample.instr`.
+- [Source code](FZJ_SANS_KWS2_AnySample.instr) for `FZJ_SANS_KWS2_AnySample.instr`.
 
 ---
 

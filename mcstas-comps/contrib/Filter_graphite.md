@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Filter_graphite.comp) for `Filter_graphite.comp`.
+- [Source code](Filter_graphite.comp) for `Filter_graphite.comp`.
 
 ---
 

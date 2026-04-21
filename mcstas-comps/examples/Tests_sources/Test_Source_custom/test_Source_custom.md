@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_sources/Test_Source_custom/test_Source_custom.instr) for `test_Source_custom.instr`.
+- [Source code](test_Source_custom.instr) for `test_Source_custom.instr`.
 
 ---
 

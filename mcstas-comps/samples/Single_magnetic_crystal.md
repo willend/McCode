@@ -90,7 +90,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/samples/Single_magnetic_crystal.comp) for `Single_magnetic_crystal.comp`.
+- [Source code](Single_magnetic_crystal.comp) for `Single_magnetic_crystal.comp`.
 
 ---
 

@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_single_magnetic_crystal/Test_single_magnetic_crystal.instr) for `Test_single_magnetic_crystal.instr`.
+- [Source code](Test_single_magnetic_crystal.instr) for `Test_single_magnetic_crystal.instr`.
 - A reference/HTML link for more information
 
 ---

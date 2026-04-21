@@ -24,7 +24,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Unit_test_logger_2DQ/Unit_test_logger_2DQ.instr) for `Unit_test_logger_2DQ.instr`.
+- [Source code](Unit_test_logger_2DQ.instr) for `Unit_test_logger_2DQ.instr`.
 
 ---
 

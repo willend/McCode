@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/Legacy_circle.comp) for `Legacy_circle.comp`.
+- [Source code](Legacy_circle.comp) for `Legacy_circle.comp`.
 - Geomview and Object File Format (OFF) <http|://www.geomview.org>
 - Powercrust/qhull <http://www.cs.utexas.edu/users/amenta/powercrust>
 

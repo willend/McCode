@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/PSD_TOF_monitor.comp) for `PSD_TOF_monitor.comp`.
+- [Source code](PSD_TOF_monitor.comp) for `PSD_TOF_monitor.comp`.
 
 ---
 

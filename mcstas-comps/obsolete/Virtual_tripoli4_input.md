@@ -68,7 +68,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Virtual_tripoli4_input.comp) for `Virtual_tripoli4_input.comp`.
+- [Source code](Virtual_tripoli4_input.comp) for `Virtual_tripoli4_input.comp`.
 - <a href="http://www.nea.fr/html/dbprog/tripoli-abs.html">Tripoli</a>
 - Virtual_tripoli4_output
 - CAMPIONI Guillaume, Etude et Modelisation des Sources Froides de Neutrons, These de Doctorat, CEA Saclay/UJF (2004)

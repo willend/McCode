@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/NCrystal/Union_NCrystal_mix_example/Union_NCrystal_mix_example.instr) for `Union_NCrystal_mix_example.instr`.
+- [Source code](Union_NCrystal_mix_example.instr) for `Union_NCrystal_mix_example.instr`.
 - https://github.com/mctools/ncrystal/wiki/
 
 ---

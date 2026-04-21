@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/BTsimple/BTsimple.instr) for `BTsimple.instr`.
+- [Source code](BTsimple.instr) for `BTsimple.instr`.
 
 ---
 

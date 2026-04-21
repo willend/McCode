@@ -82,7 +82,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/GISANS_sample.comp) for `GISANS_sample.comp`.
+- [Source code](GISANS_sample.comp) for `GISANS_sample.comp`.
 
 ---
 

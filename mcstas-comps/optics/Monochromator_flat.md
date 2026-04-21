@@ -56,7 +56,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Monochromator_flat.comp) for `Monochromator_flat.comp`.
+- [Source code](Monochromator_flat.comp) for `Monochromator_flat.comp`.
 
 ---
 

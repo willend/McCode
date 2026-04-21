@@ -69,7 +69,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Pol_mirror.comp) for `Pol_mirror.comp`.
+- [Source code](Pol_mirror.comp) for `Pol_mirror.comp`.
 
 ---
 

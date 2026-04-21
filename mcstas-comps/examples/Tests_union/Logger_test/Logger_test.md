@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Logger_test/Logger_test.instr) for `Logger_test.instr`.
+- [Source code](Logger_test.instr) for `Logger_test.instr`.
 
 ---
 

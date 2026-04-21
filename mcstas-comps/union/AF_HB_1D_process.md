@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/AF_HB_1D_process.comp) for `AF_HB_1D_process.comp`.
+- [Source code](AF_HB_1D_process.comp) for `AF_HB_1D_process.comp`.
 
 ---
 

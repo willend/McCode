@@ -43,7 +43,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H5/ILL_H5.instr) for `ILL_H5.instr`.
+- [Source code](ILL_H5.instr) for `ILL_H5.instr`.
 
 ---
 

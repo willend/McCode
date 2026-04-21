@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H113/ILL_H113.instr) for `ILL_H113.instr`.
+- [Source code](ILL_H113.instr) for `ILL_H113.instr`.
 - The <a href="http://www.ill.fr/YellowBook/PF1">PF1b beam line</a> at the ILL
 
 ---

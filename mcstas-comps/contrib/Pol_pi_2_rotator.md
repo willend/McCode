@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Pol_pi_2_rotator.comp) for `Pol_pi_2_rotator.comp`.
+- [Source code](Pol_pi_2_rotator.comp) for `Pol_pi_2_rotator.comp`.
 
 ---
 

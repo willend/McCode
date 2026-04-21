@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_RNG/Test_RNG_randvec_target_rect/Test_RNG_randvec_target_rect.instr) for `Test_RNG_randvec_target_rect.instr`.
+- [Source code](Test_RNG_randvec_target_rect.instr) for `Test_RNG_randvec_target_rect.instr`.
 - <reference/HTML link>
 
 ---

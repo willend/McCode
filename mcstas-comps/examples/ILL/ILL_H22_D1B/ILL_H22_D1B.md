@@ -67,7 +67,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H22_D1B/ILL_H22_D1B.instr) for `ILL_H22_D1B.instr`.
+- [Source code](ILL_H22_D1B.instr) for `ILL_H22_D1B.instr`.
 
 ---
 

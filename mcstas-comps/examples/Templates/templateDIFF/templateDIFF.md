@@ -58,7 +58,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/templateDIFF/templateDIFF.instr) for `templateDIFF.instr`.
+- [Source code](templateDIFF.instr) for `templateDIFF.instr`.
 
 ---
 

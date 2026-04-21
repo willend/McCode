@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tools/MCPL_filter_energy/MCPL_filter_energy.instr) for `MCPL_filter_energy.instr`.
+- [Source code](MCPL_filter_energy.instr) for `MCPL_filter_energy.instr`.
 - <reference/HTML link>
 - MCPL website at <a href="https://mctools.github.io/mcpl/">https://mctools.github.io/mcpl/</a>
 

@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Vitess_output.comp) for `Vitess_output.comp`.
+- [Source code](Vitess_output.comp) for `Vitess_output.comp`.
 
 ---
 

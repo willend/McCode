@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_Source_pulsed/Test_Source_pulsed.instr) for `Test_Source_pulsed.instr`.
+- [Source code](Test_Source_pulsed.instr) for `Test_Source_pulsed.instr`.
 
 ---
 

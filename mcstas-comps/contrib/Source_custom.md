@@ -122,7 +122,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Source_custom.comp) for `Source_custom.comp`.
+- [Source code](Source_custom.comp) for `Source_custom.comp`.
 - This model is implemented in an <a href="https://github.com/pablogila/Source_custom">interactive notebook</a> to fit custom neutron sources.
 
 ---

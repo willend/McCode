@@ -87,7 +87,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/ESS_moderator_short.comp) for `ESS_moderator_short.comp`.
+- [Source code](ESS_moderator_short.comp) for `ESS_moderator_short.comp`.
 
 ---
 

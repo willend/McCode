@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H15/ILL_H15.instr) for `ILL_H15.instr`.
+- [Source code](ILL_H15.instr) for `ILL_H15.instr`.
 - The <a href="http://www.ill.fr/YellowBook/IN6">IN6 TOF</a> at the ILL
 
 ---

@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_demos/Laue_camera/Laue_camera.instr) for `Laue_camera.instr`.
+- [Source code](Laue_camera.instr) for `Laue_camera.instr`.
 
 ---
 

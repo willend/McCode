@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/misc/File.comp) for `File.comp`.
+- [Source code](File.comp) for `File.comp`.
 
 ---
 

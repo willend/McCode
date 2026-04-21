@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SANS_benchmark2.comp) for `SANS_benchmark2.comp`.
+- [Source code](SANS_benchmark2.comp) for `SANS_benchmark2.comp`.
 
 ---
 

@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_elliptical_cylinder.comp) for `SasView_elliptical_cylinder.comp`.
+- [Source code](SasView_elliptical_cylinder.comp) for `SasView_elliptical_cylinder.comp`.
 
 ---
 

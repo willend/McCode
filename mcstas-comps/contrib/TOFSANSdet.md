@@ -58,7 +58,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/TOFSANSdet.comp) for `TOFSANSdet.comp`.
+- [Source code](TOFSANSdet.comp) for `TOFSANSdet.comp`.
 
 ---
 

@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_polymer_excl_volume.comp) for `SasView_polymer_excl_volume.comp`.
+- [Source code](SasView_polymer_excl_volume.comp) for `SasView_polymer_excl_volume.comp`.
 
 ---
 

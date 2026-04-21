@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/TOF_cylPSD_monitor.comp) for `TOF_cylPSD_monitor.comp`.
+- [Source code](TOF_cylPSD_monitor.comp) for `TOF_cylPSD_monitor.comp`.
 
 ---
 

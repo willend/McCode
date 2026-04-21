@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Mantid/templateSANS_Mantid/templateSANS_Mantid.instr) for `templateSANS_Mantid.instr`.
+- [Source code](templateSANS_Mantid.instr) for `templateSANS_Mantid.instr`.
 
 ---
 

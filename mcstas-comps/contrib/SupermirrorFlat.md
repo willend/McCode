@@ -159,7 +159,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SupermirrorFlat.comp) for `SupermirrorFlat.comp`.
+- [Source code](SupermirrorFlat.comp) for `SupermirrorFlat.comp`.
 
 ---
 

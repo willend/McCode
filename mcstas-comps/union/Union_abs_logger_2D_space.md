@@ -85,7 +85,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Union_abs_logger_2D_space.comp) for `Union_abs_logger_2D_space.comp`.
+- [Source code](Union_abs_logger_2D_space.comp) for `Union_abs_logger_2D_space.comp`.
 
 ---
 

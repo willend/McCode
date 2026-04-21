@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/PSD_spinUmon.comp) for `PSD_spinUmon.comp`.
+- [Source code](PSD_spinUmon.comp) for `PSD_spinUmon.comp`.
 
 ---
 

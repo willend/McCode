@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/union/Non_process.comp) for `Non_process.comp`.
+- [Source code](Non_process.comp) for `Non_process.comp`.
 
 ---
 

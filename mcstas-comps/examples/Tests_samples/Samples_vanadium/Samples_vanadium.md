@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Samples_vanadium/Samples_vanadium.instr) for `Samples_vanadium.instr`.
+- [Source code](Samples_vanadium.instr) for `Samples_vanadium.instr`.
 - The McStas User manual
 - The McStas tutorial
 

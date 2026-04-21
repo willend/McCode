@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_Fermi/Test_Fermi.instr) for `Test_Fermi.instr`.
+- [Source code](Test_Fermi.instr) for `Test_Fermi.instr`.
 
 ---
 

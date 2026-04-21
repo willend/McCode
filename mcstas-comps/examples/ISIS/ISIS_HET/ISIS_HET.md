@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ISIS/ISIS_HET/ISIS_HET.instr) for `ISIS_HET.instr`.
+- [Source code](ISIS_HET.instr) for `ISIS_HET.instr`.
 
 ---
 

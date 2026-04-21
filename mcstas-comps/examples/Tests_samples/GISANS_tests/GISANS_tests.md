@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/GISANS_tests/GISANS_tests.instr) for `GISANS_tests.instr`.
+- [Source code](GISANS_tests.instr) for `GISANS_tests.instr`.
 
 ---
 

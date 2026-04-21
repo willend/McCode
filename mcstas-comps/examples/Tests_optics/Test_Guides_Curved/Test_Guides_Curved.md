@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_Guides_Curved/Test_Guides_Curved.instr) for `Test_Guides_Curved.instr`.
+- [Source code](Test_Guides_Curved.instr) for `Test_Guides_Curved.instr`.
 
 ---
 

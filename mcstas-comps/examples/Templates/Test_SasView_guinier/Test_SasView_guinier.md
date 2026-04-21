@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/Test_SasView_guinier/Test_SasView_guinier.instr) for `Test_SasView_guinier.instr`.
+- [Source code](Test_SasView_guinier.instr) for `Test_SasView_guinier.instr`.
 
 ---
 

@@ -65,7 +65,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Lens_simple.comp) for `Lens_simple.comp`.
+- [Source code](Lens_simple.comp) for `Lens_simple.comp`.
 
 ---
 

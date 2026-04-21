@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Test_box/Test_box.instr) for `Test_box.instr`.
+- [Source code](Test_box.instr) for `Test_box.instr`.
 
 ---
 

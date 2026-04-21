@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_validation/Powder_validation/Powder_validation.instr) for `Powder_validation.instr`.
+- [Source code](Powder_validation.instr) for `Powder_validation.instr`.
 
 ---
 

@@ -73,7 +73,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sources/Source_adapt.comp) for `Source_adapt.comp`.
+- [Source code](Source_adapt.comp) for `Source_adapt.comp`.
 
 ---
 

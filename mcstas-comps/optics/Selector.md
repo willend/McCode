@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Selector.comp) for `Selector.comp`.
+- [Source code](Selector.comp) for `Selector.comp`.
 - See also Additional notes <a href="http://mcstas.risoe.dk/pipermail/neutron-mc/1999q1/000134.html">March 1999</a> and <a href="http://mcstas.risoe.dk/pipermail/neutron-mc/1999q2/000136.html">Jan 2000</a>.
 
 ---

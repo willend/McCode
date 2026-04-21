@@ -58,7 +58,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_Incoherent_MS/Test_Incoherent_MS.instr) for `Test_Incoherent_MS.instr`.
+- [Source code](Test_Incoherent_MS.instr) for `Test_Incoherent_MS.instr`.
 - A reference/HTML link for more information
 
 ---

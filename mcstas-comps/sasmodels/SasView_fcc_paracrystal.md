@@ -52,7 +52,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_fcc_paracrystal.comp) for `SasView_fcc_paracrystal.comp`.
+- [Source code](SasView_fcc_paracrystal.comp) for `SasView_fcc_paracrystal.comp`.
 
 ---
 

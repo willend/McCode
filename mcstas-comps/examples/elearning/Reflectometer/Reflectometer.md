@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/elearning/Reflectometer/Reflectometer.instr) for `Reflectometer.instr`.
+- [Source code](Reflectometer.instr) for `Reflectometer.instr`.
 
 ---
 

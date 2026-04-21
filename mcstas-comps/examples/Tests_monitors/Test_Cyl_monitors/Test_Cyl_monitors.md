@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_monitors/Test_Cyl_monitors/Test_Cyl_monitors.instr) for `Test_Cyl_monitors.instr`.
+- [Source code](Test_Cyl_monitors.instr) for `Test_Cyl_monitors.instr`.
 
 ---
 

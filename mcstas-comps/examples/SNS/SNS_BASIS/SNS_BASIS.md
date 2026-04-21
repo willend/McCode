@@ -63,7 +63,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/SNS/SNS_BASIS/SNS_BASIS.instr) for `SNS_BASIS.instr`.
+- [Source code](SNS_BASIS.instr) for `SNS_BASIS.instr`.
 - A reference/HTML link for more information
 
 ---

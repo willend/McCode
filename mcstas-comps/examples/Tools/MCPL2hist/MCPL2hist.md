@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tools/MCPL2hist/MCPL2hist.instr) for `MCPL2hist.instr`.
+- [Source code](MCPL2hist.instr) for `MCPL2hist.instr`.
 - <reference/HTML link>
 - MCPL website at <a href="https://mctools.github.io/mcpl/">https://mctools.github.io/mcpl/</a>
 

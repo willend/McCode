@@ -50,7 +50,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_two_power_law.comp) for `SasView_two_power_law.comp`.
+- [Source code](SasView_two_power_law.comp) for `SasView_two_power_law.comp`.
 
 ---
 

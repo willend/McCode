@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_TOFRes_sample/Test_TOFRes_sample.instr) for `Test_TOFRes_sample.instr`.
+- [Source code](Test_TOFRes_sample.instr) for `Test_TOFRes_sample.instr`.
 
 ---
 

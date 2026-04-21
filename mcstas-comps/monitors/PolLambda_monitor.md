@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/monitors/PolLambda_monitor.comp) for `PolLambda_monitor.comp`.
+- [Source code](PolLambda_monitor.comp) for `PolLambda_monitor.comp`.
 
 ---
 

@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SNS_source.comp) for `SNS_source.comp`.
+- [Source code](SNS_source.comp) for `SNS_source.comp`.
 
 ---
 

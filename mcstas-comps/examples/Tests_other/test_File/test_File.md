@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_other/test_File/test_File.instr) for `test_File.instr`.
+- [Source code](test_File.instr) for `test_File.instr`.
 - From https://github.com/g5t/mccode-file
 
 ---

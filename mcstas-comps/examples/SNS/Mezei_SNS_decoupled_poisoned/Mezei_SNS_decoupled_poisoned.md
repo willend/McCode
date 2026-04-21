@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/SNS/Mezei_SNS_decoupled_poisoned/Mezei_SNS_decoupled_poisoned.instr) for `Mezei_SNS_decoupled_poisoned.instr`.
+- [Source code](Mezei_SNS_decoupled_poisoned.instr) for `Mezei_SNS_decoupled_poisoned.instr`.
 
 ---
 

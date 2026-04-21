@@ -63,7 +63,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Virtual_mcnp_ss_Guide.comp) for `Virtual_mcnp_ss_Guide.comp`.
+- [Source code](Virtual_mcnp_ss_Guide.comp) for `Virtual_mcnp_ss_Guide.comp`.
 
 ---
 

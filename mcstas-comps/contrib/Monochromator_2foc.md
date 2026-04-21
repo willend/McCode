@@ -65,7 +65,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Monochromator_2foc.comp) for `Monochromator_2foc.comp`.
+- [Source code](Monochromator_2foc.comp) for `Monochromator_2foc.comp`.
 - <a href="http://mailman.risoe.dk/pipermail/neutron-mc/1999q1/000133.html">Additional note</a> from <a href="mailto:plink@physik.tu-muenchen.de">Peter Link</a>.
 
 ---

@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Arm.comp) for `Arm.comp`.
+- [Source code](Arm.comp) for `Arm.comp`.
 
 ---
 

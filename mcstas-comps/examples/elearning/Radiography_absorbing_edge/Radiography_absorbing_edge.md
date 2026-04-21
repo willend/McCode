@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/elearning/Radiography_absorbing_edge/Radiography_absorbing_edge.instr) for `Radiography_absorbing_edge.instr`.
+- [Source code](Radiography_absorbing_edge.instr) for `Radiography_absorbing_edge.instr`.
 - http://vnt.nmi3.org/mcstas-web
 
 ---

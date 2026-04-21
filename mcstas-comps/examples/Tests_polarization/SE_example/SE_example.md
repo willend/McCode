@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/SE_example/SE_example.instr) for `SE_example.instr`.
+- [Source code](SE_example.instr) for `SE_example.instr`.
 - Requires mcstas 1.12b (or beta). PolLambda_monitor has been modified to work (nL->nlam)
 
 ---

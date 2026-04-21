@@ -54,7 +54,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SANSNanodiscsWithTagsFast.comp) for `SANSNanodiscsWithTagsFast.comp`.
+- [Source code](SANSNanodiscsWithTagsFast.comp) for `SANSNanodiscsWithTagsFast.comp`.
 
 ---
 

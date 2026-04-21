@@ -45,7 +45,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_H53_D16/ILL_H53_D16.instr) for `ILL_H53_D16.instr`.
+- [Source code](ILL_H53_D16.instr) for `ILL_H53_D16.instr`.
 - The <a href="http://www.ill.fr/d16">D16 diffractometer</a> at the ILL
 
 ---

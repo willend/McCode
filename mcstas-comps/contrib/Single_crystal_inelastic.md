@@ -90,7 +90,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Single_crystal_inelastic.comp) for `Single_crystal_inelastic.comp`.
+- [Source code](Single_crystal_inelastic.comp) for `Single_crystal_inelastic.comp`.
 
 ---
 

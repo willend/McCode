@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_samples/Test_SX/Test_SX.instr) for `Test_SX.instr`.
+- [Source code](Test_SX.instr) for `Test_SX.instr`.
 
 ---
 

@@ -54,7 +54,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_broad_peak.comp) for `SasView_broad_peak.comp`.
+- [Source code](SasView_broad_peak.comp) for `SasView_broad_peak.comp`.
 
 ---
 

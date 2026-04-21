@@ -46,7 +46,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Union_validation/Single_crystal_validation/Single_crystal_validation.instr) for `Single_crystal_validation.instr`.
+- [Source code](Single_crystal_validation.instr) for `Single_crystal_validation.instr`.
 
 ---
 

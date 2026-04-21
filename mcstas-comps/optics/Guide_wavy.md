@@ -56,7 +56,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/optics/Guide_wavy.comp) for `Guide_wavy.comp`.
+- [Source code](Guide_wavy.comp) for `Guide_wavy.comp`.
 
 ---
 

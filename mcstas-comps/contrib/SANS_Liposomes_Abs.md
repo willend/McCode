@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/SANS_Liposomes_Abs.comp) for `SANS_Liposomes_Abs.comp`.
+- [Source code](SANS_Liposomes_Abs.comp) for `SANS_Liposomes_Abs.comp`.
 - Sans_spheres component
 - SANS_AnySamp component
 

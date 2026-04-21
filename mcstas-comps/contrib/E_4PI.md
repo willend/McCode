@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/E_4PI.comp) for `E_4PI.comp`.
+- [Source code](E_4PI.comp) for `E_4PI.comp`.
 - <A HREF="http://neutron.risoe.dk/mcstas/components/tests/powder/">Test
 - results</A> (not up-to-date).
 

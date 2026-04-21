@@ -54,7 +54,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/sasmodels/SasView_flexible_cylinder.comp) for `SasView_flexible_cylinder.comp`.
+- [Source code](SasView_flexible_cylinder.comp) for `SasView_flexible_cylinder.comp`.
 
 ---
 

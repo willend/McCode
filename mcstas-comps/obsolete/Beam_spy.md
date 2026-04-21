@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/obsolete/Beam_spy.comp) for `Beam_spy.comp`.
+- [Source code](Beam_spy.comp) for `Beam_spy.comp`.
 - Monitor component
 
 ---

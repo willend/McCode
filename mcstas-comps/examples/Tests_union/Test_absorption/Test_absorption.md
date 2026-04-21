@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_union/Test_absorption/Test_absorption.instr) for `Test_absorption.instr`.
+- [Source code](Test_absorption.instr) for `Test_absorption.instr`.
 
 ---
 

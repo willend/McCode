@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_polarization/Test_Pol_Guide_Vmirror/Test_Pol_Guide_Vmirror.instr) for `Test_Pol_Guide_Vmirror.instr`.
+- [Source code](Test_Pol_Guide_Vmirror.instr) for `Test_Pol_Guide_Vmirror.instr`.
 
 ---
 

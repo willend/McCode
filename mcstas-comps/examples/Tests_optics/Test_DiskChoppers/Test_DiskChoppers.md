@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_optics/Test_DiskChoppers/Test_DiskChoppers.instr) for `Test_DiskChoppers.instr`.
+- [Source code](Test_DiskChoppers.instr) for `Test_DiskChoppers.instr`.
 
 ---
 

@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/contrib/Conics_HE.comp) for `Conics_HE.comp`.
+- [Source code](Conics_HE.comp) for `Conics_HE.comp`.
 
 ---
 

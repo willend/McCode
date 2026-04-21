@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Templates/templateNMX_TOF/templateNMX_TOF.instr) for `templateNMX_TOF.instr`.
+- [Source code](templateNMX_TOF.instr) for `templateNMX_TOF.instr`.
 
 ---
 

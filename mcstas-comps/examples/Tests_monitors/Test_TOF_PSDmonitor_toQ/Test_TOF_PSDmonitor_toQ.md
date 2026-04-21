@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/Tests_monitors/Test_TOF_PSDmonitor_toQ/Test_TOF_PSDmonitor_toQ.instr) for `Test_TOF_PSDmonitor_toQ.instr`.
+- [Source code](Test_TOF_PSDmonitor_toQ.instr) for `Test_TOF_PSDmonitor_toQ.instr`.
 - <reference/HTML link>
 
 ---

@@ -56,7 +56,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](/Users/peterwillendrup/Projects/willend-McCode/mcstas-comps/examples/ILL/ILL_SALSA/ILL_SALSA.instr) for `ILL_SALSA.instr`.
+- [Source code](ILL_SALSA.instr) for `ILL_SALSA.instr`.
 
 ---
 
