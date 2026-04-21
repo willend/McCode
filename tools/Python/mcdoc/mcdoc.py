@@ -1399,7 +1399,7 @@ class CompLatexDocWriter:
         out.append('')
         out.append(r'\subsection*{Links}')
         out.append(r'\begin{itemize}')
-        out.append(r'  \item \href{run:%s}{Source code} for \texttt{%s}.' % (i.filepath, _tex(os.path.basename(i.filepath))))
+        out.append(r'  \item Component source code found in file \texttt{%s}.' % (_tex(os.path.basename(i.filepath))))
         for l in i.links:
             out.append(r'  \item %s' % _tex(l))
         out.append(r'\end{itemize}')
