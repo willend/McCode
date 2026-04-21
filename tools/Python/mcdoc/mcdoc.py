@@ -1505,7 +1505,6 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
     formats = _normalize_formats(formats)
 
     for i in range(len(comp_infos)):
-        print("Working on comp " + str(i) + " of " + str(len(comp_infos)) + ": " + comp_infos[i].name)        
         try:
             p = comp_infos[i]
             try:
@@ -1517,7 +1516,6 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
                 doc = CompW(p)
                 text = doc.create()
                 h = get_doc_filepath(f, ext, outdir=outdir)
-                print("Meant to be dumped in " + str(h))
                 if printlog:
                     print("writing doc file... %s" % h)
                 write_file(h, text, failsilent=True)
@@ -1644,7 +1642,6 @@ def main(args):
             print("using custom dir: %s" % usedir)
 
         comp_infos, instr_infos, comp_files, instr_files = parse_and_filter(usedir, recursive=True, printlog=args.verbose)
-        print("DOC dir is " + mccode_config.directories["docdir"])
         write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files,
                                     printlog=args.verbose, formats=formats, outdir=outdir)
         if args.in_repo==False:
