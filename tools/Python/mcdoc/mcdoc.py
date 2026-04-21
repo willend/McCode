@@ -1274,7 +1274,8 @@ _LATEX_PREAMBLE = (
     r'\usepackage{longtable}' '\n'
     r'\usepackage{booktabs}' '\n'
     r'\usepackage{array}' '\n'
-    r'\usepackage{fancyvrb}' '\n'
+    r'\usepackage{listings}' '\n'
+    r'\lstset{breaklines=true}' '\n'
     r'\usepackage{parskip}' '\n'
 )
 
@@ -1311,9 +1312,9 @@ class InstrLatexDocWriter:
         out.append(r'\end{itemize}')
         out.append('')
         out.append(r'\section*{Description}')
-        out.append(r'\begin{Verbatim}[breaklines=true,breakanywhere=true]')
+        out.append(r'\begin{lstlisting}')
         out.append(i.description if i.description is not None else '')
-        out.append(r'\end{Verbatim}')
+        out.append(r'\end{lstlisting}')
         out.append('')
         out.append(r'\section*{Input parameters}')
         out.append(r'Parameters in \textbf{boldface} are required; the others are optional.')
@@ -1376,9 +1377,9 @@ class CompLatexDocWriter:
         out.append(r'\end{itemize}')
         out.append('')
         out.append(r'\subsection*{Description}')
-        out.append(r'\begin{Verbatim}[breaklines=true,breakanywhere=true]')
+        out.append(r'\begin{lstlisting}')
         out.append(i.description if i.description is not None else '')
-        out.append(r'\end{Verbatim}')
+        out.append(r'\end{lstlisting}')
         out.append('')
         out.append(r'\subsection*{Input parameters}')
         out.append(r'Parameters in \textbf{boldface} are required; the others are optional.')
