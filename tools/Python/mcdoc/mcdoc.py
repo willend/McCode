@@ -1561,22 +1561,24 @@ def write_overview_docs(comp_infos, instr_infos, comp_infos_local, instr_infos_l
     formats = _normalize_formats(formats)
     base, _ = os.path.splitext(str(out_basepath))
     results = {}
+    # Suppres TeX
     for fmt in formats:
-        WriterCls = _OVERVIEW_WRITERS[fmt]
-        writer = WriterCls(comp_infos, instr_infos, comp_infos_local, instr_infos_local, libdir, docdir)
-        text = writer.create()
-        path = '%s.%s' % (base, fmt)
-        print("Docdir is " + docdir)
-        if out_basepath is not None:
-            if printlog:
-                print('writing master doc file... %s' % path)
-            try:
-                write_file(path, text)
-                results[fmt] = path
-            except Exception as e:
-                print('ERROR writing master doc file (%s): %s' % (fmt, e))
-        else:
-            print('in-repo use, no master document')
+        if not fmt=='tuple':
+            WriterCls = _OVERVIEW_WRITERS[fmt]
+            writer = WriterCls(comp_infos, instr_infos, comp_infos_local, instr_infos_local, libdir, docdir)
+            text = writer.create()
+            path = '%s.%s' % (base, fmt)
+            print("Docdir is " + docdir)
+            if out_basepath is not None:
+                if printlog:
+                    print('writing master doc file... %s' % path)
+                try:
+                    write_file(path, text)
+                    results[fmt] = path
+                except Exception as e:
+                    print('ERROR writing master doc file (%s): %s' % (fmt, e))
+            else:
+                print('in-repo use, no master document')
     return results
 
 
