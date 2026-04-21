@@ -1396,13 +1396,12 @@ class CompLatexDocWriter:
         out.append(r'\bottomrule')
         out.append(r'\end{longtable}')
         out.append('')
-        out.append(r'\section*{Links}')
+        out.append(r'\subsection*{Links}')
         out.append(r'\begin{itemize}')
         for l in i.links:
             out.append(r'  \item %s' % _tex(l))
         out.append(r'\end{itemize}')
-        out.append('')
-
+        out.append(r'\IfFileExists{%s_static.tex}{\input{%s_static.tex}}{}' % (i.name, i.name))
         self.text = '\n'.join(out)
         return self.text
 
