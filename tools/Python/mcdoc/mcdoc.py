@@ -1359,16 +1359,11 @@ class CompLatexDocWriter:
         if re.match(r'^\s*\n*\r*$', short_descr):
             short_descr = i.name + ' component'
 
-        out = [_LATEX_PREAMBLE]
-        out.append(r'\title{The \texttt{%s} %s Component}' % (_tex(i.name), _tex(flavour)))
-        out.append(r'\author{%s}' % _tex(i.author))
-        out.append(r'\date{%s}' % _tex(i.date))
-        out.append(r'\begin{document}')
-        out.append(r'\maketitle')
-        out.append('')
+        out = [] # Drop the [_LATEX_PREAMBLE]
+        out.append(r'\section{The \texttt{%s} %s Component}' % (_tex(i.name), _tex(flavour)))
         out.append(_tex(short_descr))
         out.append('')
-        out.append(r'\section*{Identification}')
+        out.append(r'\subsection*{Identification}')
         out.append(r'\begin{itemize}')
         out.append(r'  \item \textbf{Site:} %s'   % _tex(i.site))
         out.append(r'  \item \textbf{Author:} %s' % _tex(i.author))
@@ -1376,12 +1371,12 @@ class CompLatexDocWriter:
         out.append(r'  \item \textbf{Date:} %s'   % _tex(i.date))
         out.append(r'\end{itemize}')
         out.append('')
-        out.append(r'\section*{Description}')
+        out.append(r'\subsection*{Description}')
         out.append(r'\begin{Verbatim}[breaklines=true,breakanywhere=true]')
         out.append(i.description if i.description is not None else '')
         out.append(r'\end{Verbatim}')
         out.append('')
-        out.append(r'\section*{Input parameters}')
+        out.append(r'\subsection*{Input parameters}')
         out.append(r'Parameters in \textbf{boldface} are required; the others are optional.')
         out.append('')
         out.append(r'\begin{longtable}{p{0.22\textwidth}p{0.12\textwidth}p{0.46\textwidth}p{0.14\textwidth}}')
@@ -1399,17 +1394,10 @@ class CompLatexDocWriter:
         out.append('')
         out.append(r'\section*{Links}')
         out.append(r'\begin{itemize}')
-        out.append(r'  \item \href{run:%s}{Source code} for \texttt{%s}.' % (i.filepath, _tex(os.path.basename(i.filepath))))
         for l in i.links:
             out.append(r'  \item %s' % _tex(l))
         out.append(r'\end{itemize}')
         out.append('')
-        out.append(r'\vspace{1em}')
-        out.append(r'\noindent\rule{\textwidth}{0.4pt}')
-        out.append(r'\begin{flushright}\small Generated on %s %s.\end{flushright}' % (
-            _tex(mccode_config.configuration["MCCODE"]),
-            _tex(mccode_config.configuration["MCCODE_VERSION"])))
-        out.append(r'\end{document}')
 
         self.text = '\n'.join(out)
         return self.text
