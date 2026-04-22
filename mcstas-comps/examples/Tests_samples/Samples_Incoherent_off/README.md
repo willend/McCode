@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Samples_Incoherent_off.instr) for `Samples_Incoherent_off.instr`.
-- [Additional information](Samples_Incoherent_off.md)
+- [Additional information](Samples_Incoherent_off.md) (only if available!)
 - http://shape.cs.princeton.edu/benchmark/documentation/off_format.html
 
 ---

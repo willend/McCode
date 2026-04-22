@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](WOFSANS.instr) for `WOFSANS.instr`.
-- [Additional information](WOFSANS.md)
+- [Additional information](WOFSANS.md) (only if available!)
 - V. Santoro et. al. Nuc. Sci. Eng. 2023 https://doi.org/10.1080/00295639.2023.2204184
 - https://highnessproject.eu
 - This work was supported by the HighNESS project and is funded by European Commission (H2020-951782).

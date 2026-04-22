@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateSANS2_Mantid.instr) for `templateSANS2_Mantid.instr`.
-- [Additional information](templateSANS2_Mantid.md)
+- [Additional information](templateSANS2_Mantid.md) (only if available!)
 
 ---
 

@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Rotator.instr) for `Test_Rotator.instr`.
-- [Additional information](Test_Rotator.md)
+- [Additional information](Test_Rotator.md) (only if available!)
 - A reference/HTML link for more information
 
 ---

@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_box.instr) for `Test_box.instr`.
-- [Additional information](Test_box.md)
+- [Additional information](Test_box.md) (only if available!)
 
 ---
 

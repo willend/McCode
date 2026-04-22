@@ -65,7 +65,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_D2B.instr) for `ILL_D2B.instr`.
-- [Additional information](ILL_D2B.md)
+- [Additional information](ILL_D2B.md) (only if available!)
 - G. Caglioti, A. Paoletti, F.P. Ricci, Nucl. Instr. and. Meth. 3 (1958) 223
 - L.D. Cussen, Nucl. Instr. and. Meth. A 554 (2005) 406
 - M. Morhac, NIM A 600 (2009) 478

@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](BNL_H8.instr) for `BNL_H8.instr`.
-- [Additional information](BNL_H8.md)
+- [Additional information](BNL_H8.md) (only if available!)
 - Neutron News 13 (No. 4), 24-29 (2002).
 
 ---

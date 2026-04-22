@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateSANS.instr) for `templateSANS.instr`.
-- [Additional information](templateSANS.md)
+- [Additional information](templateSANS.md) (only if available!)
 
 ---
 

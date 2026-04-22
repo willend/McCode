@@ -45,7 +45,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateTOF.instr) for `templateTOF.instr`.
-- [Additional information](templateTOF.md)
+- [Additional information](templateTOF.md) (only if available!)
 - The Isotropic_Sqw sample
 - The Samples_Isotropic_Sqw example instrument
 

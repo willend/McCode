@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_Guide_mirror.instr) for `Test_Pol_Guide_mirror.instr`.
-- [Additional information](Test_Pol_Guide_mirror.md)
+- [Additional information](Test_Pol_Guide_mirror.md) (only if available!)
 
 ---
 

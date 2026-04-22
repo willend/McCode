@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ViewModISIStest.instr) for `ViewModISIStest.instr`.
-- [Additional information](ViewModISIStest.md)
+- [Additional information](ViewModISIStest.md) (only if available!)
 - Written by D. Champion <D.Champion@rl.ac.uk> ISIS, Feb 2004
 
 ---

@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](FZJ_SANS_KWS2_AnySample.instr) for `FZJ_SANS_KWS2_AnySample.instr`.
-- [Additional information](FZJ_SANS_KWS2_AnySample.md)
+- [Additional information](FZJ_SANS_KWS2_AnySample.md) (only if available!)
 
 ---
 

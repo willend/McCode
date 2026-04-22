@@ -85,7 +85,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_IN4.instr) for `ILL_IN4.instr`.
-- [Additional information](ILL_IN4.md)
+- [Additional information](ILL_IN4.md) (only if available!)
 - H. Mutka, Nucl. Instr. and Meth. A 338 (1994) 144
 - http://www.ill.eu/fr/instruments-support/instruments-groups/instruments/in4c
 

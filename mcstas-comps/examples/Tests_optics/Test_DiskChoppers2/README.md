@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_DiskChoppers2.instr) for `Test_DiskChoppers2.instr`.
-- [Additional information](Test_DiskChoppers2.md)
+- [Additional information](Test_DiskChoppers2.md) (only if available!)
 
 ---
 

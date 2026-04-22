@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_StatisticalChopper.instr) for `Test_StatisticalChopper.instr`.
-- [Additional information](Test_StatisticalChopper.md)
+- [Additional information](Test_StatisticalChopper.md) (only if available!)
 - R. Von Jan and R. Scherm. The statistical chopper for neutron time-of-flight spectroscopy. Nuclear Instruments and Methods, 80 (1970) 69-76.
 
 ---

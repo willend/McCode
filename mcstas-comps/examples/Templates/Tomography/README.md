@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Tomography.instr) for `Tomography.instr`.
-- [Additional information](Tomography.md)
+- [Additional information](Tomography.md) (only if available!)
 - http://shape.cs.princeton.edu/benchmark/documentation/off_format.html
 
 ---

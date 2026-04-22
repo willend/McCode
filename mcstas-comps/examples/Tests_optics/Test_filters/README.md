@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_filters.instr) for `Test_filters.instr`.
-- [Additional information](Test_filters.md)
+- [Additional information](Test_filters.md) (only if available!)
 - <a href="https://doi.org/10.1107/S0567739478000121">Acta Cryst. (1978). A34, 61-65</a>
 - <a href="https://doi.org/10.1063/1.1140212">Rev. Sci. Instrum. 59, 380-381 (1988)</a>
 - Test instrument written by P Willendrup <peter.willendrup@ess.eu> ESS, March 2026

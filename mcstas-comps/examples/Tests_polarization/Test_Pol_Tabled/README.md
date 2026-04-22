@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_Tabled.instr) for `Test_Pol_Tabled.instr`.
-- [Additional information](Test_Pol_Tabled.md)
+- [Additional information](Test_Pol_Tabled.md) (only if available!)
 - A reference/HTML link for more information
 
 ---

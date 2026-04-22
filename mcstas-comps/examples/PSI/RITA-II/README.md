@@ -144,7 +144,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](RITA-II.instr) for `RITA-II.instr`.
-- [Additional information](RITA-II.md)
+- [Additional information](RITA-II.md) (only if available!)
 - Rescal for Matlab at http://www.ill.fr/tas/matlab
 - Restrax at http://omega.ujf.cas.cz/restrax/
 

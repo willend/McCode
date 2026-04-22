@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unittest_SANS_benchmark2.instr) for `Unittest_SANS_benchmark2.instr`.
-- [Additional information](Unittest_SANS_benchmark2.md)
+- [Additional information](Unittest_SANS_benchmark2.md) (only if available!)
 
 ---
 

@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Monochromator_bent.instr) for `Test_Monochromator_bent.instr`.
-- [Additional information](Test_Monochromator_bent.md)
+- [Additional information](Test_Monochromator_bent.md) (only if available!)
 
 ---
 

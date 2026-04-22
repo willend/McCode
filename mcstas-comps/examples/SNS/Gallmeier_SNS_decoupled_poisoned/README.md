@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Gallmeier_SNS_decoupled_poisoned.instr) for `Gallmeier_SNS_decoupled_poisoned.instr`.
-- [Additional information](Gallmeier_SNS_decoupled_poisoned.md)
+- [Additional information](Gallmeier_SNS_decoupled_poisoned.md) (only if available!)
 
 ---
 

@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_GROUP.instr) for `Test_GROUP.instr`.
-- [Additional information](Test_GROUP.md)
+- [Additional information](Test_GROUP.md) (only if available!)
 
 ---
 

@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Union_NCrystal_example.instr) for `Union_NCrystal_example.instr`.
-- [Additional information](Union_NCrystal_example.md)
+- [Additional information](Union_NCrystal_example.md) (only if available!)
 - https://github.com/mctools/ncrystal/wiki/
 
 ---

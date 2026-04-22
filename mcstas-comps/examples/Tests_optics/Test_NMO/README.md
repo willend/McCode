@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_NMO.instr) for `Test_NMO.instr`.
-- [Additional information](Test_NMO.md)
+- [Additional information](Test_NMO.md) (only if available!)
 - P B&ouml;ni <a href="https://indico.psi.ch/event/13583/contributions/42618/attachments/24446/44119/Presentation_NFO-Workshop-PSI_final%20-%20Boeni.pdf">presentation at PSI NFO workshop</a>
 - Christoph Herb et al., Nucl. Instrum. Meth. A 1040, 1671564 (1-18) 2022.
 

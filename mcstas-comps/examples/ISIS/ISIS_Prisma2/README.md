@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_Prisma2.instr) for `ISIS_Prisma2.instr`.
-- [Additional information](ISIS_Prisma2.md)
+- [Additional information](ISIS_Prisma2.md) (only if available!)
 - The McStas User manual
 - <a href="http://www.isis.rl.ac.uk/excitations/prisma/">PRISMA</a>
 

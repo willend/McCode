@@ -64,7 +64,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H53_IN14.instr) for `ILL_H53_IN14.instr`.
-- [Additional information](ILL_H53_IN14.md)
+- [Additional information](ILL_H53_IN14.md) (only if available!)
 - The <a href="http://www.ill.fr/in14">IN14 TAS</a> at the ILL
 
 ---

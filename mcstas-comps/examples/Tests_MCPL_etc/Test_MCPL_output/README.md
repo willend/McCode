@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_MCPL_output.instr) for `Test_MCPL_output.instr`.
-- [Additional information](Test_MCPL_output.md)
+- [Additional information](Test_MCPL_output.md) (only if available!)
 
 ---
 

@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](TAS1_C1_Tilt.instr) for `TAS1_C1_Tilt.instr`.
-- [Additional information](TAS1_C1_Tilt.md)
+- [Additional information](TAS1_C1_Tilt.md) (only if available!)
 - The McStas User manual
 - A. Abrahamsen, N. B. Christensen, and E. Lauridsen. McStas simulations of the TAS1 spectrometer. Student's report, Niels Bohr Institute, University of Copenhagen, 1998.
 

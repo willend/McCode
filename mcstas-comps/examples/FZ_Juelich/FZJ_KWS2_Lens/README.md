@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](FZJ_KWS2_Lens.instr) for `FZJ_KWS2_Lens.instr`.
-- [Additional information](FZJ_KWS2_Lens.md)
+- [Additional information](FZJ_KWS2_Lens.md) (only if available!)
 - The Lens_simple component
 
 ---

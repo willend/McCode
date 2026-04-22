@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_RNG_randnorm.instr) for `Test_RNG_randnorm.instr`.
-- [Additional information](Test_RNG_randnorm.md)
+- [Additional information](Test_RNG_randnorm.md) (only if available!)
 - <reference/HTML link>
 
 ---

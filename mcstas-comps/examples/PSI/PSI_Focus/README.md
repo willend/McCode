@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](PSI_Focus.instr) for `PSI_Focus.instr`.
-- [Additional information](PSI_Focus.md)
+- [Additional information](PSI_Focus.md) (only if available!)
 - Written by U.Filges <uwe.filges@psi.ch> PSI, Jan 2004
 
 ---

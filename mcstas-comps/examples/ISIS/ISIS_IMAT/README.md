@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_IMAT.instr) for `ISIS_IMAT.instr`.
-- [Additional information](ISIS_IMAT.md)
+- [Additional information](ISIS_IMAT.md) (only if available!)
 - <a href="http://www.isis.stfc.ac.uk/instruments/imat">
 
 ---

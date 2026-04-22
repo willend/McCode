@@ -47,7 +47,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Supermirror_thin_substrate.instr) for `Supermirror_thin_substrate.instr`.
-- [Additional information](Supermirror_thin_substrate.md)
+- [Additional information](Supermirror_thin_substrate.md) (only if available!)
 - A reference/HTML link for more information
 
 ---

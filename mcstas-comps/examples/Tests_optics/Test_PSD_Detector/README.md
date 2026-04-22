@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_PSD_Detector.instr) for `Test_PSD_Detector.instr`.
-- [Additional information](Test_PSD_Detector.md)
+- [Additional information](Test_PSD_Detector.md) (only if available!)
 - The PSD_Detector component
 
 ---

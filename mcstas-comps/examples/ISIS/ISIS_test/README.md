@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_test.instr) for `ISIS_test.instr`.
-- [Additional information](ISIS_test.md)
+- [Additional information](ISIS_test.md) (only if available!)
 - Written by D. Champion <D.Champion@rl.ac.uk> ISIS, Feb 2004
 
 ---

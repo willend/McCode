@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Logger_test.instr) for `Logger_test.instr`.
-- [Additional information](Logger_test.md)
+- [Additional information](Logger_test.md) (only if available!)
 
 ---
 

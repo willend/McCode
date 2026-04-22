@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_SANS2d_Mantid.instr) for `ISIS_SANS2d_Mantid.instr`.
-- [Additional information](ISIS_SANS2d_Mantid.md)
+- [Additional information](ISIS_SANS2d_Mantid.md) (only if available!)
 
 ---
 

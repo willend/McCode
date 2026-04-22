@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateSANS_MCPL.instr) for `templateSANS_MCPL.instr`.
-- [Additional information](templateSANS_MCPL.md)
+- [Additional information](templateSANS_MCPL.md) (only if available!)
 
 ---
 

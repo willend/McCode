@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Vin_test.instr) for `Vin_test.instr`.
-- [Additional information](Vin_test.md)
+- [Additional information](Vin_test.md) (only if available!)
 - A reference/HTML link for more information
 
 ---

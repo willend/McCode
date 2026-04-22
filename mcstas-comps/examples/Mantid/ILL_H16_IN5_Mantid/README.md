@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H16_IN5_Mantid.instr) for `ILL_H16_IN5_Mantid.instr`.
-- [Additional information](ILL_H16_IN5_Mantid.md)
+- [Additional information](ILL_H16_IN5_Mantid.md) (only if available!)
 - The <a href="http://www.ill.eu/in5">IN5@ILL</a> cold time of flight instrument
 
 ---

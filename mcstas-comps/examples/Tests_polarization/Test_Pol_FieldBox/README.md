@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_FieldBox.instr) for `Test_Pol_FieldBox.instr`.
-- [Additional information](Test_Pol_FieldBox.md)
+- [Additional information](Test_Pol_FieldBox.md) (only if available!)
 
 ---
 

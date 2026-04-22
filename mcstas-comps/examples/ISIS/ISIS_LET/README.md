@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_LET.instr) for `ISIS_LET.instr`.
-- [Additional information](ISIS_LET.md)
+- [Additional information](ISIS_LET.md) (only if available!)
 
 ---
 

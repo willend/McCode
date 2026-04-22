@@ -45,7 +45,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SNS_ARCS_Mantid.instr) for `SNS_ARCS_Mantid.instr`.
-- [Additional information](SNS_ARCS_Mantid.md)
+- [Additional information](SNS_ARCS_Mantid.md) (only if available!)
 - <br>Granroth, G. E. and Abernathy, D. L., "Performance Comparisons of Four Direct Geometry Spectrometers Planned for Spallation Neutron Source",  Proceedings of ICANS-XVI, 289 (2003).
 - <br>D. L. Abernathy,  M. B. Stone,  M. J. Loguillo, M. S. Lucas, O. Delaire, X.Tang, J. Y. Y. Lin, and  B. Fultz,"Design and operation of the wide angular-range chopper spectrometer ARCS at the Spallation Neutron Source", Review of Scientific Instruments, 83 , 015114 (2012)
 

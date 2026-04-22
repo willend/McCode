@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Fermi.instr) for `Test_Fermi.instr`.
-- [Additional information](Test_Fermi.md)
+- [Additional information](Test_Fermi.md) (only if available!)
 
 ---
 

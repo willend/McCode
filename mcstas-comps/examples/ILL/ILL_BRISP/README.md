@@ -87,7 +87,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_BRISP.instr) for `ILL_BRISP.instr`.
-- [Additional information](ILL_BRISP.md)
+- [Additional information](ILL_BRISP.md) (only if available!)
 - The BRISP spectrometer at the ILL <a href="www.ill.fr/brisp">BRISP</a>
 
 ---

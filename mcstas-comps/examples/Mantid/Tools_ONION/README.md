@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Tools_ONION.instr) for `Tools_ONION.instr`.
-- [Additional information](Tools_ONION.md)
+- [Additional information](Tools_ONION.md) (only if available!)
 - "Using an onion like neutron scattering instrument model to quickly optimize design parameters"
 - T. Huegle, <a href="https://doi.org/10.1016/j.nima.2019.162711">Nuclear Instruments and Methods in Physics Research Section A, 2019<a>
 - Python script available at <a href="https://github.com/mccode-dev/McCode-contribution-support-docs/tree/master/McStas/2.6_Onion_tool_T_Huegle">https://github.com/mccode-dev/McCode-contribution-support-docs/tree/master/McStas/2.6_Onion_tool_T_Huegle</a>

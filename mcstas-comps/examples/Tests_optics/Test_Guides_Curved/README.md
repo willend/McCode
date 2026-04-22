@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Guides_Curved.instr) for `Test_Guides_Curved.instr`.
-- [Additional information](Test_Guides_Curved.md)
+- [Additional information](Test_Guides_Curved.md) (only if available!)
 
 ---
 

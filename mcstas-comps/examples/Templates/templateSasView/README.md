@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateSasView.instr) for `templateSasView.instr`.
-- [Additional information](templateSasView.md)
+- [Additional information](templateSasView.md) (only if available!)
 
 ---
 

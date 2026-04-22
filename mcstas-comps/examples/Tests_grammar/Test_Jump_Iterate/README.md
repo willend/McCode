@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Jump_Iterate.instr) for `Test_Jump_Iterate.instr`.
-- [Additional information](Test_Jump_Iterate.md)
+- [Additional information](Test_Jump_Iterate.md) (only if available!)
 
 ---
 

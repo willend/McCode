@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H113.instr) for `ILL_H113.instr`.
-- [Additional information](ILL_H113.md)
+- [Additional information](ILL_H113.md) (only if available!)
 - The <a href="http://www.ill.fr/YellowBook/PF1">PF1b beam line</a> at the ILL
 
 ---

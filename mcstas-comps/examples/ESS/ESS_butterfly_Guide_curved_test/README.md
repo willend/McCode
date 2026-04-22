@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ESS_butterfly_Guide_curved_test.instr) for `ESS_butterfly_Guide_curved_test.instr`.
-- [Additional information](ESS_butterfly_Guide_curved_test.md)
+- [Additional information](ESS_butterfly_Guide_curved_test.md) (only if available!)
 - <reference/HTML link>
 - Benchmarking website available at <a href="http://ess_butterfly.mcstas.org">http://ess_butterfly.mcstas.org</a>
 

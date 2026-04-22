@@ -69,7 +69,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Samples_Incoherent.instr) for `Samples_Incoherent.instr`.
-- [Additional information](Samples_Incoherent.md)
+- [Additional information](Samples_Incoherent.md) (only if available!)
 - Validation of Single_crystal is now in progress!
 
 ---

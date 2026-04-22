@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_powder.instr) for `Test_powder.instr`.
-- [Additional information](Test_powder.md)
+- [Additional information](Test_powder.md) (only if available!)
 
 ---
 

@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Lens.instr) for `Test_Lens.instr`.
-- [Additional information](Test_Lens.md)
+- [Additional information](Test_Lens.md) (only if available!)
 
 ---
 

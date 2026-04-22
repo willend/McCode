@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Demonstration.instr) for `Demonstration.instr`.
-- [Additional information](Demonstration.md)
+- [Additional information](Demonstration.md) (only if available!)
 
 ---
 

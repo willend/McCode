@@ -59,7 +59,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Incoherent_MS.instr) for `Test_Incoherent_MS.instr`.
-- [Additional information](Test_Incoherent_MS.md)
+- [Additional information](Test_Incoherent_MS.md) (only if available!)
 - A reference/HTML link for more information
 
 ---

@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_logger_2D_kf.instr) for `Unit_test_logger_2D_kf.instr`.
-- [Additional information](Unit_test_logger_2D_kf.md)
+- [Additional information](Unit_test_logger_2D_kf.md) (only if available!)
 
 ---
 

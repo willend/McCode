@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_TS1_Brilliance.instr) for `ISIS_TS1_Brilliance.instr`.
-- [Additional information](ISIS_TS1_Brilliance.md)
+- [Additional information](ISIS_TS1_Brilliance.md) (only if available!)
 
 ---
 

@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_Mirror.instr) for `Test_Pol_Mirror.instr`.
-- [Additional information](Test_Pol_Mirror.md)
+- [Additional information](Test_Pol_Mirror.md) (only if available!)
 
 ---
 

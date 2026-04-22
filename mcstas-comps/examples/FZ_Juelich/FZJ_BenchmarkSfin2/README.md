@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](FZJ_BenchmarkSfin2.instr) for `FZJ_BenchmarkSfin2.instr`.
-- [Additional information](FZJ_BenchmarkSfin2.md)
+- [Additional information](FZJ_BenchmarkSfin2.md) (only if available!)
 
 ---
 

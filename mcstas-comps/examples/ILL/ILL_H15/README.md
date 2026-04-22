@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H15.instr) for `ILL_H15.instr`.
-- [Additional information](ILL_H15.md)
+- [Additional information](ILL_H15.md) (only if available!)
 - The <a href="http://www.ill.fr/YellowBook/IN6">IN6 TOF</a> at the ILL
 
 ---

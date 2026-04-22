@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Magnon_bcc_TAS.instr) for `Test_Magnon_bcc_TAS.instr`.
-- [Additional information](Test_Magnon_bcc_TAS.md)
+- [Additional information](Test_Magnon_bcc_TAS.md) (only if available!)
 - <reference/HTML link>
 
 ---

@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Magnetic_Rotation.instr) for `Test_Magnetic_Rotation.instr`.
-- [Additional information](Test_Magnetic_Rotation.md)
+- [Additional information](Test_Magnetic_Rotation.md) (only if available!)
 
 ---
 

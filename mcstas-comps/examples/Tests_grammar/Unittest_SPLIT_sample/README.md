@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unittest_SPLIT_sample.instr) for `Unittest_SPLIT_sample.instr`.
-- [Additional information](Unittest_SPLIT_sample.md)
+- [Additional information](Unittest_SPLIT_sample.md) (only if available!)
 - <reference/HTML link>
 
 ---

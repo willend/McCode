@@ -48,7 +48,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_SANS2d.instr) for `ISIS_SANS2d.instr`.
-- [Additional information](ISIS_SANS2d.md)
+- [Additional information](ISIS_SANS2d.md) (only if available!)
 
 ---
 

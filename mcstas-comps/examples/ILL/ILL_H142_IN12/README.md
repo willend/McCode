@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H142_IN12.instr) for `ILL_H142_IN12.instr`.
-- [Additional information](ILL_H142_IN12.md)
+- [Additional information](ILL_H142_IN12.md) (only if available!)
 - The <a href="http://www.ill.fr/in12">IN12 TAS</a> at the ILL
 
 ---

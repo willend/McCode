@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Al_windows.instr) for `Test_Al_windows.instr`.
-- [Additional information](Test_Al_windows.md)
+- [Additional information](Test_Al_windows.md) (only if available!)
 - <reference/HTML link>
 
 ---

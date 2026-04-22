@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Magnetic_Constant.instr) for `Test_Magnetic_Constant.instr`.
-- [Additional information](Test_Magnetic_Constant.md)
+- [Additional information](Test_Magnetic_Constant.md) (only if available!)
 
 ---
 

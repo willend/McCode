@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_Set.instr) for `Test_Pol_Set.instr`.
-- [Additional information](Test_Pol_Set.md)
+- [Additional information](Test_Pol_Set.md) (only if available!)
 
 ---
 

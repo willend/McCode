@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_TOF_PSDmonitor_toQ.instr) for `Test_TOF_PSDmonitor_toQ.instr`.
-- [Additional information](Test_TOF_PSDmonitor_toQ.md)
+- [Additional information](Test_TOF_PSDmonitor_toQ.md) (only if available!)
 - <reference/HTML link>
 
 ---

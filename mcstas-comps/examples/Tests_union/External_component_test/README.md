@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](External_component_test.instr) for `External_component_test.instr`.
-- [Additional information](External_component_test.md)
+- [Additional information](External_component_test.md) (only if available!)
 
 ---
 

@@ -49,7 +49,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](HZB_NEAT.instr) for `HZB_NEAT.instr`.
-- [Additional information](HZB_NEAT.md)
+- [Additional information](HZB_NEAT.md) (only if available!)
 - <a href="http://www.helmholtz-berlin.de/user/neutrons/instrumentation/neutron-instruments/v3/index_en.html">NEAT at HZB/BENSC</a>
 
 ---

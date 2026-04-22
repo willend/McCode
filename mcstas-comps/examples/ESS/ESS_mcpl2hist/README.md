@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ESS_mcpl2hist.instr) for `ESS_mcpl2hist.instr`.
-- [Additional information](ESS_mcpl2hist.md)
+- [Additional information](ESS_mcpl2hist.md) (only if available!)
 - <reference/HTML link>
 - Benchmarking website available at <a href="http://ess_butterfly.mcstas.org">http://ess_butterfly.mcstas.org</a>
 
