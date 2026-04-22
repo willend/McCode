@@ -51,7 +51,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ESS_Testbeamline_HZB_V20.instr) for `ESS_Testbeamline_HZB_V20.instr`.
-- [Additional information](ESS_Testbeamline_HZB_V20.instr.md)
+- [Additional information](ESS_Testbeamline_HZB_V20.md)
 - <a href="https://www.helmholtz-berlin.de/pubbin/igama_output?modus=einzel&gid=1845">V20 page</a> at the HZB website
 - <a href="https://europeanspallationsource.se/workshops-facilities#v20-test-beamline">V20 info section</a> at the ESS website
 

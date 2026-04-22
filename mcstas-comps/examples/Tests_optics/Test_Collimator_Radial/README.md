@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Collimator_Radial.instr) for `Test_Collimator_Radial.instr`.
-- [Additional information](Test_Collimator_Radial.instr.md)
+- [Additional information](Test_Collimator_Radial.md)
 
 ---
 

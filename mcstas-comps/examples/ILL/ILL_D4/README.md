@@ -44,7 +44,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_D4.instr) for `ILL_D4.instr`.
-- [Additional information](ILL_D4.instr.md)
+- [Additional information](ILL_D4.md)
 - The <a href="http://www.ill.eu/d4">D4 diffractometer</a> at the ILL
 
 ---

@@ -31,7 +31,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](MCPL_filter_energy.instr) for `MCPL_filter_energy.instr`.
-- [Additional information](MCPL_filter_energy.instr.md)
+- [Additional information](MCPL_filter_energy.md)
 - <reference/HTML link>
 - MCPL website at <a href="https://mctools.github.io/mcpl/">https://mctools.github.io/mcpl/</a>
 

@@ -25,7 +25,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_abs_logger_1D_space_event.instr) for `Unit_test_abs_logger_1D_space_event.instr`.
-- [Additional information](Unit_test_abs_logger_1D_space_event.instr.md)
+- [Additional information](Unit_test_abs_logger_1D_space_event.md)
 
 ---
 

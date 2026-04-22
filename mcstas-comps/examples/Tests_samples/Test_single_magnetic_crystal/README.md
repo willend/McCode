@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_single_magnetic_crystal.instr) for `Test_single_magnetic_crystal.instr`.
-- [Additional information](Test_single_magnetic_crystal.instr.md)
+- [Additional information](Test_single_magnetic_crystal.md)
 - A reference/HTML link for more information
 
 ---

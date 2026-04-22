@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H22.instr) for `ILL_H22.instr`.
-- [Additional information](ILL_H22.instr.md)
+- [Additional information](ILL_H22.md)
 
 ---
 

@@ -64,7 +64,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H5_new.instr) for `ILL_H5_new.instr`.
-- [Additional information](ILL_H5_new.instr.md)
+- [Additional information](ILL_H5_new.md)
 - The NoteDPT11 at the ILL
 - The DPT/SMAE 11/070 WASP design report
 - The DPT/SMAE 10/271 H5 design report

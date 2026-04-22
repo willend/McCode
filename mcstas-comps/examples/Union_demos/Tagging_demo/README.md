@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Tagging_demo.instr) for `Tagging_demo.instr`.
-- [Additional information](Tagging_demo.instr.md)
+- [Additional information](Tagging_demo.md)
 
 ---
 

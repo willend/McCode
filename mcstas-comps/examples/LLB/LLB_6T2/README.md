@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](LLB_6T2.instr) for `LLB_6T2.instr`.
-- [Additional information](LLB_6T2.instr.md)
+- [Additional information](LLB_6T2.md)
 
 ---
 

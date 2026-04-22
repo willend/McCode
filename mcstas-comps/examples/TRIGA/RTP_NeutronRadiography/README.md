@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](RTP_NeutronRadiography.instr) for `RTP_NeutronRadiography.instr`.
-- [Additional information](RTP_NeutronRadiography.instr.md)
+- [Additional information](RTP_NeutronRadiography.md)
 - <a href="http://www.nuclearmalaysia.gov.my/Plant&Facilities/reactor.php">Nuclear Malaysia</a>
 - M. Sufi et al., J. AppL Cryst. (1997). 30, 884-888 [doi:10.1107/S0021889897001738]
 

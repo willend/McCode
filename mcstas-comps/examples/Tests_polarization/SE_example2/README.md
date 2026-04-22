@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SE_example2.instr) for `SE_example2.instr`.
-- [Additional information](SE_example2.instr.md)
+- [Additional information](SE_example2.md)
 - Requires mcstas 1.12b (or beta). PolLambda_monitor has been modified to work (nL->nlam)
 
 ---

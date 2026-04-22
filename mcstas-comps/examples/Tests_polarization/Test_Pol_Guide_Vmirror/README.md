@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_Guide_Vmirror.instr) for `Test_Pol_Guide_Vmirror.instr`.
-- [Additional information](Test_Pol_Guide_Vmirror.instr.md)
+- [Additional information](Test_Pol_Guide_Vmirror.md)
 
 ---
 

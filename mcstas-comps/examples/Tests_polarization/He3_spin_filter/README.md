@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](He3_spin_filter.instr) for `He3_spin_filter.instr`.
-- [Additional information](He3_spin_filter.instr.md)
+- [Additional information](He3_spin_filter.md)
 - <reference/HTML link>
 
 ---

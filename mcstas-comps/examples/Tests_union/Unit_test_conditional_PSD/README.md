@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_conditional_PSD.instr) for `Unit_test_conditional_PSD.instr`.
-- [Additional information](Unit_test_conditional_PSD.instr.md)
+- [Additional information](Unit_test_conditional_PSD.md)
 
 ---
 

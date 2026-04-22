@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](PSI_DMC_simple.instr) for `PSI_DMC_simple.instr`.
-- [Additional information](PSI_DMC_simple.instr.md)
+- [Additional information](PSI_DMC_simple.md)
 - The <a href="http://lns00.psi.ch/montecarlo/">PSI Monte-Carlo</a> website.
 - P Willendrup, U Filges, L Keller, E Farhi, K Lefmann: Validation of a realistic powder sample using data from DMC at PSI, ICNS 2005 (Physica B, 386, (2006), 1032.)
 

@@ -68,7 +68,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H22_D1B.instr) for `ILL_H22_D1B.instr`.
-- [Additional information](ILL_H22_D1B.instr.md)
+- [Additional information](ILL_H22_D1B.md)
 
 ---
 

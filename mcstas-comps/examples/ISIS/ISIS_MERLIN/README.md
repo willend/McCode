@@ -41,7 +41,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_MERLIN.instr) for `ISIS_MERLIN.instr`.
-- [Additional information](ISIS_MERLIN.instr.md)
+- [Additional information](ISIS_MERLIN.md)
 - <a href="http://www.isis.stfc.ac.uk/instruments/merlin">http://www.isis.stfc.ac.uk/instruments/merlin</a>
 
 ---

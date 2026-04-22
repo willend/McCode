@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Sources.instr) for `Test_Sources.instr`.
-- [Additional information](Test_Sources.instr.md)
+- [Additional information](Test_Sources.md)
 
 ---
 

@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateLaue.instr) for `templateLaue.instr`.
-- [Additional information](templateLaue.instr.md)
+- [Additional information](templateLaue.md)
 
 ---
 

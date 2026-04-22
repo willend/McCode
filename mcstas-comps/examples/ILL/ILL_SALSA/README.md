@@ -57,7 +57,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_SALSA.instr) for `ILL_SALSA.instr`.
-- [Additional information](ILL_SALSA.instr.md)
+- [Additional information](ILL_SALSA.md)
 
 ---
 

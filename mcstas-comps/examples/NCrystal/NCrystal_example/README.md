@@ -43,7 +43,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](NCrystal_example.instr) for `NCrystal_example.instr`.
-- [Additional information](NCrystal_example.instr.md)
+- [Additional information](NCrystal_example.md)
 - https://github.com/mctools/ncrystal/wiki/
 
 ---

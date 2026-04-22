@@ -85,7 +85,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_IN13.instr) for `ILL_IN13.instr`.
-- [Additional information](ILL_IN13.instr.md)
+- [Additional information](ILL_IN13.md)
 - The <a href="http://www.ill.fr/YellowBook/IN3">IN3 TAS</a> at the ILL
 
 ---

@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SNS_analytic_test.instr) for `SNS_analytic_test.instr`.
-- [Additional information](SNS_analytic_test.instr.md)
+- [Additional information](SNS_analytic_test.md)
 - Written by G. Granroth
 - SNS_source component
 - <A href="http://neutrons.ornl.gov/instrument_systems/components/moderators.shtml">Source files </A>

@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_GROUP_restore.instr) for `Test_GROUP_restore.instr`.
-- [Additional information](Test_GROUP_restore.instr.md)
+- [Additional information](Test_GROUP_restore.md)
 - A reference/HTML link for more information
 
 ---

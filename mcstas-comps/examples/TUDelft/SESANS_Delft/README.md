@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SESANS_Delft.instr) for `SESANS_Delft.instr`.
-- [Additional information](SESANS_Delft.instr.md)
+- [Additional information](SESANS_Delft.md)
 - <reference/HTML link>
 - <a href="https://doi.org/10.1107/S1600576720015496">https://doi.org/10.1107/S1600576720015496</a>
 

@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Bispectral.instr) for `Bispectral.instr`.
-- [Additional information](Bispectral.instr.md)
+- [Additional information](Bispectral.md)
 - A reference/HTML link for more information
 
 ---

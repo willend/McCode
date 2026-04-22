@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SEMSANS_Delft.instr) for `SEMSANS_Delft.instr`.
-- [Additional information](SEMSANS_Delft.instr.md)
+- [Additional information](SEMSANS_Delft.md)
 - <reference/HTML link>
 - <a href="https://doi.org/10.1107/S1600576720015496">https://doi.org/10.1107/S1600576720015496</a>
 

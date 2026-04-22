@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_HET.instr) for `ISIS_HET.instr`.
-- [Additional information](ISIS_HET.instr.md)
+- [Additional information](ISIS_HET.md)
 
 ---
 

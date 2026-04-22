@@ -41,7 +41,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SANSsimple.instr) for `SANSsimple.instr`.
-- [Additional information](SANSsimple.instr.md)
+- [Additional information](SANSsimple.md)
 - A reference/HTML link for more information
 
 ---

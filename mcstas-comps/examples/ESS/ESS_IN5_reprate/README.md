@@ -72,7 +72,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ESS_IN5_reprate.instr) for `ESS_IN5_reprate.instr`.
-- [Additional information](ESS_IN5_reprate.instr.md)
+- [Additional information](ESS_IN5_reprate.md)
 - The <a href="http://wwwold.ill.fr/Computing/links/meetings/ESS-LP/">ESS-Rencurel</a> website.
 - <a href="http://www.ill.fr/in5">The IN5@ILL Yellow Pages</a>
 

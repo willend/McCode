@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_abs_logger_1D_space_tof_to_lambda.instr) for `Unit_test_abs_logger_1D_space_tof_to_lambda.instr`.
-- [Additional information](Unit_test_abs_logger_1D_space_tof_to_lambda.instr.md)
+- [Additional information](Unit_test_abs_logger_1D_space_tof_to_lambda.md)
 
 ---
 

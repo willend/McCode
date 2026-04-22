@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](RTP_Laue.instr) for `RTP_Laue.instr`.
-- [Additional information](RTP_Laue.instr.md)
+- [Additional information](RTP_Laue.md)
 - <a href="http://www.nuclearmalaysia.gov.my/Plant&Facilities/reactor.php">Nuclear Malaysia</a>
 - M. Sufi et al., J. AppL Cryst. (1997). 30, 884-888 [doi:10.1107/S0021889897001738]
 

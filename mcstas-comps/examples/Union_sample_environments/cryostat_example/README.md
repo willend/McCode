@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](cryostat_example.instr) for `cryostat_example.instr`.
-- [Additional information](cryostat_example.instr.md)
+- [Additional information](cryostat_example.md)
 
 ---
 

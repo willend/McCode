@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_V_cavity_SNAG_double_side.instr) for `Test_V_cavity_SNAG_double_side.instr`.
-- [Additional information](Test_V_cavity_SNAG_double_side.instr.md)
+- [Additional information](Test_V_cavity_SNAG_double_side.md)
 - P. B&ouml;ni, W. M&uuml;nzer and A. Ostermann: <a href="https://doi.org/10.1016/j.physb.2009.06.031">Physica B: Condensed Matter Volume 404, Issue 17, 1 September 2009, Pages 2620-2623</a>
 
 ---

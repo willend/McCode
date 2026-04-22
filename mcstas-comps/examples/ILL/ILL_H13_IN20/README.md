@@ -75,7 +75,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H13_IN20.instr) for `ILL_H13_IN20.instr`.
-- [Additional information](ILL_H13_IN20.instr.md)
+- [Additional information](ILL_H13_IN20.md)
 - Rescal for Matlab at http://www.ill.eu/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/
 - Restrax at http://omega.ujf.cas.cz/restrax/
 

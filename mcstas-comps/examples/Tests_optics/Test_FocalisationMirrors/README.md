@@ -38,7 +38,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_FocalisationMirrors.instr) for `Test_FocalisationMirrors.instr`.
-- [Additional information](Test_FocalisationMirrors.instr.md)
+- [Additional information](Test_FocalisationMirrors.md)
 
 ---
 

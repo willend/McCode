@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](mini.instr) for `mini.instr`.
-- [Additional information](mini.instr.md)
+- [Additional information](mini.md)
 - A reference/HTML link for more information
 
 ---

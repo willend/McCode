@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_PowderN_Res.instr) for `Test_PowderN_Res.instr`.
-- [Additional information](Test_PowderN_Res.instr.md)
+- [Additional information](Test_PowderN_Res.md)
 - A reference/HTML link for more information
 
 ---

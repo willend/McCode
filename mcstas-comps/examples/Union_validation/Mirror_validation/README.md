@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Mirror_validation.instr) for `Mirror_validation.instr`.
-- [Additional information](Mirror_validation.instr.md)
+- [Additional information](Mirror_validation.md)
 - A reference/HTML link for more information
 
 ---

@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_RNG_randvec_target_rect.instr) for `Test_RNG_randvec_target_rect.instr`.
-- [Additional information](Test_RNG_randvec_target_rect.instr.md)
+- [Additional information](Test_RNG_randvec_target_rect.md)
 - <reference/HTML link>
 
 ---

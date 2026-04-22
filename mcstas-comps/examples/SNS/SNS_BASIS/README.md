@@ -64,7 +64,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SNS_BASIS.instr) for `SNS_BASIS.instr`.
-- [Additional information](SNS_BASIS.instr.md)
+- [Additional information](SNS_BASIS.md)
 - A reference/HTML link for more information
 
 ---

@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Samples_Phonon.instr) for `Samples_Phonon.instr`.
-- [Additional information](Samples_Phonon.instr.md)
+- [Additional information](Samples_Phonon.md)
 
 ---
 

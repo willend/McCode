@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](HZB_FLEX.instr) for `HZB_FLEX.instr`.
-- [Additional information](HZB_FLEX.instr.md)
+- [Additional information](HZB_FLEX.md)
 
 ---
 

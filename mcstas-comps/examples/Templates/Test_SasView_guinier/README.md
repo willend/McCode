@@ -43,7 +43,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_SasView_guinier.instr) for `Test_SasView_guinier.instr`.
-- [Additional information](Test_SasView_guinier.instr.md)
+- [Additional information](Test_SasView_guinier.md)
 
 ---
 

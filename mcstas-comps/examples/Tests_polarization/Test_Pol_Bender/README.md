@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_Bender.instr) for `Test_Pol_Bender.instr`.
-- [Additional information](Test_Pol_Bender.instr.md)
+- [Additional information](Test_Pol_Bender.md)
 
 ---
 

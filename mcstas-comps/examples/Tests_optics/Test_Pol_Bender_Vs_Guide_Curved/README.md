@@ -30,7 +30,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_Bender_Vs_Guide_Curved.instr) for `Test_Pol_Bender_Vs_Guide_Curved.instr`.
-- [Additional information](Test_Pol_Bender_Vs_Guide_Curved.instr.md)
+- [Additional information](Test_Pol_Bender_Vs_Guide_Curved.md)
 - A reference/HTML link for more information
 
 ---

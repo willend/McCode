@@ -46,7 +46,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H53_D16.instr) for `ILL_H53_D16.instr`.
-- [Additional information](ILL_H53_D16.instr.md)
+- [Additional information](ILL_H53_D16.md)
 - The <a href="http://www.ill.fr/d16">D16 diffractometer</a> at the ILL
 
 ---

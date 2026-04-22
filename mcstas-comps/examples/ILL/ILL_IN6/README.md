@@ -68,7 +68,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_IN6.instr) for `ILL_IN6.instr`.
-- [Additional information](ILL_IN6.instr.md)
+- [Additional information](ILL_IN6.md)
 - <a href="http://www.ill.fr/in6">The IN6@ILL Yellow Pages</a>
 - R.Scherm et al, "Another Time of Flight Spectrometer", ILL Report 76S235, 1976
 - R.Scherm, "A high-resolution spectrometer ...", report Jul-295-NP, Kernforschungsanlage Julich, 1965

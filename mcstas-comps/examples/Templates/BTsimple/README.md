@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](BTsimple.instr) for `BTsimple.instr`.
-- [Additional information](BTsimple.instr.md)
+- [Additional information](BTsimple.md)
 
 ---
 

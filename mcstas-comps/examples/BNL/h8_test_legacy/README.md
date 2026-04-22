@@ -37,7 +37,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](h8_test_legacy.instr) for `h8_test_legacy.instr`.
-- [Additional information](h8_test_legacy.instr.md)
+- [Additional information](h8_test_legacy.md)
 - Neutron News 13 (No. 4), 24-29 (2002).
 
 ---

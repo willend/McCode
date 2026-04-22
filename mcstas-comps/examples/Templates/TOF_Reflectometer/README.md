@@ -41,7 +41,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](TOF_Reflectometer.instr) for `TOF_Reflectometer.instr`.
-- [Additional information](TOF_Reflectometer.instr.md)
+- [Additional information](TOF_Reflectometer.md)
 
 ---
 

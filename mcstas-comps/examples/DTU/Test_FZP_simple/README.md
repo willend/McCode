@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_FZP_simple.instr) for `Test_FZP_simple.instr`.
-- [Additional information](Test_FZP_simple.instr.md)
+- [Additional information](Test_FZP_simple.md)
 - <reference/HTML link>
 
 ---

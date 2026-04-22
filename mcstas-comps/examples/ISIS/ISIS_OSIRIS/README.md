@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_OSIRIS.instr) for `ISIS_OSIRIS.instr`.
-- [Additional information](ISIS_OSIRIS.instr.md)
+- [Additional information](ISIS_OSIRIS.md)
 
 ---
 

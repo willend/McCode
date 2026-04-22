@@ -106,7 +106,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Sqw_monitor.instr) for `Test_Sqw_monitor.instr`.
-- [Additional information](Test_Sqw_monitor.instr.md)
+- [Additional information](Test_Sqw_monitor.md)
 - The <a href="http://mcstas.org/download/components/samples/Isotropic_Sqw.html">Isotropic_Sqw sample</a>
 - The <a href="http://mcstas.org/download/components/samples/PowderN.html">PowderN sample</a>
 - The <a href="http://mcstas.org/download/components/examples/Samples_Isotropic_Sqw.html">Samples_Isotropic_Sqw</a> example instrument

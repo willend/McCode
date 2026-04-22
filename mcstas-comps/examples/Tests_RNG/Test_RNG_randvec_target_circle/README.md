@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_RNG_randvec_target_circle.instr) for `Test_RNG_randvec_target_circle.instr`.
-- [Additional information](Test_RNG_randvec_target_circle.instr.md)
+- [Additional information](Test_RNG_randvec_target_circle.md)
 - <reference/HTML link>
 
 ---

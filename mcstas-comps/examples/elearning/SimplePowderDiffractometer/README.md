@@ -34,7 +34,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SimplePowderDiffractometer.instr) for `SimplePowderDiffractometer.instr`.
-- [Additional information](SimplePowderDiffractometer.instr.md)
+- [Additional information](SimplePowderDiffractometer.md)
 - http://vnt.nmi3.org/mcstas-web
 
 ---

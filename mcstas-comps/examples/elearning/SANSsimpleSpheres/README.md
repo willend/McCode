@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SANSsimpleSpheres.instr) for `SANSsimpleSpheres.instr`.
-- [Additional information](SANSsimpleSpheres.instr.md)
+- [Additional information](SANSsimpleSpheres.md)
 - https://sim.e-neutrons.org/instrument/intro-ns/SANSsimple
 
 ---

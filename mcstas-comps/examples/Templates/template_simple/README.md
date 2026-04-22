@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](template_simple.instr) for `template_simple.instr`.
-- [Additional information](template_simple.instr.md)
+- [Additional information](template_simple.md)
 - <reference/HTML link>
 
 ---

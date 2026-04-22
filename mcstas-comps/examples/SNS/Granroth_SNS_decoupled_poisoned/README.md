@@ -28,7 +28,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Granroth_SNS_decoupled_poisoned.instr) for `Granroth_SNS_decoupled_poisoned.instr`.
-- [Additional information](Granroth_SNS_decoupled_poisoned.instr.md)
+- [Additional information](Granroth_SNS_decoupled_poisoned.md)
 
 ---
 

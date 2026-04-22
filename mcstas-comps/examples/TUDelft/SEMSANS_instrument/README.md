@@ -63,7 +63,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SEMSANS_instrument.instr) for `SEMSANS_instrument.instr`.
-- [Additional information](SEMSANS_instrument.instr.md)
+- [Additional information](SEMSANS_instrument.md)
 
 ---
 

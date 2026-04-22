@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](test_File.instr) for `test_File.instr`.
-- [Additional information](test_File.instr.md)
+- [Additional information](test_File.md)
 - From https://github.com/g5t/mccode-file
 
 ---

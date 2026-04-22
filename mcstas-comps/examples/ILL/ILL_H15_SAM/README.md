@@ -64,7 +64,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H15_SAM.instr) for `ILL_H15_SAM.instr`.
-- [Additional information](ILL_H15_SAM.instr.md)
+- [Additional information](ILL_H15_SAM.md)
 - <https://www.ill.eu/for-all-users/instruments/instruments-list/sam/description/instrument-layout>
 
 ---

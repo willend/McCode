@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](template.instr) for `template.instr`.
-- [Additional information](template.instr.md)
+- [Additional information](template.md)
 - A reference/HTML link for more information
 
 ---

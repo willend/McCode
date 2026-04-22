@@ -26,7 +26,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_pol_ideal.instr) for `Test_pol_ideal.instr`.
-- [Additional information](Test_pol_ideal.instr.md)
+- [Additional information](Test_pol_ideal.md)
 
 ---
 

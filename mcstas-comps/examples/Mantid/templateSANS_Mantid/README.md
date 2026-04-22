@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateSANS_Mantid.instr) for `templateSANS_Mantid.instr`.
-- [Additional information](templateSANS_Mantid.instr.md)
+- [Additional information](templateSANS_Mantid.md)
 
 ---
 

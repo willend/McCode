@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_MSF.instr) for `Test_Pol_MSF.instr`.
-- [Additional information](Test_Pol_MSF.instr.md)
+- [Additional information](Test_Pol_MSF.md)
 
 ---
 

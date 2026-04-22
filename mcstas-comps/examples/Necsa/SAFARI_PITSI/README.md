@@ -54,7 +54,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SAFARI_PITSI.instr) for `SAFARI_PITSI.instr`.
-- [Additional information](SAFARI_PITSI.instr.md)
+- [Additional information](SAFARI_PITSI.md)
 - The South African Nuclear Energy Corporation <a href="http://www.necsa.co.za"> website</a>
 
 ---

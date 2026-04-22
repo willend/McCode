@@ -53,7 +53,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_TasReso.instr) for `Test_TasReso.instr`.
-- [Additional information](Test_TasReso.instr.md)
+- [Additional information](Test_TasReso.md)
 
 ---
 

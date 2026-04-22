@@ -27,7 +27,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Manual_example.instr) for `Manual_example.instr`.
-- [Additional information](Manual_example.instr.md)
+- [Additional information](Manual_example.md)
 
 ---
 

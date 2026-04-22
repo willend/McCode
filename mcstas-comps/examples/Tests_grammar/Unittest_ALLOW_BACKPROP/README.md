@@ -32,7 +32,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unittest_ALLOW_BACKPROP.instr) for `Unittest_ALLOW_BACKPROP.instr`.
-- [Additional information](Unittest_ALLOW_BACKPROP.instr.md)
+- [Additional information](Unittest_ALLOW_BACKPROP.md)
 - A reference/HTML link for more information
 
 ---

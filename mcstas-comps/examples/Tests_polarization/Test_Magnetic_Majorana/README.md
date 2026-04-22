@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Magnetic_Majorana.instr) for `Test_Magnetic_Majorana.instr`.
-- [Additional information](Test_Magnetic_Majorana.instr.md)
+- [Additional information](Test_Magnetic_Majorana.md)
 
 ---
 

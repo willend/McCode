@@ -40,7 +40,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateNMX_TOF.instr) for `templateNMX_TOF.instr`.
-- [Additional information](templateNMX_TOF.instr.md)
+- [Additional information](templateNMX_TOF.md)
 
 ---
 

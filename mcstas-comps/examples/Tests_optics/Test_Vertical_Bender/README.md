@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Vertical_Bender.instr) for `Test_Vertical_Bender.instr`.
-- [Additional information](Test_Vertical_Bender.instr.md)
+- [Additional information](Test_Vertical_Bender.md)
 - <reference/HTML link>
 
 ---

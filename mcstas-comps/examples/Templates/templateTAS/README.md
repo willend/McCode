@@ -128,7 +128,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateTAS.instr) for `templateTAS.instr`.
-- [Additional information](templateTAS.instr.md)
+- [Additional information](templateTAS.md)
 - Rescal for Matlab at http://www.ill.eu/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/
 - Restrax at http://omega.ujf.cas.cz/restrax/
 

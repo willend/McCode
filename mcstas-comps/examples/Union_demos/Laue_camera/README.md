@@ -39,7 +39,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Laue_camera.instr) for `Laue_camera.instr`.
-- [Additional information](Laue_camera.instr.md)
+- [Additional information](Laue_camera.md)
 
 ---
 

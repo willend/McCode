@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](TAS1_C1.instr) for `TAS1_C1.instr`.
-- [Additional information](TAS1_C1.instr.md)
+- [Additional information](TAS1_C1.md)
 - The McStas User manual
 - A. Abrahamsen, N. B. Christensen, and E. Lauridsen. McStas simulations of the TAS1 spectrometer. Student's report, Niels Bohr Institute, University of Copenhagen, 1998.
 

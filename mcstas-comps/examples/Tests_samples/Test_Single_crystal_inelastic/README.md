@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Single_crystal_inelastic.instr) for `Test_Single_crystal_inelastic.instr`.
-- [Additional information](Test_Single_crystal_inelastic.instr.md)
+- [Additional information](Test_Single_crystal_inelastic.md)
 - Duc Le (2015) - duc.le@stfc.ac.uk
 
 ---

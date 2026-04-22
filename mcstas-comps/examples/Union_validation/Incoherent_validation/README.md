@@ -33,7 +33,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Incoherent_validation.instr) for `Incoherent_validation.instr`.
-- [Additional information](Incoherent_validation.instr.md)
+- [Additional information](Incoherent_validation.md)
 
 ---
 

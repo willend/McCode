@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Conics_pairs.instr) for `Test_Conics_pairs.instr`.
-- [Additional information](Test_Conics_pairs.instr.md)
+- [Additional information](Test_Conics_pairs.md)
 - <reference/HTML link>
 
 ---

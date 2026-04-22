@@ -45,7 +45,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_IN5_Spots.instr) for `ILL_IN5_Spots.instr`.
-- [Additional information](ILL_IN5_Spots.instr.md)
+- [Additional information](ILL_IN5_Spots.md)
 - The <a href="http://www.ill.eu/in5">IN5@ILL</a> cold time of flight instrument
 
 ---

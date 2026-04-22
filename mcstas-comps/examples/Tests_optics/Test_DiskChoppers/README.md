@@ -29,7 +29,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_DiskChoppers.instr) for `Test_DiskChoppers.instr`.
-- [Additional information](Test_DiskChoppers.instr.md)
+- [Additional information](Test_DiskChoppers.md)
 
 ---
 

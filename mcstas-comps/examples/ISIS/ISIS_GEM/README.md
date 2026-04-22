@@ -35,7 +35,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_GEM.instr) for `ISIS_GEM.instr`.
-- [Additional information](ISIS_GEM.instr.md)
+- [Additional information](ISIS_GEM.md)
 - The <a href="http://essworkshop.org">ESS Instrument workshops</a> website.
 - The <a href="http://www.isis.stfc.ac.uk/instruments/gem/">GEM instrument</a> at ISIS
 

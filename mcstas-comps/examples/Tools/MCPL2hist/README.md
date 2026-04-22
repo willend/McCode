@@ -36,7 +36,7 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](MCPL2hist.instr) for `MCPL2hist.instr`.
-- [Additional information](MCPL2hist.instr.md)
+- [Additional information](MCPL2hist.md)
 - <reference/HTML link>
 - MCPL website at <a href="https://mctools.github.io/mcpl/">https://mctools.github.io/mcpl/</a>
 
