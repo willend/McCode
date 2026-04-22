@@ -5,9 +5,9 @@
 ## Identification
 
 - **Site:** Tests_polarization
-- **Author:** Your name (email)
-- **Origin:** Your institution
-- **Date:** Current Date
+- **Author:** Peter Willendrup
+- **Origin:** DTU
+- **Date:** 2024
 
 ## Description
 
