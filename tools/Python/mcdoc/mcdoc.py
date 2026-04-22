@@ -1191,6 +1191,7 @@ class InstrMdDocWriter:
         lines.append('## Links')
         lines.append('')
         lines.append('- [Source code](%s) for `%s`.' % (os.path.basename(i.filepath), os.path.basename(i.filepath)))
+        lines.append('- [Additional information](%s.md)' % (os.path.basename(i.filepath)))
         for l in i.links:
             lines.append('- %s' % _md_text(l))
         lines.append('')
@@ -1535,6 +1536,9 @@ def write_doc_files_or_continue(comp_infos, instr_infos, comp_files, instr_files
                 ext, InstrW, CompW = _PER_FILE_WRITERS[fmt]
                 doc = InstrW(p)
                 text = doc.create()
+                # If md for an instr, filename is README.md
+                if fmt == 'md':
+                    f = pathlib.Path(f).parent / "README.md"
                 h = get_doc_filepath(f, ext, outdir=outdir)
                 if printlog:
                     print("writing doc file... %s" % h)
