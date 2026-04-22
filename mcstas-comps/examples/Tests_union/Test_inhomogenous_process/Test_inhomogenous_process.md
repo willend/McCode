@@ -15,26 +15,18 @@ The first two setups, I have a detector placed on the side of a sample, with 10 
 For the first experiment, the boxes have the same scattering cross section.
 For the second experiment, the boxes vary according to a linear rise in scattering cross section.
 For a visualization of these setups, see the below figure,
-INSERT SKETCH OF INSTRUMENT HERE experiment.png
+![Sketch of instrument](experiment.png)
 
 And the results of the first experiment is,
-
-INSERT RESULTS HERE sigma_const.png
-
+![Results experiment 1](sigma_const.png)
 
 While the results of the second experiment is,
-
-INSERT RESULTS HERE linear_sigma.png
-
+![Results experiment 2](linear_sigma.png)
 
 For the last setup, the detector is placed in a transmission geometry, with the 10 boxes rotated 90 degrees.
 This means that they vary their scattering cross section linearly across x in the mcstas coordinate system.
 The result of this is,
-
-
-
-INSERT RESULTS HERE trans_linear.png
-
+![Transmission geometry](trans_linear.png)
 
 Another experiment is performed, just to check that adding a directional process, such as the PhononSimple_process does not break the system.
 This material is created with the linearly rising scattering cross section, implemented with the Inhomogenous process, as well as a PhononSimple_process.
