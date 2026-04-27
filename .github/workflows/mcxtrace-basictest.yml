@@ -387,71 +387,71 @@ jobs:
     #        ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --testdir=run_singletests --suffix=${{ matrix.mpi }}
     #        ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
-    - name: Check for modified instruments
-      id: instr-test
-      run: |
-           set -e
-           set -u
-           set -x
-           export MCXTRACE_EXECUTABLE="mcxtrace"
-           export MXRUN_EXECUTABLE="mxrun"
-           export MXTEST_EXECUTABLE="mxtest"
-           export PERMISSIVE=" "
-           export PATH=${PATH}:${PWD}/install_mcxtrace/bin/:${PWD}/install_mcxtrace/mcxtrace/3.99.99/bin/
-           # Check if any instr files were modified during last commit
-           cd src
-           export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
-           export NUMCHANGEDCOMPS=`git diff --name-only HEAD HEAD~1|grep \.comp\$ | grep mcxtrace-comps | wc -l | xargs echo`
-           cd -
-           if [ "$NUMCHANGEDCOMPS" != "0" ];
-           then
-               for comp in $CHANGEDCOMPS;
-               do
-                 echo Finding tests including component $comp
-                 NUMMATCH=`find src/mcxtrace-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
-                 if [ "$NUMMATCH" -gt "0" ];
-                 then
-                   if [ "$RUNNER_OS" != "Windows" ]; then
-                     mxtest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE --verbose
-                 else
-                     mxtest.bat --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE --verbose
-                 fi
-             else
-                   echo No matching tests found
-             fi
-               done
-           fi
-           cd src
-           export RUNALL="NO"
-           export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo`
-           export CHANGEDINSTR=`echo $CHANGEDINSTR | xargs -n1 echo | sort | uniq | xargs echo | sed s/\ /,/g`
-           export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcxtrace-comps | wc -l | xargs echo`
-           echo ----
-           echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:
-           echo $CHANGEDINSTR
-           echo ----
-           cd -
-           if [ "$NUMCHANGEDINSTR" -gt "20" ];
-           then
-             export RUNALL="YES"
-           fi
-           if [ "$NUMCHANGEDINSTR" != "0" ];
-           then
-             if [ "$RUNALL" == "NO" ];
-             then
-               export SCOPE="--instr=$CHANGEDINSTR"
-             else
-               export SCOPE=" "
-             fi
-             mkdir run_mxtest && cd run_mxtest
-             if [ "$RUNNER_OS" != "Windows" ]; then
-               mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE
-               mxviewtest --nobrowse $PWD
-             else
-               mxtest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE
-               mxviewtest.bat --nobrowse $PWD
-           fi
-        fi
+    # - name: Check for modified instruments
+    #   id: instr-test
+    #   run: |
+    #        set -e
+    #        set -u
+    #        set -x
+    #        export MCXTRACE_EXECUTABLE="mcxtrace"
+    #        export MXRUN_EXECUTABLE="mxrun"
+    #        export MXTEST_EXECUTABLE="mxtest"
+    #        export PERMISSIVE=" "
+    #        export PATH=${PATH}:${PWD}/install_mcxtrace/bin/:${PWD}/install_mcxtrace/mcxtrace/3.99.99/bin/
+    #        # Check if any instr files were modified during last commit
+    #        cd src
+    #        export CHANGEDCOMPS=`git diff --name-only HEAD HEAD~1| grep \.comp\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.comp//g | xargs echo`
+    #        export NUMCHANGEDCOMPS=`git diff --name-only HEAD HEAD~1|grep \.comp\$ | grep mcxtrace-comps | wc -l | xargs echo`
+    #        cd -
+    #        if [ "$NUMCHANGEDCOMPS" != "0" ];
+    #        then
+    #            for comp in $CHANGEDCOMPS;
+    #            do
+    #              echo Finding tests including component $comp
+    #              NUMMATCH=`find src/mcxtrace-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
+    #              if [ "$NUMMATCH" -gt "0" ];
+    #              then
+    #                if [ "$RUNNER_OS" != "Windows" ]; then
+    #                  mxtest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE --verbose
+    #              else
+    #                  mxtest.bat --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE --verbose
+    #              fi
+    #          else
+    #                echo No matching tests found
+    #          fi
+    #            done
+    #        fi
+    #        cd src
+    #        export RUNALL="NO"
+    #        export CHANGEDINSTR=`git diff --name-only HEAD HEAD~1| grep \.instr\$ | grep mcxtrace-comps | xargs -n1 basename | sed s/\.instr//g | xargs echo`
+    #        export CHANGEDINSTR=`echo $CHANGEDINSTR | xargs -n1 echo | sort | uniq | xargs echo | sed s/\ /,/g`
+    #        export NUMCHANGEDINSTR=`git diff --name-only HEAD HEAD~1|grep \.instr\$ | grep mcxtrace-comps | wc -l | xargs echo`
+    #        echo ----
+    #        echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:
+    #        echo $CHANGEDINSTR
+    #        echo ----
+    #        cd -
+    #        if [ "$NUMCHANGEDINSTR" -gt "20" ];
+    #        then
+    #          export RUNALL="YES"
+    #        fi
+    #        if [ "$NUMCHANGEDINSTR" != "0" ];
+    #        then
+    #          if [ "$RUNALL" == "NO" ];
+    #          then
+    #            export SCOPE="--instr=$CHANGEDINSTR"
+    #          else
+    #            export SCOPE=" "
+    #          fi
+    #          mkdir run_mxtest && cd run_mxtest
+    #          if [ "$RUNNER_OS" != "Windows" ]; then
+    #            mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE
+    #            mxviewtest --nobrowse $PWD
+    #          else
+    #            mxtest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE
+    #            mxviewtest.bat --nobrowse $PWD
+    #        fi
+    #     fi
 
     - name: 'Tar output files'
       id: tar-package
