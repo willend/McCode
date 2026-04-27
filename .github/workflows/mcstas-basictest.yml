@@ -261,14 +261,11 @@ jobs:
            fi
            if [ "$RUNNER_OS" == "Windows" ];
            then
-             export MD5SUM="md5"
              export SUFFIX=".bat"
              export EXESUFFIX=".exe"
-             dir ./install_mcstas/bin/
            else
             export SUFFIX=""
             export EXESUFFIX=""
-            ls ./install_mcstas/bin/
            fi
            test -f ./install_mcstas/bin/mcstas${EXESUFFIX}
            ./install_mcstas/bin/mcstas${EXESUFFIX} --version
