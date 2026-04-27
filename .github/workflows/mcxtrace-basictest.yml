@@ -216,7 +216,7 @@ jobs:
         type .\install_mcxtrace\share\mcxtrace\tools\Python\mccodelib\mccode_config.json
         .\install_mcxtrace\bin\mxrun -h
         .\install_mcxtrace\bin\mcxtrace -v
-        if [ "${{ matrix.cc }}" != "cl.exe" ];
+        if [ "${{ matrix.CC }}" != "cl.exe" ];
         then
           mcpl-config -s
         fi
@@ -298,7 +298,7 @@ jobs:
            test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
            ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=JJ_SAXS --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           if [ "${{ matrix.cc }}" != "cl.exe" ];
+           if [ "${{ matrix.CC }}" != "cl.exe" ];
            then
              ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            fi
@@ -325,7 +325,7 @@ jobs:
            test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
            ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=ESRF_BM29 --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           if [ "${{ matrix.cc }}" != "cl.exe" ];
+           if [ "${{ matrix.CC }}" != "cl.exe" ];
            then
              ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=ESRF_BM29 --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            fi
@@ -449,7 +449,7 @@ jobs:
                mxtest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }} $PERMISSIVE
                mxviewtest --nobrowse $PWD
              else
-               mxtest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.mpi }}  $PERMISSIVE
+               mxtest.bat --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.CC }}  $PERMISSIVE
                mxviewtest.bat --nobrowse $PWD
              fi
            fi
