@@ -376,6 +376,7 @@ jobs:
 
     - name: Launch Absorption test instrument
       id: Absorption-test
+      if: runner.os != 'Windows' # Missing xraylib dependency
       run: |
            set -e
            set -u
