@@ -368,6 +368,7 @@ jobs:
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
+      if: runner.os != 'Windows' # Crashes with Union-NCrystal instr
       run: |
            set -e
            set -u
