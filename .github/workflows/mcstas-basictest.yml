@@ -327,7 +327,7 @@ jobs:
            test -f ./install_mcstas/bin/mcstas${EXESUFFIX}
            ./install_mcstas/bin/mcstas${EXESUFFIX} --version
            ./install_mcstas/bin/mctest${SUFFIX} --instr=ISIS_CRISP --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           /install_mcstas/bin/mctest${SUFFIX} --instr=ISIS_CRISP --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           ./install_mcstas/bin/mctest${SUFFIX} --instr=ISIS_CRISP --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch MCPL test instrument
       id: mcpl-test
