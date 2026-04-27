@@ -20,7 +20,7 @@ jobs:
         include:
           - { os: ubuntu-24.04,   CC: gcc-13,   CXX: g++-13,     python: '3.12', mpi: 'openmpi' }
           - { os: ubuntu-24.04,   CC: clang,    CXX: clang++,    python: '3.12', mpi: 'openmpi' }
-          #- { os: windows-11-arm, CC: cl.exe,   CXX: cl.exe,     python: "3.13", mpi: 'msmpi'   }
+          - { os: windows-11-arm, CC: cl.exe,   CXX: cl.exe,     python: "3.13", mpi: 'msmpi'   }
           - { os: windows-latest, CC: gcc.exe,   CXX: g++.exe,     python: "3.13", mpi: 'msmpi'   }
 
     name: ${{ matrix.os }}.${{ matrix.CC }}.${{ matrix.mpi }}.python-${{ matrix.python }}
@@ -107,8 +107,8 @@ jobs:
            which cmake
            cmake --version
 
-    - name: Configure build and install mcstas on Unix
-      id: mcstas-install-unix
+    - name: Configure build and install mcstas
+      id: mcstas-install
       run: |
            if [ "$RUNNER_OS" == "macOS" ]; then mkdir ${HOME}/tmp; fi
            if [ "$RUNNER_OS" == "macOS" ]; then export SDKROOT=$(xcrun --sdk macosx --show-sdk-path); fi
@@ -162,34 +162,34 @@ jobs:
            cat ../install_mcstas/share/mcstas/tools/Python/mccodelib/mccode_config.json
            echo *******************************************************************************
 
-    - name: Configure build and install mcstas on Windows-MSVC
-      id: mcstas-install-windows-msvc
-      if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
-      shell: cmd
-      run: >
-        cmake -B build -S src
-        "-DCMAKE_INSTALL_PREFIX=./install_mcstas"
-        -DMCVERSION="3.99.99"
-        -DMCCODE_BUILD_CONDA_PKG=OFF
-        -DMCCODE_CONFIG_MCPL2=ON
-        -DCMAKE_INSTALL_LIBDIR=lib
-        -DBUILD_MCSTAS=ON
-        -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
-        -DBUILD_TOOLS=ON
-        -DENABLE_COMPONENTS=ON
-        -DENABLE_CIF2HKL=OFF
-        -DENABLE_NEUTRONICS=OFF
-        -DMPIINCLUDEDIR=%MSMPI_INC%
-        -DMPILIBDIR=%MSMPI_LIB64%
+    # - name: Configure build and install mcstas on Windows-MSVC
+    #   id: mcstas-install-windows-msvc
+    #   if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
+    #   shell: cmd
+    #   run: >
+    #     cmake -B build -S src
+    #     "-DCMAKE_INSTALL_PREFIX=./install_mcstas"
+    #     -DMCVERSION="3.99.99"
+    #     -DMCCODE_BUILD_CONDA_PKG=OFF
+    #     -DMCCODE_CONFIG_MCPL2=ON
+    #     -DCMAKE_INSTALL_LIBDIR=lib
+    #     -DBUILD_MCSTAS=ON
+    #     -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
+    #     -DBUILD_TOOLS=ON
+    #     -DENABLE_COMPONENTS=ON
+    #     -DENABLE_CIF2HKL=OFF
+    #     -DENABLE_NEUTRONICS=OFF
+    #     -DMPIINCLUDEDIR=%MSMPI_INC%
+    #     -DMPILIBDIR=%MSMPI_LIB64%
 
-    - name: CMake build
-      if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
-      shell: cmd
-      run: cmake --build build --config Release -j 2
+    # - name: CMake build
+    #   if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
+    #   shell: cmd
+    #   run: cmake --build build --config Release -j 2
 
-    - name: CMake install
-      if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
-      run: cmake --install build --config Release
+    # - name: CMake install
+    #   if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
+    #   run: cmake --install build --config Release
 
     - name: set MCSTAS env var
       if: runner.os == 'Windows'
