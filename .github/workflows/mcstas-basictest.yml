@@ -284,7 +284,6 @@ jobs:
     - name: Launch BNL_H8 instrument
       id: h8-test
       run: |
-      run: |
            set -e
            set -u
            set -x
