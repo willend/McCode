@@ -170,7 +170,7 @@ jobs:
         cmake -B build -S src
         -G "Unix Makefiles"
         -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc.exe
-        "-DCMAKE_INSTALL_PREFIX=./install"
+        "-DCMAKE_INSTALL_PREFIX=./install_mcstas"
         -DMCVERSION="3.99.99"
         -DMCCODE_BUILD_CONDA_PKG=OFF
         -DMCCODE_BUILD_WINDOWS_MINGW=ON
@@ -190,7 +190,7 @@ jobs:
       if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
       run: >
         cmake -B build -S src
-        "-DCMAKE_INSTALL_PREFIX=./install"
+        "-DCMAKE_INSTALL_PREFIX=./install_mcstas"
         -DMCVERSION="3.99.99"
         -DMCCODE_BUILD_CONDA_PKG=OFF
         -DMCCODE_CONFIG_MCPL2=ON
@@ -215,7 +215,7 @@ jobs:
 
     - name: set MCSTAS env var
       if: runner.os == 'Windows'
-      run: echo MCSTAS=%CD%\install\share\mcstas\resources >> %GITHUB_ENV%
+      run: echo MCSTAS=%CD%\install_mcstas\share\mcstas\resources >> %GITHUB_ENV%
 
     - name: check MCSTAS env var
       if: runner.os == 'Windows'
@@ -225,9 +225,9 @@ jobs:
       if: runner.os == 'Windows'
       shell: cmd
       run: |
-        type .\install\share\mcstas\tools\Python\mccodelib\mccode_config.json
-        .\install\bin\mcrun -h
-        .\install\bin\mcstas -v
+        type .\install_mcstas\share\mcstas\tools\Python\mccodelib\mccode_config.json
+        .\install_mcstas\bin\mcrun -h
+        .\install_mcstas\bin\mcstas -v
         mcpl-config -s
         ncrystal-config -s
 
