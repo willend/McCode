@@ -203,8 +203,8 @@ jobs:
         -DENABLE_COMPONENTS=ON
         -DENABLE_CIF2HKL=OFF
         -DENABLE_NEUTRONICS=OFF
-        -DMPIINCLUDEDIR=%MPIINCVAR%
-        -DMPILIBDIR=%MPILIBVAR%
+        -DMPIINCLUDEDIR=%MSMPI_INC%
+        -DMPILIBDIR=%MSMPI_LIB64%
 
     - name: CMake build
       if: runner.os == 'Windows'
