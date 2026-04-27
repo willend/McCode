@@ -264,11 +264,12 @@ jobs:
              export MD5SUM="md5"
              export SUFFIX=".bat"
              export EXESUFFIX=".exe"
+             dir ./install_mcstas/bin/
            else
             export SUFFIX=""
             export EXESUFFIX=""
+            ls ./install_mcstas/bin/
            fi
-           dir ./install_mcstas/bin/
            test -f ./install_mcstas/bin/mcstas${EXESUFFIX}
            ./install_mcstas/bin/mcstas${EXESUFFIX} --version
            ./install_mcstas/bin/mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --suffix=${{ matrix.mpi }}
