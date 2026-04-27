@@ -213,9 +213,9 @@ jobs:
       if: runner.os == 'Windows'
       shell: cmd
       run: |
-        type .\install_mcstas\share\mcstas\tools\Python\mccodelib\mccode_config.json
-        .\install_mcstas\bin\mcrun -h
-        .\install_mcstas\bin\mcstas -v
+        type .\install_mcxtrace\share\mcxtrace\tools\Python\mccodelib\mccode_config.json
+        .\install_mcxtrace\bin\mxrun -h
+        .\install_mcxtrace\bin\mcxtrace -v
         if [ "${{ matrix.cc }}" != "cl.exe" ];
         then
           mcpl-config -s
