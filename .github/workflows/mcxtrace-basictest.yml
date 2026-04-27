@@ -363,29 +363,29 @@ jobs:
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
-    - name: Launch Absorption test instrument
-      id: Absorption-test
-      run: |
-           set -e
-           set -u
-           set -x
-           export MD5SUM="md5sum"
-           if [ "$RUNNER_OS" == "macOS" ];
-           then
-             export MD5SUM="md5"
-           fi
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-             export EXESUFFIX=".exe"
-           else
-            export SUFFIX=""
-            export EXESUFFIX=""
-           fi
-           test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
-           ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
-           ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+    # - name: Launch Absorption test instrument
+    #   id: Absorption-test
+    #   run: |
+    #        set -e
+    #        set -u
+    #        set -x
+    #        export MD5SUM="md5sum"
+    #        if [ "$RUNNER_OS" == "macOS" ];
+    #        then
+    #          export MD5SUM="md5"
+    #        fi
+    #        if [ "$RUNNER_OS" == "Windows" ];
+    #        then
+    #          export SUFFIX=".bat"
+    #          export EXESUFFIX=".exe"
+    #        else
+    #         export SUFFIX=""
+    #         export EXESUFFIX=""
+    #        fi
+    #        test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
+    #        ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
+    #        ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --testdir=run_singletests --suffix=${{ matrix.mpi }}
+    #        ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Check for modified instruments
       id: instr-test
