@@ -219,7 +219,6 @@ jobs:
         if [ "${{ matrix.cc }}" != "cl.exe" ];
         then
           mcpl-config -s
-          ncrystal-config -s
         fi
 
     - name: Various Windows debugging - MCPL
