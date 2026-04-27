@@ -166,6 +166,7 @@ jobs:
     - name: Configure build and install mcstas on Windows-Mingw
       id: mcstas-install-windows-mingw
       if: ${{ matrix.CC == 'gcc.exe' && runner.os == 'Windows' }}
+      shell: cmd
       run: >
         cmake -B build -S src
         -G "Unix Makefiles"
@@ -182,12 +183,13 @@ jobs:
         -DENABLE_COMPONENTS=ON
         -DENABLE_CIF2HKL=ON
         -DENABLE_NEUTRONICS=OFF
-        -DMPIINCLUDEDIR="%MPIINCVAR%"
-        -DMPILIBDIR="%MPILIBVAR%"
+        -DMPIINCLUDEDIR=%MPIINCVAR%
+        -DMPILIBDIR=%MPILIBVAR%
 
     - name: Configure build and install mcstas on Windows-MSVC
       id: mcstas-install-windows-msvc
       if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
+      shell: cmd
       run: >
         cmake -B build -S src
         "-DCMAKE_INSTALL_PREFIX=./install_mcstas"
@@ -201,8 +203,8 @@ jobs:
         -DENABLE_COMPONENTS=ON
         -DENABLE_CIF2HKL=OFF
         -DENABLE_NEUTRONICS=OFF
-        -DMPIINCLUDEDIR="%MPIINCVAR%"
-        -DMPILIBDIR="%MPILIBVAR%"
+        -DMPIINCLUDEDIR=%MPIINCVAR%
+        -DMPILIBDIR=%MPILIBVAR%
 
     - name: CMake build
       if: runner.os == 'Windows'
