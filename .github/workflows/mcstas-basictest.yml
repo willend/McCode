@@ -182,8 +182,8 @@ jobs:
         -DENABLE_COMPONENTS=ON
         -DENABLE_CIF2HKL=ON
         -DENABLE_NEUTRONICS=OFF
-        -DMPIINCLUDEDIR=%MPIINCVAR%
-        -DMPILIBDIR=%MPILIBVAR%
+        -DMPIINCLUDEDIR="%MPIINCVAR%"
+        -DMPILIBDIR="%MPILIBVAR%"
 
     - name: Configure build and install mcstas on Windows-MSVC
       id: mcstas-install-windows-msvc
@@ -201,8 +201,8 @@ jobs:
         -DENABLE_COMPONENTS=ON
         -DENABLE_CIF2HKL=OFF
         -DENABLE_NEUTRONICS=OFF
-        -DMPIINCLUDEDIR=%MPIINCVAR%
-        -DMPILIBDIR=%MPILIBVAR%
+        -DMPIINCLUDEDIR="%MPIINCVAR%"
+        -DMPILIBDIR="%MPILIBVAR%"
 
     - name: CMake build
       if: runner.os == 'Windows'
