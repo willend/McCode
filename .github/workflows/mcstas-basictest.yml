@@ -323,7 +323,7 @@ jobs:
 
     - name: Launch MCPL test instrument
       id: mcpl-test
-      if: ${{ matrix.CC != 'cl.exe' }}
+      if: runner.os != 'Windows'
       run: |
            set -e
            set -u
@@ -353,7 +353,7 @@ jobs:
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
-      if: ${{ matrix.CC != 'cl.exe' }}
+      if: runner.os != 'Windows'
       run: |
            set -e
            set -u
