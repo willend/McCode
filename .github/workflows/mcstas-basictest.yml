@@ -63,13 +63,13 @@ jobs:
       id: setup-linux
       if: runner.os == 'Linux'
       run: |
-           sudo apt -y install libgsl-dev
+           sudo apt -y install libgsl-dev libnexus-dev
 
     - name: Setup (macOS)
       id: setup-macos
       if: runner.os == 'macOS'
       run: |
-           brew install bison flex gfortran gsl
+           brew install bison flex gfortran gsl homebrew/science/nexusformat
 
     - name: Setup (Windows)
       id: setup-Windows
@@ -307,6 +307,7 @@ jobs:
 
     - name: Launch ISIS_CRISP
       id: ISIS_CRISP
+      if: runner.os != 'Windows'
       run: |
            set -e
            set -u
@@ -382,6 +383,7 @@ jobs:
 
     - name: Launch NeXus test instrument
       id: nexus-test
+      if: runner.os != 'Windows'
       run: |
            set -e
            set -u
