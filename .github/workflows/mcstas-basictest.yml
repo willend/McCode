@@ -180,8 +180,8 @@ jobs:
         -DENABLE_COMPONENTS=ON
         -DENABLE_CIF2HKL=OFF
         -DENABLE_NEUTRONICS=OFF
-        -DMPIINCLUDEDIR=%MSMPI_INC%
-        -DMPILIBDIR=%MSMPI_LIB64%
+        -DMPIINCLUDEDIR=%MPIINCVAR%
+        -DMPILIBDIR=%MPILIBVAR%
 
     - name: CMake build
       if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
