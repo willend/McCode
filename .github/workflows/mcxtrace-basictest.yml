@@ -175,6 +175,7 @@ jobs:
     - name: Configure build and install mcxtrace on Windows-Mingw
       id: mcxtrace-install-windows-mingw
       if: ${{ matrix.CC == 'gcc.exe' && runner.os == 'Windows' }}
+      shell: cmd
       run: >
         cmake -B build -S src
         -G "Unix Makefiles"
@@ -197,6 +198,7 @@ jobs:
     - name: Configure build and install mcxtrace on Windows-MSVC
       id: mcxtrace-install-windows-msvc
       if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
+      shell: cmd
       run: >
         cmake -B build -S src
         "-DCMAKE_INSTALL_PREFIX=./install_mcxtrace"
@@ -311,7 +313,10 @@ jobs:
            test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
            ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=JJ_SAXS --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           if [ "$RUNNER_OS" != "Windows" ];
+           then
+             ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           fi
 
     - name: Launch ESRF_BM29 instrument
       id: ESRF_BM29
@@ -335,7 +340,10 @@ jobs:
            test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
            ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=ESRF_BM29 --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=ESRF_BM29 --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           if [ "$RUNNER_OS" != "Windows" ];
+           then
+             ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=ESRF_BM29 --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           fi
 
     - name: Launch MCPL test instrument
       id: mcpl-test
@@ -360,32 +368,38 @@ jobs:
            ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests --suffix=${{ matrix.mpi }}
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           if [ "$RUNNER_OS" != "Windows" ];
+           then
+             ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+             ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           fi
 
-    # - name: Launch Absorption test instrument
-    #   id: Absorption-test
-    #   run: |
-    #        set -e
-    #        set -u
-    #        set -x
-    #        export MD5SUM="md5sum"
-    #        if [ "$RUNNER_OS" == "macOS" ];
-    #        then
-    #          export MD5SUM="md5"
-    #        fi
-    #        if [ "$RUNNER_OS" == "Windows" ];
-    #        then
-    #          export SUFFIX=".bat"
-    #          export EXESUFFIX=".exe"
-    #        else
-    #         export SUFFIX=""
-    #         export EXESUFFIX=""
-    #        fi
-    #        test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
-    #        ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
-    #        ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --testdir=run_singletests --suffix=${{ matrix.mpi }}
-    #        ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+    - name: Launch Absorption test instrument
+      id: Absorption-test
+      run: |
+           set -e
+           set -u
+           set -x
+           export MD5SUM="md5sum"
+           if [ "$RUNNER_OS" == "macOS" ];
+           then
+             export MD5SUM="md5"
+           fi
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             export SUFFIX=".bat"
+             export EXESUFFIX=".exe"
+           else
+            export SUFFIX=""
+            export EXESUFFIX=""
+           fi
+           test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
+           ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
+           ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           if [ "$RUNNER_OS" != "Windows" ];
+           then
+             ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=Test_Absorption --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           fi
 
     # - name: Check for modified instruments
     #   id: instr-test
