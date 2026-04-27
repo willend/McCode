@@ -115,9 +115,9 @@ jobs:
            which cmake
            cmake --version
 
-    - name: Configure build and install mcxtrace on Unix
-      id: mcxtrace-install-unix
-      if: runner.os != 'Windows'
+    - name: Configure build and install mcxtrace
+      id: mcxtrace-install
+      if: ${{ matrix.CC != 'cl.exe' && runner.os }}
       run: |
            if [ "$RUNNER_OS" == "macOS" ]; then mkdir ${HOME}/tmp; fi
            if [ "$RUNNER_OS" == "macOS" ]; then export SDKROOT=$(xcrun --sdk macosx --show-sdk-path); fi
@@ -172,29 +172,6 @@ jobs:
            cat ../install_mcxtrace/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
            echo *******************************************************************************
 
-    - name: Configure build and install mcxtrace on Windows-Mingw
-      id: mcxtrace-install-windows-mingw
-      if: ${{ matrix.CC == 'gcc.exe' && runner.os == 'Windows' }}
-      shell: cmd
-      run: >
-        cmake -B build -S src
-        -G "Unix Makefiles"
-        -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc.exe
-        "-DCMAKE_INSTALL_PREFIX=./install_mcxtrace"
-        -DMCVERSION="3.99.99"
-        -DMCCODE_BUILD_CONDA_PKG=OFF
-        -DMCCODE_BUILD_WINDOWS_MINGW=ON
-        -DMCCODE_CONFIG_MCPL2=ON
-        -DCMAKE_INSTALL_LIBDIR=lib
-        -DBUILD_MCXTRACE=ON
-        -DMCCODE_USE_LEGACY_DESTINATIONS=OFF
-        -DBUILD_TOOLS=ON
-        -DENABLE_COMPONENTS=ON
-        -DENABLE_CIF2HKL=ON
-        -DENABLE_NEUTRONICS=OFF
-        -DMPIINCLUDEDIR=%MPIINCVAR%
-        -DMPILIBDIR=%MPILIBVAR%
-
     - name: Configure build and install mcxtrace on Windows-MSVC
       id: mcxtrace-install-windows-msvc
       if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
@@ -216,12 +193,12 @@ jobs:
         -DMPILIBDIR=%MPILIBVAR%
 
     - name: CMake build
-      if: runner.os == 'Windows'
+      if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
       shell: cmd
       run: cmake --build build --config Release -j 2
 
     - name: CMake install
-      if: runner.os == 'Windows'
+      if: ${{ matrix.CC != 'gcc.exe' && runner.os == 'Windows' }}
       run: cmake --install build --config Release
 
     - name: set MCXTRACE env var
@@ -232,13 +209,22 @@ jobs:
       if: runner.os == 'Windows'
       run: echo %MCXTRACE%
 
-    - name: Various Windows debugging
+    - name: Various Windows debugging - McXtrace
       if: runner.os == 'Windows'
       shell: cmd
       run: |
-        type .\install\share\mcxtrace\tools\Python\mccodelib\mccode_config.json
-        .\install\bin\mxrun -h
-        .\install\bin\mcxtrace -v
+        type .\install_mcstas\share\mcstas\tools\Python\mccodelib\mccode_config.json
+        .\install_mcstas\bin\mcrun -h
+        .\install_mcstas\bin\mcstas -v
+        if [ "${{ matrix.cc }}" != "cl.exe" ];
+        then
+          mcpl-config -s
+          ncrystal-config -s
+        fi
+
+    - name: Various Windows debugging - MCPL
+      if: runner.os == 'Windows'
+      run: |
         mcpl-config -s
 
     - name: Pip install Unix
@@ -313,7 +299,7 @@ jobs:
            test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
            ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=JJ_SAXS --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           if [ "$RUNNER_OS" != "Windows" ];
+           if [ "${{ matrix.cc }}" != "cl.exe" ];
            then
              ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            fi
@@ -340,13 +326,14 @@ jobs:
            test -f ./install_mcxtrace/bin/mcxtrace${EXESUFFIX}
            ./install_mcxtrace/bin/mcxtrace${EXESUFFIX} --version
            ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=ESRF_BM29 --testdir=run_singletests --suffix=${{ matrix.mpi }}
-           if [ "$RUNNER_OS" != "Windows" ];
+           if [ "${{ matrix.cc }}" != "cl.exe" ];
            then
              ./install_mcxtrace/bin/mxtest${SUFFIX} --instr=ESRF_BM29 --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            fi
 
     - name: Launch MCPL test instrument
       id: mcpl-test
+      if: runner.os != 'Windows'
       run: |
            set -e
            set -u
