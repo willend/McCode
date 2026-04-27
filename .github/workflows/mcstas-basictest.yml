@@ -200,7 +200,7 @@ jobs:
       if: runner.os == 'Windows'
       run: echo %MCSTAS%
 
-    - name: Various Windows debugging
+    - name: Various Windows debugging - McStas
       if: runner.os == 'Windows'
       shell: cmd
       run: |
@@ -212,6 +212,12 @@ jobs:
           mcpl-config -s
           ncrystal-config -s
         fi
+
+    - name: Various Windows debugging - MCPL and NCrystal
+      if: runner.os == 'Windows'
+      run: |
+        mcpl-config -s
+        ncrystal-config -s
 
     - name: Pip install Unix
       id: pip-install
@@ -317,7 +323,7 @@ jobs:
 
     - name: Launch MCPL test instrument
       id: mcpl-test
-      if: runner.os != 'Windows'
+      if: ${{ matrix.CC != 'cl.exe' }}
       run: |
            set -e
            set -u
@@ -347,7 +353,7 @@ jobs:
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
-      if: runner.os != 'Windows' # Crashes with Union-NCrystal instr
+      if: ${{ matrix.CC != 'cl.exe' }}
       run: |
            set -e
            set -u
@@ -367,7 +373,7 @@ jobs:
            fi
            test -f ./install_mcstas/bin/mcstas${EXESUFFIX}
            ./install_mcstas/bin/mctest${SUFFIX} --instr=NCrystal_example --testdir=run_singletests --suffix=${{ matrix.mpi }}
-             if [ "${{ matrix.cc }}" != "cl.exe" ];
+           if [ "${{ matrix.cc }}" != "cl.exe" ];
            then
              ./install_mcstas/bin/mctest${SUFFIX} --instr=NCrystal_example --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            fi
