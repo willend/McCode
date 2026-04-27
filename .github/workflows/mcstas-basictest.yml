@@ -182,11 +182,10 @@ jobs:
         -DENABLE_COMPONENTS=ON \
         -DENABLE_CIF2HKL=ON \
         -DENABLE_NEUTRONICS=OFF \
-        -DMPIINCLUDEDIR=%MPIINCVAR% \
-        -DMPILIBDIR=%MPILIBVAR% \
-        echo %MPIINCVAR%
-        echo %MPILIBVAR%
-        cat install_mcstas/share/mcstas/tools/Python/mccodelib/mccode_config.json
+        -DMPIINCLUDEDIR=${MPIINCVAR} \
+        -DMPILIBDIR=${MPILIBVAR} \
+        echo ${MPIINCVAR}
+        echo ${MPILIBVAR}
 
     - name: Configure build and install mcstas on Windows-MSVC
       id: mcstas-install-windows-msvc
