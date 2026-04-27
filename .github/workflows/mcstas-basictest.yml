@@ -207,8 +207,11 @@ jobs:
         type .\install_mcstas\share\mcstas\tools\Python\mccodelib\mccode_config.json
         .\install_mcstas\bin\mcrun -h
         .\install_mcstas\bin\mcstas -v
-        mcpl-config -s
-        ncrystal-config -s
+        if [ "${{ matrix.cc }}" != "cl.exe" ];
+        then
+          mcpl-config -s
+          ncrystal-config -s
+        fi
 
     - name: Pip install Unix
       id: pip-install
