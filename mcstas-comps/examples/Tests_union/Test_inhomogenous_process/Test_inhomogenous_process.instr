@@ -180,7 +180,7 @@ COMPONENT box_sample = Incoherent(
     zdepth=thick,
     sigma_inc = 5.08,
     sigma_abs = 5.08
-) WHEN (!strcmp((const char*)"thin", (const char*)sample))
+) WHEN (!str_comp((const char*)"thin", (const char*)sample))
 AT (0, 0, 0) RELATIVE arm_sample
 ROTATED (0, 0, 0) RELATIVE arm_sample
 
