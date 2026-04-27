@@ -268,6 +268,7 @@ jobs:
             export SUFFIX=""
             export EXESUFFIX=""
            fi
+           dir ./install_mcstas/bin/
            test -f ./install_mcstas/bin/mcstas${EXESUFFIX}
            ./install_mcstas/bin/mcstas${EXESUFFIX} --version
            ./install_mcstas/bin/mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --suffix=${{ matrix.mpi }}
