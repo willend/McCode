@@ -526,10 +526,10 @@ jobs:
         )
 
     # Start of Windows tests
-    - name: Prepare rundirs Windows
-      if: runner.os == 'Windows' # Windows only
-      shell: cmd
-      run: mkdir run_rng run_std run_mcpl_output run_mcpl_input run_mcpl_input_once run_union run_ncrystal
+    # - name: Prepare rundirs Windows
+    #   if: runner.os == 'Windows' # Windows only
+    #   shell: cmd
+    #   run: mkdir run_rng run_std run_mcpl_output run_mcpl_input run_mcpl_input_once run_union run_ncrystal
 
     # - name: Prepare and run rng instrument Windows
     #   if: runner.os == 'Windows' # Windows only
