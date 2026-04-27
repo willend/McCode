@@ -263,12 +263,14 @@ jobs:
            then
              export MD5SUM="md5"
              export SUFFIX=".bat"
+             export EXESUFFIX=".exe"
            else
             export SUFFIX=""
+            export EXESUFFIX=""
            fi
-           test -f ./install_mcstas/bin/mcstas
-           mcstas --version
-           mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           test -f ./install_mcstas/bin/mcstas${EXESUFFIX}
+           ./install_mcstas/bin/mcstas${EXESUFFIX} --version
+           ./install_mcstas/bin/mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
