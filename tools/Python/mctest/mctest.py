@@ -416,7 +416,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
 
         if test.didrun:
             if failed:
-                suffix += " + RUNTIME FAILURE!"
+                suffix += " + !! RUNTIME FAILURE - see % !! " % (resfile)
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
             if test.targetval!=0: # Normal situation, non-zero target value
@@ -424,7 +424,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             else:                 # Special case, expected test target value is 0
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
         else:
-            logging.info(formatstr % test.get_display_name() + " !!  [TEST INDICATES RUNTIME ERROR - see run_stdout_[N].txt ] !!")
+            logging.info(formatstr % test.get_display_name() + " !! [TEST INDICATES RUNTIME ERROR - see % ] !!" % (resfile)
         suffix=""
         # save test result to disk
         test.testcomplete = True
