@@ -416,7 +416,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
 
         if test.didrun:
             if failed:
-                suffix += " AND RUNTIME FAILURE?!"
+                suffix += " + RUNTIME FAILURE!"
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
             if test.targetval!=0: # Normal situation, non-zero target value
