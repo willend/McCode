@@ -425,7 +425,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
         else:
             logging.info(formatstr % test.get_display_name() + " !!  [TEST INDICATES RUNTIME ERROR - see run_stdout_[N].txt ] !!")
-
+        suffix=""
         # save test result to disk
         test.testcomplete = True
         if not skipped:
