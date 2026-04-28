@@ -394,7 +394,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             failed=True
             continue
 
-        resfile="(No file)"
+        resbase="(No file)"
         # test value extraction
         if not didwrite_nexus:
             extraction = extract_testvals(join(testdir, test.instrname, str(test.testnb)), test.detector)
@@ -403,11 +403,13 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             else:
                 test.testval = -1
                 failed=True
-            resfile = join(testdir,test.instrname,"run_stdout_%d.txt" % (test.testnb))
+            resbase =" run_stdout_%d.txt" % (test.testnb)
+            resfile = join(testdir,test.instrname,resbase)
         # Look for detector output in run_stdout
         else:
             metalog = LineLogger()
-            resfile = join(testdir,test.instrname,"run_stdout_%d.txt" % (test.testnb))
+            resbase =" run_stdout_%d.txt" % (test.testnb)
+            resfile = join(testdir,test.instrname,resbase)
             cmd = r"grep %s_I= %s | head -1 | cut -f2 -d= | cut -f1 -d' '" %(test.detector, resfile)
             utils.run_subtool_to_completion(cmd, stdout_cb=metalog.logline)
             try:
@@ -419,7 +421,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         percent=0
         if test.didrun:
             if failed:
-                suffix += " + !! RUNTIME FAILURE - see %s !! " % (resfile)
+                suffix += " + !! RUNTIME FAILURE - see %s !! " % (resbase)
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
             if test.targetval!=0: # Normal situation, non-zero target value
@@ -430,7 +432,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             else:                 # Special case, expected test target value is 0
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
         else:
-            logging.info((formatstr % test.get_display_name()) + (" !! [TEST INDICATES RUNTIME ERROR - see %s  + suffix ] !!" % (resfile)))
+            logging.info((formatstr % test.get_display_name()) + (" !! [TEST INDICATES RUNTIME ERROR - see %s  + suffix ] !!" % (resbase)))
         suffix=""
         # save test result to disk
         test.testcomplete = True
