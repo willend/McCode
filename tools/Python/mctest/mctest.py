@@ -403,6 +403,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             else:
                 test.testval = -1
                 failed=True
+            resfile = join(testdir,test.instrname,"run_stdout_%d.txt" % (test.testnb))
         # Look for detector output in run_stdout
         else:
             metalog = LineLogger()
@@ -418,7 +419,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         percent=0
         if test.didrun:
             if failed:
-                suffix += " + !! RUNTIME FAILURE - see % !! " % (resfile)
+                suffix += " + !! RUNTIME FAILURE - see %s !! " % (resfile)
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
             if test.targetval!=0: # Normal situation, non-zero target value
@@ -429,7 +430,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             else:                 # Special case, expected test target value is 0
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
         else:
-            logging.info(formatstr % test.get_display_name() + " !! [TEST INDICATES RUNTIME ERROR - see %  + suffix ] !!" % (resfile))
+            logging.info((formatstr % test.get_display_name()) + (" !! [TEST INDICATES RUNTIME ERROR - see %s  + suffix ] !!" % (resfile)))
         suffix=""
         # save test result to disk
         test.testcomplete = True
