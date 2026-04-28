@@ -440,7 +440,8 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             resbase ="run_stdout_%d.txt" % (test.testnb)
             resfile = join(testdir,test.instrname,resbase)
             val, ok, raw = parse_detector_I_value(resfile, test.detector)
-                test.testval=val
+            if ok:
+                test.testval = val
             else:
                 test.testval=-1
                 failed=True
