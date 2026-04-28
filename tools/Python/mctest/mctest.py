@@ -424,7 +424,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             else:                 # Special case, expected test target value is 0
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
         else:
-            logging.info(formatstr % test.get_display_name() + " !! [TEST INDICATES RUNTIME ERROR - see % ] !!" % (resfile)
+            logging.info(formatstr % test.get_display_name() + " !! [TEST INDICATES RUNTIME ERROR - see % ] !!" % (resfile))
         suffix=""
         # save test result to disk
         test.testcomplete = True
