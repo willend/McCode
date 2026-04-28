@@ -403,12 +403,12 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             else:
                 test.testval = -1
                 failed=True
-            resbase =" run_stdout_%d.txt" % (test.testnb)
+            resbase ="run_stdout_%d.txt" % (test.testnb)
             resfile = join(testdir,test.instrname,resbase)
         # Look for detector output in run_stdout
         else:
             metalog = LineLogger()
-            resbase =" run_stdout_%d.txt" % (test.testnb)
+            resbase ="run_stdout_%d.txt" % (test.testnb)
             resfile = join(testdir,test.instrname,resbase)
             cmd = r"grep %s_I= %s | head -1 | cut -f2 -d= | cut -f1 -d' '" %(test.detector, resfile)
             utils.run_subtool_to_completion(cmd, stdout_cb=metalog.logline)
