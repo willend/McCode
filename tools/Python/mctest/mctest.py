@@ -421,6 +421,8 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " / " + str(test.targetval) + " = " + str(round(100.0*test.testval/test.targetval)) + " %]" + suffix)
             else:                 # Special case, expected test target value is 0
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
+        else:
+            logging.info(formatstr % test.get_display_name() + " !! [TEST RUNTIME ERROR] !!")
 
         # save test result to disk
         test.testcomplete = True
