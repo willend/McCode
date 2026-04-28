@@ -16,6 +16,7 @@ import pathlib
 import shutil
 import platform
 import subprocess
+import io
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from mccodelib import utils, mccode_config
@@ -194,6 +195,35 @@ def extract_testvals(datafolder, monitorname):
                 N = float(m.group(3))
                 return (I, I_err, N)
                 break
+
+def parse_detector_I_value(resfile_path, detector_name):
+    """
+    Return (value_float, success_bool, raw_value_str_or_None).
+    value_float is the parsed float (or -1.0 on failure).
+    success_bool is True when a value was parsed successfully.
+    raw_value_str_or_None is the string extracted (before conversion) or None.
+    """
+    prefix = f"Detector: {detector_name}_I="
+    print(prefix)
+    try:
+        with open(resfile_path, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if line.startswith(prefix):
+                    # extract after first '=' then take up to first whitespace
+                    # matches the shell pipeline: cut -f2 -d= | cut -f1 -d' '
+                    _, _, after_eq = line.partition("=")
+                    raw = after_eq.split()[0] if after_eq else ""
+                    if raw == "":
+                        return -1.0, False, None
+                    try:
+                        return float(raw), True, raw
+                    except ValueError:
+                        return -1.0, False, raw
+        return -1.0, False, None
+    except FileNotFoundError:
+        return -1.0, False, None
+    except OSError:
+        return -1.0, False, None
 
 def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilter=None, version=None):
     ''' this main test function tests the given mccode branch/version '''
@@ -410,13 +440,17 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             metalog = LineLogger()
             resbase ="run_stdout_%d.txt" % (test.testnb)
             resfile = join(testdir,test.instrname,resbase)
-            cmd = r"grep %s_I= %s | head -1 | cut -f2 -d= | cut -f1 -d' '" %(test.detector, resfile)
-            utils.run_subtool_to_completion(cmd, stdout_cb=metalog.logline)
-            try:
-                test.testval=float(metalog.lst[0])
-            except:
-                test.testval=-1
-                failed=True
+            val, ok, raw = parse_detector_I_value(resfile, test.detector)
+            print(resfile)
+            print(test.detector)
+            print(val)
+            print(ok)
+            print(raw)
+            if ok:
+                test.testval = val
+            else:
+                test.testval = -1
+                failed = True
 
         percent=0
         if test.didrun:
