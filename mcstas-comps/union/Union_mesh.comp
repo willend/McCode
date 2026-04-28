@@ -639,7 +639,7 @@ SHARE
     for (i = 0; i < number_of_points_in_array; i++) {
       // Transpose and rotate the points such that they are in the right coordinate system
       mesh_shell_array.elements[i] = coords_add (mesh_shell_array.elements[i], geometry->center);
-      mesh_shell_array.elements[i] = rot_apply (geometry->rotation_matrix, mesh_shell_array.elements[i]);
+      mesh_shell_array.elements[i] = rot_apply (geometry->transpose_rotation_matrix, mesh_shell_array.elements[i]);
     }
     return mesh_shell_array;
   }
@@ -894,6 +894,7 @@ INITIALIZE
   for (int i = 0; i < n_verts; i++) {
     verts[i] = coords_scale (verts[i], coordinate_scale);
   }
+  
 
   // Make lists that will be used to calculate the number of edges
   int** vert_pairs = (int**)malloc (sizeof (int*) * 3 * n_faces);
@@ -971,6 +972,22 @@ INITIALIZE
     if (test_rad > radius) {
       radius = test_rad;
     }
+    if (i == 0){
+     mesh_data.Bounding_Box_Extremes[0] = verts[i].x;
+     mesh_data.Bounding_Box_Extremes[1] = verts[i].x;
+     mesh_data.Bounding_Box_Extremes[2] = verts[i].y;
+     mesh_data.Bounding_Box_Extremes[3] = verts[i].y;
+     mesh_data.Bounding_Box_Extremes[4] = verts[i].z;
+     mesh_data.Bounding_Box_Extremes[5] = verts[i].z;
+    } else {
+      mesh_data.Bounding_Box_Extremes[0] = verts[i].x > mesh_data.Bounding_Box_Extremes[0] ? verts[i].x : mesh_data.Bounding_Box_Extremes[0];
+      mesh_data.Bounding_Box_Extremes[1] = verts[i].x < mesh_data.Bounding_Box_Extremes[1] ? verts[i].x : mesh_data.Bounding_Box_Extremes[1];
+      mesh_data.Bounding_Box_Extremes[2] = verts[i].y > mesh_data.Bounding_Box_Extremes[2] ? verts[i].y : mesh_data.Bounding_Box_Extremes[2];
+      mesh_data.Bounding_Box_Extremes[3] = verts[i].y < mesh_data.Bounding_Box_Extremes[3] ? verts[i].y : mesh_data.Bounding_Box_Extremes[3];
+      mesh_data.Bounding_Box_Extremes[4] = verts[i].z > mesh_data.Bounding_Box_Extremes[4] ? verts[i].z : mesh_data.Bounding_Box_Extremes[4];
+      mesh_data.Bounding_Box_Extremes[5] = verts[i].z < mesh_data.Bounding_Box_Extremes[5] ? verts[i].z : mesh_data.Bounding_Box_Extremes[5];
+        
+    }
   }
   mesh_data.Bounding_Box_Radius = radius;
 
@@ -990,6 +1007,8 @@ INITIALIZE
   mesh_data.normal_x = (double*)malloc (n_faces * sizeof (double));
   mesh_data.normal_y = (double*)malloc (n_faces * sizeof (double));
   mesh_data.normal_z = (double*)malloc (n_faces * sizeof (double));
+  mesh_data.facets = faces;
+  mesh_data.vertices = verts;
   for (int i = 0; i < n_faces; i++) {
     vert1 = verts[faces[i][0]];
     vert2 = verts[faces[i][1]];
