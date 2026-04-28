@@ -423,7 +423,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
             if test.targetval!=0: # Normal situation, non-zero target value
                 percent=round(100.0*test.testval/test.targetval)
-                if percent<80 or percent>120
+                if percent<80 or percent>120:
                     suffix += " <--- BIG DISCREPANCY??"
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " / " + str(test.targetval) + " = " + str(percent) + " %]" + suffix)
             else:                 # Special case, expected test target value is 0
