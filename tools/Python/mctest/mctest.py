@@ -203,8 +203,7 @@ def parse_detector_I_value(resfile_path, detector_name):
     success_bool is True when a value was parsed successfully.
     raw_value_str_or_None is the string extracted (before conversion) or None.
     """
-    prefix = f"Detector: {detector_name}_I="
-    print(prefix)
+
     try:
         with open(resfile_path, "r", encoding="utf-8", errors="replace") as f:
             for line in f:
@@ -441,11 +440,6 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             resbase ="run_stdout_%d.txt" % (test.testnb)
             resfile = join(testdir,test.instrname,resbase)
             val, ok, raw = parse_detector_I_value(resfile, test.detector)
-            print(resfile)
-            print(test.detector)
-            print(val)
-            print(ok)
-            print(raw)
             if ok:
                 test.testval = val
             else:
