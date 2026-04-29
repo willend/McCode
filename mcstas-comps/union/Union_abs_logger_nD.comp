@@ -205,15 +205,20 @@ SHARE
     }
 
     if (add_point == 1) {
+		
+      Coords transformed_ray_position;
+      transformed_ray_position = coords_sub (*position, storage->position);
+      transformed_ray_position = rot_apply (storage->rotation, transformed_ray_position);
 
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
-      coords_get (*position, &given_x_pos, &given_y_pos, &given_z_pos);
-
-      double given_x_vel, given_y_vel, given_z_vel;
-      given_x_vel = k[0] * K2V;
-      given_y_vel = k[1] * K2V;
-      given_z_vel = k[2] * K2V;
+      coords_get (*transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
+	  
+	  Coords k_coords = make_position(k);	  
+	  Coords transformed_k_coords = rot_apply (storage->rotation, k_coords);
+	  
+	  double given_x_vel, given_y_vel, given_z_vel;	  
+	  coords_get(coords_scalar_mult (transformed_k_coords, K2V), &given_x_vel, &given_y_vel, &given_z_vel);
 
       if (storage->temp_abs_nD_data.num_elements < storage->temp_abs_nD_data.allocated_elements) {
 
@@ -328,15 +333,20 @@ SHARE
     }
 
     if (add_point == 1) {
+      Coords transformed_ray_position;
+      transformed_ray_position = coords_sub (*position, storage->position);
+      transformed_ray_position = rot_apply (storage->rotation, transformed_ray_position);
 
+      int i;
       double given_x_pos, given_y_pos, given_z_pos;
-      coords_get (*position, &given_x_pos, &given_y_pos, &given_z_pos);
-
-      double given_x_vel, given_y_vel, given_z_vel;
-      given_x_vel = k[0] * K2V;
-      given_y_vel = k[1] * K2V;
-      given_z_vel = k[2] * K2V;
-
+      coords_get (*transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
+	  
+  	  Coords k_coords = make_position(k);	  
+  	  Coords transformed_k_coords = rot_apply (storage->rotation, k_coords);
+	  
+  	  double given_x_vel, given_y_vel, given_z_vel;	  
+  	  coords_get(coords_scalar_mult (transformed_k_coords, K2V), &given_x_vel, &given_y_vel, &given_z_vel);
+	  
       _class_particle _localparticle;
 
       _localparticle.x = given_x_pos;
@@ -527,14 +537,14 @@ INITIALIZE INHERIT Monitor_nD EXTEND
   struct global_positions_to_transform_list_struct* global_positions_to_transform_list = COMP_GETPAR3 (Union_init, init, global_positions_to_transform_list);
   struct global_rotations_to_transform_list_struct* global_rotations_to_transform_list = COMP_GETPAR3 (Union_init, init, global_rotations_to_transform_list);
   // Test position and rotation stored in a data storage, and pointers assigned to transform lists
-  this_abs_logger.position = POS_A_CURRENT_COMP;
-  add_position_pointer_to_list (global_positions_to_transform_list, &this_abs_logger.position);
+  this_abs_storage.position = POS_A_CURRENT_COMP;
+  add_position_pointer_to_list (global_positions_to_transform_list, &this_abs_storage.position);
 
-  rot_copy (this_abs_logger.rotation, ROT_A_CURRENT_COMP);
-  add_rotation_pointer_to_list (global_rotations_to_transform_list, &this_abs_logger.rotation);
+  rot_copy (this_abs_storage.rotation, ROT_A_CURRENT_COMP);
+  add_rotation_pointer_to_list (global_rotations_to_transform_list, &this_abs_storage.rotation);
 
-  rot_transpose (ROT_A_CURRENT_COMP, this_abs_logger.t_rotation);
-  add_rotation_pointer_to_list (global_rotations_to_transform_list, &this_abs_logger.t_rotation);
+  rot_transpose (ROT_A_CURRENT_COMP, this_abs_storage.t_rotation);
+  add_rotation_pointer_to_list (global_rotations_to_transform_list, &this_abs_storage.t_rotation);
 
   // Book keeping
   this_abs_logger.abs_logger_extend_index = logger_conditional_extend_index;

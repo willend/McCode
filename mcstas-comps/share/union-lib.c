@@ -354,14 +354,7 @@ struct abs_logger_struct {
   struct abs_logger_pointer_set_struct function_pointers;
   // Contains hard copy of logger_data_union since the size is the same as a pointer.
   union abs_logger_data_union data_union;
-
-  // Position and rotation of the abs_logger
-  Coords position;
-  Rotation rotation;
-  Rotation t_rotation;
-
   int abs_logger_extend_index; // Contain index conditional_extend_array defined in master that can be acsessed from extend section.
-
   struct conditional_list_struct conditional_list;
 };
 
