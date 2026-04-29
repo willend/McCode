@@ -19,6 +19,9 @@
 * Test instrument for the Union 1D logger component that can log scattering
 * intensity as a function of one of several quantities, here time.
 *
+* %Example: Detector: Union_logger_1D_I=5.65843e-09
+* %Example: Detector: Union_logger_1D_con_I=2.73754e-12
+*
 * %End
 *******************************************************************************/
 
@@ -75,9 +78,22 @@ COMPONENT Union_logger_1D = Union_logger_1D(
     variable="time", min_value=0.0013, max_value=0.0022, n1=200,
     filename="Union_logger_1D.dat")
 AT (0,0,0) RELATIVE geometry_center
+		
+COMPONENT Union_logger_1D_con = Union_logger_1D(
+	variable="time", min_value=0.0013, max_value=0.0022, n1=200,
+    filename="Union_logger_1D_con.dat")
+AT (0,0,0) RELATIVE geometry_center		
+
+// Conditional that takes right part of transmitted beam
+COMPONENT PSD_conditional = Union_conditional_PSD(
+	xwidth=0.1, yheight=0.2,
+    target_loggers="Union_logger_1D_con")
+AT (-0.05,0,1.0) RELATIVE geometry_center
 
 COMPONENT master = Union_master()
-AT(0,0,0) RELATIVE geometry_center
+AT (12,-2,4) RELATIVE geometry_center
+ROTATED (22, -47, 7) RELATIVE geometry_center
+
 
 COMPONENT transmission = PSD_monitor(
     xwidth=0.1, yheight=0.08, nx=200, ny=200,

@@ -76,7 +76,8 @@ AT (0.03,0,0.07) RELATIVE geometry_center
 // Insert loggers to be tested here
 
 COMPONENT master = Union_master()
-AT(0,0,0) RELATIVE geometry_center
+AT (12,-2,4) RELATIVE geometry_center
+ROTATED (22, -47, 7) RELATIVE geometry_center
 
 COMPONENT transmission = PSD_monitor(
     xwidth=0.1, yheight=0.08, nx=200, ny=200,

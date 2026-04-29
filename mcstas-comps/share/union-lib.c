@@ -5849,7 +5849,7 @@ int cone_overlaps_cylinder(struct geometry_struct *geometry_cone,struct geometry
 
 
     if (dist_spheres > sphere_1_radius + sphere_2_radius){
-        printf("\nSpherical method determined that cones are too far away for intersection to be relevant\n");
+        //printf("\nSpherical method determined that cones are too far away for intersection to be relevant\n");
         return 0;
     }
 

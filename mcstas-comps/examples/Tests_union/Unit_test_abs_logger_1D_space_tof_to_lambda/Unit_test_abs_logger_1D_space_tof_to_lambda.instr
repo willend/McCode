@@ -26,8 +26,9 @@
 * both the standard view with measured and true wavelength on each axis, and the
 * relative where they have been normalized and a value of 1 is expected.
 *
-* %Example: Detector: abs_logger_1D_space_tof_to_lambda_I=9.82157e-12
-* %Example: Detector: abs_logger_1D_space_tof_to_lambda_relative_I=1.02297e-11
+* %Example: Detector: abs_logger_1D_space_tof_to_lambda_I=6.67576e-11
+* %Example: Detector: abs_logger_1D_space_tof_to_lambda_relative_I=6.6763e-11
+* %Example: Detector: abs_logger_1D_space_tof_to_lambda_con_I=5.07195e-12
 *
 * %End
 *******************************************************************************/
@@ -78,8 +79,8 @@ AT (-0.03,0,-0.01) RELATIVE geometry_center
 COMPONENT cone = Union_cone(radius_top=0.02, radius_bottom=0.055, yheight=0.09, priority=8, material_string="material")
 AT (0.03,0,0.02) RELATIVE geometry_center
 
-COMPONENT cylinder = Union_cylinder(radius=0.02, yheight=0.8, priority=7, material_string="material")
-AT (-1.0,0,0.0) RELATIVE geometry_center
+COMPONENT cylinder = Union_cylinder(radius=0.03, yheight=0.8, priority=7, material_string="material")
+AT (-0.5,0,0.0) RELATIVE geometry_center
 
 COMPONENT abs_logger_1D_space_tof_to_lambda = Union_abs_logger_1D_space_tof_to_lambda(
     yheight=0.8, yn=100,
@@ -99,15 +100,35 @@ COMPONENT abs_logger_1D_space_tof_to_lambda_relative = Union_abs_logger_1D_space
     filename="Union_abs_logger_1D_space_tof_to_lambda_relative.dat",
     relative_measured=1, relative_min=0.95, relative_max=1.05, relative_bins=100)
 AT (0,0,0) RELATIVE cylinder
+		
+COMPONENT abs_logger_1D_space_tof_to_lambda_con = Union_abs_logger_1D_space_tof_to_lambda(
+	yheight=0.8, yn=100,
+	target_geometry="cylinder",
+	ref_component=-7,
+	source_sample_dist=10.0,
+	lambda_min=2.0, lambda_max=8.0, lambda_bins=200,
+    filename="Union_abs_logger_1D_space_tof_to_lambda_con.dat")
+AT (0,0,0) RELATIVE cylinder
+		
+COMPONENT conditional_direction = Arm()
+AT (0,0,0) RELATIVE geometry_center
+ROTATED (0,-90,0) RELATIVE geometry_center
 
+// Conditional in direction of cylinder
+COMPONENT PSD_conditional = Union_conditional_PSD(
+  xwidth=0.1, yheight=1.0,
+  target_loggers="abs_logger_1D_space_tof_to_lambda_con")
+AT (0,0,0.6) RELATIVE conditional_direction
+
+// Master at odd position to ensure that does not impact results
 COMPONENT master = Union_master()
-AT(0,0,0) RELATIVE geometry_center
+AT(3,0,-1) RELATIVE geometry_center
+ROTATED(20,-5,8) RELATIVE geometry_center
 
 COMPONENT transmission = PSD_monitor(
     xwidth=0.1, yheight=0.08, nx=200, ny=200,
     filename="PSD.dat", restore_neutron=1)
 AT (0,0,1) RELATIVE geometry_center
-
 
 COMPONENT stop = Union_stop()
 AT (0,0,0) ABSOLUTE

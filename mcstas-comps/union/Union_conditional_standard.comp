@@ -477,7 +477,7 @@ INITIALIZE
       }
 
       // Add a pointer to this conditional function to the list of conditionals for this logger
-      add_function_to_conditional_list (&found_logger->conditional_list, &conditional_function_standard, &this_data_union);
+      add_function_to_conditional_list (&found_abs_logger->conditional_list, &conditional_function_standard, &this_data_union);
     }
     /*
     for (loop_index=0;loop_index<accepted_tagging.num_elements;loop_index++) {

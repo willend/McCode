@@ -19,6 +19,7 @@
 * Test of absorption logger with basic geometry from Unit_test_loggers_base.
 *
 * %Example: Detector: Union_abs_logger_2D_space_zx_I=1.1258e-09
+* %Example: Detector: Union_abs_logger_2D_space_zx_con_I=5.22667e-13
 *
 * %End
 *******************************************************************************/
@@ -83,9 +84,23 @@ COMPONENT Union_abs_logger_2D_space_zy = Union_abs_logger_2D_space(
     D_direction_2="y", D2_min=-0.1, D2_max=0.1, n2=200,
     filename="Union_abs_logger_2D_space_zy.dat")
 AT (0,0,0) RELATIVE geometry_center
+		
+COMPONENT Union_abs_logger_2D_space_zx_con = Union_abs_logger_2D_space(
+    D_direction_1="z", D1_min=-0.15, D1_max=0.15, n1=200,
+    D_direction_2="x", D2_min=-0.1, D2_max=0.1, n2=200,
+    filename="Union_abs_logger_2D_space_zx_con.dat")
+AT (0,0,0) RELATIVE geometry_center		
 
+// Conditional that takes right part of transmitted beam
+COMPONENT PSD_conditional = Union_conditional_PSD(
+  xwidth=0.1, yheight=0.2,
+  target_loggers="Union_abs_logger_2D_space_zx_con")
+AT (-0.05,0,1.0) RELATIVE geometry_center
+
+// Master at odd position to ensure that does not impact results
 COMPONENT master = Union_master()
-AT(0,0,0) RELATIVE geometry_center
+AT (3, 0, -1) RELATIVE geometry_center
+ROTATED (20, -5, 8) RELATIVE geometry_center
 
 COMPONENT transmission = PSD_monitor(
     xwidth=0.1, yheight=0.08, nx=200, ny=200,

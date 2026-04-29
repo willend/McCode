@@ -21,6 +21,9 @@
 * chosen by the user. This is furthermore split into several timesteps so
 * the time dependency of scattering in the Union system can be monitored.
 *
+* %Example: Detector: Union_logger_2D_space_time_I=3.33764e-09
+* %Example: Detector: Union_logger_2D_space_time_con_I=1.36393e-12
+*
 * %End
 *******************************************************************************/
 
@@ -79,9 +82,23 @@ COMPONENT Union_logger_2D_space_time = Union_logger_2D_space_time(
     time_bins=10, time_min=0.0014, time_max=0.0020,
     filename="Union_logger_2D_space_time.dat")
 AT (0,0,0) RELATIVE geometry_center
+		
+COMPONENT Union_logger_2D_space_time_con = Union_logger_2D_space_time(
+	D_direction_1="z", D1_min=-0.15, D1_max=0.15, n1=200,
+	D_direction_2="x", D2_min=-0.1, D2_max=0.1, n2=200,
+	time_bins=10, time_min=0.0014, time_max=0.0020,
+	filename="Union_logger_2D_space_time_con.dat")
+AT (0,0,0) RELATIVE geometry_center		
+
+// Conditional that takes right part of transmitted beam
+COMPONENT PSD_conditional = Union_conditional_PSD(
+	xwidth=0.1, yheight=0.2,
+	target_loggers="Union_logger_2D_space_time_con")
+AT (-0.05,0,1.0) RELATIVE geometry_center		
 
 COMPONENT master = Union_master()
-AT(0,0,0) RELATIVE geometry_center
+AT (12,-2,4) RELATIVE geometry_center
+ROTATED (22, -47, 7) RELATIVE geometry_center
 
 COMPONENT transmission = PSD_monitor(
     xwidth=0.1, yheight=0.08, nx=200, ny=200,

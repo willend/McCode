@@ -73,9 +73,20 @@ AT (0.03,0,0.07) RELATIVE geometry_center
 
 COMPONENT Union_abs_logger_event = Union_abs_logger_event(filename="Union_abs_logger_event")
 AT (0,0,0) RELATIVE geometry_center
+			
+COMPONENT Union_abs_logger_event_con = Union_abs_logger_event(filename="Union_abs_logger_event_con")
+AT (0,0,0) RELATIVE geometry_center			
 
+// Conditional that takes right part of transmitted beam
+COMPONENT PSD_conditional = Union_conditional_PSD(
+  xwidth=0.1, yheight=0.2,
+  target_loggers="Union_abs_logger_event_con")
+AT (-0.05,0,1.0) RELATIVE geometry_center
+
+// Master at odd position to ensure that does not impact results
 COMPONENT master = Union_master()
-AT(0,0,0) RELATIVE geometry_center
+AT (3, 0, -1) RELATIVE geometry_center
+ROTATED (20, -5, 8) RELATIVE geometry_center
 
 COMPONENT transmission = PSD_monitor(
     xwidth=0.1, yheight=0.08, nx=200, ny=200,
