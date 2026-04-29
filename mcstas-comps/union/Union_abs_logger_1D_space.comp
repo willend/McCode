@@ -113,7 +113,6 @@ SHARE
 
     Coords position;
     Rotation rotation;
-    Rotation t_rotation;
   };
 
   // record_to_temp
@@ -441,9 +440,6 @@ INITIALIZE
 
   rot_copy (this_abs_storage.rotation, ROT_A_CURRENT_COMP);
   add_rotation_pointer_to_list (global_rotations_to_transform_list, &this_abs_storage.rotation);
-
-  rot_transpose (ROT_A_CURRENT_COMP, this_abs_storage.t_rotation);
-  add_rotation_pointer_to_list (global_rotations_to_transform_list, &this_abs_storage.t_rotation);
 
   // printf("past direction choices sanitation \n");
 

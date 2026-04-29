@@ -144,7 +144,6 @@ SHARE
 
     Coords position;
     Rotation rotation;
-    Rotation t_rotation;
   };
 
   double
@@ -198,7 +197,7 @@ SHARE
     }
 
     if (storage->stored_yheight != 0) {
-      if (transformed_ray_position.y < 0.5 * storage->stored_yheight && position->y > -0.5 * transformed_ray_position.stored_yheight)
+      if (transformed_ray_position.y < 0.5 * storage->stored_yheight && transformed_ray_position.y > -0.5 * storage->stored_yheight)
         add_point = 1;
       else
         add_point = 0;
@@ -365,7 +364,7 @@ SHARE
     }
 
     if (storage->stored_yheight != 0) {
-      if (transformed_ray_position.y < 0.5 * storage->stored_yheight && position->y > -0.5 * transformed_ray_position.stored_yheight)
+      if (transformed_ray_position.y < 0.5 * storage->stored_yheight && transformed_ray_position.y > -0.5 * storage->stored_yheight)
         add_point = 1;
       else
         add_point = 0;
@@ -635,9 +634,6 @@ INITIALIZE
 
   rot_copy (this_abs_storage.rotation, ROT_A_CURRENT_COMP);
   add_rotation_pointer_to_list (global_rotations_to_transform_list, &this_abs_storage.rotation);
-
-  rot_transpose (ROT_A_CURRENT_COMP, this_abs_storage.t_rotation);
-  add_rotation_pointer_to_list (global_rotations_to_transform_list, &this_abs_storage.t_rotation);
 
   // Book keeping
   this_abs_logger.abs_logger_extend_index = logger_conditional_extend_index;
