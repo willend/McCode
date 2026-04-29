@@ -151,7 +151,7 @@ SHARE
       double value, dummy1, dummy2;
 
       // value = position.y; // define makes this not work
-      coords_get (*transformed_ray_position, &dummy1, &value, &dummy2);
+      coords_get (transformed_ray_position, &dummy1, &value, &dummy2);
 
       // Find bin in histogram
       if (value > storage->Detector_1D.min && value < storage->Detector_1D.max) {
@@ -247,7 +247,7 @@ SHARE
       double value, dummy1, dummy2;
 
       // value = position.y; // define makes this not work
-      coords_get (*transformed_ray_position, &dummy1, &value, &dummy2);
+      coords_get (transformed_ray_position, &dummy1, &value, &dummy2);
 
       // Find bin in histogram
       if (value > storage->Detector_1D.min && value < storage->Detector_1D.max) {

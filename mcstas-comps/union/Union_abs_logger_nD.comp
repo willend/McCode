@@ -212,7 +212,7 @@ SHARE
 
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
-      coords_get (*transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
+      coords_get (transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
 	  
 	  Coords k_coords = make_position(k);	  
 	  Coords transformed_k_coords = rot_apply (storage->rotation, k_coords);
@@ -339,7 +339,7 @@ SHARE
 
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
-      coords_get (*transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
+      coords_get (transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
 	  
   	  Coords k_coords = make_position(k);	  
   	  Coords transformed_k_coords = rot_apply (storage->rotation, k_coords);

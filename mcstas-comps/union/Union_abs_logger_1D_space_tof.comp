@@ -150,7 +150,7 @@ SHARE
       double dummy1, dummy2;
 
       // value = position.y; // define makes this not work
-      coords_get (*transformed_ray_position, &dummy1, &p1, &dummy2);
+      coords_get (transformed_ray_position, &dummy1, &p1, &dummy2);
       p2 = time;
 
       int i, j;
@@ -254,7 +254,7 @@ SHARE
       double dummy1, dummy2;
 
       // value = position.y; // define makes this not work
-      coords_get (*transformed_ray_position, &dummy1, &p1, &dummy2);
+      coords_get (transformed_ray_position, &dummy1, &p1, &dummy2);
       p2 = time;
 
       int i, j;

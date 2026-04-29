@@ -191,7 +191,7 @@ SHARE
     // Bin y_position
     int y_bin;
     double dummy1, y_pos, dummy2;
-    coords_get (*transformed_ray_position, &dummy1, &y_pos, &dummy2);
+    coords_get (transformed_ray_position, &dummy1, &y_pos, &dummy2);
 
     if (y_pos > storage->y_min && y_pos < storage->y_max) {
       add_point = 1;
@@ -327,7 +327,7 @@ SHARE
     // Bin y_position
     int y_bin;
     double dummy1, y_pos, dummy2;
-    coords_get (*position, &dummy1, &y_pos, &dummy2);
+    coords_get (transformed_ray_position, &dummy1, &y_pos, &dummy2);
 
     if (y_pos > storage->y_min && y_pos < storage->y_max) {
       add_point = 1;

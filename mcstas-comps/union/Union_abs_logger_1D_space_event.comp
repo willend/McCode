@@ -175,7 +175,7 @@ SHARE
 
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
-      coords_get (*transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
+      coords_get (transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
       given_x_pos = 0.0; // 1D monitor, always in center x bin
 
       double given_x_vel, given_y_vel, given_z_vel;
@@ -303,7 +303,7 @@ SHARE
 
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
-      coords_get (*transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
+      coords_get (transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
       given_x_pos = 0.0; // 1D monitor, always in center x bin
 
       double given_x_vel, given_y_vel, given_z_vel;

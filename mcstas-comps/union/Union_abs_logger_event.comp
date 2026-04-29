@@ -216,7 +216,7 @@ SHARE
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
       double used_x_pos, used_y_pos, used_z_pos;
-      coords_get (*transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
+      coords_get (transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
 
       if (storage->stored_xbins != 0) {
         used_x_pos = round_to_nearest_bin (given_x_pos, storage->stored_xwidth, storage->stored_xbins);
@@ -383,7 +383,7 @@ SHARE
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
       double used_x_pos, used_y_pos, used_z_pos;
-      coords_get (*transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
+      coords_get (transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
 
       if (storage->stored_xbins != 0) {
         used_x_pos = round_to_nearest_bin (given_x_pos, storage->stored_xwidth, storage->stored_xbins);
