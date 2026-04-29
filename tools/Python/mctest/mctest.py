@@ -707,8 +707,7 @@ def main(args):
 
     # modifying options
     verbose = args.verbose          # display more info during runs
-    testroot = args.testroot        # use non-default test output root location
-    testdir = args.testdir          # use non-default test output location (overrides testroot)
+    testdir = args.testdir          # use non-default test output location
     mccoderoot = args.mccoderoot    # use non-default mccode system install location
     limit = args.limit              # only test the first [limit] instruments (useful for debugging purposes)
     instrfilter = args.instr        # test only matching instrs
@@ -720,10 +719,10 @@ def main(args):
         logging.basicConfig(level=logging.DEBUG, format="%(message)s")
     else:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
+
     if not testdir:
-        if not testroot:
-            testroot = os.path.join(os.getcwd(),mccode_config.configuration["MCCODE"]+"-test")
-            testdir = create_datetime_testdir(testroot)
+        testdir='.'
+
     logging.info("Output of test will be placed in: %s" % testdir)
 
     if not mccoderoot:
@@ -758,13 +757,11 @@ def main(args):
     logging.debug("")
 
     global ncount, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, runmax
+    ncount = "1e6"
     if args.ncount:
         ncount = args.ncount[0]
     elif args.n:
         ncount = args.n[0]
-    else:
-        ncount = "1e6"
-    suffix = '_' + ncount
 
     if args.local:
         runLocal = args.local
@@ -783,7 +780,7 @@ def main(args):
         else:
             suffix = '_' + args.suffix[0]
 
-    suffix=suffix + "_" + platform.system()
+    suffix=suffix + "_" + ncount + "_" + platform.system() + "_" + utils.get_datetimestr()
     if runLocal:
         suffix = suffix + '_LOCAL'
 
@@ -833,8 +830,7 @@ if __name__ == '__main__':
     parser.add_argument('--instr', nargs="?", help='test only intruments matching this filter (py regex). Comma-separated list allowed for multiple filters.')
     parser.add_argument('--comp', nargs=1, help='test only intruments utilising COMP. Useful for testing the instrument suite after component changes.')
     parser.add_argument('--mccoderoot', nargs='?', help='manually select root search folder for mccode installations')
-    parser.add_argument('--testroot', nargs='?', help='output test results in a datetime folder in this root')
-    parser.add_argument('--testdir', nargs='?', help='output test results directly in this dir (overrides testroot)')
+    parser.add_argument('--testdir', nargs='?', help='output test results directly in this dir (default CWD)')
     parser.add_argument('--limit', nargs=1, help='test only the first [LIMIT] instrs')
     parser.add_argument('--verbose', action='store_true', help='output a test/notest instrument status header before each test')
     parser.add_argument('--skipnontest', action='store_true', help='Skip compilation of instruments without a test')
