@@ -120,6 +120,9 @@ INITIALIZE
       printf("%s: filename is NULL or empty, skipping init and reads\n", NAME_CURRENT_COMP);
     }
     p_mul=(double)nparticles/(double)ncount;
+    #ifdef USE_MPI
+    p_mul*=mpi_node_count;
+    #endif
 %}
 
 TRACE
