@@ -31,8 +31,8 @@
 * filename: [string]    Name of file in which to store the detector image
 * uid1: [1]             Integer index of uservar to be monitored. Overrides ustring1.
 * uid2: [1]             Integer index of uservar to be monitored. Overrides ustring2.
-* ustring1: [string]    Name of variable U1 (user or neutron state parameter as a string) to be monitored.
-* ustring2: [string]    Name of variable U2 (user or neutron state parameter as a string) to be monitored.
+* ustring1: [string]    Name of variable U1 (user or particle state parameter as a string) to be monitored.
+* ustring2: [string]    Name of variable U2 (user or particle state parameter as a string) to be monitored.
 * signal: [string]      Name of variable to be used as an additive signal to be monitored. Default is intensity.
 * nowritefile: [1]      Flag to indicate if monitor should not save any data.
 *
@@ -44,9 +44,6 @@ DEFINE COMPONENT Flex_monitor_2D
 
 SETTING PARAMETERS (int nU1=20, int nU2=20, string filename=0,
 		    Umin1, Umax1, uid1=-1, string ustring1="", Umin2, Umax2, uid2=-1, string ustring2="", string signal="p", int nowritefile=0)
-
-
-/* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
 
 DECLARE
 %{
