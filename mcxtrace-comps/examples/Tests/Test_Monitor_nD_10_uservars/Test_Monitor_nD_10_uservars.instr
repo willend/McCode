@@ -73,7 +73,7 @@ EXTEND %{
 
 COMPONENT MonND=Monitor_nD(xwidth=0.4, yheight=0.4, user0="UX0",user1="UX1",user2="UX2",user3="UX3",user4="UX4",user5="UX5",
 			               user6="UX6",user7="UX7",user8="UX8",user9="UX9",restore_xray=1,
-				       options="user0 user1 user2 user3 user4 user5 user6 user7 user8 user9 list all neutrons")
+				       options="user0 user1 user2 user3 user4 user5 user6 user7 user8 user9 list all photons")
 AT (0, 0, 0) RELATIVE PREVIOUS
 
 
