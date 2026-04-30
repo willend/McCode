@@ -218,7 +218,7 @@
 /* monitor_nd_noacc-lib function prototypes */
 /* ========================================================================= */
 
-void Monitor_nd_noaccInit(Monitornd_noaccDefines_type *, Monitornd_noaccVariables_type *, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, int);
+void Monitor_nd_noaccInit(Monitornd_noaccDefines_type *, Monitornd_noaccVariables_type *, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, MCNUM, int, int);
 int Monitor_nd_noaccTrace(Monitornd_noaccDefines_type *, Monitornd_noaccVariables_type *, _class_particle* _particle);
 MCDETECTOR Monitor_nd_noaccSave(Monitornd_noaccDefines_type *, Monitornd_noaccVariables_type *);
 void Monitor_nd_noaccFinally(Monitornd_noaccDefines_type *, Monitornd_noaccVariables_type *);
