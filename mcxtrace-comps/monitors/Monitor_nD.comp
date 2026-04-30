@@ -35,10 +35,10 @@
 * The 'sphere' option simulates spherical detector. The 'box' is a box.
 * The cylinder, sphere and banana should be centered on the scattering point.
 * In normal configuration, the Monitor_nD measures the current parameters
-* of the photon that is beeing detected. But a PreMonitor_nD component can
-* be used in order to study correlations between a photon being detected in
+* of the photon that is beeing detected. USERVARS may be used in order 
+* to study correlations between a neutron being detected in
 * a Monitor_nD place, and given parameters that are monitored elsewhere
-* (at <b>PreMonitor_nD</b>).
+* (at the point of initialisation of the USERVARS).
 * The monitor can also act as a 3He gas detector, taking into account the
 * detection efficiency.
 *
@@ -97,6 +97,8 @@
 *     user6 user7
 *     user8 user9
 *
+* Premonitoring:            Please use uservars in place of the former PreMonitor_nD.
+*
 *     p intensity flux      [phts/s  or  phts/cm^2/s]
 *     ncounts n photon      [1]      photon ID, i.e current event index
 *     pixel id              [1]      pixelID in histogram made of preceeding vars, e.g. 'theta y'. To set an offset PixelID use the 'min=value' keyword. Sets event mode.
@@ -123,7 +125,6 @@
 *     parallel                  Use this option when the next component is at the same position (parallel components)
 *     per cm2                   Intensity will be per cm^2 (detector area). Displays beam section.
 *     per steradian             Intensity will be per steradian (requires auto)
-*     premonitor                Will monitor photon parameters stored previously with <b>PreMonitor_nD</b>.
 *     signal=[var]              Will monitor [var] instead of usual intensity
 *     slit or absorb            Absorb photons that are out detector
 *     source                    The monitor will save photon states
@@ -172,8 +173,6 @@
 *       options="user1, auto")
 *      AT ...
 *
-* See also the example in <a href="PreMonitor_nD.html">PreMonitor_nD</a> to
-* monitor photon parameters cross-correlations.
 *
 * %BUGS
 * The 'auto' option for guessing optimal variable bounds should NOT be used with MPI
@@ -223,7 +222,6 @@
 * Vars: [struct]  structure containing Monitor_nD variables.
 *
 * %Link
-* <a href="PreMonitor_nD.html">PreMonitor_nD</a>
 *
 * %End
 ******************************************************************************/
@@ -565,22 +563,6 @@ TRACE
   }
 
   if (intersect) {
-    /* Now get the data to monitor: current or keep from PreMonitor */
-    /*    if (Vars.Flag_UsePreMonitor != 1)*/
-    /*    {*/
-    /*      Vars.cp  = p;*/
-    /*      Vars.cx  = x;*/
-    /*      Vars.ckx = kx;*/
-    /*      Vars.cEx = Ex;*/
-    /*      Vars.cy  = y;*/
-    /*      Vars.cky = ky;*/
-    /*      Vars.cEy = Ey;*/
-    /*      Vars.cz  = z;*/
-    /*      Vars.ckz = kz;*/
-    /*      Vars.cEz = Ez;*/
-    /*      Vars.ct  = t;*/
-    /*      Vars.cphi = phi;*/
-    /*    }*/
 
     pp = Monitor_nD_Trace (&DEFS, &Vars, _particle);
     if (pp == 0.0) {
