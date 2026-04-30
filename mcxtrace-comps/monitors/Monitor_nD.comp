@@ -234,7 +234,8 @@ SETTING PARAMETERS (
   string user4="", string user5="", string user6="", string user7="",
   string user8="", string user9="",
   xwidth=0, yheight=0, zdepth=0,
-  bins=0, min=-1e40, max=1e40, restore_xray=0, radius=0,
+  int bins=0, min=-1e40, max=1e40, restore_xray=0, radius=0,
+  string options="NULL", string filename="NULL",string geometry="NULL", int nowritefile=0,
   string username0="NULL",string username1="NULL", string username2="NULL", string username3="NULL",
   string username4="NULL",string username5="NULL", string username6="NULL", string username7="NULL",
   string username8="NULL", string username9="NULL"
