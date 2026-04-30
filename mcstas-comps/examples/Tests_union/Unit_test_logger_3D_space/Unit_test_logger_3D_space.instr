@@ -20,7 +20,7 @@
 * some thickness depending on the number of bins in the 3rd dimension.
 *
 * %Example: Detector: Union_logger_3D_space_I=1.3301e-09
-* %Example: Detector: Union_logger_3D_space_con_I=1.68735e-1
+* %Example: Detector: Union_logger_3D_space_con_I=1.68735e-13
 *
 * %End
 *******************************************************************************/
