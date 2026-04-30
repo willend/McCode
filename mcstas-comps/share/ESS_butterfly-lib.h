@@ -28,7 +28,7 @@
 
 #ifdef ADJUSTABLE_ESS_PULSE
 #ifndef ESS_SOURCE_DURATION
-#define ESS_SOURCE_DURATION _instrument_var._parameters.ESS_SOURCE_DURATION
+#define ESS_SOURCE_DURATION _instrument_var._parameters.pulse_duration
 #endif
 #endif
 
