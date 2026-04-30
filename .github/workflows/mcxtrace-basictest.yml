@@ -89,7 +89,7 @@ jobs:
         choco install winflexbison3
         choco install wget
         if [ "$CC" == "gcc.exe" ]; then choco install mingw; fi
-        pip install mslex PyYAML ply mcpl mcpl-extra psutil
+        pip install mslex PyYAML ply mcpl mcpl-extra psutil jinja2
 
     - name: Setup (Windows Intel)
       id: setup-Windows-intel
