@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Instrument: ESS_butterfly_Ajustable_Pulse
+* Instrument: ESS_butterfly_Adjustable_Pulse
 *
 * %I
 * Written by: Peter Willendrup <pkwi@fysik.dtu.dk>
@@ -36,7 +36,7 @@
 * Benchmarking website available at <a href="http://ess_butterfly.mcstas.org">http://ess_butterfly.mcstas.org</a>
 * %E
 *******************************************************************************/
-DEFINE INSTRUMENT ESS_butterfly_Ajustable_Pulse(string sector="N",beamline=1,Lmin=0.2,Lmax=20,c_performance=1,t_performance=1,int index=16,dist=0,cold=0.5,Yheight=0.03,delta=0,pulse_duration=2.857e-3)
+DEFINE INSTRUMENT ESS_butterfly_Adjustable_Pulse(string sector="N",beamline=1,Lmin=0.2,Lmax=20,c_performance=1,t_performance=1,int index=16,dist=0,cold=0.5,Yheight=0.03,delta=0,pulse_duration=2.857e-3)
 DEPENDENCY " -DADJUSTABLE_ESS_PULSE "
 
 DECLARE
