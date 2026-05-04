@@ -145,13 +145,13 @@ SHARE
     }
 
     if (add_point == 1) {
-		
-      // k_new given in master coordinates, transform to local 
+
+      // k_new given in master coordinates, transform to local
       // Done here instead of master to save performance, avoid unecessary transforms
-      Coords q_master = coords_sub(make_position(k_old), make_position(k_new));
-      Coords q_local_coords = rot_apply(storage->rotation, q_master);
-	  double q_local_double[3];
-      coords_get(q_local_coords, &q_local_double[0], &q_local_double[1], &q_local_double[2]);
+      Coords q_master = coords_sub (make_position (k_old), make_position (k_new));
+      Coords q_local_coords = rot_apply (storage->rotation, q_master);
+      double q_local_double[3];
+      coords_get (q_local_coords, &q_local_double[0], &q_local_double[1], &q_local_double[2]);
 
       double q1, q2;
 
@@ -182,8 +182,8 @@ SHARE
           struct temp_2DQ_data_struct temporary_storage;
           temporary_storage.num_elements = storage->temp_2DQ_data.num_elements;
           temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_2DQ_data_element_struct));
-	      if (!temporary_storage.elements)
-	        exit (fprintf (stderr, "Union_logger_2DQ: %s: ERROR allocating memory (record_to_temp_2DQ)\n", logger->name));
+          if (!temporary_storage.elements)
+            exit (fprintf (stderr, "Union_logger_2DQ: %s: ERROR allocating memory (record_to_temp_2DQ)\n", logger->name));
 
           for (index = 0; index < storage->temp_2DQ_data.num_elements; index++) {
             temporary_storage.elements[index].index_1 = storage->temp_2DQ_data.elements[index].index_1;
@@ -197,8 +197,8 @@ SHARE
           // allocate larger array (10 larger)
           storage->temp_2DQ_data.allocated_elements = 10 + storage->temp_2DQ_data.num_elements;
           storage->temp_2DQ_data.elements = malloc (storage->temp_2DQ_data.allocated_elements * sizeof (struct temp_2DQ_data_element_struct));
-	      if (!storage->temp_2DQ_data.elements)
-	        exit (fprintf (stderr, "Union_logger_2DQ: %s: ERROR allocating memory (record_to_temp_2DQ)\n", logger->name));
+          if (!storage->temp_2DQ_data.elements)
+            exit (fprintf (stderr, "Union_logger_2DQ: %s: ERROR allocating memory (record_to_temp_2DQ)\n", logger->name));
 
           // copy back from temp
           for (index = 0; index < storage->temp_2DQ_data.num_elements; index++) {
@@ -264,13 +264,13 @@ SHARE
 
     if (add_point == 1) {
 
-      // k_new given in master coordinates, transform to local 
+      // k_new given in master coordinates, transform to local
       // Done here instead of master to save performance, avoid unecessary transforms
-      Coords q_master = coords_sub(make_position(k_old), make_position(k_new));
-      Coords q_local_coords = rot_apply(storage->rotation, q_master);
-  	  double q_local_double[3];
-      coords_get(q_local_coords, &q_local_double[0], &q_local_double[1], &q_local_double[2]);
-		
+      Coords q_master = coords_sub (make_position (k_old), make_position (k_new));
+      Coords q_local_coords = rot_apply (storage->rotation, q_master);
+      double q_local_double[3];
+      coords_get (q_local_coords, &q_local_double[0], &q_local_double[1], &q_local_double[2]);
+
       double q1, q2;
 
       // dim_1_choice = 0 for x, 1 for y, 2 for z. Done in initialize from input "x" "y" "z".
@@ -610,7 +610,7 @@ INITIALIZE
     fprintf (stderr, "Union_logger_2DQ:%s: Error identifying Union_init component, %s is not a known component name.\n", NAME_CURRENT_COMP, init);
     exit (-1);
   }
-  
+
   // Global variables retrieved from init component
   struct global_rotations_to_transform_list_struct* global_rotations_to_transform_list = COMP_GETPAR3 (Union_init, init, global_rotations_to_transform_list);
 

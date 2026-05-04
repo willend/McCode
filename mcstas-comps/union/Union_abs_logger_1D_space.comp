@@ -141,8 +141,8 @@ SHARE
     }
 
     if (add_point == 1) {
-		
-  	  Coords transformed_ray_position;
+
+      Coords transformed_ray_position;
       transformed_ray_position = coords_sub (*position, storage->position);
       transformed_ray_position = rot_apply (storage->rotation, transformed_ray_position);
 
@@ -171,8 +171,8 @@ SHARE
           struct temp_1D_abs_data_struct temporary_storage;
           temporary_storage.num_elements = storage->temp_1D_abs_data.num_elements;
           temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_1D_abs_data_element_struct));
-	      if (!temporary_storage.elements)
-	        exit (fprintf (stderr, "Union_abs_logger_1D_space: %s: ERROR allocating memory (record_to_temp_1D_abs)\n", abs_logger->name));
+          if (!temporary_storage.elements)
+            exit (fprintf (stderr, "Union_abs_logger_1D_space: %s: ERROR allocating memory (record_to_temp_1D_abs)\n", abs_logger->name));
 
           for (index = 0; index < storage->temp_1D_abs_data.num_elements; index++) {
             temporary_storage.elements[index].index = storage->temp_1D_abs_data.elements[index].index;
@@ -185,8 +185,8 @@ SHARE
           // allocate larger array (10 larger)
           storage->temp_1D_abs_data.allocated_elements = 10 + storage->temp_1D_abs_data.num_elements;
           storage->temp_1D_abs_data.elements = malloc (storage->temp_1D_abs_data.allocated_elements * sizeof (struct temp_1D_abs_data_element_struct));
-	      if (!storage->temp_1D_abs_data.elements)
-	        exit (fprintf (stderr, "Union_abs_logger_1D_space: %s: ERROR allocating memory (record_to_temp_1D_abs)\n", abs_logger->name));
+          if (!storage->temp_1D_abs_data.elements)
+            exit (fprintf (stderr, "Union_abs_logger_1D_space: %s: ERROR allocating memory (record_to_temp_1D_abs)\n", abs_logger->name));
 
           // copy back from temp
           for (index = 0; index < storage->temp_1D_abs_data.num_elements; index++) {
@@ -241,8 +241,8 @@ SHARE
     }
 
     if (add_point == 1) {
-		
-  	  Coords transformed_ray_position;
+
+      Coords transformed_ray_position;
       transformed_ray_position = coords_sub (*position, storage->position);
       transformed_ray_position = rot_apply (storage->rotation, transformed_ray_position);
 
@@ -405,11 +405,11 @@ INITIALIZE
   this_abs_storage.Detector_1D.Array_N = malloc (n * sizeof (double));
   if (!this_abs_storage.Detector_1D.Array_N)
     exit (fprintf (stderr, "Union_abs_logger_1D_space: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
-  
+
   this_abs_storage.Detector_1D.Array_p = malloc (n * sizeof (double));
   if (!this_abs_storage.Detector_1D.Array_p)
     exit (fprintf (stderr, "Union_abs_logger_1D_space: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
-  
+
   this_abs_storage.Detector_1D.Array_p2 = malloc (n * sizeof (double));
   if (!this_abs_storage.Detector_1D.Array_p2)
     exit (fprintf (stderr, "Union_abs_logger_1D_space: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));

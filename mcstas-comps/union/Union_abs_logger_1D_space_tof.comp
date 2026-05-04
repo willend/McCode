@@ -113,7 +113,7 @@ SHARE
     struct temp_1D_time_abs_data_struct temp_1D_time_abs_data;
     int order;
     int order_in_this_volume;
-	
+
     Coords position;
     Rotation rotation;
   };
@@ -179,8 +179,8 @@ SHARE
           struct temp_1D_time_abs_data_struct temporary_storage;
           temporary_storage.num_elements = storage->temp_1D_time_abs_data.num_elements;
           temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_1D_time_abs_data_element_struct));
-	      if (!temporary_storage.elements)
-	        exit (fprintf (stderr, "Union_abs_logger_1D_space_tof: %s: ERROR allocating memory (record_to_temp_1D_time_abs)\n", abs_logger->name));
+          if (!temporary_storage.elements)
+            exit (fprintf (stderr, "Union_abs_logger_1D_space_tof: %s: ERROR allocating memory (record_to_temp_1D_time_abs)\n", abs_logger->name));
 
           for (index = 0; index < storage->temp_1D_time_abs_data.num_elements; index++) {
             temporary_storage.elements[index].index_1 = storage->temp_1D_time_abs_data.elements[index].index_1;
@@ -195,8 +195,8 @@ SHARE
           storage->temp_1D_time_abs_data.allocated_elements = 10 + storage->temp_1D_time_abs_data.num_elements;
           storage->temp_1D_time_abs_data.elements
               = malloc (storage->temp_1D_time_abs_data.allocated_elements * sizeof (struct temp_1D_time_abs_data_element_struct));
-	      if (!storage->temp_1D_time_abs_data.elements)
-	        exit (fprintf (stderr, "Union_abs_logger_1D_space_tof: %s: ERROR allocating memory (record_to_temp_1D_time_abs)\n", abs_logger->name));
+          if (!storage->temp_1D_time_abs_data.elements)
+            exit (fprintf (stderr, "Union_abs_logger_1D_space_tof: %s: ERROR allocating memory (record_to_temp_1D_time_abs)\n", abs_logger->name));
 
           // copy back from temp
           for (index = 0; index < storage->temp_1D_time_abs_data.num_elements; index++) {
@@ -253,7 +253,7 @@ SHARE
     }
 
     if (add_point == 1) {
-      Coords transformed_ray_position;		
+      Coords transformed_ray_position;
       transformed_ray_position = coords_sub (*position, storage->position);
       transformed_ray_position = rot_apply (storage->rotation, transformed_ray_position);
 
@@ -390,7 +390,7 @@ SHARE
     double** ptr_array = malloc (sizeof (double*) * (count_x + 1));
     if (!ptr_array)
       exit (fprintf (stderr, "Union_abs_logger_1D_space_tof: ERROR allocating memory (allocate2Ddouble_1D_time_abs)\n"));
-	
+
     for (i = 0; i < count_x; i++) {
       ptr_array[i] = data + (i * count_y);
     }

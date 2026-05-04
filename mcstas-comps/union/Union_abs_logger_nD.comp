@@ -204,7 +204,7 @@ SHARE
     }
 
     if (add_point == 1) {
-		
+
       Coords transformed_ray_position;
       transformed_ray_position = coords_sub (*position, storage->position);
       transformed_ray_position = rot_apply (storage->rotation, transformed_ray_position);
@@ -212,12 +212,12 @@ SHARE
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
       coords_get (transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
-	  
-	  Coords k_coords = make_position(k);	  
-	  Coords transformed_k_coords = rot_apply (storage->rotation, k_coords);
-	  
-	  double given_x_vel, given_y_vel, given_z_vel;	  
-	  coords_get(coords_scalar_mult (transformed_k_coords, K2V), &given_x_vel, &given_y_vel, &given_z_vel);
+
+      Coords k_coords = make_position (k);
+      Coords transformed_k_coords = rot_apply (storage->rotation, k_coords);
+
+      double given_x_vel, given_y_vel, given_z_vel;
+      coords_get (coords_scalar_mult (transformed_k_coords, K2V), &given_x_vel, &given_y_vel, &given_z_vel);
 
       if (storage->temp_abs_nD_data.num_elements < storage->temp_abs_nD_data.allocated_elements) {
 
@@ -239,8 +239,8 @@ SHARE
         struct temp_abs_nD_data_struct temporary_storage;
         temporary_storage.num_elements = storage->temp_abs_nD_data.num_elements;
         temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_abs_nD_data_element_struct));
-	    if (!temporary_storage.elements)
-	      exit (fprintf (stderr, "Union_abs_logger_nD: %s: ERROR allocating memory (record_to_temp_abs_nD)\n", abs_logger->name));
+        if (!temporary_storage.elements)
+          exit (fprintf (stderr, "Union_abs_logger_nD: %s: ERROR allocating memory (record_to_temp_abs_nD)\n", abs_logger->name));
 
         int index;
         for (index = 0; index < storage->temp_abs_nD_data.num_elements; index++) {
@@ -263,8 +263,8 @@ SHARE
         // allocate larger array (10 larger)
         storage->temp_abs_nD_data.allocated_elements = 10 + storage->temp_abs_nD_data.num_elements;
         storage->temp_abs_nD_data.elements = malloc (storage->temp_abs_nD_data.allocated_elements * sizeof (struct temp_abs_nD_data_element_struct));
-	    if (!storage->temp_abs_nD_data.elements)
-	      exit (fprintf (stderr, "Union_abs_logger_nD: %s: ERROR allocating memory (record_to_temp_abs_nD)\n", abs_logger->name));
+        if (!storage->temp_abs_nD_data.elements)
+          exit (fprintf (stderr, "Union_abs_logger_nD: %s: ERROR allocating memory (record_to_temp_abs_nD)\n", abs_logger->name));
 
         // copy back from temp
         for (index = 0; index < storage->temp_abs_nD_data.num_elements; index++) {
@@ -343,13 +343,13 @@ SHARE
       int i;
       double given_x_pos, given_y_pos, given_z_pos;
       coords_get (transformed_ray_position, &given_x_pos, &given_y_pos, &given_z_pos);
-	  
-  	  Coords k_coords = make_position(k);	  
-  	  Coords transformed_k_coords = rot_apply (storage->rotation, k_coords);
-	  
-  	  double given_x_vel, given_y_vel, given_z_vel;	  
-  	  coords_get(coords_scalar_mult (transformed_k_coords, K2V), &given_x_vel, &given_y_vel, &given_z_vel);
-	  
+
+      Coords k_coords = make_position (k);
+      Coords transformed_k_coords = rot_apply (storage->rotation, k_coords);
+
+      double given_x_vel, given_y_vel, given_z_vel;
+      coords_get (coords_scalar_mult (transformed_k_coords, K2V), &given_x_vel, &given_y_vel, &given_z_vel);
+
       _class_particle _localparticle;
 
       _localparticle.x = given_x_pos;

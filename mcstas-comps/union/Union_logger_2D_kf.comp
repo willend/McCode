@@ -104,7 +104,7 @@ SHARE
     int order;
     int order_in_this_volume;
     int order_process_in_this_volume;
-	
+
     Rotation rotation;
   };
 
@@ -141,13 +141,13 @@ SHARE
         add_point = 0;
     }
 
-    if (add_point == 1) {		
-   	  // k_new given in master coordinates, transform to local 
-   	  // Done here instead of master to save performance, avoid unecessary transforms
-  	  Coords k_new_master = make_position(k_new);
-      Coords k_new_local = rot_apply(storage->rotation, k_new_master);
-	  double k_new_local_double[3];
-  	  coords_get(k_new_local, &k_new_local_double[0], &k_new_local_double[1], &k_new_local_double[2]);
+    if (add_point == 1) {
+      // k_new given in master coordinates, transform to local
+      // Done here instead of master to save performance, avoid unecessary transforms
+      Coords k_new_master = make_position (k_new);
+      Coords k_new_local = rot_apply (storage->rotation, k_new_master);
+      double k_new_local_double[3];
+      coords_get (k_new_local, &k_new_local_double[0], &k_new_local_double[1], &k_new_local_double[2]);
 
       double q1, q2;
 
@@ -178,8 +178,8 @@ SHARE
           struct temp_2D_kf_data_struct temporary_storage;
           temporary_storage.num_elements = storage->temp_2D_kf_data.num_elements;
           temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_2D_kf_data_element_struct));
-	      if (!temporary_storage.elements)
-	        exit (fprintf (stderr, "Union_logger_2D_kf: %s: ERROR allocating memory (record_to_temp_2D_kf)\n", logger->name));
+          if (!temporary_storage.elements)
+            exit (fprintf (stderr, "Union_logger_2D_kf: %s: ERROR allocating memory (record_to_temp_2D_kf)\n", logger->name));
 
           for (index = 0; index < storage->temp_2D_kf_data.num_elements; index++) {
             temporary_storage.elements[index].index_1 = storage->temp_2D_kf_data.elements[index].index_1;
@@ -193,8 +193,8 @@ SHARE
           // allocate larger array (10 larger)
           storage->temp_2D_kf_data.allocated_elements = 10 + storage->temp_2D_kf_data.num_elements;
           storage->temp_2D_kf_data.elements = malloc (storage->temp_2D_kf_data.allocated_elements * sizeof (struct temp_2D_kf_data_element_struct));
-	      if (!storage->temp_2D_kf_data.elements)
-	        exit (fprintf (stderr, "Union_logger_2D_kf: %s: ERROR allocating memory (record_to_temp_2D_kf)\n", logger->name));
+          if (!storage->temp_2D_kf_data.elements)
+            exit (fprintf (stderr, "Union_logger_2D_kf: %s: ERROR allocating memory (record_to_temp_2D_kf)\n", logger->name));
 
           // copy back from temp
           for (index = 0; index < storage->temp_2D_kf_data.num_elements; index++) {
@@ -259,12 +259,12 @@ SHARE
     }
 
     if (add_point == 1) {
-      // k_new given in master coordinates, transform to local 
+      // k_new given in master coordinates, transform to local
       // Done here instead of master to save performance, avoid unecessary transforms
-      Coords k_new_master = make_position(k_new);
-      Coords k_new_local = rot_apply(storage->rotation, k_new_master);
-  	  double k_new_local_double[3];
-      coords_get(k_new_local, &k_new_local_double[0], &k_new_local_double[1], &k_new_local_double[2]);
+      Coords k_new_master = make_position (k_new);
+      Coords k_new_local = rot_apply (storage->rotation, k_new_master);
+      double k_new_local_double[3];
+      coords_get (k_new_local, &k_new_local_double[0], &k_new_local_double[1], &k_new_local_double[2]);
 
       double q1, q2;
 
@@ -432,7 +432,7 @@ SHARE
     double** ptr_array = malloc (sizeof (double*) * count_x);
     if (!ptr_array)
       exit (fprintf (stderr, "Union_logger_2D_kf: ERROR allocating memory (allocate2Ddouble_2D_kf)\n"));
-	
+
     for (i = 0; i < count_x; i++) {
       ptr_array[i] = data + (i * count_y);
     }
@@ -612,7 +612,7 @@ INITIALIZE
     fprintf (stderr, "Union_logger_2D_kf:%s: Error identifying Union_init component, %s is not a known component name.\n", NAME_CURRENT_COMP, init);
     exit (-1);
   }
-  
+
   // Global variables retrieved from init component
   struct global_rotations_to_transform_list_struct* global_rotations_to_transform_list = COMP_GETPAR3 (Union_init, init, global_rotations_to_transform_list);
 
