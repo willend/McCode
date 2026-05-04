@@ -123,10 +123,10 @@ SHARE
   #error "The Union_init component must be included before this NCrystal_process component"
   #endif
 
-  #ifndef WIN32
-  #include "NCrystal/ncrystal.h"
-  #else
+  #if defined(WIN32) || defined(_WIN32)
   #include "NCrystal\\ncrystal.h"
+  #else
+  #include "NCrystal/ncrystal.h"
   #endif
   #include "stdio.h"
   #include "stdlib.h"
