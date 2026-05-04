@@ -9,7 +9,7 @@
 * Version: $Revision: 0.1 $
 * Origin: ESS DMSC & DTU Physics
 *
-* A sample component to separate geometry and phsysics
+* A component implementing the Klein-Nishina cross section as a Union physics process
 *
 * %D
 *
@@ -17,7 +17,7 @@
 *  by Kim Lefmann and Kristian Nielsen
 *
 * Part of the Union components, a set of components that work together and thus
-*  sperates geometry and physics within McXtrace.
+* seperates geometry and physics within McXtrace.
 * The use of this component requires other components to be used.
 *
 * 1) One specifies a number of processes using process components like this one
@@ -36,8 +36,7 @@
 * %P
 * INPUT PARAMETERS:
 * density: [g/cm^3]       Nominal density of material.
-* element: [str]          The element (symbol) of the material. Overrides Z.
-* Z: [1]                  Atomic number.
+* init:       [str]   Name of Union inititaliser component
 * OUTPUT PARAMETERS:
 *
 * %L

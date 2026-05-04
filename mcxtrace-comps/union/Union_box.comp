@@ -49,9 +49,9 @@
 * number_of_activations: [1]  Number of subsequent Union_master components that will simulate this geometry
 * mask_string: []      Comma seperated list of geometry names which this geometry should mask
 * mask_setting: []     "All" or "Any", should the masked volume be simulated when the ray is in just one mask, or all.
-* target_x:   [m]
-* target_y:   [m] Position of target to focus at
-* target_z:   [m]
+* target_x:   [m] \
+* target_y:   [m] - Position of target to focus at
+* target_z:   [m] /
 * focus_aw:   [deg] horiz. angular dimension of a rectangular area
 * focus_ah:   [deg] vert. angular dimension of a rectangular area
 * focus_xw:   [m]   horiz. dimension of a rectangular area

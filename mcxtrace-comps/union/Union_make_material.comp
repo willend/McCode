@@ -34,7 +34,7 @@
 * process_string: [string] Comma seperated names of physical processes
 * my_absorption:  [1/m]    Inverse penetration depth from absorption at standard energy
 * absorber:       [0/1]    Control parameter, if set to 1 the material will have no scattering processes
-* material:       [string] List of elements present in the material. Triggers a search for materials constants files.
+* material_string: [string] List of elements present in the material. Triggers a search for materials constants files.
 * init:           [string] Name of Union_init component (typically "init", default)
 *
 * CALCULATED PARAMETERS:
