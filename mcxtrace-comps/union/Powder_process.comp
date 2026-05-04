@@ -11,14 +11,14 @@
 * Version: $Revision: 0.1 $
 * Origin: ESS DMSC & DTU Physics
 *
-* A sample component to separate geometry and phsysics
+* A sample component implementing a powder scattering process 
 *
 * %D
 *
 * This Union_process is based on the PowerN.comp component.
 *
 * Part of the Union components, a set of components that work together and thus
-* seperates geometry and physics within McXtrace.
+* separates geometry and physics within McXtrace.
 * The use of this component requires other components to be used.
 *
 * 1) One specifies a number of processes using process components like this one

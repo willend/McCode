@@ -8,7 +8,7 @@
 * Date: 20.08.15
 * Origin: ESS DMSC & DTU Physics
 *
-* Cylinder geometry component for Union components
+* Implementation of a cylinder geometry - to be filled with a material
 *
 * %D
 * Part of the Union components, a set of components that work together and thus

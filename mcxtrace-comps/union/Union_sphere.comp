@@ -8,7 +8,7 @@
 * Date: 20.08.15
 * Origin: ESS DMSC & DTU Physics
 *
-* A sample component to separate geometry and physics
+* Implementation of a sphere geometry - to be filled with a material
 *
 * %D
 * Part of the Union components, a set of components that work together and thus
@@ -39,7 +39,7 @@
 * p_interact: [1]  probability to interact with this geometry [0-1]
 * visualize:  [1]  set to 0 if you wish to hide this geometry in mcdisplay
 * number_of_activations: [1]  Number of subsequent Union_master components that will simulate this geometry
-* mask_string: []      Comma seperated list of geometry names which this geometry should mask
+* mask_string: []      Comma separated list of geometry names which this geometry should mask
 * mask_setting: []     "All" or "Any", should the masked volume be simulated when the ray is in just one mask, or all.
 * target_index:   [1]  Focus on a component this many steps further in the component sequence. 
 * target_x:   [m] \

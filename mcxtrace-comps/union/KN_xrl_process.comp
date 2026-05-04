@@ -17,7 +17,7 @@
 *  by Kim Lefmann and Kristian Nielsen
 *
 * Part of the Union components, a set of components that work together and thus
-* seperates geometry and physics within McXtrace.
+* separates geometry and physics within McXtrace.
 * The use of this component requires other components to be used.
 *
 * 1) One specifies a number of processes using process components like this one
