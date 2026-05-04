@@ -182,6 +182,8 @@ SHARE
           struct temp_2DQ_data_struct temporary_storage;
           temporary_storage.num_elements = storage->temp_2DQ_data.num_elements;
           temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_2DQ_data_element_struct));
+	      if (!temporary_storage.elements)
+	        exit (fprintf (stderr, "Union_logger_2DQ: %s: ERROR allocating memory (record_to_temp_2DQ)\n", logger->name));
 
           for (index = 0; index < storage->temp_2DQ_data.num_elements; index++) {
             temporary_storage.elements[index].index_1 = storage->temp_2DQ_data.elements[index].index_1;
@@ -195,6 +197,8 @@ SHARE
           // allocate larger array (10 larger)
           storage->temp_2DQ_data.allocated_elements = 10 + storage->temp_2DQ_data.num_elements;
           storage->temp_2DQ_data.elements = malloc (storage->temp_2DQ_data.allocated_elements * sizeof (struct temp_2DQ_data_element_struct));
+	      if (!storage->temp_2DQ_data.elements)
+	        exit (fprintf (stderr, "Union_logger_2DQ: %s: ERROR allocating memory (record_to_temp_2DQ)\n", logger->name));
 
           // copy back from temp
           for (index = 0; index < storage->temp_2DQ_data.num_elements; index++) {
@@ -426,15 +430,13 @@ SHARE
 
     // allocate space for actual data
     double* data = malloc (sizeof (double) * count_x * count_y);
+    if (!data)
+      exit (fprintf (stderr, "Union_logger_2DQ: ERROR allocating memory (allocate2Ddouble)\n"));
 
     // create array or pointers to first elem in each 2D row
     double** ptr_array = malloc (sizeof (double*) * count_x);
-    if (data == NULL || ptr_array == NULL) {
-      free (data);
-      free (ptr_array);
-      printf ("\nERROR: ptr array or data not allocated in Union_logger_2DQ\n");
-      exit (1);
-    }
+    if (!ptr_array)
+      exit (fprintf (stderr, "Union_logger_2DQ: ERROR allocating memory (allocate2Ddouble)\n"));
     for (i = 0; i < count_x; i++) {
       ptr_array[i] = data + (i * count_y);
     }
@@ -576,6 +578,8 @@ INITIALIZE
   this_storage.temp_2DQ_data.num_elements = 0;
   this_storage.temp_2DQ_data.allocated_elements = 10;
   this_storage.temp_2DQ_data.elements = malloc (this_storage.temp_2DQ_data.allocated_elements * sizeof (struct temp_2DQ_data_element_struct));
+  if (!this_storage.temp_2DQ_data.elements)
+    exit (fprintf (stderr, "Union_logger_2DQ: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
 
   // printf("past direction choices sanitation \n");
 

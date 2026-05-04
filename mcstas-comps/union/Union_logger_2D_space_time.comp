@@ -198,6 +198,8 @@ SHARE
           struct temp_2DS_t_data_struct temporary_storage;
           temporary_storage.num_elements = storage->temp_2DS_t_data.num_elements;
           temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_2DS_t_data_element_struct));
+	      if (!temporary_storage.elements)
+	        exit (fprintf (stderr, "Union_logger_2D_space_time: %s: ERROR allocating memory (record_to_temp_2DS_t)\n", logger->name));
 
           for (index = 0; index < storage->temp_2DS_t_data.num_elements; index++) {
             temporary_storage.elements[index].index_1 = storage->temp_2DS_t_data.elements[index].index_1;
@@ -212,6 +214,8 @@ SHARE
           // allocate larger array (10 larger)
           storage->temp_2DS_t_data.allocated_elements = 10 + storage->temp_2DS_t_data.num_elements;
           storage->temp_2DS_t_data.elements = malloc (storage->temp_2DS_t_data.allocated_elements * sizeof (struct temp_2DS_t_data_element_struct));
+	      if (!storage->temp_2DS_t_data.elements)
+	        exit (fprintf (stderr, "Union_logger_2D_space_time: %s: ERROR allocating memory (record_to_temp_2DS_t)\n", logger->name));
 
           // copy back from temp
           for (index = 0; index < storage->temp_2DS_t_data.num_elements; index++) {
@@ -459,12 +463,20 @@ SHARE
   allocate3Ddouble_2DS_t (int count_x, int count_y, int count_z, double* storage) {
     // double *storage = malloc(count_x * count_y * count_z * sizeof(double));
     storage = malloc (count_x * count_y * count_z * sizeof (double));
+    if (!storage)
+      exit (fprintf (stderr, "Union_logger_2D_space_time: ERROR allocating memory (allocate3Ddouble_2DS_t)\n"));
     double* alloc = storage;
     double*** x;
     int i, j;
     x = malloc (count_x * sizeof (*x));
+    if (!x)
+      exit (fprintf (stderr, "Union_logger_2D_space_time: ERROR allocating memory (allocate3Ddouble_2DS_t)\n"));
+	
     for (i = 0; i < count_x; i++) {
       x[i] = malloc (count_y * sizeof (**x));
+      if (!x[i])
+        exit (fprintf (stderr, "Union_logger_2D_space_time: ERROR allocating memory (allocate3Ddouble_2DS_t)\n"));
+	  
       for (j = 0; j < count_y; j++) {
         x[i][j] = alloc;
         alloc += count_z;
@@ -656,6 +668,8 @@ INITIALIZE
   this_storage.temp_2DS_t_data.num_elements = 0;
   this_storage.temp_2DS_t_data.allocated_elements = 10;
   this_storage.temp_2DS_t_data.elements = malloc (this_storage.temp_2DS_t_data.allocated_elements * sizeof (struct temp_2DS_t_data_element_struct));
+  if (!this_storage.temp_2DS_t_data.elements)
+    exit (fprintf (stderr, "Union_logger_2D_space_time: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
 
   if (_getcomp_index (init) < 0) {
     fprintf (stderr, "Union_logger_2D_space_time:%s: Error identifying Union_init component, %s is not a known component name.\n", NAME_CURRENT_COMP, init);

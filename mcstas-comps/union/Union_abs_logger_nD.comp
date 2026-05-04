@@ -239,6 +239,8 @@ SHARE
         struct temp_abs_nD_data_struct temporary_storage;
         temporary_storage.num_elements = storage->temp_abs_nD_data.num_elements;
         temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_abs_nD_data_element_struct));
+	    if (!temporary_storage.elements)
+	      exit (fprintf (stderr, "Union_abs_logger_nD: %s: ERROR allocating memory (record_to_temp_abs_nD)\n", abs_logger->name));
 
         int index;
         for (index = 0; index < storage->temp_abs_nD_data.num_elements; index++) {
@@ -261,6 +263,8 @@ SHARE
         // allocate larger array (10 larger)
         storage->temp_abs_nD_data.allocated_elements = 10 + storage->temp_abs_nD_data.num_elements;
         storage->temp_abs_nD_data.elements = malloc (storage->temp_abs_nD_data.allocated_elements * sizeof (struct temp_abs_nD_data_element_struct));
+	    if (!storage->temp_abs_nD_data.elements)
+	      exit (fprintf (stderr, "Union_abs_logger_nD: %s: ERROR allocating memory (record_to_temp_abs_nD)\n", abs_logger->name));
 
         // copy back from temp
         for (index = 0; index < storage->temp_abs_nD_data.num_elements; index++) {
@@ -527,6 +531,8 @@ INITIALIZE INHERIT Monitor_nD EXTEND
 
   this_abs_storage.temp_abs_nD_data.allocated_elements = 10;
   this_abs_storage.temp_abs_nD_data.elements = malloc (this_abs_storage.temp_abs_nD_data.allocated_elements * sizeof (struct temp_abs_nD_data_element_struct));
+  if (!this_abs_storage.temp_abs_nD_data.elements)
+    exit (fprintf (stderr, "Union_abs_logger_nD: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
 
   if (_getcomp_index (init) < 0) {
     fprintf (stderr, "Union_abs_logger_nD:%s: Error identifying Union_init component, %s is not a known component name.\n", NAME_CURRENT_COMP, init);

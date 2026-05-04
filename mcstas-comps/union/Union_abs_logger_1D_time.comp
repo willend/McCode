@@ -167,6 +167,8 @@ SHARE
           struct temp_time_abs_data_struct temporary_storage;
           temporary_storage.num_elements = storage->temp_time_abs_data.num_elements;
           temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_time_abs_data_element_struct));
+	      if (!temporary_storage.elements)
+	        exit (fprintf (stderr, "Union_abs_logger_1D_time: %s: ERROR allocating memory (record_to_temp_time_abs)\n", abs_logger->name));
 
           for (index = 0; index < storage->temp_time_abs_data.num_elements; index++) {
             temporary_storage.elements[index].index = storage->temp_time_abs_data.elements[index].index;
@@ -179,6 +181,8 @@ SHARE
           // allocate larger array (10 larger)
           storage->temp_time_abs_data.allocated_elements = 10 + storage->temp_time_abs_data.num_elements;
           storage->temp_time_abs_data.elements = malloc (storage->temp_time_abs_data.allocated_elements * sizeof (struct temp_time_abs_data_element_struct));
+	      if (!storage->temp_time_abs_data.elements)
+	        exit (fprintf (stderr, "Union_abs_logger_1D_time: %s: ERROR allocating memory (record_to_temp_time_abs)\n", abs_logger->name));
 
           // copy back from temp
           for (index = 0; index < storage->temp_time_abs_data.num_elements; index++) {
@@ -391,8 +395,16 @@ INITIALIZE
 
   // Remember to take special care when deallocating this array
   this_abs_storage.Detector_1D.Array_N = malloc (n * sizeof (double));
+  if (!this_abs_storage.Detector_1D.Array_N)
+    exit (fprintf (stderr, "Union_abs_logger_1D_time: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
+  
   this_abs_storage.Detector_1D.Array_p = malloc (n * sizeof (double));
+  if (!this_abs_storage.Detector_1D.Array_p)
+    exit (fprintf (stderr, "Union_abs_logger_1D_time: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
+  
   this_abs_storage.Detector_1D.Array_p2 = malloc (n * sizeof (double));
+  if (!this_abs_storage.Detector_1D.Array_p2)
+    exit (fprintf (stderr, "Union_abs_logger_1D_time: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
 
   int l1, l2;
   for (l1 = 0; l1 < n; l1++) { // n is technically a double, but this works fine
@@ -419,6 +431,8 @@ INITIALIZE
   this_abs_storage.temp_time_abs_data.allocated_elements = 10;
   this_abs_storage.temp_time_abs_data.elements
       = malloc (this_abs_storage.temp_time_abs_data.allocated_elements * sizeof (struct temp_time_abs_data_element_struct));
+  if (!this_abs_storage.temp_time_abs_data.elements)
+    exit (fprintf (stderr, "Union_abs_logger_1D_time: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
 
   if (_getcomp_index (init) < 0) {
     fprintf (stderr, "Union_abs_logger_1D_time:%s: Error identifying Union_init component, %s is not a known component name.\n", NAME_CURRENT_COMP, init);

@@ -199,6 +199,8 @@ SHARE
           struct temp_2D_abs_data_struct temporary_storage;
           temporary_storage.num_elements = storage->temp_2D_abs_data.num_elements;
           temporary_storage.elements = malloc (temporary_storage.num_elements * sizeof (struct temp_2D_abs_data_element_struct));
+	      if (!temporary_storage.elements)
+	        exit (fprintf (stderr, "Union_abs_logger_2D_space: %s: ERROR allocating memory (record_to_temp_2D_abs)\n", abs_logger->name));
 
           for (index = 0; index < storage->temp_2D_abs_data.num_elements; index++) {
             temporary_storage.elements[index].index_1 = storage->temp_2D_abs_data.elements[index].index_1;
@@ -212,6 +214,8 @@ SHARE
           // allocate larger array (10 larger)
           storage->temp_2D_abs_data.allocated_elements = 10 + storage->temp_2D_abs_data.num_elements;
           storage->temp_2D_abs_data.elements = malloc (storage->temp_2D_abs_data.allocated_elements * sizeof (struct temp_2D_abs_data_element_struct));
+	      if (!storage->temp_2D_abs_data.elements)
+	        exit (fprintf (stderr, "Union_abs_logger_2D_space: %s: ERROR allocating memory (record_to_temp_2D_abs)\n", abs_logger->name));
 
           // copy back from temp
           for (index = 0; index < storage->temp_2D_abs_data.num_elements; index++) {
@@ -404,9 +408,15 @@ SHARE
 
     // allocate space for actual data
     double* data = malloc (sizeof (double) * count_x * count_y);
+    if (!data)
+      exit (fprintf (stderr, "Union_abs_logger_2D_space: ERROR allocating memory (allocate2Ddouble_2D_abs)\n"));
+	
 
     // create array or pointers to first elem in each 2D row
     double** ptr_array = malloc (sizeof (double*) * count_x);
+    if (!ptr_array)
+      exit (fprintf (stderr, "Union_abs_logger_2D_space: ERROR allocating memory (allocate2Ddouble_2D_abs)\n"));
+	
     for (i = 0; i < count_x; i++) {
       ptr_array[i] = data + (i * count_y);
     }
@@ -551,6 +561,9 @@ INITIALIZE
   // Added 17/11/2016, allocating some elements in initialize makes code during trace simpler
   this_abs_storage.temp_2D_abs_data.allocated_elements = 10;
   this_abs_storage.temp_2D_abs_data.elements = malloc (this_abs_storage.temp_2D_abs_data.allocated_elements * sizeof (struct temp_2D_abs_data_element_struct));
+  if (!this_abs_storage.temp_2D_abs_data.elements)
+    exit (fprintf (stderr, "Union_abs_logger_2D_space: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
+  
 
   if (_getcomp_index (init) < 0) {
     fprintf (stderr, "Union_abs_logger_2D_space:%s: Error identifying Union_init component, %s is not a known component name.\n", NAME_CURRENT_COMP, init);
