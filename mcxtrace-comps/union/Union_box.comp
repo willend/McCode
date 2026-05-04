@@ -42,13 +42,13 @@
 * zdepth: [m]          depth of the box volume
 * xwidth2: [m]         optional different width at the +z box face
 * yheight2: [m]        optional different height at the +z box face
-* material_string: []  material name of this volume, defined using Union_make_material
+* material_string: [str]  material name of this volume, defined using Union_make_material
 * priority: [1]        priotiry of the volume (can not be the same as another volume) A high priority is on top of low.
 * p_interact: [1]  probability to interact with this geometry [0-1]
 * visualize:  [1]  set to 0 if you wish to hide this geometry in mcdisplay
 * number_of_activations: [1]  Number of subsequent Union_master components that will simulate this geometry
-* mask_string: []      Comma seperated list of geometry names which this geometry should mask
-* mask_setting: []     "All" or "Any", should the masked volume be simulated when the ray is in just one mask, or all.
+* mask_string: [str]      Comma seperated list of geometry names which this geometry should mask
+* mask_setting: [str]     "All" or "Any", should the masked volume be simulated when the ray is in just one mask, or all.
 * target_x:   [m] \
 * target_y:   [m] - Position of target to focus at
 * target_z:   [m] /
