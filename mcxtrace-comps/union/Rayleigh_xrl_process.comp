@@ -36,7 +36,7 @@
 * %P
 * INPUT PARAMETERS:
 * density: [g/cm^3]       Nominal density of material.
-* element: [str]          The element (symbol) of the material. Overrides Z.
+* element: [str]          The element (symbol) of the material. Overrides atomno.
 * atomno: [1]             Atomic number.
 * init:       [str]   Name of Union inititaliser component
 * OUTPUT PARAMETERS:
