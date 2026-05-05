@@ -11,7 +11,8 @@
 * An example using Union with Klein-Nishina, Rayleigh, or Compton scattering
 *
 * %D
-* An example instrument that uses either Klein-Nishina 
+* An example instrument that uses either Klein-Nishina, Rayleigh, or Compton on a sphere
+* filled with whatever material is indicated by the atom number
 *
 * %Example: E0=12 Detector: emon_sphere_I=4.28512e-09
 *
