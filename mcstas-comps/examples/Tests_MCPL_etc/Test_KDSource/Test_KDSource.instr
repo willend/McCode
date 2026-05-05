@@ -23,16 +23,20 @@
 * Uses an KDSource XML description of bandwidths to apply when resampling the
 * base MCPL input from samples.mcpl.gz
 *
-* %Example: -y Detector: PSDMon2_I=4056
+* %Example: nloop=1 Detector: PSDMon2_I=4056
+* %Example: nloop=10 Detector: PSDMon2_I=4056
+* %Example: nloop=100 Detector: PSDMon2_I=4056
+* %Example: nloop=1000 Detector: PSDMon2_I=4056
 *
 * %Parameters
-* 
+* nloop: [1] Number of reusages of KDSource input
+*
 * %Link
 * 
 * %End 
 ********************************************************************************/
 
-DEFINE INSTRUMENT KDS_resampled ()
+DEFINE INSTRUMENT KDS_resampled (int nloop=1)
 
 DECLARE 
 %{
@@ -47,8 +51,8 @@ COMPONENT Origin = Progress_bar()
 AT (0, 0, 0) ABSOLUTE
 
 COMPONENT Source = KDSource(
- filename = "source.xml", verbose = 0,
- use_kde = 1)
+ filename = "source.xml",
+ nloop=nloop)
 AT (0, 0, 0) RELATIVE Origin
 
 COMPONENT Norm = Monitor(
