@@ -4,7 +4,7 @@
 	<kernel>g</kernel>
 	<PList>
 		<pt>n</pt>
-		<mcplname>/Users/peterwillendrup/Projects/mccode-KDSource/docs/examples/samples.mcpl.gz</mcplname>
+		<mcplname>samples.mcpl.gz</mcplname>
 		<trasl/>
 		<rot/>
 		<x2z>0</x2z>
@@ -25,6 +25,6 @@
 		<trasl/>
 		<rot/>
 	</Geom>
-	<scaling> 0.74580758 14.1310683   9.99354703  0.47146019  0.47146019  0.47146019</scaling>
-	<BW variable="1">/Users/peterwillendrup/Projects/mccode-KDSource/docs/examples/samples_bws</BW>
+	<scaling> 0.74661161 14.1694998  10.00301251  0.4723678   0.4723678   0.4723678 </scaling>
+	<BW variable="1">samples_bws</BW>
 </KDSource>
