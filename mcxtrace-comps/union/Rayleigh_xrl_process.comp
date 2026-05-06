@@ -51,7 +51,7 @@ DEFINE COMPONENT Rayleigh_xrl_process
 DEFINITION PARAMETERS ()
 SETTING PARAMETERS (density=0,atomno=14, string element="", string init="init")
 OUTPUT PARAMETERS (This_process,Rayleigh_xrl_storage)
-DEPENDENCY "-lxrl"
+DEPENDENCY " @XRLFLAGS@ "
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 
 SHARE

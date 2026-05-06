@@ -49,7 +49,7 @@ DEFINE COMPONENT KN_xrl_process
 DEFINITION PARAMETERS ()
 SETTING PARAMETERS (density=0, string init="init")
 OUTPUT PARAMETERS (This_process,KN_xrl_storage)
-DEPENDENCY "-lxrl"
+DEPENDENCY " @XRLFLAGS@ "
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 
 SHARE
