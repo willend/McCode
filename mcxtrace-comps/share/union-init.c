@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-*  McStas, neutron ray-tracing package
+*  McXtrace, photon ray-tracing package
 *  Copyright(C) 2007 Risoe National Laboratory.
 *
 * %I
@@ -51,10 +51,6 @@
 // Initialize global_material_list
   // Used to facilitate communication between materials and the other types of Union components
   struct pointer_to_global_material_list global_material_list = {0,NULL};
-  
-// Initialize global_surface_list
-  // Used to facilitate communication between surface components and other types of Union components
-  struct pointer_to_global_surface_list global_surface_list = {0,NULL};
 
 // Initialize global_geometry_list
   // Used to facilitate communication between geometries and the other types of Union components
@@ -65,10 +61,6 @@
   struct pointer_to_global_logger_list global_all_volume_logger_list = {0,NULL};
   struct pointer_to_global_logger_list global_specific_volumes_logger_list = {0,NULL};
 
-// Initialize global_abs_logger_lists
-  struct pointer_to_global_abs_logger_list global_all_volume_abs_logger_list = {0,NULL};
-  struct pointer_to_global_abs_logger_list global_specific_volumes_abs_logger_list = {0,NULL};
-
 // Initialize global_tagging_conditional_list
   // Used to facilitate communication between conditionals and the other types of Union components
   struct global_tagging_conditional_list_struct global_tagging_conditional_list = {0,0,NULL};
@@ -76,7 +68,3 @@
 // Initialize global_master_list
   // Used to facilitate communication between Master components (mainly for deallocation)
   struct pointer_to_global_master_list global_master_list = {0,NULL};
-
-// Initialize global_mantid_min_pixel_id
-  // Used for ensuring pixel id's on Mantid monitors do not overlap
-  int global_mantid_min_pixel_id = 0;
