@@ -148,12 +148,13 @@ SHARE
     };
   }
 
-  double ncrystalsample_rand01(void*state) {
-    //This function is needed, since we can not simply pass _rand01 to
-    //ncrystal_samplescatter_rc, since storing a double(randstate_t*) function
-    //in a function pointer of signature double(void*) is strictly speaking
-    //undefined behaviour.
-    return _rand01((randstate_t*)state);
+  double
+  ncrystalsample_rand01 (void* state) {
+    // This function is needed, since we can not simply pass _rand01 to
+    // ncrystal_samplescatter_rc, since storing a double(randstate_t*) function
+    // in a function pointer of signature double(void*) is strictly speaking
+    // undefined behaviour.
+    return _rand01 ((randstate_t*)state);
   }
 
   #ifndef NCMCERR
