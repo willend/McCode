@@ -148,15 +148,6 @@ SHARE
     };
   }
 
-  double
-  ncrystalsample_rand01 (void* state) {
-    // This function is needed, since we can not simply pass _rand01 to
-    // ncrystal_samplescatter_rc, since storing a double(randstate_t*) function
-    // in a function pointer of signature double(void*) is strictly speaking
-    // undefined behaviour.
-    return _rand01 ((randstate_t*)state);
-  }
-
   #ifndef NCMCERR
   /* more convenient form (only works in TRACE section, not in SHARE functions) */
   #  define NCMCERR(msg) NCMCERR2(NAME_CURRENT_COMP,msg)
@@ -307,7 +298,7 @@ TRACE
 
       /* scattering */
       double ekin_final;
-      ncrystal_samplescatter_rs (ncrystalsample_rand01, (void*)_particle->randstate, params.scat, ekin, (const double (*)[3]) & dir, &ekin_final, &dirout);
+      ncrystal_samplescatter_rs (_rand01_opague, (void*)_particle->randstate, params.scat, ekin, (const double (*)[3]) & dir, &ekin_final, &dirout);
       double delta_ekin = ekin_final - ekin;
       if (delta_ekin) {
         ekin = ekin_final;
