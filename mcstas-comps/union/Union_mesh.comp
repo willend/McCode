@@ -639,7 +639,7 @@ SHARE
     for (i = 0; i < number_of_points_in_array; i++) {
       // Transpose and rotate the points such that they are in the right coordinate system
       mesh_shell_array.elements[i] = coords_add (mesh_shell_array.elements[i], geometry->center);
-      mesh_shell_array.elements[i] = rot_apply (geometry->transpose_rotation_matrix, mesh_shell_array.elements[i]);
+      mesh_shell_array.elements[i] = rot_apply (geometry->rotation_matrix, mesh_shell_array.elements[i]);
     }
     return mesh_shell_array;
   }
