@@ -88,7 +88,7 @@ jobs:
         cygpath -sm "$MSMPI_LIB64" > libpath.txt
         choco install winflexbison3
         choco install wget
-        if [ "$CC" == "gcc.exe" ]; then choco install mingw; fi
+        if [ "$CC" == "gcc.exe" ]; then choco install MinGW-w64; fi
         pip install mslex PyYAML ply mcpl mcpl-extra psutil jinja2
 
     - name: Setup (Windows Intel)
