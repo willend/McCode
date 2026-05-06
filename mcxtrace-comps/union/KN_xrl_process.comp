@@ -49,7 +49,7 @@ DEFINE COMPONENT KN_xrl_process
 DEFINITION PARAMETERS ()
 SETTING PARAMETERS (density=0, string init="init")
 OUTPUT PARAMETERS (This_process,KN_xrl_storage)
-DEPENDENCY "-lxrl"
+DEPENDENCY " @XRLFLAGS@ "
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 
 SHARE
@@ -62,14 +62,7 @@ SHARE
 
 #endif
 
-/* If on windows this should likely be set like this
- * since xraylib.h is not (as a standard) installed
- * into an xraylib subdir*/
-#ifdef _WIN32
-#include <xraylib.h>
-#else
 #include <xraylib/xraylib.h>
-#endif
 
 struct KN_xrl_physics_storage_struct{
   char name[13];
