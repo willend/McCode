@@ -3733,13 +3733,13 @@ double Moeller_Trumbore_intersection(struct Moeller_Trumbore* intersect) {
   intersect->s = coords_sub(intersect->rotated_coordinates, intersect->v1);
   intersect->u = intersect->f * (Dot(intersect->s,intersect->h));
   if (intersect->u < 0.0 || intersect->u > 1.0){
-    return 0;
+    return -1;
   } else {
     intersect->q = coords_xp(intersect->s, intersect->edge1);
     intersect->V = intersect->f * Dot(intersect->rotated_velocity,intersect->q);
 
     if (intersect->V < 0.0 || intersect->u + intersect->V > 1.0){
-      return 0;
+      return -1;
     } else {
       // At this stage we can compute t to find out where the intersection point is on the line.    
       return intersect->f * Dot(intersect->q,intersect->edge2);
@@ -3752,73 +3752,288 @@ double Moeller_Trumbore_intersection(struct Moeller_Trumbore* intersect) {
 
 
 int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
+  //TODO: Make a single intersection algorithm that all the three mesh intersections
+  // Can use
+// Unpack parameters
+
+    Coords center = geometry->center;
+    int n_facets = geometry->geometry_parameters.p_mesh_storage->n_facets;
+    double *normal_x = geometry->geometry_parameters.p_mesh_storage->normal_x;
+    double *normal_y = geometry->geometry_parameters.p_mesh_storage->normal_y;
+    double *normal_z = geometry->geometry_parameters.p_mesh_storage->normal_z;
+    double *v1_x = geometry->geometry_parameters.p_mesh_storage->v1_x;
+    double *v1_y = geometry->geometry_parameters.p_mesh_storage->v1_y;
+    double *v1_z = geometry->geometry_parameters.p_mesh_storage->v1_z;
+    double *v2_x = geometry->geometry_parameters.p_mesh_storage->v2_x;
+    double *v2_y = geometry->geometry_parameters.p_mesh_storage->v2_y;
+    double *v2_z = geometry->geometry_parameters.p_mesh_storage->v2_z;
+    double *v3_x = geometry->geometry_parameters.p_mesh_storage->v3_x;
+    double *v3_y = geometry->geometry_parameters.p_mesh_storage->v3_y;
+    double *v3_z = geometry->geometry_parameters.p_mesh_storage->v3_z;
+
+    double x_new,y_new,z_new;
+
+    // Coordinate transformation
+    x_new = pos.x - geometry->center.x;
+    y_new = pos.y - geometry->center.y;
+    z_new = pos.z - geometry->center.z;
+
+    Coords coordinates = coords_set(x_new,y_new,z_new);
+    Coords rotated_coordinates;
+
+    rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,coordinates);
+
+
+    int verbal = 0;
+    // Generate unit direction vector along center axis of meshs
+
+    // Start with vector that points along the mesh in the simple frame, and rotate to global
+    Coords simple_vector = coords_set(0,1,0);
+    Coords test_vector = coords_set(0,1,0);
+    // Check intersections with every single facet:
+    int iter =0;
+    int counter=0; int neg_counter=0;
+    Coords edge1,edge2,h,s,q,tmp,intersect_pos;
+    double UNION_EPSILON = 1e-27;
+    double this_facet_t;
+    double a,f,u,V;
+    //////printf("\n RWITHIN TEST 1ste");
+    for (iter = 0 ; iter < n_facets ; iter++){
+        // Intersection with face plane (Möller–Trumbore)
+        edge1 = coords_set(*(v2_x+iter)-*(v1_x+iter),*(v2_y+iter)-*(v1_y+iter),*(v2_z+iter)-*(v1_z+iter));
+        edge2 = coords_set(*(v3_x+iter)-*(v1_x+iter),*(v3_y+iter)-*(v1_y+iter),*(v3_z+iter)-*(v1_z+iter));
+
+        vec_prod(h.x,h.y,h.z,test_vector.x,test_vector.y,test_vector.z,edge2.x,edge2.y,edge2.z);
+
+        a = Dot(edge1,h);
+        if (a > -UNION_EPSILON && a < UNION_EPSILON){
+            //////printf("\n UNION_EPSILON fail");
+        } else{
+            f = 1.0/a;
+            s = coords_sub(rotated_coordinates, coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
+            u = f * (Dot(s,h));
+            if (u < 0.0 || u > 1.0){
+            }else{
+                //q = vec_prod(s,edge1);
+                vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
+                V = f * Dot(test_vector,q);
+                if (V < 0.0 || u + V > 1.0){
+                } else {
+                    // At this stage we can compute t to find out where the intersection point is on the line.
+                    if (f* Dot(q,edge2) > 0){
+                        counter++;
+
+                    } else {
+                        neg_counter++;
+
+                    }
+                    if (fabs(f* Dot(q,edge2)) > UNION_EPSILON){
+                    } else { //printf("\n [%f %f %f] Failed due to being close to surface, E = %f",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,f* Dot(q,edge2));
+                     }
+
+
+
+                }
+            }
+        }
+    }
+    int C1 = counter;
+
+    int maxC; int sameNr =0;
+    if (counter % 2 == neg_counter % 2){
+        maxC = counter;
+        sameNr = 1;
+    } else {
+        //printf("\n not the same intersection numbers (%i , %i)",counter,neg_counter);
+        maxC = counter;
+        sameNr = 0;
+    }
+
+ if (sameNr == 0){
+     test_vector = coords_set(0,0,1);
+    iter =0;
+    counter=0;
+    for (iter = 0 ; iter < n_facets ; iter++){
+        // Intersection with face plane (Möller–Trumbore)
+        edge1 = coords_set(*(v2_x+iter)-*(v1_x+iter),*(v2_y+iter)-*(v1_y+iter),*(v2_z+iter)-*(v1_z+iter));
+        edge2 = coords_set(*(v3_x+iter)-*(v1_x+iter),*(v3_y+iter)-*(v1_y+iter),*(v3_z+iter)-*(v1_z+iter));
+
+        vec_prod(h.x,h.y,h.z,test_vector.x,test_vector.y,test_vector.z,edge2.x,edge2.y,edge2.z);
+
+        a = Dot(edge1,h);
+        if (a > -UNION_EPSILON && a < UNION_EPSILON){
+            //////printf("\n UNION_EPSILON fail");
+        } else{
+            f = 1.0/a;
+            s = coords_sub(rotated_coordinates , coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
+            u = f * (Dot(s,h));
+            if (u < 0.0 || u > 1.0){
+            }else{
+                //q = vec_prod(s,edge1);
+                vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
+                V = f * Dot(test_vector,q);
+                if (V < 0.0 || u + V > 1.0){
+                } else {
+                    // At this stage we can compute t to find out where the intersection point is on the line.
+
+                    if (f* Dot(q,edge2) > 0){
+                        counter++;
+
+                    } else {
+                        neg_counter++;
+
+                    }
+                    if (fabs(f* Dot(q,edge2)) > UNION_EPSILON){
+                    } else { printf("\n [%f %f %f] Failed due to being close to surface (2. iteration), E = %f",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,f* Dot(q,edge2));
+                     }
+
+
+
+                }
+            }
+        }
+    }
+    }
+
+    if (counter % 2 == neg_counter % 2){
+        maxC = counter;
+        sameNr = 1;
+    } else {
+        printf("\n not the same intersection numbers (%i , %i) second iteration",counter,neg_counter);
+        maxC = counter;
+        sameNr = 0;
+    }
+
+    if (sameNr == 0){
+     test_vector = coords_set(1,0,0);
+    iter =0;
+    counter=0;
+    for (iter = 0 ; iter < n_facets ; iter++){
+        // Intersection with face plane (Möller–Trumbore)
+        edge1 = coords_set(*(v2_x+iter)-*(v1_x+iter),*(v2_y+iter)-*(v1_y+iter),*(v2_z+iter)-*(v1_z+iter));
+        edge2 = coords_set(*(v3_x+iter)-*(v1_x+iter),*(v3_y+iter)-*(v1_y+iter),*(v3_z+iter)-*(v1_z+iter));
+
+        vec_prod(h.x,h.y,h.z,test_vector.x,test_vector.y,test_vector.z,edge2.x,edge2.y,edge2.z);
+
+        a = Dot(edge1,h);
+        if (a > -UNION_EPSILON && a < UNION_EPSILON){
+            //////printf("\n UNION_EPSILON fail");
+        } else{
+            f = 1.0/a;
+            s = coords_sub(rotated_coordinates , coords_set(*(v1_x+iter),*(v1_y+iter),*(v1_z+iter)));
+            u = f * (Dot(s,h));
+            if (u < 0.0 || u > 1.0){
+                //////printf("\n Nope 1");
+            }else{
+                //q = vec_prod(s,edge1);
+                vec_prod(q.x,q.y,q.z,s.x,s.y,s.z,edge1.x,edge1.y,edge1.z);
+                V = f * Dot(test_vector,q);
+                if (V < 0.0 || u + V > 1.0){
+                } else {
+                    // At this stage we can compute t to find out where the intersection point is on the line.
+
+                    if (f* Dot(q,edge2) > 0){
+                        counter++;
+
+                    } else {
+                        neg_counter++;
+
+                    }
+                    if (fabs(f* Dot(q,edge2)) > UNION_EPSILON){
+                    } else { printf("\n [%f %f %f] Failed due to being close to surface (3. iteration), E = %f",rotated_coordinates.x,rotated_coordinates.y,rotated_coordinates.z,f* Dot(q,edge2));
+                    }
+
+
+
+                }
+            }
+        }
+    }
+
+    }
+
+
+    if (counter % 2 == neg_counter % 2){
+        maxC = counter;
+    } else {
+        return 0;
+    }
+    if ( maxC % 2 == 0) {
+        return 0;
+    }else{
+        return 1;
+
+    }
+
+    return 0;
+    };
   // r_within_mesh uses a ray casting technique to determine whether or not
   // a position is within the mesh. 
   // It chooses a random velocity, and if the number of intersections
   // is uneven, the position is inside the mesh.
   // Since this can be numerically unstable, it performs this ray casting 3 times
   // and then allows the majority of results to decide whether inside or outside
-
-  Coords center = geometry->center;
-  double x_new,y_new,z_new;
-  
-  // Coordinate transformation
-  x_new = pos.x - geometry->center.x;
-  y_new = pos.y - geometry->center.y;
-  z_new = pos.z - geometry->center.z;
-  
-  Coords coordinates = coords_set(x_new,y_new,z_new);
-  Coords rotated_coordinates;
-  
-  rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,coordinates);
-
-  // Check intersections with every single facet:
-  // First do allocations:
-  int n_facets = geometry->geometry_parameters.p_mesh_storage->n_facets;
-  double possible_t;
-  int iter =0;
-  int counter;
-  struct Moeller_Trumbore intersect_transport;
-  double *t_intersect=malloc(n_facets*sizeof(double));
-  int *facet_index = malloc(n_facets*sizeof(int));
-  if (!t_intersect || !facet_index) {
-    fprintf(stderr,"Failure allocating list in Union function sample_mesh_intersect - Exit!\n");
-    exit(EXIT_FAILURE);
-  }
-  Coords *verts = geometry->geometry_parameters.p_mesh_storage->vertices;
-  int **facets = geometry->geometry_parameters.p_mesh_storage->facets;
-  // Then loop over every facet
-  intersect_transport.rotated_coordinates = rotated_coordinates;
-  int inside_vote = 0, outside_vote = 0;
-
-  for (int j = 0; j <3; j++){
-    counter = 0;
-    Coords test_vector = coords_set(rand01(),rand01(),rand01());
-    intersect_transport.rotated_velocity = test_vector;
-    for (iter = 0 ; iter < n_facets ; iter++){
-      intersect_transport.v1 = verts[facets[iter][0]];
-      intersect_transport.v2 = verts[facets[iter][1]];
-      intersect_transport.v3 = verts[facets[iter][2]];
-      possible_t = Moeller_Trumbore_intersection(&intersect_transport);
-      if (possible_t != 0){
-        counter++;
-      }
-    }
-    if (counter%2==1){
-      inside_vote++;
-    } else {
-      outside_vote++;
-    }
-    if (inside_vote == 2 || outside_vote == 2){
-      break;
-    }
-  }
-  if (inside_vote == 2){
-    return 1;
-  } else {
-    return 0;
-  }
-}
+//
+//   Coords center = geometry->center;
+//   double x_new,y_new,z_new;
+//
+//   // Coordinate transformation
+//   x_new = pos.x - geometry->center.x;
+//   y_new = pos.y - geometry->center.y;
+//   z_new = pos.z - geometry->center.z;
+//
+//   Coords coordinates = coords_set(x_new,y_new,z_new);
+//   Coords rotated_coordinates;
+//
+//   rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,coordinates);
+//
+//   // Check intersections with every single facet:
+//   // First do allocations:
+//   int n_facets = geometry->geometry_parameters.p_mesh_storage->n_facets;
+//   double possible_t;
+//   int iter =0;
+//   int counter;
+//   struct Moeller_Trumbore intersect_transport;
+//   double *t_intersect=malloc(n_facets*sizeof(double));
+//   int *facet_index = malloc(n_facets*sizeof(int));
+//   if (!t_intersect || !facet_index) {
+//     fprintf(stderr,"Failure allocating list in Union function sample_mesh_intersect - Exit!\n");
+//     exit(EXIT_FAILURE);
+//   }
+//   Coords *verts = geometry->geometry_parameters.p_mesh_storage->vertices;
+//   int **facets = geometry->geometry_parameters.p_mesh_storage->facets;
+//   // Then loop over every facet
+//   intersect_transport.rotated_coordinates = rotated_coordinates;
+//   int inside_vote = 0, outside_vote = 0;
+//
+//   for (int j = 0; j <3; j++){
+//     counter = 0;
+//     Coords test_vector = coords_set(rand01(),rand01(),rand01());
+//     intersect_transport.rotated_velocity = test_vector;
+//     for (iter = 0 ; iter < n_facets ; iter++){
+//       intersect_transport.v1 = verts[facets[iter][0]];
+//       intersect_transport.v2 = verts[facets[iter][1]];
+//       intersect_transport.v3 = verts[facets[iter][2]];
+//       possible_t = Moeller_Trumbore_intersection(&intersect_transport);
+//       if (possible_t > 0){
+//         counter++;
+//       }
+//     }
+//     if (counter%2==1){
+//       inside_vote++;
+//     } else {
+//       outside_vote++;
+//     }
+//     if (inside_vote == 2 || outside_vote == 2){
+//       break;
+//     }
+//   }
+//   if (inside_vote == 2){
+//     return 1;
+//   } else {
+//     return 0;
+//   }
+// }
 
 
 // Type for holding intersection and normal	
@@ -3905,6 +4120,8 @@ int sample_mesh_intersect(double *t,
   int iter =0;
   int counter=0;
   struct Moeller_Trumbore intersect_transport;
+  // TODO: Allocating T_intersect and facet index might get large with large 
+  // meshes
   double *t_intersect=malloc(n_facets*sizeof(double));
   int *facet_index = malloc(n_facets*sizeof(int));
   if (!t_intersect || !facet_index) {
@@ -3922,7 +4139,7 @@ int sample_mesh_intersect(double *t,
     intersect_transport.v2 = verts[facets[iter][1]];
     intersect_transport.v3 = verts[facets[iter][2]];
     possible_t = Moeller_Trumbore_intersection(&intersect_transport);
-    if (possible_t != 0){
+    if (possible_t != -1){
       t_intersect[counter] = possible_t;
       facet_index[counter] = iter;
       counter++;
@@ -5317,15 +5534,11 @@ int cone_within_cone(struct geometry_struct *geometry_child,struct geometry_stru
 };
 
 int mesh_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct *geometry2) {
-  // Overlap function should return 1 if the to geometries both cover some volume
-  // Temporary function
-
+    // Overlap function should return 1 if the to geometries both cover some volume
+    // TODO: Add fast check to see if point is within largest contained sphere
+    // Or outside of bounding box.
+    
     // Brute force check if there is one point of geometry 1 in 2 and 2 in 1.
-
-    // Should also have a secondary check with edges intersecting on faces.
-    // Could be made faster with a bounding box (or sphere)
-
-
     // Load Variables:
     struct pointer_to_1d_coords_list shell_points1 = geometry1->shell_points(geometry1,144);
     struct pointer_to_1d_coords_list shell_points2 = geometry2->shell_points(geometry2,144);
@@ -5348,6 +5561,27 @@ int mesh_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct 
     
     free(shell_points1.elements);
     free(shell_points2.elements);
+
+
+    // Secondary check with edges intersecting on faces:
+    if (geometry1->eShape==mesh){
+      int **facets = geometry1->geometry_parameters.p_mesh_storage->facets;
+      Coords *verts = geometry1->geometry_parameters.p_mesh_storage->vertices;
+      for (i = 0; i < geometry1->geometry_parameters.p_mesh_storage->n_facets; i++){
+        if (existence_of_intersection(verts[facets[i][0]], verts[facets[i][1]], geometry2) == 1) return 1; 
+        if (existence_of_intersection(verts[facets[i][0]], verts[facets[i][2]], geometry2) == 1) return 1;
+        if (existence_of_intersection(verts[facets[i][1]], verts[facets[i][2]], geometry2) == 1) return 1;
+      }
+    }
+    if (geometry2->eShape==mesh){
+      int **facets = geometry2->geometry_parameters.p_mesh_storage->facets;
+      Coords *verts = geometry2->geometry_parameters.p_mesh_storage->vertices;
+      for (i = 0; i < geometry2->geometry_parameters.p_mesh_storage->n_facets; i++){
+        if (existence_of_intersection(verts[facets[i][0]], verts[facets[i][1]], geometry1) == 1) return 1; 
+        if (existence_of_intersection(verts[facets[i][0]], verts[facets[i][2]], geometry1) == 1) return 1;
+        if (existence_of_intersection(verts[facets[i][1]], verts[facets[i][2]], geometry1) == 1) return 1;
+      }
+    }
 
     return 0;
 

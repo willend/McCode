@@ -889,7 +889,7 @@ INITIALIZE
     printf ("\nERROR IN %s: File %s is read as neither an stl or an off file.", NAME_CURRENT_COMP, filename);
     exit (1);
   }
-  printf ("\nCOMPONENT %s: Number of faces read: %d\t Number of vertices read: %d\n", NAME_CURRENT_COMP, n_verts, n_faces);
+  printf ("\nCOMPONENT %s: Number of faces read: %d\t Number of vertices read: %d\n", NAME_CURRENT_COMP, n_faces, n_verts);
   // Loop over all vertices and multiply their positions with coordinate_scale
   for (int i = 0; i < n_verts; i++) {
     verts[i] = coords_scale (verts[i], coordinate_scale);
