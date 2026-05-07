@@ -340,9 +340,10 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                     formatstr = "%-" + "%ds: " % maxnamelen + \
                       "{:3d}.".format(math.floor(test.compiletime)) + str(test.compiletime-int(test.compiletime)).split('.')[1][:2]
                     logging.info(formatstr % test.get_display_name())
-                    # Run mcdisplay
-                    cmd = mccode_config.configuration["MCDISPLAY"]+'-classic --nobrowse %s -y -d display > displaylog.txt 2>&1' % (test.instrname+'.instr')
-                    utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname), timeout=compilemax)
+                    # Run mcdisplay if not openacc
+                    if not openacc:
+                        cmd = mccode_config.configuration["MCDISPLAY"]+'-classic --nobrowse %s -y -d display > displaylog.txt 2>&1' % (test.instrname+'.instr')
+                        utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname), timeout=compilemax)
                 else:
                     if lint:
                         formatstr = "%-" + "%ds: Linted using using:\n" % maxnamelen
