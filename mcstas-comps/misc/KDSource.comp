@@ -46,7 +46,7 @@
 * nloop:    [int] Number of times to loop through the file.
 *
 * %L
-* N.S. Schmidt et. al <a href="https://doi.org/10.1016/j.anucene.2022.109309"><emph>KDSource, a tool for the generation of Monte Carlo particle sources using kernel density estimation</emph>, Annals of Nuclear Energy, Volume 177, 2022, 109309</a>
+* N.S. Schmidt et. al <a href="https://doi.org/10.1016/j.anucene.2022.109309">Annals of Nuclear Energy, Volume 177, 2022, 109309</a>
 * <a href="../examples/Tests_MCPL_etc/Test_KDSource/Test_KDSource.html">Test_KDSource example instrument</a>
 * <a href="https://kdsource.readthedocs.io/en/latest/">KDSource online documentation</a> (not fully updated)
 * <a href="https://github.com/KDSource/KDSource/tree/develop/docs/examples">KDSource verification notebooks</a>
