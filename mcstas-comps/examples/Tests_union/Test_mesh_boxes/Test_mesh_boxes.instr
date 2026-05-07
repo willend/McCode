@@ -26,7 +26,7 @@
 * Instrument provided by Sam Lambrick from ISIS, that uses three meshes to 
 * make their boxes. 
 * 
-* %Example: Unused_par=1 Detector: PSD_detector_I=10.7752
+* %Example: Unused_par=1 Detector: psd_detector_I=10.7752
 * 
 * %Parameters
 * 
