@@ -130,10 +130,11 @@ SHARE
     uint16_t attribute_byte_count;
   } Triangle;
   #pragma pack(pop)
-  int check_open_file_errors(FILE* fp, char* filename){
+  int
+  check_open_file_errors (FILE* fp, char* filename) {
     if (fp == NULL) {
-      printf("\n\nERROR: %s could not be opened by Union_mesh component.\n\n", filename);
-      exit(1);
+      printf ("\n\nERROR: %s could not be opened by Union_mesh component.\n\n", filename);
+      exit (1);
     }
   }
   void
@@ -142,7 +143,7 @@ SHARE
     Triangle* triangles;
     FILE* file = Open_File (filename, "r", NULL);
 
-    check_open_file_errors(file, filename);
+    check_open_file_errors (file, filename);
 
     // Check if the file is binary or ASCII
     int file_is_ascii = 0;
@@ -312,8 +313,8 @@ SHARE
   void
   read_off_file_vertices_and_faces (char* filename, int* n_verts, int* n_faces, int* n_edges, Coords** verts, int*** faces, char* comp_name) {
     FILE* fp;
-    fp = Open_File (filename, "r", NULL);    
-    check_open_file_errors(fp, filename);
+    fp = Open_File (filename, "r", NULL);
+    check_open_file_errors (fp, filename);
 
     // TODO: Make tests to verify the contents of FILE
     int n_lines = 0;
@@ -450,12 +451,11 @@ SHARE
     // Function to call in mcdisplay section of the sample component for this volume
 
     int n_facets = Geometries[index]->geometry_parameters.p_mesh_storage->n_facets;
-    int **facets = Geometries[index]->geometry_parameters.p_mesh_storage->facets;
+    int** facets = Geometries[index]->geometry_parameters.p_mesh_storage->facets;
     Coords center = Geometries[index]->center;
 
-    struct pointer_to_1d_coords_list points_struct = Geometries[index]->shell_points(Geometries[index], 1);
+    struct pointer_to_1d_coords_list points_struct = Geometries[index]->shell_points (Geometries[index], 1);
     Coords* points = points_struct.elements;
-
 
     struct lines_to_draw lines_to_draw_temp;
     lines_to_draw_temp.number_of_lines = 0;
@@ -568,11 +568,11 @@ SHARE
     struct pointer_to_1d_coords_list mesh_shell_array;
 
     int n_verts = geometry->geometry_parameters.p_mesh_storage->n_verts;
-    Coords *verts = geometry->geometry_parameters.p_mesh_storage->vertices;
+    Coords* verts = geometry->geometry_parameters.p_mesh_storage->vertices;
     mesh_shell_array.elements = malloc (n_verts * sizeof (Coords));
     for (int i = 0; i < n_verts; i++) {
-      mesh_shell_array.elements[i] = coords_set(verts[i].x, verts[i].y, verts[i].z);
-      mesh_shell_array.elements[i] = rot_apply(geometry->rotation_matrix, mesh_shell_array.elements[i]);
+      mesh_shell_array.elements[i] = coords_set (verts[i].x, verts[i].y, verts[i].z);
+      mesh_shell_array.elements[i] = rot_apply (geometry->rotation_matrix, mesh_shell_array.elements[i]);
 
       mesh_shell_array.elements[i] = coords_add (mesh_shell_array.elements[i], geometry->center);
       // Transpose and rotate the points such that they are in the right coordinate system
@@ -833,7 +833,6 @@ INITIALIZE
   for (int i = 0; i < n_verts; i++) {
     verts[i] = coords_scale (verts[i], coordinate_scale);
   }
-  
 
   // Make lists that will be used to calculate the number of edges
   int** vert_pairs = (int**)malloc (sizeof (int*) * 3 * n_faces);
@@ -911,13 +910,13 @@ INITIALIZE
     if (test_rad > radius) {
       radius = test_rad;
     }
-    if (i == 0){
-     mesh_data.Bounding_Box_Extremes[0] = verts[i].x;
-     mesh_data.Bounding_Box_Extremes[1] = verts[i].x;
-     mesh_data.Bounding_Box_Extremes[2] = verts[i].y;
-     mesh_data.Bounding_Box_Extremes[3] = verts[i].y;
-     mesh_data.Bounding_Box_Extremes[4] = verts[i].z;
-     mesh_data.Bounding_Box_Extremes[5] = verts[i].z;
+    if (i == 0) {
+      mesh_data.Bounding_Box_Extremes[0] = verts[i].x;
+      mesh_data.Bounding_Box_Extremes[1] = verts[i].x;
+      mesh_data.Bounding_Box_Extremes[2] = verts[i].y;
+      mesh_data.Bounding_Box_Extremes[3] = verts[i].y;
+      mesh_data.Bounding_Box_Extremes[4] = verts[i].z;
+      mesh_data.Bounding_Box_Extremes[5] = verts[i].z;
     } else {
       mesh_data.Bounding_Box_Extremes[0] = verts[i].x > mesh_data.Bounding_Box_Extremes[0] ? verts[i].x : mesh_data.Bounding_Box_Extremes[0];
       mesh_data.Bounding_Box_Extremes[1] = verts[i].x < mesh_data.Bounding_Box_Extremes[1] ? verts[i].x : mesh_data.Bounding_Box_Extremes[1];
@@ -925,7 +924,6 @@ INITIALIZE
       mesh_data.Bounding_Box_Extremes[3] = verts[i].y < mesh_data.Bounding_Box_Extremes[3] ? verts[i].y : mesh_data.Bounding_Box_Extremes[3];
       mesh_data.Bounding_Box_Extremes[4] = verts[i].z > mesh_data.Bounding_Box_Extremes[4] ? verts[i].z : mesh_data.Bounding_Box_Extremes[4];
       mesh_data.Bounding_Box_Extremes[5] = verts[i].z < mesh_data.Bounding_Box_Extremes[5] ? verts[i].z : mesh_data.Bounding_Box_Extremes[5];
-        
     }
   }
   mesh_data.Bounding_Box_Radius = radius;
