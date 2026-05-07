@@ -35,7 +35,7 @@
 * %End 
 ********************************************************************************/
 
-DEFINE INSTRUMENT KDS_resampled (int nloop=1)
+DEFINE INSTRUMENT Test_KDSource (int nloop=1)
 
 DECLARE 
 %{
