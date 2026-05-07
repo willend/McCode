@@ -275,6 +275,7 @@ SHARE
     int vertex_is_unique;
     int x_are_equal, y_are_equal, z_are_equal;
     int* map_old_to_unique = malloc (sizeof (int) * *n_verts);
+  
     int unique_counter = 0;
     int vert_index_in_faces = 0;
     for (int i = 0; i < *n_verts; i++) {
@@ -440,11 +441,6 @@ SHARE
     }
     return 0;
   };
-  Coords
-  get_coords_from_string (char* line) {
-    Coords vert_coords = coords_set (1, 2, 1);
-    return vert_coords;
-  }
 
   void
   mcdisplay_mesh_function (struct lines_to_draw* lines_to_draw_output, int index, struct geometry_struct** Geometries, int number_of_volumes) {
