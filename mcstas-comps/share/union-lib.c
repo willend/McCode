@@ -5337,35 +5337,39 @@ int mesh_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct 
       Coords *verts = geometry1->geometry_parameters.p_mesh_storage->vertices;
       Coords vert1, vert2, vert3;
       for (i = 0; i < geometry1->geometry_parameters.p_mesh_storage->n_facets; i++){
-        vert1 = shell_points2.elements[facets[i][0]];
-        vert2 = shell_points2.elements[facets[i][1]];
-        vert3 = shell_points2.elements[facets[i][2]];
+        vert1 = shell_points1.elements[facets[i][0]];
+        vert2 = shell_points1.elements[facets[i][1]];
+        vert3 = shell_points1.elements[facets[i][2]];
         if (existence_of_intersection(vert1, vert2, geometry2) == 1) {
             free(shell_points1.elements);
             free(shell_points2.elements);
+            printf("t1\n");
           return 1;
         } 
         if (existence_of_intersection(vert1, vert3, geometry2) == 1) {
           free(shell_points1.elements);
           free(shell_points2.elements);
+            printf("t2\n");
           return 1;
         }
         if (existence_of_intersection(vert2, vert3, geometry2) == 1) {
            free(shell_points1.elements);
           free(shell_points2.elements);
+            printf("t3\n");
  
           return 1;
         }
       }
     }
+            printf("t4\n");
     if (geometry2->eShape==mesh){
       int **facets = geometry2->geometry_parameters.p_mesh_storage->facets;
       Coords *verts = geometry2->geometry_parameters.p_mesh_storage->vertices;
       Coords vert1, vert2, vert3;
       for (i = 0; i < geometry2->geometry_parameters.p_mesh_storage->n_facets; i++){
-        vert1 = shell_points1.elements[facets[i][0]];
-        vert2 = shell_points1.elements[facets[i][1]];
-        vert3 = shell_points1.elements[facets[i][2]];
+        vert1 = shell_points2.elements[facets[i][0]];
+        vert2 = shell_points2.elements[facets[i][1]];
+        vert3 = shell_points2.elements[facets[i][2]];
         if (existence_of_intersection(vert1, vert2, geometry1) == 1) {
             free(shell_points1.elements);
           free(shell_points2.elements);
@@ -7491,7 +7495,9 @@ void generate_overlap_lists(struct pointer_to_1d_int_list **true_overlap_lists, 
             if (cone_overlaps_cone(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
         }
         else if (strcmp("mesh",Volumes[parent]->geometry.shape) == 0 && strcmp("mesh",Volumes[child]->geometry.shape) == 0) {
+          printf("Just before mesh overlaps mesh\n");
             if (mesh_overlaps_mesh(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
+          printf("Just after mesh overlaps mesh\n");
         }
         else if (strcmp("box",Volumes[parent]->geometry.shape) == 0 && strcmp("cylinder",Volumes[child]->geometry.shape) == 0) {
             if (box_overlaps_cylinder(&Volumes[parent]->geometry,&Volumes[child]->geometry)) temp_list_local.elements[used_elements++] = child;
