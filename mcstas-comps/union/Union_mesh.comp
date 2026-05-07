@@ -130,15 +130,20 @@ SHARE
     uint16_t attribute_byte_count;
   } Triangle;
   #pragma pack(pop)
+  int check_open_file_errors(FILE* fp, char* filename){
+    if (fp == NULL) {
+      printf("\n\nERROR: %s could not be opened by Union_mesh component.\n\n", filename);
+      exit(1);
+    }
+  }
   void
   read_stl (char* filename, int* n_verts, int* n_faces, int* n_edges, Coords** verts, int*** faces, char* comp_name) {
     unsigned char buffer[1000];
     Triangle* triangles;
     FILE* file = Open_File (filename, "r", NULL);
-    if (!file) {
-      perror ("ERROR: Failed to open file");
-      exit (1);
-    }
+
+    check_open_file_errors(file, filename);
+
     // Check if the file is binary or ASCII
     int file_is_ascii = 0;
     char word[6]; // "solid" + null terminator
@@ -307,7 +312,9 @@ SHARE
   void
   read_off_file_vertices_and_faces (char* filename, int* n_verts, int* n_faces, int* n_edges, Coords** verts, int*** faces, char* comp_name) {
     FILE* fp;
-    fp = Open_File (filename, "r", NULL);
+    fp = Open_File (filename, "r", NULL);    
+    check_open_file_errors(fp, filename);
+
     // TODO: Make tests to verify the contents of FILE
     int n_lines = 0;
     char buffer[250];
