@@ -130,12 +130,13 @@ SHARE
     uint16_t attribute_byte_count;
   } Triangle;
   #pragma pack(pop)
-  int
+ void 
   check_open_file_errors (FILE* fp, char* filename) {
     if (fp == NULL) {
       printf ("\n\nERROR: %s could not be opened by Union_mesh component.\n\n", filename);
       exit (1);
     }
+    return;
   }
   void
   read_stl (char* filename, int* n_verts, int* n_faces, int* n_edges, Coords** verts, int*** faces, char* comp_name) {
@@ -275,7 +276,10 @@ SHARE
     int vertex_is_unique;
     int x_are_equal, y_are_equal, z_are_equal;
     int* map_old_to_unique = malloc (sizeof (int) * *n_verts);
-  
+    if (map_old_to_unique == NULL || unique_vertices == NULL) {
+      printf("\nERROR ON MALLOC IN UNION MESH STL READ\n"); 
+      exit(1);
+    }
     int unique_counter = 0;
     int vert_index_in_faces = 0;
     for (int i = 0; i < *n_verts; i++) {
@@ -304,6 +308,7 @@ SHARE
     }
     *n_verts = unique_counter;
     *verts = (Coords*)realloc (*verts, sizeof (Coords) * unique_counter);
+
     for (int i = 0; i < unique_counter; i++) {
       (*verts)[i] = unique_vertices[i];
     }
