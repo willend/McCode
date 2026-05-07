@@ -2535,19 +2535,19 @@ struct lines_to_draw draw_circle_with_highest_priority(Coords center,Coords vect
  *  geometry is within the same file.
  *
  * To add a new geometry one needs to:
- *  Write a geometry_storage_struct that contains the paramters needed to describe the geometry
+ *  Write a geometry_storage_struct that contains the parameters needed to describe the geometry
  *  Add a pointer to this storage type in the geometry_parameter_union
  *  Write a function for intersection with line, using the same input scheme as for the others
  *  Write a function checking if a point is within the geometry
  *  Write a function checking if one instance of the geometry overlaps with another
  *  Write a function checking if one instance of the geometry is inside another
- *  For each exsisting geometry: 
- *      Write a function checking if an instance of this geometry overlaps with an instance of the exsisting
- *      Write a function checking if an instance of this geometry is inside an instance of the exsisting
+ *  For each existing geometry: 
+ *      Write a function checking if an instance of this geometry overlaps with an instance of the existing
+ *      Write a function checking if an instance of this geometry is inside an instance of the existing
  *      Write a function checking if an instance of an existing geometry is inside an instance of this geometry
  *
  *  Add these functions to geometry to the logic at the end of this file
- *  Write a component file similar to the exsisting ones, taking the input from the instrument file, and sending
+ *  Write a component file similar to the existing ones, taking the input from the instrument file, and sending
  *   it on to the master component.
 */
 
@@ -2583,7 +2583,7 @@ Coords direction_vector;
 
 struct mesh_storage{
 int n_facets;
-int counter;
+int n_verts;
 double *v1_x;
 double *v1_y;
 double *v1_z;
@@ -3758,25 +3758,17 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
   // is uneven, the position is inside the mesh.
   // Since this can be numerically unstable, it performs this ray casting 3 times
   // and then allows the majority of results to decide whether inside or outside
-  Coords center = geometry->center;
-  double x_new,y_new,z_new;
-
   // Coordinate transformation
-  x_new = pos.x - geometry->center.x;
-  y_new = pos.y - geometry->center.y;
-  z_new = pos.z - geometry->center.z;
-
-  Coords coordinates = coords_set(x_new,y_new,z_new);
+  Coords coordinates = coords_sub(pos, geometry->center);
   Coords rotated_coordinates;
 
   rotated_coordinates = rot_apply(geometry->transpose_rotation_matrix,coordinates);
-
   // Check intersections with every single facet:
   // First do allocations:
   int n_facets = geometry->geometry_parameters.p_mesh_storage->n_facets;
   double possible_t;
   int iter =0;
-  int counter;
+  int n_intersections;
   struct Moeller_Trumbore intersect_transport;
   double *t_intersect=malloc(n_facets*sizeof(double));
   int *facet_index = malloc(n_facets*sizeof(int));
@@ -3791,7 +3783,7 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
   int inside_vote = 0, outside_vote = 0;
 
   for (int j = 0; j <3; j++){
-    counter = 0;
+    n_intersections = 0;
     Coords test_vector = coords_set(rand01(),rand01(),rand01());
     intersect_transport.rotated_velocity = test_vector;
     for (iter = 0 ; iter < n_facets ; iter++){
@@ -3800,10 +3792,10 @@ int r_within_mesh(Coords pos,struct geometry_struct *geometry) {
       intersect_transport.v3 = verts[facets[iter][2]];
       possible_t = Moeller_Trumbore_intersection(&intersect_transport);
       if (possible_t > 0){
-        counter++;
+        n_intersections++;
       }
     }
-    if (counter%2==1){
+    if (n_intersections%2==1){
       inside_vote++;
     } else {
       outside_vote++;
@@ -5320,7 +5312,7 @@ int mesh_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct 
     // Or outside of bounding box.
     
     // Brute force check if there is one point of geometry 1 in 2 and 2 in 1.
-    // Load Variables:
+    // Note! shell points for meshes dont generate a varying number of points:
     struct pointer_to_1d_coords_list shell_points1 = geometry1->shell_points(geometry1,144);
     struct pointer_to_1d_coords_list shell_points2 = geometry2->shell_points(geometry2,144);
 
@@ -5339,31 +5331,60 @@ int mesh_overlaps_mesh(struct geometry_struct *geometry1,struct geometry_struct 
             return 1;
         }
     }
-    
-    free(shell_points1.elements);
-    free(shell_points2.elements);
-
-
-    // Secondary check with edges intersecting on faces:
+    // Secondary check with edges intersecting on faces
     if (geometry1->eShape==mesh){
       int **facets = geometry1->geometry_parameters.p_mesh_storage->facets;
       Coords *verts = geometry1->geometry_parameters.p_mesh_storage->vertices;
+      Coords vert1, vert2, vert3;
       for (i = 0; i < geometry1->geometry_parameters.p_mesh_storage->n_facets; i++){
-        if (existence_of_intersection(verts[facets[i][0]], verts[facets[i][1]], geometry2) == 1) return 1; 
-        if (existence_of_intersection(verts[facets[i][0]], verts[facets[i][2]], geometry2) == 1) return 1;
-        if (existence_of_intersection(verts[facets[i][1]], verts[facets[i][2]], geometry2) == 1) return 1;
+        vert1 = shell_points2.elements[facets[i][0]];
+        vert2 = shell_points2.elements[facets[i][1]];
+        vert3 = shell_points2.elements[facets[i][2]];
+        if (existence_of_intersection(vert1, vert2, geometry2) == 1) {
+            free(shell_points1.elements);
+            free(shell_points2.elements);
+          return 1;
+        } 
+        if (existence_of_intersection(vert1, vert3, geometry2) == 1) {
+          free(shell_points1.elements);
+          free(shell_points2.elements);
+          return 1;
+        }
+        if (existence_of_intersection(vert2, vert3, geometry2) == 1) {
+           free(shell_points1.elements);
+          free(shell_points2.elements);
+ 
+          return 1;
+        }
       }
     }
     if (geometry2->eShape==mesh){
       int **facets = geometry2->geometry_parameters.p_mesh_storage->facets;
       Coords *verts = geometry2->geometry_parameters.p_mesh_storage->vertices;
+      Coords vert1, vert2, vert3;
       for (i = 0; i < geometry2->geometry_parameters.p_mesh_storage->n_facets; i++){
-        if (existence_of_intersection(verts[facets[i][0]], verts[facets[i][1]], geometry1) == 1) return 1; 
-        if (existence_of_intersection(verts[facets[i][0]], verts[facets[i][2]], geometry1) == 1) return 1;
-        if (existence_of_intersection(verts[facets[i][1]], verts[facets[i][2]], geometry1) == 1) return 1;
+        vert1 = shell_points1.elements[facets[i][0]];
+        vert2 = shell_points1.elements[facets[i][1]];
+        vert3 = shell_points1.elements[facets[i][2]];
+        if (existence_of_intersection(vert1, vert2, geometry1) == 1) {
+            free(shell_points1.elements);
+          free(shell_points2.elements);
+         return 1;
+        } 
+        if (existence_of_intersection(vert1, vert3, geometry1) == 1) {
+             free(shell_points1.elements);
+          free(shell_points2.elements);
+        return 1;
+        }
+        if (existence_of_intersection(vert2, vert3, geometry1) == 1) {
+       free(shell_points1.elements);
+          free(shell_points2.elements);
+       return 1;
+        }
       }
     }
-
+    free(shell_points1.elements);
+    free(shell_points2.elements);
     return 0;
 
 };

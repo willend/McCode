@@ -561,86 +561,23 @@ SHARE
 
   struct pointer_to_1d_coords_list
   allocate_shell_points (struct geometry_struct* geometry, int max_number_of_points) {
-    // Function that returns a number (less than max) of points on the geometry surface
-    // Run trhough all points in list of faces, and remove dublicates
-    // There are three points in a face and very often these will be dublicated a few times. This removes dublicates to boost performance down stream...
+    // Function that returns all vertex points transported to the center of the geometry
 
     struct pointer_to_1d_coords_list mesh_shell_array;
 
-    int n_facets = geometry->geometry_parameters.p_mesh_storage->n_facets;
-    double* v1_x = geometry->geometry_parameters.p_mesh_storage->v1_x;
-    double* v1_y = geometry->geometry_parameters.p_mesh_storage->v1_y;
-    double* v1_z = geometry->geometry_parameters.p_mesh_storage->v1_z;
-    double* v2_x = geometry->geometry_parameters.p_mesh_storage->v2_x;
-    double* v2_y = geometry->geometry_parameters.p_mesh_storage->v2_y;
-    double* v2_z = geometry->geometry_parameters.p_mesh_storage->v2_z;
-    double* v3_x = geometry->geometry_parameters.p_mesh_storage->v3_x;
-    double* v3_y = geometry->geometry_parameters.p_mesh_storage->v3_y;
-    double* v3_z = geometry->geometry_parameters.p_mesh_storage->v3_z;
-    int number_of_points_in_array = 0;
-    mesh_shell_array.elements = malloc (3 * n_facets * sizeof (Coords));
-    int is_dublicate = 0;
-    Coords this_vert;
-    int i, j;
-    for (i = 0; i < n_facets; i++) {
+    int n_verts = geometry->geometry_parameters.p_mesh_storage->n_verts;
+    Coords *verts = geometry->geometry_parameters.p_mesh_storage->vertices;
+    mesh_shell_array.elements = malloc (n_verts * sizeof (Coords));
+    for (int i = 0; i < n_verts; i++) {
+      mesh_shell_array.elements[i] = coords_set(verts[i].x, verts[i].y, verts[i].z);
+      mesh_shell_array.elements[i] = rot_apply(geometry->rotation_matrix, mesh_shell_array.elements[i]);
 
-      // v1
-      is_dublicate = 0;
-      this_vert = coords_set (*(v1_x + i), *(v1_y + i), *(v1_z + i));
-
-      // test if dublicate
-      for (j = 0; j < number_of_points_in_array; j++) {
-        if (this_vert.x == mesh_shell_array.elements[j].x && this_vert.y == mesh_shell_array.elements[j].y && this_vert.z == mesh_shell_array.elements[j].z) {
-          is_dublicate = 1;
-          j = number_of_points_in_array;
-        }
-      }
-      if (is_dublicate == 0) {
-        mesh_shell_array.elements[number_of_points_in_array] = this_vert;
-        number_of_points_in_array += 1;
-      }
-
-      // v2
-      is_dublicate = 0;
-      this_vert = coords_set (*(v2_x + i), *(v2_y + i), *(v2_z + i));
-
-      for (j = 0; j < number_of_points_in_array; j++) {
-        if (this_vert.x == mesh_shell_array.elements[j].x && this_vert.y == mesh_shell_array.elements[j].y && this_vert.z == mesh_shell_array.elements[j].z) {
-          is_dublicate = 1;
-          j = number_of_points_in_array;
-        }
-      }
-      if (is_dublicate == 0) {
-        mesh_shell_array.elements[number_of_points_in_array] = this_vert;
-        number_of_points_in_array += 1;
-      }
-
-      // v3
-      is_dublicate = 0;
-      this_vert = coords_set (*(v3_x + i), *(v3_y + i), *(v3_z + i));
-
-      // test if dublicate
-      for (j = 0; j < number_of_points_in_array; j++) {
-        if (this_vert.x == mesh_shell_array.elements[j].x && this_vert.y == mesh_shell_array.elements[j].y && this_vert.z == mesh_shell_array.elements[j].z) {
-          is_dublicate = 1;
-          j = number_of_points_in_array;
-        }
-      }
-      if (is_dublicate == 0) {
-        mesh_shell_array.elements[number_of_points_in_array] = this_vert;
-        number_of_points_in_array += 1;
-      }
-    }
-
-    j = number_of_points_in_array - 1; // Last legal index, currently j is out of bounds.
-
-    mesh_shell_array.num_elements = number_of_points_in_array;
-
-    for (i = 0; i < number_of_points_in_array; i++) {
-      // Transpose and rotate the points such that they are in the right coordinate system
       mesh_shell_array.elements[i] = coords_add (mesh_shell_array.elements[i], geometry->center);
-      mesh_shell_array.elements[i] = rot_apply (geometry->rotation_matrix, mesh_shell_array.elements[i]);
+      // Transpose and rotate the points such that they are in the right coordinate system
     }
+
+    mesh_shell_array.num_elements = n_verts;
+
     return mesh_shell_array;
   }
 
@@ -1029,7 +966,7 @@ INITIALIZE
     vec_prod (mesh_data.normal_x[i], mesh_data.normal_y[i], mesh_data.normal_z[i], edge1.x, edge1.y, edge1.z, edge2.x, edge2.y, edge2.z);
   }
   mesh_data.n_facets = n_faces;
-  mesh_data.counter = n_verts;
+  mesh_data.n_verts = n_verts;
 
   mesh_vol.geometry.number_of_faces = 1;
   mesh_vol.geometry.surface_stack_for_each_face = malloc (mesh_vol.geometry.number_of_faces * sizeof (struct surface_stack_struct));
