@@ -2584,15 +2584,6 @@ Coords direction_vector;
 struct mesh_storage{
 int n_facets;
 int n_verts;
-double *v1_x;
-double *v1_y;
-double *v1_z;
-double *v2_x;
-double *v2_y;
-double *v2_z;
-double *v3_x;
-double *v3_y;
-double *v3_z;
 double *normal_x;
 double *normal_y;
 double *normal_z;
