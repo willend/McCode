@@ -4470,6 +4470,16 @@ double _rand01(randstate_t* state) {
 	randnum /= (double) MC_RAND_MAX + 1;
 	return randnum;
 }
+double _rand01_opague(void* opague_state) {
+	randstate_t* state = (randstate_t*)opague_state;
+	// Following lines exactly like in _rand01 just above (repeated to
+	// avoid another layer of indirection):
+	double randnum;
+	randnum = (double) _random();
+	// TODO: can we mult instead of div?
+	randnum /= (double) MC_RAND_MAX + 1;
+	return randnum;
+}
 // Return a random number between 1 and -1
 double _randpm1(randstate_t* state) {
 	double randnum;
