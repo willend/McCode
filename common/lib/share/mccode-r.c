@@ -3101,7 +3101,7 @@ void mcdis_sphere(double x, double y, double z, double r){
 /* POLYHEDRON IMPLEMENTATION*/
 
 void mcdis_polyhedron(char *vertices_faces){
-  printf("MCDISPLAY: mcdispolyhedron %s\n", vertices_faces);
+  printf("MCDISPLAY: polyhedron %s\n", vertices_faces);
 }
 
 /* POLYGON IMPLEMENTATION */
@@ -3219,9 +3219,9 @@ void mcdis_polygon(int count, ...){
 /* END NEW POLYGON IMPLEMENTATION*/
 
 /*
-void mcdis_polygon(double x1, double y1, double z1,
+void polygon(double x1, double y1, double z1,
                 double x2, double y2, double z2){
-  printf("MCDISPLAY: mcdispolygon(2,%g,%g,%g,%g,%g,%g)\n",
+  printf("MCDISPLAY: polygon(2,%g,%g,%g,%g,%g,%g)\n",
          x1,y1,z1,x2,y2,z2);
 }
 */
