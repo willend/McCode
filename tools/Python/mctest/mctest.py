@@ -115,6 +115,7 @@ class InstrExampleTest:
             self.linted=obj['linted']
             self.compiled=obj['compiled']
             self.compiletime=obj['compiletime']
+            self.displayed=obj['displayed']
             self.didrun=obj['didrun']
             self.runtime=obj['runtime']
             self.errmsg=obj['errmsg']

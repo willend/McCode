@@ -78,12 +78,16 @@ def run_normal_mode(testdir, reflabel):
         # Display URL if display failed
         fdurl = label + "/" + cellobj["instrname"] +  "/displaylog.txt"
 
-        if not cellobj["displayed"]:
-            display="<strong><font color=\"#FFA500\">DISPLAY: FAILED! (log)</font></strong>"
-            displayurl=fdurl
+        if cellobj["testnb"] <= 1:
+            if not cellobj["displayed"]:
+                display="<strong><font color=\"#FFA500\">DISPLAY: FAILED! (log)</font></strong>"
+                displayurl=fdurl
+            else:
+                display="<strong>DISPLAY: OK (link)<strong>"
+                displayurl=durl
         else:
-            display="<strong>DISPLAY: OK (link)<strong>"
-            displayurl=durl
+            display=""
+            displayurl=""
         
         if not cellobj["compiled"]:
             if cellobj["linted"]:
