@@ -67,6 +67,7 @@ class InstrExampleTest:
 
         self.linted = None
         self.compiled = None
+        self.displayed = None
         self.compiletime = None
         self.didrun = None
         self.runtime = None
@@ -88,6 +89,7 @@ class InstrExampleTest:
             "linted"       : self.linted,
             "compiled"     : self.compiled,
             "compiletime"  : self.compiletime,
+            "displayed"    : self.displayed,
             "didrun"       : self.didrun,
             "runtime"      : self.runtime,
             "errmsg"       : self.errmsg,
@@ -113,6 +115,7 @@ class InstrExampleTest:
             self.linted=obj['linted']
             self.compiled=obj['compiled']
             self.compiletime=obj['compiletime']
+            self.displayed=obj['displayed']
             self.didrun=obj['didrun']
             self.runtime=obj['runtime']
             self.errmsg=obj['errmsg']
@@ -340,10 +343,13 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                     formatstr = "%-" + "%ds: " % maxnamelen + \
                       "{:3d}.".format(math.floor(test.compiletime)) + str(test.compiletime-int(test.compiletime)).split('.')[1][:2]
                     logging.info(formatstr % test.get_display_name())
-                    # Run mcdisplay if not openacc
-                    if not openacc:
-                        cmd = mccode_config.configuration["MCDISPLAY"]+'-classic --nobrowse %s -y -d display > displaylog.txt 2>&1' % (test.instrname+'.instr')
-                        utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname), timeout=compilemax)
+                    # Run mcdisplay (single particle only)
+                    cmd = mccode_config.configuration["MCDISPLAY"]+'-classic --nobrowse %s -y -n1 -d display > displaylog.txt 2>&1' % (test.instrname+'.instr')
+                    retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname), timeout=compilemax)
+                    if retcode[0]==0:
+                        test.displayed = True
+                    else:
+                        test.displayed = False
                 else:
                     if lint:
                         formatstr = "%-" + "%ds: Linted using using:\n" % maxnamelen
@@ -379,7 +385,14 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             failed=True
             logging.info(formatstr % test.instrname)
             continue
-        
+        if test.testnb <= 1:
+            if test.displayed:
+                formatstr = "%-" + "%ds:   Display OK" % (maxnamelen+1)
+                logging.info(formatstr % test.instrname)
+            else:
+                formatstr = "%-" + "%ds:   Display FAILED" % (maxnamelen+1)
+                logging.info(formatstr % test.instrname)
+
         # runable tests have testnb > 0
         if test.testnb <= 0:
             formatstr = "%-" + "%ds:   NO TEST" % (maxnamelen+1)
