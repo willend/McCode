@@ -385,7 +385,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             failed=True
             logging.info(formatstr % test.instrname)
             continue
-        if testnb <=1:
+        if test.testnb <= 1:
             if test.displayed:
                 formatstr = "%-" + "%ds:   Display OK" % (maxnamelen+1)
                 logging.info(formatstr % test.instrname)
