@@ -220,3 +220,38 @@ username3 & str & Name assigned to User3 & "NULL" \\
   \item \textless{}a href="PreMonitor\_nD.html"\textgreater{}PreMonitor\_nD\textless{}/a\textgreater{}
 \end{itemize}
 \IfFileExists{Monitor_nD_static.tex}{\input{Monitor_nD_static.tex}}{}
+\subsection{Monitoring neutron parameter correlations via USERVARS}
+
+The first imediate usage of the Monitor\_nD component is when one requires to identify cross-correlations between some neutron parameters, e.g. position and divergence (\textit{aka} phase-space diagram). 
+\begin{lstlisting}
+options="x dx, auto", bins=30
+\end{lstlisting}
+This example records the correlation between position and divergence of neutrons at a given instrument location.
+
+But it is also possible to search for cross-correlation between two part of the instrument simulation. One example is the acceptance phase-diagram, which shows the neutron caracteristics at the input required to reach the end of the simulation. This \emph{spatial} correlation may be revealed using \index{Monitors!Neutron parameter correlations, USERVARS}\ref{s:monnd:user} initialised in an \textbf{EXTEND} block of an earlier component. \textbf{USERVARS} may store neutron parameters at a given instrument location, to be used with a later Monitor\_nD location for monitoring:
+
+\begin{lstlisting}
+USERVARS \%{
+  double x_in;
+  double xdiv_in;
+\%}
+
+TRACE
+
+COMPONENT CorrelationLocation = Arm()
+AT (...)
+EXTEND \%{
+  x_in=x;
+  // Calculate divergence wrt. z
+  xdiv_in = RAD2DEG * atan2 (vx, vz);
+\%}
+
+  (... e.g. a guide system )
+
+  COMPONENT CorrelationMonitor  = Monitor_nD(
+   user1=''x_in'', user2=''xdiv_in'',
+   username1=''Upstream pos'',  username2=''Upstream div''
+   options="user1 user2, auto, all bins=30")
+AT (...)
+\end{lstlisting}
+which performs the same monitoring as the previous example, but with a spatial correlation constrain. Indeed, it records the position \textit{vs} the divergence of neutrons at the correlation location, but only if they reach the monitoring position.
