@@ -344,7 +344,10 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                       "{:3d}.".format(math.floor(test.compiletime)) + str(test.compiletime-int(test.compiletime)).split('.')[1][:2]
                     logging.info(formatstr % test.get_display_name())
                     # Run mcdisplay (single particle only)
-                    cmd = mccode_config.configuration["MCDISPLAY"]+'-classic --nobrowse %s -y -n1 -d display > displaylog.txt 2>&1' % (test.instrname+'.instr')
+                    if test.testnb>0:
+                        cmd = mccode_config.configuration["MCDISPLAY"]+'-classic --nobrowse %s %s -n1 -d display > displaylog.txt 2>&1' % (test.instrname+'.instr', test.parvals)
+                    else:
+                        cmd = mccode_config.configuration["MCDISPLAY"]+'-classic --nobrowse %s -y -n1 -d display > displaylog.txt 2>&1' % (test.instrname+'.instr')
                     retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname), timeout=compilemax)
                     if retcode[0]==0:
                         test.displayed = True
