@@ -124,9 +124,13 @@ def write_browse(instrument, raybundle, dirname, instrname, nobrowse=None, first
     # write instrument
     json_instr = 'MCDATA_instrdata = %s;' % json.dumps(instrument.jsonize(), indent=0)
     file_save(json_instr, dest.joinpath('_instr.js'))
-    
-    # write particles
-    json_particles = 'MCDATA_particledata = %s;' % json.dumps(raybundle.jsonize(), indent=0)
+
+    if raybundle is not None:
+        # write particles
+        json_particles = 'MCDATA_particledata = %s;' % json.dumps(raybundle.jsonize(), indent=0)
+    else:
+        # write empty list
+        json_particles = 'MCDATA_particledata = [];'
     file_save(json_particles, dest.joinpath('_particles.js'))
 
     # Workaround for allowing non-relative paths to instrname
