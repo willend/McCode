@@ -1042,7 +1042,7 @@ void add_function_to_conditional_list(struct conditional_list_struct *list,condi
       fprintf(stderr,"Failure allocating list in Union function add_function_to_conditional_list 3/6 - Exit!\n");
       exit(EXIT_FAILURE);
     }
-    union conditional_data_union **temp_du=malloc(list->num_elements*sizeof(union conditional_data_union));
+    union conditional_data_union **temp_du=malloc(list->num_elements*sizeof(union conditional_data_union*));
     if (!temp_du) {
       fprintf(stderr,"Failure allocating list in Union function add_function_to_conditional_list 4/6 - Exit!\n");
       exit(EXIT_FAILURE);
@@ -1070,6 +1070,8 @@ void add_function_to_conditional_list(struct conditional_list_struct *list,condi
     for (iterate=0;iterate<list->num_elements-1;iterate++) {
       list->conditional_functions[iterate] = temp_fp[iterate];
       list->p_data_unions[iterate] = temp_du[iterate];
+	  free(temp_fp);
+	  free(temp_du);
     }
     list->conditional_functions[list->num_elements-1] = new;
     list->p_data_unions[list->num_elements-1] = data_union;
