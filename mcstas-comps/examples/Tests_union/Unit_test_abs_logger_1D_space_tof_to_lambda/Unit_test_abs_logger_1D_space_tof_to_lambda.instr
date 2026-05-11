@@ -26,6 +26,9 @@
 * both the standard view with measured and true wavelength on each axis, and the
 * relative where they have been normalized and a value of 1 is expected.
 *
+* Includes conditional component to test record_to_temp functionality
+* of investigated abs_logger.
+*
 * %Example: Detector: abs_logger_1D_space_tof_to_lambda_I=5.40132e-12
 * %Example: Detector: abs_logger_1D_space_tof_to_lambda_relative_I=5.41367e-12
 * %Example: Detector: abs_logger_1D_space_tof_to_lambda_con_I=8.13732e-13

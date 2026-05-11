@@ -19,6 +19,9 @@
 * Test instrument for the Union 1D logger component that can log scattering
 * intensity as a function of one of several quantities, here time.
 *
+* Includes conditional component to test record_to_temp functionality
+* of investigated logger.
+*
 * %Example: Detector: Union_logger_1D_I=5.65843e-09
 * %Example: Detector: Union_logger_1D_con_I=2.73754e-12
 *

@@ -21,6 +21,9 @@
 * chosen by the user. This is furthermore split into several timesteps so
 * the time dependency of scattering in the Union system can be monitored.
 *
+* Includes conditional component to test record_to_temp functionality
+* of investigated logger.
+*
 * %Example: Detector: Union_logger_2D_space_time_I=3.33764e-09
 * %Example: Detector: Union_logger_2D_space_time_con_I=1.36393e-12
 *

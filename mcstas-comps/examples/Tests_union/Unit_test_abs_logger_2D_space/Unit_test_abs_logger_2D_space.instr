@@ -18,6 +18,9 @@
 * %Description
 * Test of absorption logger with basic geometry from Unit_test_loggers_base.
 *
+* Includes conditional component to test record_to_temp functionality
+* of investigated abs_logger.
+*
 * %Example: Detector: Union_abs_logger_2D_space_zx_I=1.1258e-09
 * %Example: Detector: Union_abs_logger_2D_space_zx_con_I=5.22667e-13
 *

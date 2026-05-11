@@ -20,6 +20,9 @@
 * projected onto a plane spanned by two of the coordinate axis, for
 * example z and x.
 *
+* Includes conditional component to test record_to_temp functionality
+* of investigated logger.
+*
 * %Example: Detector: Union_logger_2D_space_zx_I=5.66106e-09
 * %Example: Detector: Union_logger_2D_space_zy_con_I=2.59083e-12
 *
