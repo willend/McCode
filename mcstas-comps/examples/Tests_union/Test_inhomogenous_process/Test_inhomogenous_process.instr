@@ -51,6 +51,7 @@
 * %Example: sample=inc_and_inho Detector: lin_det_I=0.017457
 * %Example: -n 1e5 sample=phonon Detector: lin_det_I=0.0174609
 * %Example: sample=inc_trans Detector: lin_det_I=0.081029
+* %Example: sample=gauss_heavy Detector: lin_det_I=0.081029
 * %Example: sample=inho_trans Detector: lin_det_I=0.081040
 *
 *
@@ -83,6 +84,7 @@ DECLARE
   int activate_inc_linear;
   int activate_inc_and_inho_linear;
   int activate_phonon;
+  int activate_gauss;
   double rot_samples;
 
 %}
@@ -122,6 +124,10 @@ INITIALIZE
   } else if (!strcmp("inho_trans", sample)){
     rot_samples = 90;
     activate_inho_linear = 1;
+    width = 0.01;
+  } else if (!strcmp("gauss_heavy", sample)){
+    rot_samples = 90;
+    activate_gauss = 1;
     width = 0.01;
   }
 
@@ -503,7 +509,7 @@ COMPONENT inho_and_inc_box = Union_box(
   xwidth=width,
   yheight = 0.03,
   zdepth = thick,
-  material_string = "Inho_lin",
+  material_string = "inc_and_inho",
   number_of_activations = activate_inc_and_inho_linear
 ) AT (0,0, 0) RELATIVE arm_sample
 ROTATED (0, 0, 0) RELATIVE arm_sample
@@ -533,7 +539,30 @@ COMPONENT phonon_box = Union_box(
 ) AT (0,0, 0) RELATIVE arm_sample
 ROTATED (0, 0, 0) RELATIVE arm_sample
 
+// ============================ Inhomogenous as a gaussian and heavy side
 
+COMPONENT gauss = Inhomogenous_incoherent_process(
+  sigma_expr = "5.08 - gauss(0.01,0.001,z+0.0025) + hvs(z,0,5,0)", unit_cell_volume = 13.827,
+  // verbose=1,
+  number_of_sample_points = 10
+)
+AT (0,0,0) RELATIVE arm_sample
+
+COMPONENT gauss_mat = Union_make_material(
+    my_absorption = 100 * 5.08 / 13.827,
+    process_string = "gauss"
+)
+AT (0,0,0) RELATIVE PREVIOUS
+
+COMPONENT  gauss_box = Union_box(
+  priority = 163,
+  xwidth=width,
+  yheight = 0.03,
+  zdepth = thick,
+  material_string = "gauss_mat",
+  number_of_activations = activate_gauss
+) AT (0,0, 0) RELATIVE arm_sample
+ROTATED (0, 0, 0) RELATIVE arm_sample
 
 
 
