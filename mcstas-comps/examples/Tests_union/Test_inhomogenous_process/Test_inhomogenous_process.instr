@@ -49,9 +49,9 @@
 * %Example: sample=inc_linear Detector: lin_det_I=0.017457
 * %Example: sample=inho_linear Detector: lin_det_I=0.017457
 * %Example: sample=inc_and_inho Detector: lin_det_I=0.017457
-* %Example: -n 1e5 sample=phonon Detector: lin_det_I=0.0174609
+* %Example: sample=phonon thick=0.001 Detector: lin_det_I=0.00505839
 * %Example: sample=inc_trans Detector: lin_det_I=0.081029
-* %Example: sample=gauss_heavy Detector: lin_det_I=0.081029
+* %Example: sample=gauss_heavy Detector: lin_det_I=0.0985658
 * %Example: sample=inho_trans Detector: lin_det_I=0.081040
 *
 *
@@ -116,6 +116,7 @@ INITIALIZE
   } else if (!strcmp("inc_and_inho", sample)){
     activate_inc_and_inho_linear = 1;
   } else if (!strcmp("phonon", sample)){
+    
     activate_phonon = 1;
   } else if (!strcmp("inc_trans", sample)) {
     rot_samples = 90;
@@ -515,6 +516,14 @@ COMPONENT inho_and_inc_box = Union_box(
 ROTATED (0, 0, 0) RELATIVE arm_sample
 
 // ============================ Inhomogenous + homogenous + phononsimple process
+COMPONENT inho_phonon_proc= Inhomogenous_incoherent_process(
+  sigma_expr = "9.58/2*((z+0.0045)*1000)", unit_cell_volume = 13.827,
+  // verbose=1,
+  number_of_sample_points = 2
+)
+AT (0,0,0) RELATIVE arm_sample
+
+
 
 COMPONENT phonon_proc = PhononSimple_process(
 
@@ -525,7 +534,7 @@ AT (0,0,0) RELATIVE arm_sample
 
 COMPONENT phonon_mat = Union_make_material(
     my_absorption = 100 * 5.08 / 13.827,
-    process_string = "only_inc_proc,only_inho_proc,phonon_proc"
+    process_string = "inho_phonon_proc,phonon_proc"
 )
 AT (0,0,0) RELATIVE PREVIOUS
 
