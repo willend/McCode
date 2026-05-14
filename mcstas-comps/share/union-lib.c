@@ -354,14 +354,7 @@ struct abs_logger_struct {
   struct abs_logger_pointer_set_struct function_pointers;
   // Contains hard copy of logger_data_union since the size is the same as a pointer.
   union abs_logger_data_union data_union;
-
-  // Position and rotation of the abs_logger
-  Coords position;
-  Rotation rotation;
-  Rotation t_rotation;
-
   int abs_logger_extend_index; // Contain index conditional_extend_array defined in master that can be acsessed from extend section.
-
   struct conditional_list_struct conditional_list;
 };
 
@@ -1049,7 +1042,7 @@ void add_function_to_conditional_list(struct conditional_list_struct *list,condi
       fprintf(stderr,"Failure allocating list in Union function add_function_to_conditional_list 3/6 - Exit!\n");
       exit(EXIT_FAILURE);
     }
-    union conditional_data_union **temp_du=malloc(list->num_elements*sizeof(union conditional_data_union));
+    union conditional_data_union **temp_du=malloc(list->num_elements*sizeof(union conditional_data_union*));
     if (!temp_du) {
       fprintf(stderr,"Failure allocating list in Union function add_function_to_conditional_list 4/6 - Exit!\n");
       exit(EXIT_FAILURE);
@@ -1077,6 +1070,8 @@ void add_function_to_conditional_list(struct conditional_list_struct *list,condi
     for (iterate=0;iterate<list->num_elements-1;iterate++) {
       list->conditional_functions[iterate] = temp_fp[iterate];
       list->p_data_unions[iterate] = temp_du[iterate];
+	  free(temp_fp);
+	  free(temp_du);
     }
     list->conditional_functions[list->num_elements-1] = new;
     list->p_data_unions[list->num_elements-1] = data_union;
@@ -5778,7 +5773,7 @@ int cone_overlaps_cylinder(struct geometry_struct *geometry_cone,struct geometry
 
 
     if (dist_spheres > sphere_1_radius + sphere_2_radius){
-        printf("\nSpherical method determined that cones are too far away for intersection to be relevant\n");
+        //printf("\nSpherical method determined that cones are too far away for intersection to be relevant\n");
         return 0;
     }
 
