@@ -59,5 +59,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_inhomogenous_process.instr) for `Test_inhomogenous_process.instr`.
+- [Additional information](Test_inhomogenous_process.md)
 
 ---
