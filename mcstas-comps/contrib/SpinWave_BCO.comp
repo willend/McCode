@@ -35,7 +35,7 @@
 * a1: [AA]                  Lattice constants of orthorhombic body centred lattice
 * a2: [AA]                  Lattice constants of orthorhombic body centred lattice
 * a3: [AA]                  Lattice constants of orthorhombic body centred lattice
-* S: [1]                    Spin <-- PLEASE ELABORATE
+* S: [1]                    Spin of magnetic ions
 * j: [meV]                  Coupling constant to body centered spins
 * ja: [meV]                 Coupling constant to nearest neighbours along a
 * jb: [meV]                 Coupling constant to nearest neighbours along b
@@ -45,7 +45,7 @@
 * D: [meV]                  Uniaxial anisotropy; easy axis is c-axis. Non-positive value assumed
 * B: [T]                    Field strength of external magnetic field applied along z-axis
 * FM: [1]                   Tag for ferromagnetic system if FM==1
-* Fq: [1]                   -> PLEASE FILL IN <-
+* Fq: [1]                   Magnetic form factor
 * DW: [1]                   Debye-Waller factor
 * T: [K]                    Temperature
 * mode_input: [1]           Index of mode(s) to simulate
@@ -71,6 +71,7 @@
 
 DEFINE COMPONENT SpinWave_BCO
 
+/*SKAL FQ OG DW FJERNES FRA PARAMETRE?*/
 SETTING PARAMETERS (radius ,yheight ,sigma_abs =1,sigma_inc=0,a1,a2,a3,j,ja,jb,jc,j_110=0,j_110_prime=0,S,D,B,FM=0,Fq=1,mode_input=2,DW=1,T,e_steps_low,e_steps_high,
 target_x=0, target_y=0, target_z=0, int target_index=0,focus_r=0,focus_xw=0,focus_yh=0,focus_aw=0,focus_ah=0,verbose=0)
 
@@ -115,7 +116,7 @@ SHARE
   omega_q (double* parms) {
     /* dispersion in units of meV */
     double vi, vf, vv_x, vv_y, vv_z, vi_x, vi_y, vi_z;
-    double qx, qy, qz, J, J1, J0, J10, omega_magnon, omega_neutron;
+    double qx, qy, qz, Jq, J1q, J0, J10, omega_magnon, omega_neutron;
     double coherence_factor;
     double a1, a2, a3;
     double S, D;
@@ -123,7 +124,7 @@ SHARE
     double j_110, j_110_prime;
     double B;
     double coherence_flag;
-    int branch, FM_TAG;
+    int branch, FM_TAG, verbose;
 
     vf = parms[0];
     vi = parms[1];
@@ -148,36 +149,44 @@ SHARE
     FM_TAG = parms[20];
     j_110 = parms[21];
     j_110_prime = parms[22];
+    verbose = parms[23];
 
     qx = V2K * (vi_x - vf * vv_x);
     qy = V2K * (vi_y - vf * vv_y);
     qz = V2K * (vi_z - vf * vv_z);
 
-    J = 8 * j * cos (a1 * qx / 2) * cos (a2 * qy / 2) * cos (a3 * qz / 2);
+    Jq= 8 * j * cos (a1 * qx / 2) * cos (a2 * qy / 2) * cos (a3 * qz / 2);
     J0 = 8 * j;
-    J1 = 2 * (ja * cos (qx * a1) + jb * cos (qy * a2) + jc * cos (qz * a3)) + 2 * (j_110 + j_110_prime) * cos (qx * a1) * cos (qy * a2);
+    J1q = 2 * (ja * cos (qx * a1) + jb * cos (qy * a2) + jc * cos (qz * a3)) + 2 * (j_110 + j_110_prime) * cos (qx * a1) * cos (qy * a2);
     J10 = 2 * (ja + jb + jc) + 2 * (j_110 + j_110_prime);
 
     if (FM_TAG == 0) {
-      omega_magnon = sqrt ((S * (J0 - J10 + J1) - 2 * D * (S - 0.5)) * (S * (J0 - J10 + J1) - 2 * D * (S - 0.5)) - S * S * (J) * (J))
-                     - (2 * branch - 1) * (B * B2E + 2 * (j_110 - j_110_prime) * sin (qx * a1) * sin (qy * a2)); /*AM dispersion*/
-      if ((omega_magnon < 0) || ((S * (J0 - J10 + J1) - 2 * D * (S - 0.5)) * (S * (J0 - J10 + J1) - 2 * D * (S - 0.5)) - S * S * (J) * (J) < 0)) {
+      omega_magnon = sqrt ((S * (J0 - J10 + J1q) - 2 * D * (S - 0.5)) * (S * (J0 - J10 + J1q) - 2 * D * (S - 0.5)) - S * S * (Jq) * (Jq))
+                     - (2 * branch - 1) * (B * B2E + 2 * S * (j_110 - j_110_prime) * sin (qx * a1) * sin (qy * a2)); /*AM dispersion*/
+      if ((omega_magnon < 0) || ((S * (J0 - J10 + J1q) - 2 * D * (S - 0.5)) * (S * (J0 - J10 + J1q) - 2 * D * (S - 0.5)) - S * S * (Jq) * (Jq) < 0)) {
         fatalerror ("Unphysical dispersion: Check parameters");
       }
     } else {
-      omega_magnon = S * (J1 + J - (J10 + J0)) - D * (S - 0.5) + B2E * abs (B); /*FM dispersion*/
+      omega_magnon = S * (J1q + Jq - (J10 + J0)) - D * (S - 0.5) + B2E * abs (B); /*FM dispersion*/
       if (omega_magnon < 0) {
         fatalerror ("Unphysical dispersion: Check parameters");
       }
     }
     omega_neutron = fabs (VS2E * (vi * vi - vf * vf)); /*Magnitude of energy transfer*/
     if (coherence_flag == 0) {
+      if ((verbose == 2) && fabs (omega_magnon - omega_neutron) < 1e-3 && (vi > vf)) {
+      printf ("omega_q called with parameters vf= %g, vi=%g (%g %g %g) vv=(%g, %g, %g) q=(%g %g %g)\n", vf, vi, vi_x, vi_y, vi_z, vv_x, vv_y, vv_z, qx, qy, qz);
+      printf ("omega_q gives: J0 = %g , Jq = %g, J10 = %g, J1q = %g, D = %g\n", J0, Jq, J10, J1q, D);
+      printf ("in omega_q: q=(%g %g %g) omega_magnon=%g, omega_neutron=%g\n", qx, qy, qz, omega_magnon, omega_neutron);
+      }
       return (omega_magnon - omega_neutron);
     } else { /*calculate coherence factor*/
       if (FM_TAG == 0) {
-        coherence_factor = 2 * S * ((S * (J0 - J) - S * (J10 - J1) - 2 * D * (S - 0.5)))
-                           / (omega_magnon + (2 * branch - 1) * (B * B2E + 2 * (j_110 - j_110_prime) * sin (qx * a1) * sin (qy * a2)));
-
+        coherence_factor = 2 * S * ((S * (J0 - Jq) - S * (J10 - J1q) - 2 * D * (S - 0.5)))
+                           / (omega_magnon + (2 * branch - 1) * (B * B2E + 2 * S * (j_110 - j_110_prime) * sin (qx * a1) * sin (qy * a2)));
+        if (verbose = 3) {
+        printf("Coherence factor = %g\n", coherence_factor);
+        }
       } else {
         coherence_factor = 2 * S;
       }
@@ -419,7 +428,7 @@ TRACE
   double w_atten, w_MC, w_magnon, w_Jacobi, w_coherence; /* temporary multipliers */
   int mode;                                              /* index for mode selection */
   double E_max;                                          /* Maximum upper bound of dispersion */
-  double parms[23];
+  double parms[24];
 
   if (cylinder_intersect (&t0, &t1, x, y, z, vx, vy, vz, radius, yheight)) {
     if (t0 < 0)
@@ -496,10 +505,11 @@ TRACE
     parms[20] = FM;
     parms[21] = j_110;
     parms[22] = j_110_prime;
+    parms[23] = verbose;
 
     if (FM == 0) {
       E_max = fabs (S * (8 * fabs (j) + 4 * (fabs (ja) + fabs (jb) + fabs (jc)) + 2 * (fabs (j_110) + fabs (j_110_prime))) - 2 * D * (S - 0.5)) + fabs (B2E * B)
-              + 2 * fabs (j_110 - j_110_prime);
+              + 2 * S * fabs (j_110 - j_110_prime);
     } else {
       E_max = fabs (S * (2 * (8 * fabs (j) + 2 * (fabs (ja) + fabs (jb) + fabs (jc)))) - D * (S - 0.5)) + fabs (B2E * B);
     }
@@ -518,13 +528,6 @@ TRACE
       parms[19] = 1; /*coherence flag*/
       coherence_factor = omega_q (parms);
       parms[19] = 0;
-      if (verbose == 1) { /* Print functions used for debugging */
-        printf ("vi=(%g,%g,%g)\n", vx_i, vy_i, vz_i);
-        printf ("vf=(%g,%g,%g)\n", vx, vy, vz);
-        printf ("nf=%d\n", nf);
-        printf ("index=%d\n", index);
-        printf ("omega_q found=%g\n vf=%g\n", omega_q (parms), v_f);
-      }
       parms[0] = v_f - DV;
       f1 = omega_q (parms);
       parms[0] = v_f + DV;
@@ -538,12 +541,6 @@ TRACE
       kappa_x = V2K * (vx_i - vx);
       kappa_y = V2K * (vy_i - vy);
       kappa_z = V2K * (vz_i - vz);
-
-      if (verbose == 1) {
-        if (omega > 0) {
-          printf ("hkl=(%f,%f,%f)\n", kappa_x / (2 * PI / a1), kappa_y / (2 * PI / a2), kappa_z / (2 * PI / a3));
-        }
-      }
 
       kappa2 = kappa_y * kappa_y + kappa_x * kappa_x + kappa_z * kappa_z;
       kappa2_z_norm = kappa_z * kappa_z / kappa2;
@@ -575,21 +572,17 @@ TRACE
       w_Jacobi = 2 * VS2E * v_f / J_factor; /* Jacobian of delta functions in cross section.  */
       w_coherence = coherence_factor;       /*  coherence factor */
       p *= w_atten * w_MC * w_magnon * w_Jacobi * w_coherence;
-      if (verbose == 2) { /* Print functions used for debugging absolute intensity measurements*/
-        if (v_i > v_f) {
-          double delta_E = VS2E * (v_i * v_i - v_f * v_f);
-          printf ("delta_E=%f\n", delta_E);
-          printf ("hkl=(%f,%f,%f)\n", kappa_x / (2 * PI / a1), kappa_y / (2 * PI / a2), kappa_z / (2 * PI / a3));
-          printf ("vvi=(%f,%f,%f)\n vvf=(%f,%f,%f)\n", vx_i / v_i, vy_i / v_i, vz_i / v_i, vx / v_f, vy / v_f, vz / v_f);
-          printf ("Ei=%f. Ef=%f\n", VS2E * v_i * v_i, VS2E * v_f * v_f);
-          printf ("J_factor=%f\n", J_factor);
-          printf ("vi=%f, vf=%f\n w_Jacobi = %f\n w_coherence = %f\n w_magnon*10^10= %f\n", v_i, v_f, w_Jacobi, w_coherence, w_magnon * 1e10);
-          printf ("cross*10^10/N = %f\n", w_magnon * w_Jacobi * w_coherence * 1e10);
-        }
+      SCATTER;
+      if (verbose == 1) {
+        printf ("w factors : %g %g %g %g %g Omega: %g \n", w_atten, w_MC, w_magnon, w_Jacobi, w_coherence, omega);
+        printf ("J_factor %g l_full %g, v_f/v_i %g, DW %g, kappa2 %g, bose_factor%g, fabs(omega) %g, coherence %g \n", J_factor, l_full, v_f / v_i, DW, kappa2,
+                bose_factor, fabs (omega), coherence_factor);
       }
+
 
     } else {
       ABSORB; // findroots returned junk
+      // Simply absorb if we can not hit, no fatal errors. (Typically indication of v_f==0)
     }
   } /* else transmit: Neutron did not hit the sample */
 %}
