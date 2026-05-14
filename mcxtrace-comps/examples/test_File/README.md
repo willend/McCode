@@ -30,5 +30,3 @@ Parameters in **boldface** are required; the others are optional.
 - From https://github.com/g5t/mccode-file
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

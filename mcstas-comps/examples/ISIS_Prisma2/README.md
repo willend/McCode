@@ -47,5 +47,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="http://www.isis.rl.ac.uk/excitations/prisma/">PRISMA</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

@@ -61,5 +61,3 @@ Parameters in **boldface** are required; the others are optional.
 - The South African Nuclear Energy Corporation <a href="http://www.necsa.co.za"> website</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

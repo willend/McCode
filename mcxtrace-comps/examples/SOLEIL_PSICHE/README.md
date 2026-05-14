@@ -46,5 +46,3 @@ Parameters in **boldface** are required; the others are optional.
 - A. King et al, Rev Sci Instrum 87, 093704 (2016), DOI: 10.1063/1.4961365
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

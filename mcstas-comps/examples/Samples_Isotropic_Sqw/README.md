@@ -34,5 +34,3 @@ Parameters in **boldface** are required; the others are optional.
 - The Isotropic_Sqw sample
 
 ---
-
-*Generated for mcstas 3.99.99.*

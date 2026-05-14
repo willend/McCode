@@ -50,5 +50,3 @@ Parameters in **boldface** are required; the others are optional.
 - The Samples_Isotropic_Sqw example instrument
 
 ---
-
-*Generated for mcstas 3.99.99.*

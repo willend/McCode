@@ -90,5 +90,3 @@ Parameters in **boldface** are required; the others are optional.
 - http://www.ill.eu/fr/instruments-support/instruments-groups/instruments/in4c
 
 ---
-
-*Generated for mcstas 3.99.99.*

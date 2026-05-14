@@ -58,5 +58,3 @@ Parameters in **boldface** are required; the others are optional.
 - Website for <a href="https://www.sine2020.eu/randd-activities/e-tools.html">WP8 in EU-SINE2020</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

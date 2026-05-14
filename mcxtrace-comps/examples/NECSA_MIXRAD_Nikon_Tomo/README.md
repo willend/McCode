@@ -47,5 +47,3 @@ Parameters in **boldface** are required; the others are optional.
 - https://www.ndt.net/article/wcndt2012/papers/37_wcndtfinal00037.pdf
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

@@ -53,5 +53,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="https://tsapps.nist.gov/publication/get_pdf.cfm?<pub_id=927309">"International Tables for Crystallography (2018). Vol. H, Chapter 3.1, pp. 224–251."</a>
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

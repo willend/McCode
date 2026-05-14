@@ -56,5 +56,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="https://europeanspallationsource.se/workshops-facilities#v20-test-beamline">V20 info section</a> at the ESS website
 
 ---
-
-*Generated for mcstas 3.99.99.*

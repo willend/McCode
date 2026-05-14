@@ -31,5 +31,3 @@ Parameters in **boldface** are required; the others are optional.
 - The PSD_Detector component
 
 ---
-
-*Generated for mcstas 3.99.99.*

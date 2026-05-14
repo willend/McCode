@@ -64,5 +64,3 @@ Parameters in **boldface** are required; the others are optional.
 - McXtrace komponent definition: http://www.mcxtrace.org
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

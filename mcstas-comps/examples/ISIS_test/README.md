@@ -31,5 +31,3 @@ Parameters in **boldface** are required; the others are optional.
 - Written by D. Champion <D.Champion@rl.ac.uk> ISIS, Feb 2004
 
 ---
-
-*Generated for mcstas 3.99.99.*

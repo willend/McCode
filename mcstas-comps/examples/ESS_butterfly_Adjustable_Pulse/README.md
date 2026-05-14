@@ -44,5 +44,3 @@ Parameters in **boldface** are required; the others are optional.
 - Benchmarking website available at <a href="http://ess_butterfly.mcstas.org">http://ess_butterfly.mcstas.org</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

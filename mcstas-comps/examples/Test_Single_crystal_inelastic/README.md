@@ -46,5 +46,3 @@ Parameters in **boldface** are required; the others are optional.
 - Duc Le (2015) - duc.le@stfc.ac.uk
 
 ---
-
-*Generated for mcstas 3.99.99.*

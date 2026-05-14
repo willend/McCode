@@ -71,5 +71,3 @@ Parameters in **boldface** are required; the others are optional.
 - https://www.synchrotron-soleil.fr/en/beamlines/sixs
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

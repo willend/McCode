@@ -33,5 +33,3 @@ Parameters in **boldface** are required; the others are optional.
 - MCPL website at <a href="https://mctools.github.io/mcpl/">https://mctools.github.io/mcpl/</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

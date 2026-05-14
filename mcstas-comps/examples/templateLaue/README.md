@@ -30,5 +30,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](templateLaue.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

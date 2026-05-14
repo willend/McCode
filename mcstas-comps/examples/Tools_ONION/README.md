@@ -41,5 +41,3 @@ Parameters in **boldface** are required; the others are optional.
 - Python script available at <a href="https://github.com/mccode-dev/McCode-contribution-support-docs/tree/master/McStas/2.6_Onion_tool_T_Huegle">https://github.com/mccode-dev/McCode-contribution-support-docs/tree/master/McStas/2.6_Onion_tool_T_Huegle</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

@@ -113,5 +113,3 @@ Parameters in **boldface** are required; the others are optional.
 - The <a href="https://forge.epn-campus.eu/projects/nmoldyn">nMoldyn</a> package to create Sqw data sets from MD trajectories
 
 ---
-
-*Generated for mcstas 3.99.99.*

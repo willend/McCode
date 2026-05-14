@@ -38,5 +38,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](Samples_Phonon.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

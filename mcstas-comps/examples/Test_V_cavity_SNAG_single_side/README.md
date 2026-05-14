@@ -43,5 +43,3 @@ Parameters in **boldface** are required; the others are optional.
 - P. B&ouml;ni, W. M&uuml;nzer and A. Ostermann: <a href="https://doi.org/10.1016/j.physb.2009.06.031">Physica B: Condensed Matter Volume 404, Issue 17, 1 September 2009, Pages 2620-2623</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

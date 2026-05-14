@@ -62,5 +62,3 @@ Parameters in **boldface** are required; the others are optional.
 - Gallard, PhD, (2019) https://www.theses.fr/2019AIXM0037.pdf
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

@@ -31,5 +31,3 @@ Parameters in **boldface** are required; the others are optional.
 - R. Von Jan and R. Scherm. The statistical chopper for neutron time-of-flight spectroscopy. Nuclear Instruments and Methods, 80 (1970) 69-76.
 
 ---
-
-*Generated for mcstas 3.99.99.*

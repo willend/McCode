@@ -35,5 +35,3 @@ Parameters in **boldface** are required; the others are optional.
 - M. Sufi et al., J. AppL Cryst. (1997). 30, 884-888 [doi:10.1107/S0021889897001738]
 
 ---
-
-*Generated for mcstas 3.99.99.*

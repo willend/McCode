@@ -44,5 +44,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](Test_Mono.md) (only if available!)
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

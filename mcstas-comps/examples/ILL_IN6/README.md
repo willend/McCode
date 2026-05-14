@@ -77,5 +77,3 @@ Parameters in **boldface** are required; the others are optional.
 - R.Scherm and T.Springer, "Proposal of a multiple Chopper...", Kernforschungsanlage Julich, 19xx
 
 ---
-
-*Generated for mcstas 3.99.99.*

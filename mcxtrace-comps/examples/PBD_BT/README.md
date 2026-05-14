@@ -62,5 +62,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="https://www.nist.gov/programs-projects/diffraction-metrology-and-standards/parallel-beam-diffractometer-pbd-laboratory"></a>
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

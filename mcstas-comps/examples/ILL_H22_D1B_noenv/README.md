@@ -71,5 +71,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](ILL_H22_D1B_noenv.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

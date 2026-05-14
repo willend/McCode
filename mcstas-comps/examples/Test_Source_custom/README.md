@@ -29,5 +29,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](test_Source_custom.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

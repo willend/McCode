@@ -50,5 +50,3 @@ Parameters in **boldface** are required; the others are optional.
 - The <a href="http://www.ill.fr/d16">D16 diffractometer</a> at the ILL
 
 ---
-
-*Generated for mcstas 3.99.99.*

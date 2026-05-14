@@ -32,5 +32,3 @@ Parameters in **boldface** are required; the others are optional.
 - <put here any reference/HTML link>
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

@@ -45,5 +45,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="https://doi.org/10.1107/S1600576720015496">https://doi.org/10.1107/S1600576720015496</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

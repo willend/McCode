@@ -61,5 +61,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](ILL_H22_D1A.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

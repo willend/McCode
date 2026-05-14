@@ -46,5 +46,3 @@ Parameters in **boldface** are required; the others are optional.
 - A. Abrahamsen, N. B. Christensen, and E. Lauridsen. McStas simulations of the TAS1 spectrometer. Student's report, Niels Bohr Institute, University of Copenhagen, 1998.
 
 ---
-
-*Generated for mcstas 3.99.99.*

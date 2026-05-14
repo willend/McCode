@@ -32,5 +32,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](Unit_test_abs_logger_1D_space_tof.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

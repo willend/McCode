@@ -47,5 +47,3 @@ Parameters in **boldface** are required; the others are optional.
 - http://www.esrf.eu/UsersAndScience/Experiments/StructMaterials/ID01
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

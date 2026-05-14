@@ -72,5 +72,3 @@ Parameters in **boldface** are required; the others are optional.
 - Mirotron drawing MR-0656-000 for the IN15 V-mirror geometry
 
 ---
-
-*Generated for mcstas 3.99.99.*

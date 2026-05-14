@@ -39,5 +39,3 @@ Parameters in **boldface** are required; the others are optional.
 - Test instrument written by P Willendrup <peter.willendrup@ess.eu> ESS, March 2026
 
 ---
-
-*Generated for mcstas 3.99.99.*

@@ -36,5 +36,3 @@ Parameters in **boldface** are required; the others are optional.
 - http://www.esrf.eu/UsersAndScience/Experiments/StructMaterials/ID11/ID11Source
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

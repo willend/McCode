@@ -78,5 +78,3 @@ Parameters in **boldface** are required; the others are optional.
 - T Weitkamp et al 2017 J. Phys.: Conf. Ser. 849 012037 DOI: 10.1088/1742-6596/849/1/012037
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

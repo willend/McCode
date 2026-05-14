@@ -71,5 +71,3 @@ Parameters in **boldface** are required; the others are optional.
 - M. Morhac, NIM A 600 (2009) 478
 
 ---
-
-*Generated for mcstas 3.99.99.*

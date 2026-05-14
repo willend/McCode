@@ -56,5 +56,3 @@ Parameters in **boldface** are required; the others are optional.
 - https://www.researchgate.net/deref/https%3A%2F%2Ftel.archives-ouvertes.fr%2Ftel-01064523
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

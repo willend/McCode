@@ -73,5 +73,3 @@ Parameters in **boldface** are required; the others are optional.
 - Validation of Single_crystal is now in progress!
 
 ---
-
-*Generated for mcstas 3.99.99.*

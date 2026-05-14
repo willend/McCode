@@ -36,5 +36,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](Unittest_SANS_benchmark2.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

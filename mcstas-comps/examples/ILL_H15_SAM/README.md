@@ -68,5 +68,3 @@ Parameters in **boldface** are required; the others are optional.
 - <https://www.ill.eu/for-all-users/instruments/instruments-list/sam/description/instrument-layout>
 
 ---
-
-*Generated for mcstas 3.99.99.*

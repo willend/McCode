@@ -53,5 +53,3 @@ Parameters in **boldface** are required; the others are optional.
 - This work was supported by the HighNESS project and is funded by European Commission (H2020-951782).
 
 ---
-
-*Generated for mcstas 3.99.99.*

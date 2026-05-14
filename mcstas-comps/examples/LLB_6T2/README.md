@@ -41,5 +41,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](LLB_6T2.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

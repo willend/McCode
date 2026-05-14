@@ -50,5 +50,3 @@ Parameters in **boldface** are required; the others are optional.
 - <br>D. L. Abernathy,  M. B. Stone,  M. J. Loguillo, M. S. Lucas, O. Delaire, X.Tang, J. Y. Y. Lin, and  B. Fultz,"Design and operation of the wide angular-range chopper spectrometer ARCS at the Spallation Neutron Source", Review of Scientific Instruments, 83 , 015114 (2012)
 
 ---
-
-*Generated for mcstas 3.99.99.*

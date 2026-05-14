@@ -32,5 +32,3 @@ Parameters in **boldface** are required; the others are optional.
 - The McStas tutorial
 
 ---
-
-*Generated for mcstas 3.99.99.*

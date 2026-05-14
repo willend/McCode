@@ -32,5 +32,3 @@ Parameters in **boldface** are required; the others are optional.
 - https://github.com/mctools/ncrystal/wiki/
 
 ---
-
-*Generated for mcstas 3.99.99.*

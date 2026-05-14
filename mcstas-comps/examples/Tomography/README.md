@@ -48,5 +48,3 @@ Parameters in **boldface** are required; the others are optional.
 - http://shape.cs.princeton.edu/benchmark/documentation/off_format.html
 
 ---
-
-*Generated for mcstas 3.99.99.*

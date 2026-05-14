@@ -35,5 +35,3 @@ Parameters in **boldface** are required; the others are optional.
 - Neutron News 13 (No. 4), 24-29 (2002).
 
 ---
-
-*Generated for mcstas 3.99.99.*

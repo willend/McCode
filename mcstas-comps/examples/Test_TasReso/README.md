@@ -56,5 +56,3 @@ Parameters in **boldface** are required; the others are optional.
 - [Additional information](Test_TasReso.md) (only if available!)
 
 ---
-
-*Generated for mcstas 3.99.99.*

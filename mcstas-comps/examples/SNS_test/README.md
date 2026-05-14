@@ -33,5 +33,3 @@ Parameters in **boldface** are required; the others are optional.
 - <A href="http://neutrons.ornl.gov/instrument_systems/components/moderators.shtml">Source files </A>
 
 ---
-
-*Generated for mcstas 3.99.99.*

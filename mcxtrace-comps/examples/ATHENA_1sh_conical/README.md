@@ -54,5 +54,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="http://www.cosmos.esa.int/web/athena">The ATHENA web pages @ ESA</a>
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

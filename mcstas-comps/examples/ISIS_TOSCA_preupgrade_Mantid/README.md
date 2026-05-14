@@ -52,5 +52,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="https://http://mdanse2018.essworkshop.org">MDANSE 2018 school webpage</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

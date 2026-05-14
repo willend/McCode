@@ -45,5 +45,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="http://www.isis.stfc.ac.uk/instruments/merlin">http://www.isis.stfc.ac.uk/instruments/merlin</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

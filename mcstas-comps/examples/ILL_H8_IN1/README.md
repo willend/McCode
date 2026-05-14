@@ -84,5 +84,3 @@ Parameters in **boldface** are required; the others are optional.
 - Restrax at http://omega.ujf.cas.cz/restrax/
 
 ---
-
-*Generated for mcstas 3.99.99.*

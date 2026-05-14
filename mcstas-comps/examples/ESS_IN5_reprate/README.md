@@ -77,5 +77,3 @@ Parameters in **boldface** are required; the others are optional.
 - <a href="http://www.ill.fr/in5">The IN5@ILL Yellow Pages</a>
 
 ---
-
-*Generated for mcstas 3.99.99.*

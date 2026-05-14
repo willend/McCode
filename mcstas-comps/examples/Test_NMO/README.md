@@ -52,5 +52,3 @@ Parameters in **boldface** are required; the others are optional.
 - Christoph Herb et al., Nucl. Instrum. Meth. A 1040, 1671564 (1-18) 2022.
 
 ---
-
-*Generated for mcstas 3.99.99.*

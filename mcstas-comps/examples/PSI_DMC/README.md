@@ -45,5 +45,3 @@ Parameters in **boldface** are required; the others are optional.
 - P Willendrup, U Filges, L Keller, E Farhi, K Lefmann: Validation of a realistic powder sample using data from DMC at PSI, ICNS 2005 (Physica B, 386, (2006), 1032.)
 
 ---
-
-*Generated for mcstas 3.99.99.*

@@ -40,5 +40,3 @@ Parameters in **boldface** are required; the others are optional.
 - The <a href="http://www.isis.stfc.ac.uk/instruments/gem/">GEM instrument</a> at ISIS
 
 ---
-
-*Generated for mcstas 3.99.99.*

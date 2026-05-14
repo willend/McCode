@@ -53,5 +53,3 @@ Parameters in **boldface** are required; the others are optional.
 - The <a href="http://www.ill.eu/d4">D4 diffractometer</a> at the ILL
 
 ---
-
-*Generated for mcstas 3.99.99.*

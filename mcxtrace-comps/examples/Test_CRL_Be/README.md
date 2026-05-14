@@ -30,5 +30,3 @@ Parameters in **boldface** are required; the others are optional.
 - https://github.com/antoinepado/Corrections_School_March_2022/tree/master/DAY_2/5_Optics/1_CRLs/Be
 
 ---
-
-*Generated for mcxtrace 3.99.99.*

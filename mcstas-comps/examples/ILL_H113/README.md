@@ -33,5 +33,3 @@ Parameters in **boldface** are required; the others are optional.
 - The <a href="http://www.ill.fr/YellowBook/PF1">PF1b beam line</a> at the ILL
 
 ---
-
-*Generated for mcstas 3.99.99.*

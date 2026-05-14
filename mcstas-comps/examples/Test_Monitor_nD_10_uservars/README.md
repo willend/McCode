@@ -30,5 +30,3 @@ Parameters in **boldface** are required; the others are optional.
 - <reference/HTML link>
 
 ---
-
-*Generated for mcstas 3.99.99.*

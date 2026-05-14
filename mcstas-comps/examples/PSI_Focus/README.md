@@ -32,5 +32,3 @@ Parameters in **boldface** are required; the others are optional.
 - Written by U.Filges <uwe.filges@psi.ch> PSI, Jan 2004
 
 ---
-
-*Generated for mcstas 3.99.99.*

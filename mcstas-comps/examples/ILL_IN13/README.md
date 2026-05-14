@@ -89,5 +89,3 @@ Parameters in **boldface** are required; the others are optional.
 - The <a href="http://www.ill.fr/YellowBook/IN3">IN3 TAS</a> at the ILL
 
 ---
-
-*Generated for mcstas 3.99.99.*
