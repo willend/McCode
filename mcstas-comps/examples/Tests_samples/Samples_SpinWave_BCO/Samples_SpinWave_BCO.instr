@@ -31,7 +31,7 @@
 * Temp:         [K]   Sample temperature
 * width:        [deg] Width of sample
 * E_steps_low:  [1]   Number of low-energy steps in zrid
-* E_steps_high: [½]   Number of high-energy steps in zrid
+* E_steps_high: [1]   Number of high-energy steps in zrid
 * mode:         [1]   Index of mode(s) to simulate
 * verbose:      [1]   Verbosity flag
 *
