@@ -1197,9 +1197,6 @@ class InstrMdDocWriter:
         lines.append('')
         lines.append('---')
         lines.append('')
-        lines.append('*Generated for %s %s.*' % (mccode_config.configuration["MCCODE"],
-                                                 mccode_config.configuration["MCCODE_VERSION"]))
-
         self.text = '\n'.join(lines)
         return self.text
 
