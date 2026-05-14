@@ -153,7 +153,7 @@ SHARE
     qy = V2K * (vi_y - vf * vv_y);
     qz = V2K * (vi_z - vf * vv_z);
 
-    Jq= 8 * j * cos (a1 * qx / 2) * cos (a2 * qy / 2) * cos (a3 * qz / 2);
+    Jq = 8 * j * cos (a1 * qx / 2) * cos (a2 * qy / 2) * cos (a3 * qz / 2);
     J0 = 8 * j;
     J1q = 2 * (ja * cos (qx * a1) + jb * cos (qy * a2) + jc * cos (qz * a3)) + 2 * (j_110 + j_110_prime) * cos (qx * a1) * cos (qy * a2);
     J10 = 2 * (ja + jb + jc) + 2 * (j_110 + j_110_prime);
@@ -173,9 +173,9 @@ SHARE
     omega_neutron = fabs (VS2E * (vi * vi - vf * vf)); /*Magnitude of energy transfer*/
     if (coherence_flag == 0) {
       if ((verbose == 2) && fabs (omega_magnon - omega_neutron) < 1e-3 && (vi > vf)) {
-      printf ("omega_q called with parameters vf= %g, vi=%g (%g %g %g) vv=(%g, %g, %g) q=(%g %g %g)\n", vf, vi, vi_x, vi_y, vi_z, vv_x, vv_y, vv_z, qx, qy, qz);
-      printf ("omega_q gives: J0 = %g , Jq = %g, J10 = %g, J1q = %g, D = %g\n", J0, Jq, J10, J1q, D);
-      printf ("in omega_q: q=(%g %g %g) omega_magnon=%g, omega_neutron=%g\n", qx, qy, qz, omega_magnon, omega_neutron);
+        printf ("omega_q called with parameters vf= %g, vi=%g (%g %g %g) vv=(%g, %g, %g) q=(%g %g %g)\n", vf, vi, vi_x, vi_y, vi_z, vv_x, vv_y, vv_z, qx, qy, qz);
+        printf ("omega_q gives: J0 = %g , Jq = %g, J10 = %g, J1q = %g, D = %g\n", J0, Jq, J10, J1q, D);
+        printf ("in omega_q: q=(%g %g %g) omega_magnon=%g, omega_neutron=%g\n", qx, qy, qz, omega_magnon, omega_neutron);
       }
       return (omega_magnon - omega_neutron);
     } else { /*calculate coherence factor*/
@@ -183,7 +183,7 @@ SHARE
         coherence_factor = 2 * S * ((S * (J0 - Jq) - S * (J10 - J1q) - 2 * D * (S - 0.5)))
                            / (omega_magnon + (2 * branch - 1) * (B * B2E + 2 * S * (j_110 - j_110_prime) * sin (qx * a1) * sin (qy * a2)));
         if (verbose = 3) {
-        printf("Coherence factor = %g\n", coherence_factor);
+          printf ("Coherence factor = %g\n", coherence_factor);
         }
       } else {
         coherence_factor = 2 * S;
@@ -576,7 +576,6 @@ TRACE
         printf ("J_factor %g l_full %g, v_f/v_i %g, DW %g, kappa2 %g, bose_factor%g, fabs(omega) %g, coherence %g \n", J_factor, l_full, v_f / v_i, DW, kappa2,
                 bose_factor, fabs (omega), coherence_factor);
       }
-
 
     } else {
       ABSORB; // findroots returned junk
