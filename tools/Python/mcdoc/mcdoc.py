@@ -1191,9 +1191,9 @@ class InstrMdDocWriter:
         lines.append('## Links')
         lines.append('')
         lines.append('- [Source code](%s) for `%s`.' % (os.path.basename(i.filepath), os.path.basename(i.filepath)))
-        additional = pathlib.Path(os.path.basename(i.filepath).split('.')[0]+'md')
+        additional = pathlib.Path(i.filepath.split('.')[0]+'.md')
         if additional.exists():
-            lines.append('- [Additional information](%s)' % (str(additional)))
+            lines.append('- [Additional information](%s)' % (os.path.basename(i.filepath).split('.')[0]+'.md'))
         for l in i.links:
             lines.append('- %s' % _md_text(l))
         lines.append('')
