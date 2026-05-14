@@ -49,6 +49,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Reflectometer.instr) for `Reflectometer.instr`.
-- [Additional information](Reflectometer.md) (only if available!)
 
 ---

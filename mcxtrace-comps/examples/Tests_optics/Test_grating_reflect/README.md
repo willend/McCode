@@ -31,6 +31,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_grating_reflect.instr) for `Test_grating_reflect.instr`.
-- [Additional information](Test_grating_reflect.md) (only if available!)
 
 ---

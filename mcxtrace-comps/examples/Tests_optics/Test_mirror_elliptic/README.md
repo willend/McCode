@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_mirror_elliptic.instr) for `Test_mirror_elliptic.instr`.
-- [Additional information](Test_mirror_elliptic.md) (only if available!)
 
 ---

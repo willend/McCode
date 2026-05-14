@@ -31,6 +31,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_MCPL_input_once.instr) for `Test_MCPL_input_once.instr`.
-- [Additional information](Test_MCPL_input_once.md) (only if available!)
 
 ---

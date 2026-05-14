@@ -28,6 +28,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Template_1Slit_Diff.instr) for `Template_1Slit_Diff.instr`.
-- [Additional information](Template_1Slit_Diff.md) (only if available!)
 
 ---

@@ -50,7 +50,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ATHENA_1sh_conical.instr) for `ATHENA_1sh_conical.instr`.
-- [Additional information](ATHENA_1sh_conical.md) (only if available!)
 - <a href="http://www.cosmos.esa.int/web/athena">The ATHENA web pages @ ESA</a>
 
 ---

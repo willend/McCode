@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_mirror_parabolic.instr) for `Test_mirror_parabolic.instr`.
-- [Additional information](Test_mirror_parabolic.md) (only if available!)
 
 ---

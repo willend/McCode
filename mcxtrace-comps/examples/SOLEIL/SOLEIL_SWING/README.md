@@ -53,7 +53,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_SWING.instr) for `SOLEIL_SWING.instr`.
-- [Additional information](SOLEIL_SWING.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/swing
 
 ---

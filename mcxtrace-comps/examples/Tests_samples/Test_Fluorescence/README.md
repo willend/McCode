@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Fluorescence.instr) for `Test_Fluorescence.instr`.
-- [Additional information](Test_Fluorescence.md) (only if available!)
 
 ---

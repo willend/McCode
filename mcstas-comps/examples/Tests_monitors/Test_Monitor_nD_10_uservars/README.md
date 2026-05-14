@@ -26,7 +26,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Monitor_nD_10_uservars.instr) for `Test_Monitor_nD_10_uservars.instr`.
-- [Additional information](Test_Monitor_nD_10_uservars.md) (only if available!)
 - <reference/HTML link>
 
 ---

@@ -40,7 +40,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](NECSA_Brucker_D8_Advance.instr) for `NECSA_Brucker_D8_Advance.instr`.
-- [Additional information](NECSA_Brucker_D8_Advance.md) (only if available!)
 - http://nanoqam.ca/wiki/lib/exe/fetch.php?media=d8_advance_discover_user_manual_vol._1_doc-m88-exx153_v6.pdf
 
 ---

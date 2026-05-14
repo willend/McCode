@@ -39,6 +39,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Samples_SpinWave_BCO.instr) for `Samples_SpinWave_BCO.instr`.
-- [Additional information](Samples_SpinWave_BCO.md) (only if available!)
 
 ---

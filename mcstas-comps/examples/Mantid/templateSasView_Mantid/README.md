@@ -54,6 +54,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateSasView_Mantid.instr) for `templateSasView_Mantid.instr`.
-- [Additional information](templateSasView_Mantid.md) (only if available!)
 
 ---

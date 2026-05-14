@@ -31,6 +31,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Pump_probe.instr) for `Pump_probe.instr`.
-- [Additional information](Pump_probe.md) (only if available!)
 
 ---

@@ -27,6 +27,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Sample_picture_replica.instr) for `Sample_picture_replica.instr`.
-- [Additional information](Sample_picture_replica.md) (only if available!)
 
 ---

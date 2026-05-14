@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Detector_pn.instr) for `Test_Detector_pn.instr`.
-- [Additional information](Test_Detector_pn.md) (only if available!)
 
 ---

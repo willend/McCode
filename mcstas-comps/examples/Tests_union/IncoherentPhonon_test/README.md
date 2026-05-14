@@ -50,6 +50,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](IncoherentPhonon_test.instr) for `IncoherentPhonon_test.instr`.
-- [Additional information](IncoherentPhonon_test.md) (only if available!)
 
 ---

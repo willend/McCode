@@ -26,7 +26,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_CRL_Be.instr) for `Test_CRL_Be.instr`.
-- [Additional information](Test_CRL_Be.md) (only if available!)
 - https://github.com/antoinepado/Corrections_School_March_2022/tree/master/DAY_2/5_Optics/1_CRLs/Be
 
 ---

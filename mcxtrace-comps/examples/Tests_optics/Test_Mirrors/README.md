@@ -38,6 +38,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Mirrors.instr) for `Test_Mirrors.instr`.
-- [Additional information](Test_Mirrors.md) (only if available!)
 
 ---

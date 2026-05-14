@@ -35,6 +35,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Hidden_Cylinder.instr) for `Hidden_Cylinder.instr`.
-- [Additional information](Hidden_Cylinder.md) (only if available!)
 
 ---

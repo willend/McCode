@@ -26,6 +26,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Demo_shape_primitives.instr) for `Demo_shape_primitives.instr`.
-- [Additional information](Demo_shape_primitives.md) (only if available!)
 
 ---

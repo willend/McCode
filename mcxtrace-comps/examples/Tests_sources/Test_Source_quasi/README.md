@@ -26,6 +26,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Source_quasi.instr) for `Test_Source_quasi.instr`.
-- [Additional information](Test_Source_quasi.md) (only if available!)
 
 ---

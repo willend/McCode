@@ -42,6 +42,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Template_SasView.instr) for `Template_SasView.instr`.
-- [Additional information](Template_SasView.md) (only if available!)
 
 ---

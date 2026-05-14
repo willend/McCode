@@ -32,6 +32,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Air.instr) for `Test_Air.instr`.
-- [Additional information](Test_Air.md) (only if available!)
 
 ---

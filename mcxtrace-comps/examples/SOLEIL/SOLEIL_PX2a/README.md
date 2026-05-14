@@ -49,7 +49,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_PX2a.instr) for `SOLEIL_PX2a.instr`.
-- [Additional information](SOLEIL_PX2a.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/proxima-2a
 
 ---

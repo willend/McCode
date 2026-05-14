@@ -53,6 +53,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SAXS_saxlab.instr) for `SAXS_saxlab.instr`.
-- [Additional information](SAXS_saxlab.md) (only if available!)
 
 ---

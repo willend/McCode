@@ -38,6 +38,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Template_Johann_spec.instr) for `Template_Johann_spec.instr`.
-- [Additional information](Template_Johann_spec.md) (only if available!)
 
 ---

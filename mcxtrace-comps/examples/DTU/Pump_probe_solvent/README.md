@@ -53,6 +53,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Pump_probe_solvent.instr) for `Pump_probe_solvent.instr`.
-- [Additional information](Pump_probe_solvent.md) (only if available!)
 
 ---

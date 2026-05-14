@@ -27,6 +27,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Mirror_toroid.instr) for `Test_Mirror_toroid.instr`.
-- [Additional information](Test_Mirror_toroid.md) (only if available!)
 
 ---

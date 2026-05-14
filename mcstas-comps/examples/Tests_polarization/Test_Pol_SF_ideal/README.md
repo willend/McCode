@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_SF_ideal.instr) for `Test_Pol_SF_ideal.instr`.
-- [Additional information](Test_Pol_SF_ideal.md) (only if available!)
 
 ---

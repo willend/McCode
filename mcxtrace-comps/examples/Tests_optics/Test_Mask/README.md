@@ -27,6 +27,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Mask.instr) for `Test_Mask.instr`.
-- [Additional information](Test_Mask.md) (only if available!)
 
 ---

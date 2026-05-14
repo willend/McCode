@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](MAXII_711.instr) for `MAXII_711.instr`.
-- [Additional information](MAXII_711.md) (only if available!)
 
 ---

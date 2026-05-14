@@ -58,7 +58,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](PBD_BT.instr) for `PBD_BT.instr`.
-- [Additional information](PBD_BT.md) (only if available!)
 - <a href="https://www.nist.gov/programs-projects/diffraction-metrology-and-standards/parallel-beam-diffractometer-pbd-laboratory"></a>
 
 ---

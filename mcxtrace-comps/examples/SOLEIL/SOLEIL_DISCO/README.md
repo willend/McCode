@@ -33,7 +33,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_DISCO.instr) for `SOLEIL_DISCO.instr`.
-- [Additional information](SOLEIL_DISCO.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/disco
 
 ---

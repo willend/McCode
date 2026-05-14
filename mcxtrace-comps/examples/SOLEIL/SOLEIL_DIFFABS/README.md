@@ -57,7 +57,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_DIFFABS.instr) for `SOLEIL_DIFFABS.instr`.
-- [Additional information](SOLEIL_DIFFABS.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/diffabs
 - Gallard, PhD, (2019) https://www.theses.fr/2019AIXM0037.pdf
 

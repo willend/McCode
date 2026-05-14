@@ -32,7 +32,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_KB.instr) for `Test_KB.instr`.
-- [Additional information](Test_KB.md) (only if available!)
 - https://github.com/mccode-dev/Schools/tree/master/2023/SOLEIL_May_2023/Day2_Wednesday_May_10th/5_Optics/2_KB_mirrors
 
 ---

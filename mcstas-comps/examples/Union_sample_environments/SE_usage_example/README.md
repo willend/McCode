@@ -28,6 +28,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SE_usage_example.instr) for `SE_usage_example.instr`.
-- [Additional information](SE_usage_example.md) (only if available!)
 
 ---

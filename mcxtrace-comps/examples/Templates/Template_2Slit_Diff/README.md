@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Template_2Slit_Diff.instr) for `Template_2Slit_Diff.instr`.
-- [Additional information](Template_2Slit_Diff.md) (only if available!)
 
 ---

@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_logger_3D_space.instr) for `Unit_test_logger_3D_space.instr`.
-- [Additional information](Unit_test_logger_3D_space.md) (only if available!)
 
 ---

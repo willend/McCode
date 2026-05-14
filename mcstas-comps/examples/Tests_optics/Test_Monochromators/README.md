@@ -51,6 +51,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Monochromators.instr) for `Test_Monochromators.instr`.
-- [Additional information](Test_Monochromators.md) (only if available!)
 
 ---

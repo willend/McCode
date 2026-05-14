@@ -31,7 +31,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unittest_JUMP_WHEN.instr) for `Unittest_JUMP_WHEN.instr`.
-- [Additional information](Unittest_JUMP_WHEN.md) (only if available!)
 - <reference/HTML link>
 
 ---

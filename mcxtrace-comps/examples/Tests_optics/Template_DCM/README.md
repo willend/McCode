@@ -32,6 +32,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Template_DCM.instr) for `Template_DCM.instr`.
-- [Additional information](Template_DCM.md) (only if available!)
 
 ---

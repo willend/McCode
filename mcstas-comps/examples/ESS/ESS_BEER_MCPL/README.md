@@ -76,6 +76,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ESS_BEER_MCPL.instr) for `ESS_BEER_MCPL.instr`.
-- [Additional information](ESS_BEER_MCPL.md) (only if available!)
 
 ---

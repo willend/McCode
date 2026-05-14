@@ -31,6 +31,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_texture.instr) for `Test_texture.instr`.
-- [Additional information](Test_texture.md) (only if available!)
 
 ---

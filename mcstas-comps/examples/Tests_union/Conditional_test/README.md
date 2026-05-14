@@ -26,6 +26,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Conditional_test.instr) for `Conditional_test.instr`.
-- [Additional information](Conditional_test.md) (only if available!)
 
 ---

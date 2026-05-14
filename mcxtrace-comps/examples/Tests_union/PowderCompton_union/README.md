@@ -30,7 +30,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](PowderCompton_union.instr) for `PowderCompton_union.instr`.
-- [Additional information](PowderCompton_union.md) (only if available!)
 - <reference/HTML link>
 
 ---

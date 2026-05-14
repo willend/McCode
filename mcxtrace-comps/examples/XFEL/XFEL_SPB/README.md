@@ -36,6 +36,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](XFEL_SPB.instr) for `XFEL_SPB.instr`.
-- [Additional information](XFEL_SPB.md) (only if available!)
 
 ---

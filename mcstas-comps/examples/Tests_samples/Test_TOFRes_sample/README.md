@@ -36,6 +36,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_TOFRes_sample.instr) for `Test_TOFRes_sample.instr`.
-- [Additional information](Test_TOFRes_sample.md) (only if available!)
 
 ---

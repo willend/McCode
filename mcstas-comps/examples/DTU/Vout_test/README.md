@@ -26,7 +26,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Vout_test.instr) for `Vout_test.instr`.
-- [Additional information](Vout_test.md) (only if available!)
 - A reference/HTML link for more information
 
 ---

@@ -65,7 +65,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_ROCK.instr) for `SOLEIL_ROCK.instr`.
-- [Additional information](SOLEIL_ROCK.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/rock
 - https://gitlab.synchrotron-soleil.fr/grades/mcxtrace-rock
 - https://github.com/antoinepado/glitch_runner_rock

@@ -37,6 +37,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Focal_pt_monitor.instr) for `Focal_pt_monitor.instr`.
-- [Additional information](Focal_pt_monitor.md) (only if available!)
 
 ---

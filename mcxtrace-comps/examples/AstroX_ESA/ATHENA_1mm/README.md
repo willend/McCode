@@ -78,7 +78,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ATHENA_1mm.instr) for `ATHENA_1mm.instr`.
-- [Additional information](ATHENA_1mm.md) (only if available!)
 - <a href="http://www.cosmos.esa.int/web/athena">The ATHENA web pages @ ESA</a>
 
 ---

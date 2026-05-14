@@ -25,6 +25,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_loggers_base.instr) for `Unit_test_loggers_base.instr`.
-- [Additional information](Unit_test_loggers_base.md) (only if available!)
 
 ---

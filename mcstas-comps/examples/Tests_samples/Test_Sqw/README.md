@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Sqw.instr) for `Test_Sqw.instr`.
-- [Additional information](Test_Sqw.md) (only if available!)
 
 ---

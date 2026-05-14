@@ -67,7 +67,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_SIXS.instr) for `SOLEIL_SIXS.instr`.
-- [Additional information](SOLEIL_SIXS.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/sixs
 
 ---

@@ -38,6 +38,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_FluoPowder.instr) for `Test_FluoPowder.instr`.
-- [Additional information](Test_FluoPowder.md) (only if available!)
 
 ---

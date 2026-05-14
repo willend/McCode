@@ -32,6 +32,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_source_spectra.instr) for `Test_source_spectra.instr`.
-- [Additional information](Test_source_spectra.md) (only if available!)
 
 ---

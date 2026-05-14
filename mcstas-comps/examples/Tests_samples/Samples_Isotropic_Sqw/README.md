@@ -30,7 +30,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Samples_Isotropic_Sqw.instr) for `Samples_Isotropic_Sqw.instr`.
-- [Additional information](Samples_Isotropic_Sqw.md) (only if available!)
 - The Isotropic_Sqw sample
 
 ---

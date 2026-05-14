@@ -38,6 +38,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SSRL_bl_11_2_not_white_src.instr) for `SSRL_bl_11_2_not_white_src.instr`.
-- [Additional information](SSRL_bl_11_2_not_white_src.md) (only if available!)
 
 ---

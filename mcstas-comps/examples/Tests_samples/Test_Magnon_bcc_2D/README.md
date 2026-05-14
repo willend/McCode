@@ -35,6 +35,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Magnon_bcc_2D.instr) for `Test_Magnon_bcc_2D.instr`.
-- [Additional information](Test_Magnon_bcc_2D.md) (only if available!)
 
 ---

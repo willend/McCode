@@ -53,6 +53,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_SasView_bcc_paracrystal_aniso.instr) for `Test_SasView_bcc_paracrystal_aniso.instr`.
-- [Additional information](Test_SasView_bcc_paracrystal_aniso.md) (only if available!)
 
 ---

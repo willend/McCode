@@ -42,7 +42,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](NECSA_MIXRAD_Nikon_Tomo.instr) for `NECSA_MIXRAD_Nikon_Tomo.instr`.
-- [Additional information](NECSA_MIXRAD_Nikon_Tomo.md) (only if available!)
 - https://www.necsa.co.za/service/micro-focus-x-ray-radiography-and-tomography-facility-mixrad/
 - https://www.ndt.net/article/wcndt2012/papers/37_wcndtfinal00037.pdf
 

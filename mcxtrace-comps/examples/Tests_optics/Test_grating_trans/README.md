@@ -33,7 +33,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_grating_trans.instr) for `Test_grating_trans.instr`.
-- [Additional information](Test_grating_trans.md) (only if available!)
 - https://cxc.harvard.edu/proposer/POG/html/chap8.html#tb:hetg-params
 
 ---

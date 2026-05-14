@@ -37,6 +37,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Monochromator_bent_complex.instr) for `Test_Monochromator_bent_complex.instr`.
-- [Additional information](Test_Monochromator_bent_complex.md) (only if available!)
 
 ---

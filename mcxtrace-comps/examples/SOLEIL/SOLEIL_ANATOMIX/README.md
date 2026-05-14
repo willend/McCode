@@ -73,7 +73,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_ANATOMIX.instr) for `SOLEIL_ANATOMIX.instr`.
-- [Additional information](SOLEIL_ANATOMIX.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/anatomix
 - T Weitkamp et al 2017 J. Phys.: Conf. Ser. 849 012037 DOI: 10.1088/1742-6596/849/1/012037
 

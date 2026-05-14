@@ -31,6 +31,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H16_Mantid.instr) for `ILL_H16_Mantid.instr`.
-- [Additional information](ILL_H16_Mantid.md) (only if available!)
 
 ---

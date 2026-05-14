@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_abs_logger_1D_time.instr) for `Unit_test_abs_logger_1D_time.instr`.
-- [Additional information](Unit_test_abs_logger_1D_time.md) (only if available!)
 
 ---

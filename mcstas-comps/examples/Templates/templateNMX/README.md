@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateNMX.instr) for `templateNMX.instr`.
-- [Additional information](templateNMX.md) (only if available!)
 
 ---

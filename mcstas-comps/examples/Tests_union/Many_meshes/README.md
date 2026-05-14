@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Many_meshes.instr) for `Many_meshes.instr`.
-- [Additional information](Many_meshes.md) (only if available!)
 
 ---

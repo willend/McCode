@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](GISANS_tests.instr) for `GISANS_tests.instr`.
-- [Additional information](GISANS_tests.md) (only if available!)
 
 ---

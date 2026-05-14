@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](NSLS2_CHX.instr) for `NSLS2_CHX.instr`.
-- [Additional information](NSLS2_CHX.md) (only if available!)
 
 ---

@@ -29,7 +29,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](vinput2mcpl.instr) for `vinput2mcpl.instr`.
-- [Additional information](vinput2mcpl.md) (only if available!)
 - <reference/HTML link>
 
 ---

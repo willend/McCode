@@ -31,6 +31,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_logger_2D_space_time.instr) for `Unit_test_logger_2D_space_time.instr`.
-- [Additional information](Unit_test_logger_2D_space_time.md) (only if available!)
 
 ---

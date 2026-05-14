@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Airport_scannerII.instr) for `Airport_scannerII.instr`.
-- [Additional information](Airport_scannerII.md) (only if available!)
 
 ---

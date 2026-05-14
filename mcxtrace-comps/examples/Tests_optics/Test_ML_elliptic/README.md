@@ -32,6 +32,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_ML_elliptic.instr) for `Test_ML_elliptic.instr`.
-- [Additional information](Test_ML_elliptic.md) (only if available!)
 
 ---

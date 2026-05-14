@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](External_component.instr) for `External_component.instr`.
-- [Additional information](External_component.md) (only if available!)
 
 ---

@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Simple_1shell.instr) for `Simple_1shell.instr`.
-- [Additional information](Simple_1shell.md) (only if available!)
 
 ---

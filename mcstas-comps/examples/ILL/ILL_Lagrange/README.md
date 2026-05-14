@@ -49,7 +49,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_Lagrange.instr) for `ILL_Lagrange.instr`.
-- [Additional information](ILL_Lagrange.md) (only if available!)
 - The <a href="http://www.ill.eu/d4">D4 diffractometer</a> at the ILL
 
 ---

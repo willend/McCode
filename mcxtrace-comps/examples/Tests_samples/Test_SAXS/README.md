@@ -48,6 +48,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_SAXS.instr) for `Test_SAXS.instr`.
-- [Additional information](Test_SAXS.md) (only if available!)
 
 ---

@@ -41,6 +41,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Mono.instr) for `Test_Mono.instr`.
-- [Additional information](Test_Mono.md) (only if available!)
 
 ---

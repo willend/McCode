@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_source_lab.instr) for `Test_source_lab.instr`.
-- [Additional information](Test_source_lab.md) (only if available!)
 
 ---

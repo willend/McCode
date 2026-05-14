@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_logger_2DQ.instr) for `Unit_test_logger_2DQ.instr`.
-- [Additional information](Unit_test_logger_2DQ.md) (only if available!)
 
 ---

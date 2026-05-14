@@ -59,6 +59,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](templateDIFF.instr) for `templateDIFF.instr`.
-- [Additional information](templateDIFF.md) (only if available!)
 
 ---

@@ -32,6 +32,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Czerny_Turner.instr) for `Czerny_Turner.instr`.
-- [Additional information](Czerny_Turner.md) (only if available!)
 
 ---

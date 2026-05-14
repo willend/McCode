@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Powders.instr) for `Test_Powders.instr`.
-- [Additional information](Test_Powders.md) (only if available!)
 
 ---

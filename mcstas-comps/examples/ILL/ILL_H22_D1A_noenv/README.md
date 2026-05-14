@@ -58,6 +58,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H22_D1A_noenv.instr) for `ILL_H22_D1A_noenv.instr`.
-- [Additional information](ILL_H22_D1A_noenv.md) (only if available!)
 
 ---

@@ -36,6 +36,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_SX.instr) for `Test_SX.instr`.
-- [Additional information](Test_SX.md) (only if available!)
 
 ---

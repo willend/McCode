@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Saxs_spheres.instr) for `Test_Saxs_spheres.instr`.
-- [Additional information](Test_Saxs_spheres.md) (only if available!)
 
 ---

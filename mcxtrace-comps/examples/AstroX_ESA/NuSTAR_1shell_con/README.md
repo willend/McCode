@@ -55,7 +55,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](NuSTAR_1shell_con.instr) for `NuSTAR_1shell_con.instr`.
-- [Additional information](NuSTAR_1shell_con.md) (only if available!)
 - <a href="http://www.cosmos.esa.int/web/athena">The ATHENA web pages @ ESA</a>
 
 ---

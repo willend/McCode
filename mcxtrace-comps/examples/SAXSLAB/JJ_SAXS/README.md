@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](JJ_SAXS.instr) for `JJ_SAXS.instr`.
-- [Additional information](JJ_SAXS.md) (only if available!)
 
 ---

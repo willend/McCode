@@ -59,7 +59,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](MAXIV_Bloch.instr) for `MAXIV_Bloch.instr`.
-- [Additional information](MAXIV_Bloch.md) (only if available!)
 - Bloch_MAX IV description: https://www.maxiv.lu.se/accelerators-beamlines/beamlines/bloch/
 - McXtrace komponent definition: http://www.mcxtrace.org
 

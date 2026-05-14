@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_PowderN_concentric.instr) for `Test_PowderN_concentric.instr`.
-- [Additional information](Test_PowderN_concentric.md) (only if available!)
 
 ---

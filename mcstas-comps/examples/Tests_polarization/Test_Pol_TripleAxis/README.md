@@ -37,6 +37,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Pol_TripleAxis.instr) for `Test_Pol_TripleAxis.instr`.
-- [Additional information](Test_Pol_TripleAxis.md) (only if available!)
 
 ---

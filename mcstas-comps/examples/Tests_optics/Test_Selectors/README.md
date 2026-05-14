@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Selectors.instr) for `Test_Selectors.instr`.
-- [Additional information](Test_Selectors.md) (only if available!)
 
 ---

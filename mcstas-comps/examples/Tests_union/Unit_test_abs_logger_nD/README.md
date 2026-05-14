@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unit_test_abs_logger_nD.instr) for `Unit_test_abs_logger_nD.instr`.
-- [Additional information](Unit_test_abs_logger_nD.md) (only if available!)
 
 ---

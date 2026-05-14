@@ -50,6 +50,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](MAXII_811.instr) for `MAXII_811.instr`.
-- [Additional information](MAXII_811.md) (only if available!)
 
 ---

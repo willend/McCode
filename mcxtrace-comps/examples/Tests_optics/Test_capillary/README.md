@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_capillary.instr) for `Test_capillary.instr`.
-- [Additional information](Test_capillary.md) (only if available!)
 
 ---

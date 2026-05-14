@@ -33,6 +33,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Be_BM_beamline.instr) for `Be_BM_beamline.instr`.
-- [Additional information](Be_BM_beamline.md) (only if available!)
 
 ---

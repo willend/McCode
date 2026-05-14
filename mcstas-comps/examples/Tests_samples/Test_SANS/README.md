@@ -48,6 +48,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_SANS.instr) for `Test_SANS.instr`.
-- [Additional information](Test_SANS.md) (only if available!)
 
 ---

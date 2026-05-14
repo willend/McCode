@@ -48,7 +48,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](DBD_IBM_Si_analyzer_BC.instr) for `DBD_IBM_Si_analyzer_BC.instr`.
-- [Additional information](DBD_IBM_Si_analyzer_BC.md) (only if available!)
 - <a href="https://www.nist.gov/programs-projects/diffraction-metrology-and-standards/divergent-beam-diffractometer-dbd-laboratory"></a>
 - <a href="https://tsapps.nist.gov/publication/get_pdf.cfm?<pub_id=927309">"International Tables for Crystallography (2018). Vol. H, Chapter 3.1, pp. 224–251."</a>
 

@@ -36,6 +36,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Absorption.instr) for `Test_Absorption.instr`.
-- [Additional information](Test_Absorption.md) (only if available!)
 
 ---

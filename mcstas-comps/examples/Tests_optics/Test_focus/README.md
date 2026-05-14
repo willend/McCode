@@ -36,6 +36,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_focus.instr) for `Test_focus.instr`.
-- [Additional information](Test_focus.md) (only if available!)
 
 ---

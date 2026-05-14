@@ -41,7 +41,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_PSICHE.instr) for `SOLEIL_PSICHE.instr`.
-- [Additional information](SOLEIL_PSICHE.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/psiche
 - A. King et al, Rev Sci Instrum 87, 093704 (2016), DOI: 10.1063/1.4961365
 

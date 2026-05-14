@@ -26,6 +26,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_mesh_boxes.instr) for `Test_mesh_boxes.instr`.
-- [Additional information](Test_mesh_boxes.md) (only if available!)
 
 ---

@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_KDSource.instr) for `Test_KDSource.instr`.
-- [Additional information](Test_KDSource.md) (only if available!)
 
 ---

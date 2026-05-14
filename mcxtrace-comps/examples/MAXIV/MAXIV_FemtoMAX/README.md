@@ -34,7 +34,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](MAXIV_FemtoMAX.instr) for `MAXIV_FemtoMAX.instr`.
-- [Additional information](MAXIV_FemtoMAX.md) (only if available!)
 - https://www.maxiv.lu.se/accelerators-beamlines/beamlines/femtomax/
 
 ---

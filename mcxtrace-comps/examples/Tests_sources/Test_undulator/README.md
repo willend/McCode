@@ -28,6 +28,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_undulator.instr) for `Test_undulator.instr`.
-- [Additional information](Test_undulator.md) (only if available!)
 
 ---

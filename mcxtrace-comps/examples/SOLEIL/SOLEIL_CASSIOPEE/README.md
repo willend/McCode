@@ -51,7 +51,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_CASSIOPEE.instr) for `SOLEIL_CASSIOPEE.instr`.
-- [Additional information](SOLEIL_CASSIOPEE.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/cassiopee
 - https://www.researchgate.net/deref/https%3A%2F%2Ftel.archives-ouvertes.fr%2Ftel-01064523
 

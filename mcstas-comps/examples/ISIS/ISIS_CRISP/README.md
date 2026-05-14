@@ -37,6 +37,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ISIS_CRISP.instr) for `ISIS_CRISP.instr`.
-- [Additional information](ISIS_CRISP.md) (only if available!)
 
 ---

@@ -47,6 +47,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Single_crystal_validation.instr) for `Single_crystal_validation.instr`.
-- [Additional information](Single_crystal_validation.md) (only if available!)
 
 ---

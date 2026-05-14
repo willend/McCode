@@ -28,6 +28,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Time_of_flight.instr) for `Time_of_flight.instr`.
-- [Additional information](Time_of_flight.md) (only if available!)
 
 ---

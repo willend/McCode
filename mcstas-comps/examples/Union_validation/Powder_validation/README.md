@@ -39,6 +39,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Powder_validation.instr) for `Powder_validation.instr`.
-- [Additional information](Powder_validation.md) (only if available!)
 
 ---

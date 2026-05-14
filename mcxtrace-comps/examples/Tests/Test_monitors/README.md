@@ -26,6 +26,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_monitors.instr) for `Test_monitors.instr`.
-- [Additional information](Test_monitors.md) (only if available!)
 
 ---

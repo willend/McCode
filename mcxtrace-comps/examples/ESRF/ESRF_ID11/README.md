@@ -32,7 +32,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ESRF_ID11.instr) for `ESRF_ID11.instr`.
-- [Additional information](ESRF_ID11.md) (only if available!)
 - http://www.esrf.eu/UsersAndScience/Experiments/StructMaterials/ID11/ID11Source
 
 ---

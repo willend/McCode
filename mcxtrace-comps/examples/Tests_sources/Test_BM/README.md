@@ -28,6 +28,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_BM.instr) for `Test_BM.instr`.
-- [Additional information](Test_BM.md) (only if available!)
 
 ---

@@ -37,6 +37,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ESRF_BM29.instr) for `ESRF_BM29.instr`.
-- [Additional information](ESRF_BM29.md) (only if available!)
 
 ---

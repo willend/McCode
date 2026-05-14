@@ -53,7 +53,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ATHENA_1shell.instr) for `ATHENA_1shell.instr`.
-- [Additional information](ATHENA_1shell.md) (only if available!)
 - <a href="http://www.cosmos.esa.int/web/athena">The ATHENA web pages @ ESA</a>
 
 ---

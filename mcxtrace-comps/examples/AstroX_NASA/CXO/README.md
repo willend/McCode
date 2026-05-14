@@ -32,7 +32,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](CXO.instr) for `CXO.instr`.
-- [Additional information](CXO.md) (only if available!)
 - https://cxc.harvard.edu/proposer/POG/html/index.html
 
 ---

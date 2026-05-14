@@ -29,7 +29,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Unittest_SPLIT.instr) for `Unittest_SPLIT.instr`.
-- [Additional information](Unittest_SPLIT.md) (only if available!)
 - <reference/HTML link>
 
 ---

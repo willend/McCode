@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Mezei_SNS_decoupled_poisoned.instr) for `Mezei_SNS_decoupled_poisoned.instr`.
-- [Additional information](Mezei_SNS_decoupled_poisoned.md) (only if available!)
 
 ---

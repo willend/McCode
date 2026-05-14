@@ -35,6 +35,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](NBI_Lab_TOMO.instr) for `NBI_Lab_TOMO.instr`.
-- [Additional information](NBI_Lab_TOMO.md) (only if available!)
 
 ---

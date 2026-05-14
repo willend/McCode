@@ -30,6 +30,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Filter.instr) for `Test_Filter.instr`.
-- [Additional information](Test_Filter.md) (only if available!)
 
 ---

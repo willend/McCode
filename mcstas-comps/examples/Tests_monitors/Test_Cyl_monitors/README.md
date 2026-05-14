@@ -37,6 +37,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Cyl_monitors.instr) for `Test_Cyl_monitors.instr`.
-- [Additional information](Test_Cyl_monitors.md) (only if available!)
 
 ---

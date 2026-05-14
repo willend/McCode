@@ -43,7 +43,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ESRF_ID01.instr) for `ESRF_ID01.instr`.
-- [Additional information](ESRF_ID01.md) (only if available!)
 - http://www.esrf.eu/UsersAndScience/Experiments/StructMaterials/ID01
 
 ---

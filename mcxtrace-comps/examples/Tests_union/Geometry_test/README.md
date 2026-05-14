@@ -31,6 +31,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Geometry_test.instr) for `Geometry_test.instr`.
-- [Additional information](Geometry_test.md) (only if available!)
 
 ---

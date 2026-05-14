@@ -53,6 +53,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](MAXIV_DanMAX_pxrd2d.instr) for `MAXIV_DanMAX_pxrd2d.instr`.
-- [Additional information](MAXIV_DanMAX_pxrd2d.md) (only if available!)
 
 ---

@@ -54,6 +54,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](ILL_H143_LADI.instr) for `ILL_H143_LADI.instr`.
-- [Additional information](ILL_H143_LADI.md) (only if available!)
 
 ---

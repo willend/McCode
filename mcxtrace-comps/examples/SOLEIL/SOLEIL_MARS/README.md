@@ -41,7 +41,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_MARS.instr) for `SOLEIL_MARS.instr`.
-- [Additional information](SOLEIL_MARS.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/mars
 
 ---

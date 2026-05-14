@@ -29,6 +29,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_KN_Comp_Rayl_union.instr) for `Test_KN_Comp_Rayl_union.instr`.
-- [Additional information](Test_KN_Comp_Rayl_union.md) (only if available!)
 
 ---

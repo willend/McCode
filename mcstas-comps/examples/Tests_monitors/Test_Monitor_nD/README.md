@@ -32,6 +32,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_Monitor_nD.instr) for `Test_Monitor_nD.instr`.
-- [Additional information](Test_Monitor_nD.md) (only if available!)
 
 ---

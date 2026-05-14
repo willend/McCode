@@ -39,7 +39,6 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](SOLEIL_LUCIA.instr) for `SOLEIL_LUCIA.instr`.
-- [Additional information](SOLEIL_LUCIA.md) (only if available!)
 - https://www.synchrotron-soleil.fr/en/beamlines/lucia
 
 ---

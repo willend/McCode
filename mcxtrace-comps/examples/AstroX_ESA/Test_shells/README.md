@@ -34,6 +34,5 @@ Parameters in **boldface** are required; the others are optional.
 ## Links
 
 - [Source code](Test_shells.instr) for `Test_shells.instr`.
-- [Additional information](Test_shells.md) (only if available!)
 
 ---
