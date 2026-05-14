@@ -2004,7 +2004,11 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("/* loop to generate events and call raytrace() propagate them */");
   coutf("void raytrace_all(unsigned long long ncount, unsigned long seed) {");
   coutf("");
-
+  coutf("  // if on GPU and mcdotrace just exit");
+  coutf("  #ifdef OPENACC");
+  coutf("  if (!mcdotrace) {");
+  coutf("  #endif");
+  coutf("");
   coutf("  /* CPU-loop */");
   coutf("  unsigned long long loops;");
   coutf("  loops = ceil((double)ncount/gpu_innerloop);");
@@ -2072,6 +2076,12 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("  MPI_MASTER(");
   coutf("  printf(\"*** TRACE end *** \\n\");");
   coutf("  );");
+  coutf("");
+  coutf("  // if on GPU and mcdotrace just exit");
+  coutf("  #ifdef OPENACC");
+  coutf("  }");
+  coutf("  #endif");
+  coutf("");
   coutf("} /* raytrace_all */");
   coutf("");
   coutf("#endif //no-FUNNEL");
@@ -2116,6 +2126,10 @@ int cogen_rt_funnel(struct instr_def *instr)
 
   coutf("void raytrace_all_funnel(unsigned long long ncount, unsigned long seed) {");
   coutf("");
+  coutf("  // if on GPU and mcdotrace just exit");
+  coutf("  #ifdef OPENACC");
+  coutf("  if (!mcdotrace) {");
+  coutf("  #endif");
   coutf("  // set up outer (CPU) loop / particle batches");
   coutf("  unsigned long long loops;");
   coutf("");
@@ -2301,7 +2315,10 @@ int cogen_rt_funnel(struct instr_def *instr)
   coutf("  free(pbuffer);");
   cout( "");
   coutf("  printf(\"\\n\");");
-
+  coutf("  // if on GPU and mcdotrace just exit");
+  coutf("  #ifdef OPENACC");
+  coutf("  }");
+  coutf("  #endif");
   coutf("} /* raytrace_all_funnel */");
   coutf("#endif // FUNNEL");
   coutf("");
