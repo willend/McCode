@@ -322,7 +322,7 @@ jobs:
            ./install_mcstas/bin/mctest${SUFFIX} --instr=ISIS_CRISP --testdir=run_singletests --suffix=${{ matrix.mpi }}
            ./install_mcstas/bin/mctest${SUFFIX} --instr=ISIS_CRISP --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
-    - name: Launch MCPL test instrument
+    - name: Launch MCPL and KDSource test instruments
       id: mcpl-test
       if: runner.os != 'Windows'
       run: |
@@ -350,7 +350,8 @@ jobs:
            ./install_mcstas/bin/mctest${SUFFIX} --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            ./install_mcstas/bin/mctest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
            ./install_mcstas/bin/mctest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
-
+           ./install_mcstas/bin/mctest${SUFFIX} --instr=Test_KDSource --testdir=run_singletests --suffix=${{ matrix.mpi }}
+           ./install_mcstas/bin/mctest${SUFFIX} --instr=Test_KDSource --mpi=2 --testdir=run_singletests --suffix=${{ matrix.mpi }}
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test

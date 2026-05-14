@@ -46,8 +46,8 @@ class InstrTraceParser:
         'mcdisdisc'        : 'DRAWCALL',
         'mcdisannulus'     : 'DRAWCALL',
         'mcdisnew_circle'  : 'DRAWCALL',
-        'mcdispolygon'     : 'DRAWCALL',
-        'mcdispolyhedron'  : 'DRAWCALL',
+        'polygon'     : 'DRAWCALL',
+        'polyhedron'  : 'DRAWCALL',
 
 
         'MANTID_PIXEL': 'MANTID_PIXEL',

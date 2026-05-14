@@ -52,7 +52,8 @@ AT (0, 0, 0) ABSOLUTE
 COMPONENT Source = KDSource(
  filename = "source.xml",
  nloop=nloop)
-AT (0, 0, 0) RELATIVE Origin
+// Workaround for visualisation, disable if running in trace mode:
+WHEN (!mcdotrace) AT (0, 0, 0) RELATIVE Origin
 
 COMPONENT Norm = Monitor(
  xwidth = 0.4, yheight = 0.4)
