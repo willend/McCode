@@ -7,28 +7,31 @@
 * Instrument: ESS_KVASIR
 * 
 * %Identification
-* Written by: Python McStas Instrument Generator
-* Date: 09:29:58 on May 18, 2026
-* Origin: ESS DMSC
-* %INSTRUMENT_SITE: Generated_instruments
+* Written by: Amalie Falkenberg (McStasScript), adapted by Peter Willendrup
+* Date: May 2026
+* Origin: NBI
+* %INSTRUMENT_SITE: ESS
 * 
-* !!Please write a short instrument description (1 line) here!!
+* Model of the proposed ESS instrument KVASIR.
 * 
 * %Description
-* Please write a longer instrument description here!
-* 
+* Model of the proposed ESS instrument KVASIR, implemented using McStasScript /
+* a Jupyter notebook. The flat ESS_KVASIR.instr runs from off an MCPL file from
+* a BIFROST guide guide simulation and adds the secondary spectrometer from
+* the proposed KVASIR instrument.
+*
+* %Example: t=50 Detector: det_He3_0_ToF_I=0.0302392
 * 
 * %Parameters
-* t: [unit] 
-* 
+* t:       [1] Number of simulated KVASIR 'wedges'
+* repeats: [1] Repeat count for MCPL input file
+*
 * %Link 
 * 
 * %End 
 ********************************************************************************/
 
-DEFINE INSTRUMENT KVASIR (
-t = 0 
-)
+DEFINE INSTRUMENT ESS_KVASIR (t=50, int repeats=100)
 
 DECLARE 
 %{
@@ -362,7 +365,7 @@ dtA_58 = acos( (az_58*bz_58 + ay_58*by_58) / (len[58]* sqrt(az_58*az_58 + ay_58*
 TRACE 
 COMPONENT source = MCPL_input(
  filename = "Virtual_output_example.mcpl.gz", pos_smear = 0.005,
- dir_smear = 0.05)
+ dir_smear = 0.05, repeat_count=repeats)
 AT (0, 0, 0) ABSOLUTE
 
 COMPONENT Arm_sample = Arm()
