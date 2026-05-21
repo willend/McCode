@@ -61,13 +61,13 @@
 * Modified by: PW December 2025: version 3.6.1
 * Modified by: PW January 2026: version 3.6.5
 * Modified by: PW April 2026: version 3.6.14
-* Modified by: PW May 2026: version 3.7.0
+* Modified by: PW May 2026: version 3.7.1
 *
-* This file is part of McStas 3.7.0, released May 21st 2026.
+* This file is part of McStas 3.7.1, released May 21st 2026.
 * It gives a 'changes' list from the beginning of the project
 *
 *******************************************************************************/
-Changes in McStas/McXtrace 3.7.0, May 21st, 2026
+Changes in McStas/McXtrace 3.7.1, May 21st, 2026
 
 ## What's Changed
 
@@ -116,7 +116,7 @@ scattering processes.
 * @SSBNS made their first contribution in https://github.com/mccode-dev/McCode/pull/2373
 * @AmalieFalkenberg made their first contribution in https://github.com/mccode-dev/McCode/pull/2345
 
-**Full Changelog**: https://github.com/mccode-dev/McCode/compare/v3.6.14...v3.7.0
+**Full Changelog**: https://github.com/mccode-dev/McCode/compare/v3.6.14...v3.7.1
 
 Changes in McStas/McXtrace 3.6.14, April 12th, 2026
 ## What's Changed
