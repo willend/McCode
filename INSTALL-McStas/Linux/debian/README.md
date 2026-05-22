@@ -35,9 +35,10 @@ the simple apt-get command
 sudo apt-get install mcstas-suite-python
 ```
 
-# Important note wrt. Debian packages:
-If you install both of mcstas and mcxtrace on the same Debian/Ubuntu system, you will get a collision for the file `/usr/bin/cif2hkl`. As a workaround you may allow joint installation via overriding `cif2hkl`:
-  `sudo apt-get -f install  -o Dpkg::Options::="--force-overwrite"`
+# KDSource on Ubuntu:
+We generally recommed to opt for the [conda-forge](../../conda/README.md)
+method for using McStas with KDSource on Debian. You may alternatively
+experiment with e.g. `pipx install kdsource`
 
 # Using mcdoc on modern Ubuntu systems
 Ubuntu is shipping its browsers as "snap" packages, meaning that
