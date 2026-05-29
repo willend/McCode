@@ -176,7 +176,10 @@ def parse_trace():
 
     set_axis_limits(ax)
 
-    plt.show()
+    try:
+        plt.show()
+    except KeyboardInterrupt:
+        pass
 
 
 def process_circle(ax, line, color, comp, transparency):
