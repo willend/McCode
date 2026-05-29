@@ -358,7 +358,7 @@ class McDisplay2DGui(object):
             if self.zoomstate == self.ZoomState.ZOOM:
                 self._unzoom()
         if event.key() == 81:                   # q
-            QtWidgets.QApplication.quit()
+            sys.exit(0)
         elif event.key() == 80:                 # p
             self._dumpfile(format='png')
         elif event.key() == 83:                 # s
@@ -396,8 +396,12 @@ class McDisplay2DGui(object):
             self._set_rays(rays)
             self._unzoom()
             self._display_nextray()
-        return self.app.exec_()
-    
+
+        if hasattr(self.app, 'exec'):
+            return self.app.exec()
+        else:
+            return self.app.exec_()
+   
     def run_ui_tof(self, instr, rays):
         '''  '''
         self.instr = instr
@@ -418,11 +422,14 @@ class McDisplay2DGui(object):
         
         # plot rays
         plot_1d_tof_rays(instr, rays, plt)
-        
+
         self.layout.scene().keyPressEvent = self._key_handler
-        
-        return self.app.exec_()
-    
+
+        if hasattr(self.app, 'exec'):
+            return self.app.exec()
+        else:
+            return self.app.exec_()
+
     def _set_and_plot_instr(self, instr, enable_clickable=False):
         ''' set internal references to the full instrument and three 2d instrument set of coordinate pairs '''
         self.instr = instr
