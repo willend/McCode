@@ -358,7 +358,7 @@ class McDisplay2DGui(object):
             if self.zoomstate == self.ZoomState.ZOOM:
                 self._unzoom()
         if event.key() == 81:                   # q
-            QtWidgets.QApplication.quit()
+            sys.exit(0)
         elif event.key() == 80:                 # p
             self._dumpfile(format='png')
         elif event.key() == 83:                 # s
@@ -401,7 +401,7 @@ class McDisplay2DGui(object):
             return self.app.exec()
         else:
             return self.app.exec_()
-    
+   
     def run_ui_tof(self, instr, rays):
         '''  '''
         self.instr = instr
