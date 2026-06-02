@@ -251,7 +251,10 @@ def create_infowindow(comp_colour_pairs):
                 self.verticalLayoutTechnicalReason.addWidget(self.scrollArea)
                 
                 self.labels = []
-                self.spacerItem = QtWidgets.QSpacerItem(20, 448, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+                try: # Prefer Qt6 style, fallback to Qt5
+                    self.spacerItem = QtWidgets.QSpacerItem(20, 448, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+                except:
+                    self.spacerItem = QtWidgets.QSpacerItem(20, 448, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
                 
         def set_components(self, str_colour_pairs):
             ''' colours are tri-tupples of rgb '''
