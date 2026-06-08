@@ -41,26 +41,22 @@ jobs:
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
 
-    - uses: mamba-org/setup-micromamba@v3
-      with:
-        activate-environment: mcxtrace
-        auto-update-conda: true
-        conda-remove-defaults: true
-        channels: conda-forge
-        python-version: ${{ matrix.python }}
-
     - name: Get conda dependency list
       id: conda-deps
       run: |
            ./src/devel/bin/mccode-create-conda-yml -m mcxtrace -n mcxtrace -o dependencies.yml
            cat dependencies.yml
 
-    - name: Update conda
-      id: update-conda
-      run: |
-           micromamba create --file dependencies.yml -y
+    - uses: mamba-org/setup-micromamba@v3
+      with:
+        environment-file: dependencies.yml 
+        activate-environment: mcxtrace
+        auto-update-conda: true
+        conda-remove-defaults: true
+        channels: conda-forge
+        python-version: ${{ matrix.python }}
 
-    - name: Check versions
+     - name: Check versions
       id: version-checks
       run: |
            which python3
