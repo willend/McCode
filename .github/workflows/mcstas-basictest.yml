@@ -46,11 +46,11 @@ jobs:
 
     - name: Setup VS in shell Intel
       if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
-      uses: step-security/msvc-dev-cmd@v1
+      uses: egor-tensin/vs-shell@v2
 
     - name: Setup VS in shell arm64
       if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
-      uses: step-security/msvc-dev-cmd@v1
+      uses: egor-tensin/vs-shell@v2
       with:
         arch: arm64
 
