@@ -61,8 +61,7 @@ jobs:
     - name: Update conda
       id: update-conda
       run: |
-           conda install mamba -y
-           mamba env update --file dependencies.yml
+           micromamba env update --file dependencies.yml -y
 
     - name: Check versions
       id: version-checks
