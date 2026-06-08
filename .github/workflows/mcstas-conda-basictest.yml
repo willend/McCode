@@ -26,9 +26,6 @@ jobs:
 
     name: ${{ matrix.os }}.${{ matrix.mpi }}.python-${{ matrix.python }}
     runs-on: ${{ matrix.os }}
-    env:
-      CC: ${{ matrix.CC }}
-      CXX: ${{ matrix.CXX }}
     defaults:
       run:
         shell: bash -el {0}
@@ -70,14 +67,6 @@ jobs:
            python3 --version
            which cmake
            cmake --version
-           if [ "$RUNNER_OS" != "Windows" ];
-           then
-             echo C compiler: $CC
-             $CC --version
-           else
-             echo C compiler: cl.exe
-             cl.exe
-           fi
 
     - name: Configure build and install mcstas
       id: mcstas-install
