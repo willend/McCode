@@ -103,6 +103,8 @@ jobs:
            set -e
            set -u
            set -x
+           source $HOME/.bashrc
+           micromamba activate mcstas
            export MD5SUM="md5sum"
            if [ "$RUNNER_OS" == "macOS" ];
            then
