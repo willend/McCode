@@ -69,6 +69,27 @@ jobs:
       run: |
            ./src/devel/bin/mccode-build-conda -m mcxtrace -s $PWD/src -b $PWD/build_mcxtrace
 
+    - name: Validate build output
+      id: build-validation
+      if: always()
+      run: |
+           set -e
+           set -u
+           set -x
+           if [ "$RUNNER_OS" == "Windows" ];
+           then
+             echo "Validating Windows build output..."
+             echo "CONDA_PREFIX: $CONDA_PREFIX"
+             echo "Checking for mcxtrace executable..."
+             test -f ${CONDA_PREFIX}/bin/mcxtrace || test -f ${CONDA_PREFIX}/bin/mcxtrace.bat || { echo "ERROR: mcxtrace not found"; exit 1; }
+             echo "Checking for mxtest executable..."
+             test -f ${CONDA_PREFIX}/bin/mxtest.bat || { echo "ERROR: mxtest.bat not found"; ls -la ${CONDA_PREFIX}/bin/ | grep -i mxtest || echo "No mxtest found"; exit 1; }
+           else
+             echo "Validating Unix build output..."
+             test -f ${CONDA_PREFIX}/bin/mcxtrace || { echo "ERROR: mcxtrace not found"; exit 1; }
+             test -f ${CONDA_PREFIX}/bin/mxtest || { echo "ERROR: mxtest not found"; exit 1; }
+           fi
+
     - name: Post install openmpi hacks macOS
       id: post-install-openmpi-hacks-macOS
       if: runner.os == 'macOS' 
