@@ -104,6 +104,7 @@ jobs:
            set -u
            set -x
            source $HOME/.bashrc
+           export PATH=$HOME/micromamba/bin:$PATH
            eval "$(micromamba shell hook --shell bash)"
            micromamba activate mcstas
            export MD5SUM="md5sum"
