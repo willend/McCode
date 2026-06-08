@@ -46,11 +46,11 @@ jobs:
 
     - name: Setup VS in shell Intel
       if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: step-security/msvc-dev-cmd@v1
 
     - name: Setup VS in shell arm64
       if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: step-security/msvc-dev-cmd@v1
       with:
         arch: arm64
 

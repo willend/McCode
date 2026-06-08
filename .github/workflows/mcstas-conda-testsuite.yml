@@ -34,7 +34,7 @@ jobs:
 
     - name: Setup VS in shell Intel
       if: runner.os == 'Windows'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: step-security/msvc-dev-cmd@v1
 
     - name: Get conda dependency list
       id: conda-deps
