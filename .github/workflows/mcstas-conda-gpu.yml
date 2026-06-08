@@ -147,7 +147,6 @@ jobs:
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
            mctest${SUFFIX} --instr=BNL_H8 --testdir=run_singletests --openacc
-           mctest${SUFFIX} --instr=BNL_H8 --mpi=2 --testdir=run_singletests --openacc
 
     - name: Launch ISIS_CRISP
       id: ISIS_CRISP
@@ -164,7 +163,6 @@ jobs:
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
            mctest${SUFFIX} --instr=ISIS_CRISP --testdir=run_singletests --openacc
-           mctest${SUFFIX} --instr=ISIS_CRISP --mpi=2 --testdir=run_singletests --openacc
 
     - name: Launch MCPL and KDSource test instruments
       id: mcpl-test
@@ -181,13 +179,9 @@ jobs:
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
            mctest${SUFFIX} --instr=ESS_BEER_MCPL --testdir=run_singletests --openacc
-           mctest${SUFFIX} --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests --openacc
            mctest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests --openacc
            mctest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests --openacc
-           mctest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --openacc
-           mctest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --openacc
            mctest${SUFFIX} --instr=Test_KDSource --testdir=run_singletests --openacc
-           mctest${SUFFIX} --instr=Test_KDSource --mpi=2 --testdir=run_singletests --openacc
 
     - name: Launch NCrystal test instrument
       id: ncrystal-test
@@ -204,7 +198,6 @@ jobs:
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
            mctest${SUFFIX} --instr=NCrystal_example --testdir=run_singletests --openacc
-           mctest${SUFFIX} --instr=NCrystal_example --mpi=2 --testdir=run_singletests --openacc
 
     - name: Launch NeXus test instrument
       id: nexus-test
@@ -221,7 +214,6 @@ jobs:
            test -f ${CONDA_PREFIX}/bin/mcstas
            mcstas --version
            mctest${SUFFIX} --instr=templateSANS_Mantid --testdir=run_singletests --openacc
-           mctest${SUFFIX} --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests --openacc
 
     - name: Check for modified instruments
       id: instr-test
@@ -259,9 +251,9 @@ jobs:
                  if [ "$NUMMATCH" -gt "0" ];
                  then
                    if [ "$RUNNER_OS" != "Windows" ]; then
-                     mctest --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_openacc $PERMISSIVE --verbose || { echo "mctest failed with exit code $?"; exit 1; }
+                     mctest --openacc --testdir run_${comp} --comp=${comp} --suffix=CHANGES_openacc $PERMISSIVE --verbose || { echo "mctest failed with exit code $?"; exit 1; }
                    else
-                     mctest.bat --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_openacc  $PERMISSIVE --verbose || { echo "mctest.bat failed with exit code $?"; exit 1; }
+                     mctest.bat --openacc --testdir run_${comp} --comp=${comp} --suffix=CHANGES_openacc  $PERMISSIVE --verbose || { echo "mctest.bat failed with exit code $?"; exit 1; }
                    fi
                  else
                    echo No matching tests found
@@ -292,10 +284,10 @@ jobs:
              fi
              mkdir run_mctest && cd run_mctest
              if [ "$RUNNER_OS" != "Windows" ]; then
-               mctest --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_openacc $PERMISSIVE || { echo "mctest failed with exit code $?"; exit 1; }
+               mctest --openacc --testdir $PWD $SCOPE --suffix=CHANGES_openacc $PERMISSIVE || { echo "mctest failed with exit code $?"; exit 1; }
                mcviewtest --nobrowse $PWD
              else
-               mctest.bat --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_openacc  $PERMISSIVE || { echo "mctest.bat failed with exit code $?"; exit 1; }
+               mctest.bat --openacc --testdir $PWD $SCOPE --suffix=CHANGES_openacc  $PERMISSIVE || { echo "mctest.bat failed with exit code $?"; exit 1; }
                mcviewtest.bat --nobrowse $PWD
              fi
            fi
