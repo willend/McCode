@@ -13,7 +13,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 import numpy as np
 from enum import Enum
-import qtpy
+from qtpy.QtCore import Qt
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 import pyqtgraph as pg
 from pyqtgraph.graphicsItems.LegendItem import LegendItem, ItemSample
@@ -224,7 +224,7 @@ def create_help_pltitm():
     
     return plt
 
-def create_infowindow(comp_colour_pairs):
+def create_infowindow(comp_colour_pairs, parent=None):
     class InfoWindow(QtWidgets.QMainWindow):
         ''' infowindow that is designed to be static '''
         class Ui_InfoWindow(object):
@@ -272,12 +272,14 @@ def create_infowindow(comp_colour_pairs):
         
         def __init__(self, parent=None):
             super(InfoWindow, self).__init__(parent)
-            
+            self.setWindowFlags(
+                self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint
+            )
             # create ui and set info
             self.ui = self.Ui_InfoWindow()
             self.ui.setupUi(self)
     
-    iw = InfoWindow()
+    iw = InfoWindow(parent=parent)
     iw.set_components(comp_colour_pairs)
     
     return iw
@@ -371,10 +373,11 @@ class McDisplay2DGui(object):
             self._display_nextray()
         elif event.key() in [72, 16777264]:  # h, F1
             if not self.iw_visible:
-                self.iw = create_infowindow(self._get_comp_color_pairs())
+                self.iw = create_infowindow(self._get_comp_color_pairs(), parent=self.mw)
                 self.iw.show()
-                self.iw_visible = True
+                self.iw.raise_()
                 self.mw.activateWindow()
+                self.iw_visible = True
             else:
                 self.iw.hide()
                 self.iw_visible = False
