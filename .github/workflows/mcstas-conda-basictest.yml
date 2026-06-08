@@ -61,10 +61,6 @@ jobs:
     - name: Configure build and install mcstas
       id: mcstas-install
       run: |
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-           fi
            ./src/devel/bin/mccode-build-conda -m mcstas -s $PWD/src -b $PWD/build_mcstas
 
     - name: Validate build output
