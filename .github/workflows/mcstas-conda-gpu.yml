@@ -47,6 +47,8 @@ jobs:
             export CONDA_PREFIX="$HOME/micromamba/envs/mcstas"
             which nexpy
             echo $CONDA_PREFIX
+            echo "PATH=$(micromamba run -n mcstas printenv PATH)" >> $GITHUB_ENV
+            echo "CONDA_PREFIX=$(micromamba run -n mcstas printenv CONDA_PREFIX)" >> $GITHUB_ENV
 
     - name: Check versions
       id: version-checks
