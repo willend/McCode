@@ -47,7 +47,7 @@ jobs:
     - uses: mamba-org/setup-micromamba@v3
       with:
         environment-file: dependencies.yml 
-        activate-environment: mcxtrace
+        environment-name: mcxtrace
 
     - name: Check versions
       id: version-checks
