@@ -224,20 +224,19 @@ def create_help_pltitm():
     
     return plt
 
-def create_infowindow(comp_colour_pairs, parent=None):
-    class InfoWindow(QtWidgets.QMainWindow):
-        ''' infowindow that is designed to be static '''
+def create_infowindow(comp_colour_pairs, parent=None, key_handler=None):
+    class InfoWindow(QtWidgets.QDialog):
+        ''' infowindow that is designed to be static, uses QDialog '''
         class Ui_InfoWindow(object):
             ''' info window widgets (auto-generated code) '''
-            def setupUi(self, MainWindow):
-                MainWindow.setObjectName("MainWindow")
-                MainWindow.resize(259, 395)
-                MainWindow.setStyleSheet("background-color: rgb(0, 0, 0);")
-                self.centralwidget = QtWidgets.QWidget(MainWindow)
-                self.centralwidget.setObjectName("centralwidget")
-                self.verticalLayoutTechnicalReason = QtWidgets.QVBoxLayout(self.centralwidget)
+            def setupUi(self, Dialog):
+                Dialog.setObjectName("InfoWindow")
+                Dialog.resize(259, 395)
+                Dialog.setWindowTitle("Component list")
+                Dialog.setStyleSheet("background-color: rgb(0, 0, 0);")
+                self.verticalLayoutTechnicalReason = QtWidgets.QVBoxLayout(Dialog)
                 self.verticalLayoutTechnicalReason.setObjectName("verticalLayoutTechnicalReason")
-                self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
+                self.scrollArea = QtWidgets.QScrollArea(Dialog)
                 self.scrollArea.setWidgetResizable(True)
                 self.scrollArea.setObjectName("scrollArea")
                 self.scrollAreaWidgetContents = QtWidgets.QWidget()
@@ -245,43 +244,49 @@ def create_infowindow(comp_colour_pairs, parent=None):
                 self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
                 self.vlayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
                 self.vlayout.setObjectName("vlayout")
-                MainWindow.setCentralWidget(self.centralwidget)
-                
+
                 self.scrollArea.setWidget(self.scrollAreaWidgetContents)
                 self.verticalLayoutTechnicalReason.addWidget(self.scrollArea)
-                
+
                 self.labels = []
                 try: # Prefer Qt6 style, fallback to Qt5
                     self.spacerItem = QtWidgets.QSpacerItem(20, 448, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
                 except:
                     self.spacerItem = QtWidgets.QSpacerItem(20, 448, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-                
+
         def set_components(self, str_colour_pairs):
             ''' colours are tri-tupples of rgb '''
             for pair in str_colour_pairs:
                 s = pair[0]
                 c = pair[1]
-                
+
                 lbl = QtWidgets.QLabel(self.ui.scrollAreaWidgetContents)
                 lbl.setText(s)
                 lbl.setStyleSheet("color: rgb(%d, %d, %d);" % c)
                 self.ui.labels.append(lbl)
                 self.ui.vlayout.addWidget(lbl)
-            
+
             self.ui.vlayout.addItem(self.ui.spacerItem)
-        
-        def __init__(self, parent=None):
+
+        def keyPressEvent(self, event):
+            ''' forward all keypresses to the main window handler so that
+                q/p/s/space/h etc. work without needing to switch focus back '''
+            if self._key_handler is not None:
+                self._key_handler(event)
+            else:
+                super(InfoWindow, self).keyPressEvent(event)
+
+        def __init__(self, parent=None, key_handler=None):
             super(InfoWindow, self).__init__(parent)
-            self.setWindowFlags(
-                self.windowFlags() | Qt.WindowStaysOnTopHint
-            )
+            self._key_handler = key_handler
+
             # create ui and set info
             self.ui = self.Ui_InfoWindow()
             self.ui.setupUi(self)
-    
-    iw = InfoWindow(parent=parent)
+
+    iw = InfoWindow(parent=parent, key_handler=key_handler)
     iw.set_components(comp_colour_pairs)
-    
+
     return iw
 
 class McDisplay2DGui(object):
@@ -373,10 +378,14 @@ class McDisplay2DGui(object):
             self._display_nextray()
         elif event.key() in [72, 16777264]:  # h, F1
             if not self.iw_visible:
-                self.iw = create_infowindow(self._get_comp_color_pairs(), parent=self.mw)
+                self.iw = create_infowindow(self._get_comp_color_pairs(), parent=self.mw, key_handler=self._key_handler)
+                # position to the left of the main window, vertically aligned with its top
+                mw_geo = self.mw.frameGeometry()
+                iw_size = self.iw.sizeHint()
+                self.iw.move(mw_geo.left() - round(1.5*iw_size.width()), mw_geo.top())
                 self.iw.show()
                 self.iw.raise_()
-                self.mw.activateWindow()
+                self.iw.activateWindow()
                 self.iw_visible = True
             else:
                 self.iw.hide()
