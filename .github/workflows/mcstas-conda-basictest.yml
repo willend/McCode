@@ -50,17 +50,12 @@ jobs:
     - uses: mamba-org/setup-micromamba@v3
       with:
         environment-name: mcstas
-        auto-update-conda: true
-        conda-remove-defaults: true
+        environment-file: dependencies.yml
         channels: conda-forge
         python-version: ${{ matrix.python }}
 
-    - name: Update conda
-      id: update-conda
-      run: |
-           micromamba install --file dependencies.yml -y
 
-     - name: Check versions
+    - name: Check versions
       id: version-checks
       run: |
            which python3
