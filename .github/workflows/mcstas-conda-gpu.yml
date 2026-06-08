@@ -65,6 +65,9 @@ jobs:
              echo C compiler: cl.exe
              cl.exe
            fi
+           echo $PATH
+           echo $CONDA_PREFIX
+           which nvc
 
     - name: Configure build and install mcstas
       id: mcstas-install
