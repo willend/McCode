@@ -41,7 +41,7 @@ jobs:
     - name: Update conda
       id: update-conda
       run: |
-            $(/home/willend/micromamba/bin/micromamba shell hook --shell bash --root-prefix "/home/willend/micromamba" 2> /dev/null)
+            eval $(/home/willend/micromamba/bin/micromamba shell hook --shell bash --root-prefix "/home/willend/micromamba" 2> /dev/null)
             micromamba env create --file dependencies.yml -y
             micromamba activate mcstas
 
