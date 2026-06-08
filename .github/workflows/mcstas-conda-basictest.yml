@@ -51,8 +51,6 @@ jobs:
       with:
         environment-name: mcstas
         environment-file: dependencies.yml
-        channels: conda-forge
-        python-version: ${{ matrix.python }}
 
     - name: Check versions
       id: version-checks
