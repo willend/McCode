@@ -47,7 +47,7 @@ jobs:
             export CONDA_PREFIX="$HOME/micromamba/envs/mcstas"
             which nexpy
             echo $CONDA_PREFIX
-            echo "PATH=$HOME/micromamba/bin;$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv PATH);/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH" >> $GITHUB_ENV
+            echo "PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH" >> $GITHUB_ENV
             echo "CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)" >> $GITHUB_ENV
             echo "LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/" >> $GITHUB_ENV
 
