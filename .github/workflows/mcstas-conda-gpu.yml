@@ -47,9 +47,9 @@ jobs:
             export CONDA_PREFIX="$HOME/micromamba/envs/mcstas"
             which nexpy
             echo $CONDA_PREFIX
-            echo "PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH" >> $GITHUB_ENV
-            echo "CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)" >> $GITHUB_ENV
-            echo "LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/" >> $GITHUB_ENV
+            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+            export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
 
     - name: Check versions
       id: version-checks
@@ -66,6 +66,9 @@ jobs:
              echo C compiler: cl.exe
              cl.exe
            fi
+           export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            echo $PATH
            echo $CONDA_PREFIX
            which nvc
@@ -73,6 +76,9 @@ jobs:
     - name: Configure build and install mcstas
       id: mcstas-install
       run: |
+            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+            export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            ./src/devel/bin/mccode-build-conda -m mcstas -s $PWD/src -b $PWD/build_mcstas
 
     - name: Validate build output
@@ -82,8 +88,11 @@ jobs:
            set -e
            set -u
            set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
+            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+            export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
+            if [ "$RUNNER_OS" == "Windows" ];
+            then
              echo "Validating Windows build output..."
              echo "CONDA_PREFIX: $CONDA_PREFIX"
              echo "Checking for mcstas executable..."
@@ -138,6 +147,9 @@ jobs:
            set -e
            set -u
            set -x
+           export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export SUFFIX=".bat"
@@ -154,6 +166,9 @@ jobs:
            set -e
            set -u
            set -x
+           export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export SUFFIX=".bat"
@@ -170,6 +185,9 @@ jobs:
            set -e
            set -u
            set -x
+           export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export SUFFIX=".bat"
@@ -189,6 +207,9 @@ jobs:
            set -e
            set -u
            set -x
+           export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export SUFFIX=".bat"
@@ -205,6 +226,9 @@ jobs:
            set -e
            set -u
            set -x
+           export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
              export SUFFIX=".bat"
@@ -221,6 +245,9 @@ jobs:
            set -e
            set -u
            set -x
+           export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
+           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
            export MCTEST_EXECUTABLE="mctest"
@@ -302,6 +329,7 @@ jobs:
            # Clear out binaries from sim dir and tar up artifact
            ls | grep run_ | xargs -n1 ./src/devel/bin/mccode-simdir-cleanfiles -d 
            tar cvfz mcstas-linux.openacc.python-3.14_output.tgz run_*
+           rm -rf run_*
 
     - name: 'Upload Artifact'
       id: tar-upload
