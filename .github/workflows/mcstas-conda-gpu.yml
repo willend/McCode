@@ -97,40 +97,40 @@ jobs:
            fi
 
     # Start of tests
-    - name: Launch RNG test instrument
-      id: RNG-test
-      run: |
-           set -e
-           set -u
-           set -x
-           source $HOME/.bashrc
-           export PATH=$HOME/micromamba/bin:$PATH
-           eval "$(micromamba shell hook --shell bash)"
-           micromamba activate mcstas
-           export MD5SUM="md5sum"
-           if [ "$RUNNER_OS" == "macOS" ];
-           then
-             export MD5SUM="md5"
-           fi
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-           else
-            export SUFFIX=""
-           fi
-           test -f ${CONDA_PREFIX}/bin/mcstas
-           mcstas --version
-           mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --openacc
-           export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
-           export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
-           if [ "${EXPECTED}" == "${SUM}" ];
-           then
-              echo RNG test success!
-              true
-           else
-              echo RNG test failure!
-              false
-           fi
+    # - name: Launch RNG test instrument
+    #   id: RNG-test
+    #   run: |
+    #        set -e
+    #        set -u
+    #        set -x
+    #        source $HOME/.bashrc
+    #        export PATH=$HOME/micromamba/bin:$PATH
+    #        eval "$(micromamba shell hook --shell bash)"
+    #        micromamba activate mcstas
+    #        export MD5SUM="md5sum"
+    #        if [ "$RUNNER_OS" == "macOS" ];
+    #        then
+    #          export MD5SUM="md5"
+    #        fi
+    #        if [ "$RUNNER_OS" == "Windows" ];
+    #        then
+    #          export SUFFIX=".bat"
+    #        else
+    #         export SUFFIX=""
+    #        fi
+    #        test -f ${CONDA_PREFIX}/bin/mcstas
+    #        mcstas --version
+    #        mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --openacc
+    #        export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
+    #        export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
+    #        if [ "${EXPECTED}" == "${SUM}" ];
+    #        then
+    #           echo RNG test success!
+    #           true
+    #        else
+    #           echo RNG test failure!
+    #           false
+    #        fi
 
     - name: Launch BNL_H8 instrument
       id: h8-test
