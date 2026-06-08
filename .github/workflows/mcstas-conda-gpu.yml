@@ -43,11 +43,11 @@ jobs:
       run: |
             eval $(/home/willend/micromamba/bin/micromamba shell hook --shell bash --root-prefix "/home/willend/micromamba" 2> /dev/null)
             /home/willend/micromamba/bin/micromamba env create --file dependencies.yml -y
-            export PATH="$(micromamba run -n mcstas printenv PATH)"
+            export PATH="$(micromamba run -n mcstas printenv PATH)";$PATH
             export CONDA_PREFIX="$HOME/micromamba/envs/mcstas"
             which nexpy
             echo $CONDA_PREFIX
-            echo "PATH=$(/home/willend/micromamba run -n mcstas printenv PATH)" >> $GITHUB_ENV
+            echo "PATH=$(/home/willend/micromamba run -n mcstas printenv PATH);$PATH" >> $GITHUB_ENV
             echo "CONDA_PREFIX=$(/home/willend/micromamba run -n mcstas printenv CONDA_PREFIX)" >> $GITHUB_ENV
 
     - name: Check versions
