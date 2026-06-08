@@ -273,7 +273,7 @@ def create_infowindow(comp_colour_pairs, parent=None):
         def __init__(self, parent=None):
             super(InfoWindow, self).__init__(parent)
             self.setWindowFlags(
-                self.windowFlags() | Qt.WindowType.WindowStaysOnTopHint
+                self.windowFlags() | Qt.WindowStaysOnTopHint
             )
             # create ui and set info
             self.ui = self.Ui_InfoWindow()
