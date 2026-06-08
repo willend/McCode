@@ -48,7 +48,7 @@ jobs:
             which nexpy
             echo $CONDA_PREFIX
             export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-            export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+            export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
             export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
 
     - name: Check versions
@@ -67,7 +67,7 @@ jobs:
              cl.exe
            fi
            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            echo $PATH
            echo $CONDA_PREFIX
@@ -77,7 +77,7 @@ jobs:
       id: mcstas-install
       run: |
            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            ./src/devel/bin/mccode-build-conda -m mcstas -s $PWD/src -b $PWD/build_mcstas
 
@@ -89,7 +89,7 @@ jobs:
            set -u
            set -x
             export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-            export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+            export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
             export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
             if [ "$RUNNER_OS" == "Windows" ];
             then
@@ -148,7 +148,7 @@ jobs:
            set -u
            set -x
            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
@@ -167,7 +167,7 @@ jobs:
            set -u
            set -x
            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
@@ -186,7 +186,7 @@ jobs:
            set -u
            set -x
            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
@@ -208,7 +208,7 @@ jobs:
            set -u
            set -x
            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
@@ -227,7 +227,7 @@ jobs:
            set -u
            set -x
            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            if [ "$RUNNER_OS" == "Windows" ];
            then
@@ -246,7 +246,7 @@ jobs:
            set -u
            set -x
            export PATH=/home/willend/micromamba/bin;/home/willend/micromamba/envs/mcstas/bin/;/opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin/;$PATH
-           export CONDA_PREFIX=$(/home/willend/micromamba/bin/micromamba run -n mcstas printenv CONDA_PREFIX)
+           export CONDA_PREFIX=/home/willend/micromamba/envs/mcstas/
            export LD_LIBRARY_PATH=/home/willend/micromamba/envs/mcstas/lib/
            export MCSTAS_EXECUTABLE="mcstas"
            export MCRUN_EXECUTABLE="mcrun"
