@@ -35,6 +35,10 @@ jobs:
         path: src
         fetch-depth: 2
 
+    - name: Setup VS in shell Intel
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
     - name: Get conda dependency list
       id: conda-deps
       run: |
