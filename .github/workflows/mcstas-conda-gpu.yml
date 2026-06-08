@@ -43,7 +43,7 @@ jobs:
       run: |
             eval $(/home/willend/micromamba/bin/micromamba shell hook --shell bash --root-prefix "/home/willend/micromamba" 2> /dev/null)
             /home/willend/micromamba/bin/micromamba env create --file dependencies.yml -y
-            /home/willend/micromamba/bin/micromamba activate --root-prefix /home/willend/micromamba mcstas
+            /home/willend/micromamba/bin/micromamba activate /home/willend/micromamba/mcstas
 
     - name: Check versions
       id: version-checks
