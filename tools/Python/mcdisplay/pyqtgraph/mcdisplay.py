@@ -172,8 +172,9 @@ def plot_2d_instr(coords_sets, plt, xlabel, ylabel):
 class ModLegend(pg.LegendItem):
     """
     Modified LegendItem to remove the ugly / in the label. Also reduces text size and padding.
+    Pass offset=None when positioning via anchor() instead.
     """
-    def __init__(self, offset, text_size='9pt'):
+    def __init__(self, offset=None, text_size='9pt'):
         self.text_size = text_size
         LegendItem.__init__(self, None, offset)
     
@@ -216,8 +217,12 @@ def create_help_pltitm():
     plt.axes['left']['item'].hide()
     plt.axes['bottom']['item'].hide()
     
-    plt.legend = ModLegend(offset=(-140, 60))
+    plt.legend = ModLegend(offset=None)
     plt.legend.setParentItem(plt.vb)
+    # anchor: item point (0.5, 0.5) = centre of legend
+    #         parent point (0.75, 0.75) = centre of lower-right quadrant - but (0.60, 0.45)
+    #                                                                      looks better ...
+    plt.legend.anchor(itemPos=(0.5, 0.5), parentPos=(0.60, 0.45), offset=(0, 0))
 
     for l in get_help_lines():
         plt.plot([0], [0], name=l)
