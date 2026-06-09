@@ -172,8 +172,9 @@ def plot_2d_instr(coords_sets, plt, xlabel, ylabel):
 class ModLegend(pg.LegendItem):
     """
     Modified LegendItem to remove the ugly / in the label. Also reduces text size and padding.
+    Pass offset=None when positioning via anchor() instead.
     """
-    def __init__(self, offset, text_size='9pt'):
+    def __init__(self, offset=None, text_size='9pt'):
         self.text_size = text_size
         LegendItem.__init__(self, None, offset)
     
@@ -216,8 +217,12 @@ def create_help_pltitm():
     plt.axes['left']['item'].hide()
     plt.axes['bottom']['item'].hide()
     
-    plt.legend = ModLegend(offset=(-140, 60))
+    plt.legend = ModLegend(offset=None)
     plt.legend.setParentItem(plt.vb)
+    # anchor: item point (0.5, 0.5) = centre of legend
+    #         parent point (0.75, 0.75) = centre of lower-right quadrant - but (0.60, 0.45)
+    #                                                                      looks better ...
+    plt.legend.anchor(itemPos=(0.5, 0.5), parentPos=(0.60, 0.45), offset=(0, 0))
 
     for l in get_help_lines():
         plt.plot([0], [0], name=l)
@@ -335,13 +340,21 @@ class McDisplay2DGui(object):
         self._unzoom()
         
         def unzoom_handler(event):
-            if event.button() != 2:
+            try:
+                right = QtCore.Qt.MouseButton.RightButton
+            except AttributeError:
+                right = QtCore.Qt.RightButton
+            if event.button() != right:
                 return
             if self.zoomstate == self.ZoomState.ZOOM:
                 self._unzoom()
-        
+
         def zoom_handler(event, item=None, idx=None):
-            if event.button() != 1:
+            try:
+                left = QtCore.Qt.MouseButton.LeftButton
+            except AttributeError:
+                left = QtCore.Qt.LeftButton
+            if event.button() != left:
                 return
             if self.zoomstate == self.ZoomState.UNZOOM and event.currentItem == item:
                 self._zoom(idx)
@@ -406,7 +419,7 @@ class McDisplay2DGui(object):
     def run_ui(self, instr, rays):
         '''  '''
         self._init_2dmode()
-        self._set_and_plot_instr(instr)
+        self._set_and_plot_instr(instr, enable_clickable=True)
         if not rays==[]:
             self._set_rays(rays)
             self._unzoom()
@@ -461,12 +474,36 @@ class McDisplay2DGui(object):
         
         # set PlotDataItem click events
         if enable_clickable:
+            self._comp_curve_pairs = []
             for pairs in [comp_plotdataitm_pairs_zy, comp_plotdataitm_pairs_xy, comp_plotdataitm_pairs_zx]:
                 for p in pairs:
                     comp = p[0]
                     itm = p[1]
-                    itm.curve.setClickable(True)
-                    itm.curve.mouseClickEvent = lambda event, comp=comp: self._handle_comp_clicked(event, comp)
+                    itm.curve.opts['mouseWidth'] = 8  # widen hit area to 8px
+                    self._comp_curve_pairs.append((comp, itm.curve))
+
+            def _scene_click_handler(event):
+                btn = event.button()
+                pos = event.scenePos()
+                try:
+                    left = QtCore.Qt.MouseButton.LeftButton   # PyQt6
+                except AttributeError:
+                    left = QtCore.Qt.LeftButton               # PyQt5
+                if btn != left:
+                    return
+                for comp, curve in self._comp_curve_pairs:
+                    curve._mouseShape = None
+                    scene_shape = curve.mapToScene(curve.mouseShape())
+                    if scene_shape.contains(pos):
+                        self._handle_comp_clicked(event, comp)
+                        return
+
+            scenes_connected = set()
+            for plt in [self.plt_zy, self.plt_xy, self.plt_zx]:
+                sc = plt.scene()
+                if id(sc) not in scenes_connected:
+                    sc.sigMouseClicked.connect(_scene_click_handler)
+                    scenes_connected.add(id(sc))
 
     def _handle_comp_clicked(self, event, comp):
         ''' display clicked component info '''
