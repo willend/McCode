@@ -5,6 +5,7 @@ channels:
   - nodefaults
 
 dependencies:
+  - micromamba
   - m2-msys2-runtime
   - m2-which
   - m2-sed
@@ -22,7 +23,6 @@ dependencies:
   - scipy
   - pillow
   - pyqtgraph
-  - pyqt
   - qtpy
   - qscintilla2
   - nexus
