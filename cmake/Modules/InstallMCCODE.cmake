@@ -442,11 +442,6 @@ macro(installMCCODE)
       DESTINATION "${DEST_BINDIR}"
     )
 
-    install (
-      TARGETS "windirent.h"
-      DESTINATION "${DEST_BINDIR}"
-    )
-
     # windirent.h - dirent support for MSVC
     install(FILES ${WORK}/src/windirent.h DESTINATION "${DEST_INCLUDEDIR}")
 
