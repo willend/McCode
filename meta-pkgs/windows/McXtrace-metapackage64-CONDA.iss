@@ -35,7 +35,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "python-install.bat"; DestDir: "{tmp}"
 Source: "mcxtrace-environment.yml"; DestDir: "{tmp}"
 Source: "docupdate.bat"; DestDir: "{tmp}"
-Source: "Support\Miniforge3-Windows-x86_64.exe"; DestDir: "{tmp}"
+Source: "Support\micromamba.exe"; DestDir: "{tmp}"
 
 [Run]
 Filename: "{tmp}\python-install.bat"

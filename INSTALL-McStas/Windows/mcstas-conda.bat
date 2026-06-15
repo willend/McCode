@@ -1,3 +1,4 @@
+@echo off
 @mkdir %USERPROFILE%\AppData\Roaming\micromamba
 @cd %USERPROFILE%\AppData\Roaming\micromamba
 @echo Downloading latest micromamba
@@ -13,15 +14,19 @@
 @setlocal
 
 @set FOUND=N
+@set MATCH=""
 @for /f %%i in ('@findstr mcstas tmpfile') do (
-  @echo Found existing environment called %%i!
-  @set FOUND=Y
+  @if /I "%%i"=="mcstas" (
+    @echo Found exact environment name match: %%i!
+	@set FOUND=Y
+	@set MATCH=%%i
+  )
 )
 
 @if /I %FOUND%==N goto INSTALL
 
 :CHOICE
-@choice /C YIN /M "Press Y to remove above env, I to ignore, or N to Cancel."
+@choice /C YIN /M "Press Y to remove existing env --> %MATCH%  <--, I to ignore, or N to Cancel."
 @if '%ERRORLEVEL%'=='1' goto REMOVE
 @if '%ERRORLEVEL%'=='2' goto INSTALL
 @if '%ERRORLEVEL%'=='3' goto END
