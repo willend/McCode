@@ -870,7 +870,7 @@ if __name__ == '__main__':
     parser.add_argument('--lint', action='store_true', help='Just run the c-linter')
     parser.add_argument('--compilemax', nargs=1, help='Maximum time (s) allowed pr. compilation (default 600s)(if run with --lint muliplied x100)')
     parser.add_argument('--runmax', nargs=1, help='Maximum time (s) allowed pr. test Example run (default 3600s)')
-    parser.add_argument('--displaymax', nargs=1, help='Maximum time allowed pr. test Example DISPLAY run (default 120s)')
+    parser.add_argument('--displaymax', nargs=1, help='Maximum time allowed pr. test Example DISPLAY run (default 60s)')
     parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional.')
     parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR')
     args = parser.parse_args()
