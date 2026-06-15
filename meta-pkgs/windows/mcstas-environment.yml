@@ -5,10 +5,12 @@ channels:
   - nodefaults
 
 dependencies:
+  - micromamba
   - m2-msys2-runtime
   - m2-which
   - m2-sed
   - m2-grep
+  - m2-gzip
   - m2-coreutils
   - mcstas
   - gsl
@@ -29,8 +31,11 @@ dependencies:
   - hdf5
   - mcpl
   - mcpl-extra
-  - kdsource
   - ncrystal
+  - mcpl
+  - mcpl-core
+  - mcpl-extra
+  - kdsource
   - jupytext
   - jupyterlab
   - ipympl
