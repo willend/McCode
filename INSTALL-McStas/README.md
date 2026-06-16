@@ -1,4 +1,4 @@
-# Installation instructions for McStas 3.7.1
+# Installation instructions for McStas 3.7.6
 
 Please consult the individual platform instructions:
 
