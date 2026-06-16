@@ -13,14 +13,16 @@
     * Install [Visual Studio including c/c++ support](https://learn.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-170#download-and-install-the-tools). Any
       recent version of Visual Studio itself should work. Use the
       "Visual Studio Installer" and [modify settings (click for screenshot)](install-screenshot1.png) to selecect at minumum "Desktop development with c++" specifying to [include all of: MSVC v142 (2019), MSVC v143 (2022) plus CLI support (click for screenshot)](install-screenshot2.png). (It should be OK to include later build tools such as VS2026, but VS2019 and VS2022 **must** be present also. 
+    * Please remove any MinGW-based version of McStas 3.7.6 before proceeding!
      * install the new MSVC based [McStas 3.7.6 MSVC metapackage](https://download.mcstas.org/mcstas-3.7.6/Windows/MSVC/McStas-Metapackage-3.7.6-MSVC-win64.exe)
      * Option 2 should be fully functional on `arm64` processors.
- 3. **Legacy MinGW-bundle solution:**
-    * install the legacy-style MinGW based [McStas 3.7.6 MinGW metapackage](https://download.mcstas.org/mcstas-3.7.6/Windows/MinGW/McStas-Metapackage-3.7.6-MinGW-win64.exe)
-    * Option 3 should be fully functional on `arm64` processors.
-  4. **WSL:**
+  3. **WSL:**
     * Use the directions available in [WSL](WSL/README.md) to install the "Windows subsystem for Linux" and run the Linux Debian binaries there. 
     * Option 3 is fully functional on `arm64` processors.
+  4. **Legacy MinGW-bundle solution:**
+    * Please remove any MSVC-based version of McStas 3.7.6 before proceeding!
+    * install the legacy-style MinGW based [McStas 3.7.6 MinGW metapackage](https://download.mcstas.org/mcstas-3.7.6/Windows/MinGW/McStas-Metapackage-3.7.6-MinGW-win64.exe)
+    * Option 4 should be fully functional on `arm64` processors.
 	
 If you are `conda-forge` knowledgable already, you may also simply install a new environment as explained in [conda-forge](../conda/README.md)
 
