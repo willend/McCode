@@ -164,65 +164,9 @@ SHARE
     return (res_phonon - res_neutron);
   }
 
-  double
-  zridd (double (*func) (struct neutron_params*, struct phonon_params*), double x1, double x2, struct neutron_params* neutron, struct phonon_params* phonon,
-         double xacc) {
-    int j;
-    double ans, fh, fl, fm, fnew, s, xh, xl, xm, xnew;
-
-    neutron->vf = x1;
-    fl = func (neutron, phonon);
-    neutron->vf = x2;
-    fh = func (neutron, phonon);
-    if (fl * fh >= 0) {
-      if (fl == 0)
-        return x1;
-      if (fh == 0)
-        return x2;
-      return UNUSED;
-    } else {
-      xl = x1;
-      xh = x2;
-      ans = UNUSED;
-      for (j = 1; j < MAXRIDD; j++) {
-        xm = 0.5 * (xl + xh);
-        neutron->vf = xm;
-        fm = func (neutron, phonon);
-        s = sqrt (fm * fm - fl * fh);
-        if (s == 0.0)
-          return ans;
-        xnew = xm + (xm - xl) * ((fl >= fh ? 1.0 : -1.0) * fm / s);
-        if (fabs (xnew - ans) <= xacc)
-          return ans;
-        ans = xnew;
-        neutron->vf = ans;
-        fnew = func (neutron, phonon);
-        if (fnew == 0.0)
-          return ans;
-        if (fabs (fm) * SIGN (fnew) != fm) {
-          xl = xm;
-          fl = fm;
-          xh = ans;
-          fh = fnew;
-        } else if (fabs (fl) * SIGN (fnew) != fl) {
-          xh = ans;
-          fh = fnew;
-        } else if (fabs (fh) * SIGN (fnew) != fh) {
-          xl = ans;
-          fl = fnew;
-        } else
-          fatalerror ("never get here in zridd");
-        if (fabs (xh - xl) <= xacc)
-          return ans;
-      }
-      fatalerror ("zridd exceeded maximum iterations");
-    }
-    return 0.0; /* Never get here */
-  }
-
   #pragma acc routine
   double
-  zridd_gpu (double x1, double x2, struct neutron_params* neutron, struct phonon_params* phonon, double xacc) {
+  zridd (double x1, double x2, struct neutron_params* neutron, struct phonon_params* phonon, double xacc) {
     int j;
     double ans, fh, fl, fm, fnew, s, xh, xl, xm, xnew;
 
@@ -278,53 +222,27 @@ SHARE
 
   #define ROOTACC 1e-8
 
-  void
-  findroots (double brack_low, double brack_mid, double brack_high, double* list, int* index, double (*f) (struct neutron_params*, struct phonon_params*),
-             struct neutron_params* neutron, struct phonon_params* phonon) {
-    double root;
-    // Energy gain and energy loss spaces are not equally big. We check uniformly
-    // So we use two different ranges
-    double range_low = brack_mid - brack_low;
-    double range_high = brack_high - brack_mid;
-    // First in energy loss for the neutron
-    for (int i = 0; i < phonon->e_steps_low_; i++) {
-      root = zridd (f, brack_low + range_low * i / phonon->e_steps_low_, brack_low + range_low * (i + 1) / phonon->e_steps_low_, neutron, phonon, ROOTACC);
-      if (root != UNUSED) {
-        list[(*index)++] = root;
-      }
-    }
-
-    // Then in energy gain for the neutron
-    for (int i = 0; i < phonon->e_steps_high_; i++) {
-      root = zridd (f, brack_mid + range_high * i / phonon->e_steps_high_, brack_mid + range_high * (i + 1) / phonon->e_steps_high_, neutron, phonon, ROOTACC);
-      if (root != UNUSED) {
-        list[(*index)++] = root;
-      }
-    }
-  }
-
   #pragma acc routine
   void
-  findroots_gpu (double brack_low, double brack_mid, double brack_high, double* list, int* index, struct neutron_params* neutron, struct phonon_params* phonon) {
+  findroots (double brack_low, double brack_mid, double brack_high, double* list, int* index,
+             struct neutron_params* neutron, struct phonon_params* phonon) {
     double root;
-    // Energy gain and energy loss spaces are not equally big. We check uniformly
-    // So we use two different ranges
-    double range_low = brack_mid - brack_low;
-    double range_high = brack_high - brack_mid;
-    // First in energy loss for the neutron
-    for (int i = 0; i < phonon->e_steps_low_; i++) {
-      root = zridd_gpu (brack_low + range_low * i / phonon->e_steps_low_, brack_low + range_low * (i + 1) / phonon->e_steps_low_, neutron, phonon, ROOTACC);
-      if (root != UNUSED) {
-        list[(*index)++] = root;
-      }
+
+    /* omega_q(vf) is assumed continuous and monotonic on each side of the
+     * elastic line, so each bracket below contains at most one root. A
+     * single Ridder's-method call per bracket replaces the old scan over
+     * e_steps_low / e_steps_high sub-intervals. */
+
+    /* Energy loss: vf in [brack_low, brack_mid] */
+    root = zridd (brack_low, brack_mid, neutron, phonon, ROOTACC);
+    if (root != UNUSED) {
+      list[(*index)++] = root;
     }
 
-    // Then in energy gain for the neutron
-    for (int i = 0; i < phonon->e_steps_high_; i++) {
-      root = zridd_gpu (brack_mid + range_high * i / phonon->e_steps_high_, brack_mid + range_high * (i + 1) / phonon->e_steps_high_, neutron, phonon, ROOTACC);
-      if (root != UNUSED) {
-        list[(*index)++] = root;
-      }
+    /* Energy gain: vf in [brack_mid, brack_high] */
+    root = zridd (brack_mid, brack_high, neutron, phonon, ROOTACC);
+    if (root != UNUSED) {
+      list[(*index)++] = root;
     }
   }
 
@@ -377,21 +295,12 @@ INITIALIZE
 %}
 TRACE
 %{
-  double* vf_list;
-  #ifdef OPENACC
-  vf_list = (double*)malloc ((e_steps_low + e_steps_high) * sizeof (double)); // List of allowed final velocities. Has length of scan_steps
-  #else
-  vf_list = (double*)calloc (e_steps_low + e_steps_high, sizeof (double)); // List of allowed final velocities. Has length of scan_steps
-  #endif
-  if (!vf_list) {
-    printf ("Memory allocation failed, fatal error!\n");
-    exit (-1);
-  }
-  #ifdef OPENACC
-  for (int ii = 0; ii < e_steps_low + e_steps_high; ii++) {
-    vf_list[ii] = 0;
-  }
-  #endif
+  /* At most one root on the energy-loss side and one on the energy-gain
+   * side (omega_q is assumed monotonic on each side), so a fixed 2-entry
+   * array replaces the old heap allocation sized for an e_steps-based scan.
+   * This removes a malloc/free (a serializing operation on GPU) from the
+   * per-neutron hot path. */
+  double vf_list[2] = {0, 0};
 
   struct neutron_params neutron;
   double t0, t1;                          /* Entry/exit time for cylinder */
@@ -450,11 +359,7 @@ TRACE
     neutron.vi_y = vy_i;
     neutron.vi_z = vz_i;
 
-    #ifndef OPENACC
-    findroots (0, v_i, v_i + 2 * c * V2K / VS2E, vf_list, &nf, omega_q, &neutron, &phonon);
-    #else
-    findroots_gpu (0, v_i, v_i + 2 * c * V2K / VS2E, vf_list, &nf, &neutron, &phonon);
-    #endif
+    findroots (0, v_i, v_i + 2 * c * V2K / VS2E, vf_list, &nf, &neutron, &phonon);
     index = (int)floor (rand01 () * nf);
 
     v_f = vf_list[index];
@@ -490,7 +395,6 @@ TRACE
     p5 = b * b / M;                                                                   /* Cross section factor 2 */
     p *= p1 * p2 * p3 * p4 * p5;
   } /* else transmit: Neutron did not hit the sample */
-  free (vf_list);
 %}
 
 FINALLY 
