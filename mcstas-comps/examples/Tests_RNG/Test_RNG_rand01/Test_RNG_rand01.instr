@@ -38,7 +38,7 @@ DECLARE
 INITIALIZE
 %{
   mcset_ncount(Ncount);
-  if (seed) mcseed = seed;
+  if (seed) mcseed = seed
 %}
 
 TRACE
