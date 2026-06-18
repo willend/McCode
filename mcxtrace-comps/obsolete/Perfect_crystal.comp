@@ -117,7 +117,7 @@ SHARE
     else {
       //complex double f_hkl = (1+cexp(I*M_PI*(h+k))+cexp(I*M_PI*(k+l)) + cexp(I*M_PI*(h+l)))*(1+cexp(I*M_PI*(h/4.0 + k/4.0 + l/4.0)));
       
-      complex double f_hkl=cadd(cadd(radd(1,cexp(rmul(M_PI*(h+k),cplx(0,1)))),cexp(rmul(M_PI*(k+l),cplx(0,1)))),
+      cdouble f_hkl=cadd(cadd(radd(1,cexp(rmul(M_PI*(h+k),cplx(0,1)))),cexp(rmul(M_PI*(k+l),cplx(0,1)))),
 				cmul(cexp(rmul(M_PI*(h+l),cplx(0,1))),radd(1,cexp(rmul(M_PI*(h/4.0 + k/4.0 + l/4.0),cplx(0,1))))));
       
       Fhr = cabs(f_hkl)*(f0h + fp);
