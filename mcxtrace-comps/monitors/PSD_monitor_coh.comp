@@ -175,7 +175,7 @@ SAVE
     for (i = 0; i < nx; i++) {
       for (j = 0; j < ny; j++) {
         PSD_p_abs[i * ny + j] = cabs (cplx(PSD_phi_real[i][j],PSD_phi_imag[i][j]));
-        PSD_p_arg[i * ny + j] = carg (cplx(PSD_phi_real[i][j],PSD_phi_imag[i][j]))
+        PSD_p_arg[i * ny + j] = carg (cplx(PSD_phi_real[i][j],PSD_phi_imag[i][j]));
       }
     }
 
