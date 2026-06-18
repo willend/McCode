@@ -122,7 +122,7 @@ TRACE
       /*length of wavevector transfer may be compute from s and n_ above*/
       Q = fabs (2 * s * sqrt (nx * nx + nz * nz));
       cdouble R = refleccq (re, Q, 0, k, fabs (90 - acos (s / k) * RAD2DEG));
-      p *= sqrt (creal (R * conj (R)));
+      p *= sqrt (creal (cmul(R, conj (R))));
       phi += atan2 (cimag (R), creal (R));
     }
   } else if (fabs (kx) < DBL_EPSILON && fabs (kz) < DBL_EPSILON && ky != 0) {
