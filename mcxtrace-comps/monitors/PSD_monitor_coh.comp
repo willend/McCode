@@ -202,7 +202,7 @@ SAVE
           unsigned long tmp_N = 0;
           int k;
           for (k = 0; k < mpi_node_count; k++) {
-            tmp_phi = cadd(tmp_phi, rmul(PSD_p_absbuf[k * ny + j],cexp (rmul(PSD_p_argbuf[k * ny + j]*cplx(0,1)))));
+            tmp_phi = cadd(tmp_phi, rmul(PSD_p_absbuf[k * ny + j],cexp (rmul(PSD_p_argbuf[k * ny + j],cplx(0,1)))));
             tmp_N += (unsigned long)N_buf[k * ny + j];
           }
           PSD_p_abs[i * ny + j] = cabs (tmp_phi);
