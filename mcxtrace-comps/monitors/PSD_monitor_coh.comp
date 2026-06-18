@@ -58,7 +58,7 @@ SETTING PARAMETERS (int nx=90, int ny=90, string filename=0, restore_xray=0,
 /*STATE PARAMETERS (x,y,z,kx,ky,kz,phi,Ex,Ey,Ez,p)*/
 SHARE
 %{
-  #include <complex.h>
+  %include "mccode-complex-lib"
 %}
 
 DECLARE
@@ -102,7 +102,7 @@ TRACE
   int i, j;
   double k, x_o, y_o, z_o;
   double p2;
-  double complex dphi;
+  cdouble dphi;
   double dphi_r, dphi_i;
 
   x_o = x;
@@ -132,7 +132,7 @@ TRACE
 
     /*check if within the ratio of the pixel*/
     if (fabs (xwidth / nx * (i + 0.5) - xwidth / 2.0 - x) < xwidth / nx * ratio && fabs (yheight / ny * (j + 0.5) - yheight / 2.0 - y) < yheight / ny * ratio) {
-      dphi = p * cexp (I * (phi - dnu));
+      dphi = rmul(p,cexp (rmul(phi - dnu,cplx(0,1))));
       dphi_r = creal (dphi);
       dphi_i = cimag (dphi);
       p2 = p * p;
