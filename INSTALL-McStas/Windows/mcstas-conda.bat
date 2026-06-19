@@ -39,9 +39,12 @@
 @echo Starting installation of McStas and dependencies
 @.\micromamba.exe create -n mcstas mcstas -c conda-forge -c nodefaults -y
 
-@echo Creating desktop shortcut to new environment
+@echo Creating desktop shortcuts to new environment
 
 @echo start %USERPROFILE%\AppData\Roaming\mamba\condabin\micromamba activate mcstas > %USERPROFILE%\Desktop\mcstas-shell-conda.bat
+
+@echo call %USERPROFILE%\AppData\Roaming\mamba\condabin\micromamba activate mcstas > %USERPROFILE%\Desktop\mcgui-conda.bat
+@echo mcgui >> %USERPROFILE%\Desktop\mcgui-conda.bat
 
 :END
 @echo End of script

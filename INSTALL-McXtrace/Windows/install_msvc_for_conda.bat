@@ -1,0 +1,1 @@
+../../INSTALL-McStas/Windows/install_msvc_for_conda.bat
