@@ -39,9 +39,12 @@
 @echo Starting installation of McXtrace and dependencies
 @.\micromamba.exe create -n mcxtrace mcxtrace -c conda-forge -c nodefaults -y
 
-@echo Creating desktop shortcut to new environment
+@echo Creating desktop shortcuts to new environment
 
 @echo start %USERPROFILE%\AppData\Roaming\mamba\condabin\micromamba activate mcxtrace > %USERPROFILE%\Desktop\mcxtrace-shell-conda.bat
+
+@echo call %USERPROFILE%\AppData\Roaming\mamba\condabin\micromamba activate mcxtrace > %USERPROFILE%\Desktop\mxgui-conda.bat
+@echo mxgui >> %USERPROFILE%\Desktop\mxgui-conda.bat
 
 :END
 @echo End of script

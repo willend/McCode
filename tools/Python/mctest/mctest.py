@@ -265,7 +265,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         
         # Read instr file content to look for tests
         text = open(f, encoding='utf-8').read()
-        f_new=join(instrdir,os.path.basename(f))
+        f_new=str(pathlib.Path(join(instrdir,os.path.basename(f))).as_posix())
         # create a test object for every test defined in the instrument header
         instrtests = create_instr_test_objs(sourcefile=f, localfile=f_new, header=text)
         try:
