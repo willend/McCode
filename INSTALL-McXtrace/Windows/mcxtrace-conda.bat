@@ -8,6 +8,7 @@
 @.\micromamba.exe shell init --shell cmd.exe
 @.\micromamba.exe shell hook -s cmd.exe
 @.\micromamba config append channels conda-forge
+@.\micromamba clean --all -y
 @.\micromamba config set channel_priority strict
 @echo Checking for existing mcxtrace environment
 @.\micromamba env list > tmpfile

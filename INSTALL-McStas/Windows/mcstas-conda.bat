@@ -9,6 +9,7 @@
 @.\micromamba.exe shell hook -s cmd.exe
 @.\micromamba config append channels conda-forge
 @.\micromamba config set channel_priority strict
+@.\micromamba clean --all -y
 @echo Checking for existing mcstas environment
 @.\micromamba env list > tmpfile
 @setlocal
