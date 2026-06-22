@@ -62,6 +62,13 @@
 #define INDETERMINED
 #endif
 
+#ifndef ZERO_THRESHOLD
+//low enough to avoid false identification of zero
+//high enough to account for a chain of operations
+#define ZERO_THRESHOLD DBL_EPSILON*10 
+#endif
+
+
 /*********/
 /* Tools */
 /*********/
@@ -89,8 +96,8 @@ int polyhedron_qsort_compare_func(const void *index_value_pair_pointer1, const v
 /**********************************************************************************************************/
 /* check a point's position with respect to the surfaces of a polyhedron                                  */
 /* on plane = |distance| < maximum_on_plane_distance                                                      */
-/* above plane, i.e. outside polyhedron = signed distance > DBL_EPSILON                                   */
-/* below plane = signed distance < -DBL_EPSILON                                                           */
+/* above plane, i.e. outside polyhedron = signed distance > ZERO_THRESHOLD                                   */
+/* below plane = signed distance < -ZERO_THRESHOLD                                                           */
 /* return 1 if succeed, 0 if fail.                                                                        */
 /* INPUT:                                                                                                 */
 /* lint_p(pointer)      [m,m,m]        position of neutron                                                */
@@ -134,7 +141,7 @@ int check_point_with_respect_to_polyhedron(Coords *point_in, Coords *velocity_in
 	Polyhedron*a = polyhedron_in;
 	int m_on_plane = 0, m_behind_plane = 0, m_above_plane = 0, m_on_inside_outside_polyhedron,
 		b_crossing_plane = 0, b_crossing_edge = 0, b_crossing_vertex = 0, b_flying_on_plane = 0, b_flying_on_edge = 0;
-	double max_d = DBL_EPSILON > fabs(maximum_on_plane_distance) ? DBL_EPSILON : fabs(maximum_on_plane_distance);
+	double max_d = ZERO_THRESHOLD > fabs(maximum_on_plane_distance) ? ZERO_THRESHOLD : fabs(maximum_on_plane_distance);
 	int i,j,n,*m, skip; double dd,len; Coords *vp, dp1, dp2, dp1_cross_dp2, dp1_dot_dp2; 
 	
 	for (i = 0; i < a->nf; i++) {
@@ -303,7 +310,7 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 	  //loop through nf_in
 	  for (i = 0; i < nf_in; i++) {
 		//fn_in[i] must have non-zero length
-		if (coords_len(fn_in[i]) < DBL_EPSILON) {
+		if (coords_len(fn_in[i]) < ZERO_THRESHOLD) {
 			//error, skip this one
 		}
 		else {
@@ -315,11 +322,11 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 			if (nf > 0) {
 				//loop through nf
 				for (j = 0; j < nf; j++) {
-					if (coords_len(coords_xp(nn, fn[j])) > DBL_EPSILON) {
+					if (coords_len(coords_xp(nn, fn[j])) > ZERO_THRESHOLD) {
 						//plane normals are not parallel (even if it can be p[i] == p[j])
 						continue;
 					}
-					if (fabs(coords_sp(nn,coords_sub(fp_in[i],fp[j]))) > DBL_EPSILON) {
+					if (fabs(coords_sp(nn,coords_sub(fp_in[i],fp[j]))) > ZERO_THRESHOLD) {
 						//Normals are parallel, but points are not on the same plane 
 						continue;
 					}
@@ -405,7 +412,7 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 				keep = 1;
 				if (nv > 0) {
 					for (l = 0; l < nv; l++) {
-						if (coords_len(coords_sub(intersection_point, vp[l])) < DBL_EPSILON) { 
+						if (coords_len(coords_sub(intersection_point, vp[l])) < ZERO_THRESHOLD) { 
 							vn = l; //vertex already exist with vertex number l, change vn to l
 							keep = 0;
 							break;
@@ -464,7 +471,7 @@ int form_polyhedron(int nf_in, Coords *fn_in, Coords *fp_in, Polyhedron *polyhed
 							for (n = l + 1; n < m-1; n++) { //loop through vertices that is neither vertex l nor the last vertex - each check requires 3 different vertices
 								l_to_nv = coords_sub( vp[ifvi[ii][m-1]], vp[ifvi[ii][l]] );
 								n_to_nv = coords_sub( vp[ifvi[ii][m-1]], vp[ifvi[ii][n]] );
-								if (coords_len(coords_xp(l_to_nv, n_to_nv)) >= DBL_EPSILON) {
+								if (coords_len(coords_xp(l_to_nv, n_to_nv)) >= ZERO_THRESHOLD) {
 									//The 3 points are non-colinear, continue to check the next point
 									continue;
 								}
@@ -661,7 +668,7 @@ int line_polyhedron_intersect(double line_t, Coords line_p, Coords line_v,
 	
 	int i,j, is_on_inside_outside_polyhedron, is_crossing_plane=0, is_crossing_edge=0, is_crossing_vertex=0, is_flying_on_plane=0, is_flying_on_edge=0, skip; 
 	
-	double max_d = DBL_EPSILON > fabs(maximum_on_plane_distance) ? DBL_EPSILON : fabs(maximum_on_plane_distance);
+	double max_d = ZERO_THRESHOLD > fabs(maximum_on_plane_distance) ? ZERO_THRESHOLD : fabs(maximum_on_plane_distance);
 	
 	double lp_dt; //intersect dtime
 	Coords lp_dp; //intersect dspace
@@ -734,10 +741,10 @@ int line_polyhedron_intersect(double line_t, Coords line_p, Coords line_v,
 		//If same point, time, plane as last intersect, skip to next plane.
 		//For edge or vertex, only check time and point,
 		//for plane intersect that is neither edge or vertex, check time, point, plane
-		if (fabs(last_intersect_time - lp_t) < DBL_EPSILON && 
-			fabs(last_intersect_point.x - lp_p.x) < DBL_EPSILON && 
-			fabs(last_intersect_point.y - lp_p.y) < DBL_EPSILON && 
-			fabs(last_intersect_point.z - lp_p.z) < DBL_EPSILON && 
+		if (fabs(last_intersect_time - lp_t) < ZERO_THRESHOLD && 
+			fabs(last_intersect_point.x - lp_p.x) < ZERO_THRESHOLD && 
+			fabs(last_intersect_point.y - lp_p.y) < ZERO_THRESHOLD && 
+			fabs(last_intersect_point.z - lp_p.z) < ZERO_THRESHOLD && 
 			(last_intersect_plane == i || is_crossing_plane == 0)) {
 			continue;
 		}
@@ -746,15 +753,15 @@ int line_polyhedron_intersect(double line_t, Coords line_p, Coords line_v,
 		if (n_intersect_found > 1) {
 			skip = 0;
 			for (j = 0; j < n_intersect_found; j++) {
-				if (fabs((lpi->a_lp_t)[j] - lp_t) < DBL_EPSILON && 
-					fabs((lpi->a_lp_p)[j].x - lp_p.x) < DBL_EPSILON && 
-					fabs((lpi->a_lp_p)[j].y - lp_p.y) < DBL_EPSILON && 
-					fabs((lpi->a_lp_p)[j].z - lp_p.z) < DBL_EPSILON &&
+				if (fabs((lpi->a_lp_t)[j] - lp_t) < ZERO_THRESHOLD && 
+					fabs((lpi->a_lp_p)[j].x - lp_p.x) < ZERO_THRESHOLD && 
+					fabs((lpi->a_lp_p)[j].y - lp_p.y) < ZERO_THRESHOLD && 
+					fabs((lpi->a_lp_p)[j].z - lp_p.z) < ZERO_THRESHOLD &&
 					((lpi->a_lp_pn)[j] == i || is_crossing_plane == 0) &&
-					fabs((lpi->a_lp_dt)[j] - lp_dt) < DBL_EPSILON && 
-					fabs((lpi->a_lp_dp)[j].x - lp_dp.x) < DBL_EPSILON && 
-					fabs((lpi->a_lp_dp)[j].y - lp_dp.y) < DBL_EPSILON && 
-					fabs((lpi->a_lp_dp)[j].z - lp_dp.z) < DBL_EPSILON) {
+					fabs((lpi->a_lp_dt)[j] - lp_dt) < ZERO_THRESHOLD && 
+					fabs((lpi->a_lp_dp)[j].x - lp_dp.x) < ZERO_THRESHOLD && 
+					fabs((lpi->a_lp_dp)[j].y - lp_dp.y) < ZERO_THRESHOLD && 
+					fabs((lpi->a_lp_dp)[j].z - lp_dp.z) < ZERO_THRESHOLD) {
 					skip = 1;
 					break;
 				}
@@ -837,14 +844,15 @@ int line_polyhedron_intersect(double line_t, Coords line_p, Coords line_v,
 	*num_intersect = n_intersect_found;
 
 
-  // Ensure to free the allocated memory after use
-  free(dtime);
-  free(dpoint);
-  free(time);
-  free(point);
-  free(plane_number);
-  free(type);
-  return 1;
+	// Ensure to free the allocated memory after use
+	free(dtime);
+	free(dpoint);
+	free(time);
+	free(point);
+	free(plane_number);
+	free(type);
+	  
+	return 1;
 }
 
 /*****************************************************/
@@ -882,7 +890,7 @@ int rotate_polyhedron (Polyhedron*polyGeo, Rotation rot) {
 /************************************************************************/
 
 int rotate_polyhedron_about_axis (Polyhedron*polyGeo, Coords axis, double angle, Rotation*rot) {
-	if (coords_len(axis) <= DBL_EPSILON) return 0; //axis must have length
+	if (coords_len(axis) <= ZERO_THRESHOLD) return 0; //axis must have length
 
 	double 	A=angle*DEG2RAD,cosA=cos(A),sinA=sin(A),oneMinusCosA=1-cosA, 
 			xx=axis.x, yy=axis.y, zz=axis.z;
