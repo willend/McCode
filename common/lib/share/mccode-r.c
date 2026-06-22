@@ -16,7 +16,7 @@
 * Runtime system for McStas and McXtrace.
 * Embedded within instrument in runtime mode.
 * Contains SECTIONS:
-*   MPI handling (sum, send, recv)
+*   MPI handling (reduce, sum, multiply, max, min, send, recv)
 *   format definitions
 *   I/O
 *   mcdisplay support
@@ -372,8 +372,13 @@ static int mpi_node_root = 0;
 
 /*******************************************************************************
 * mc_MPI_Reduce: Gathers arrays from MPI nodes using Reduce function.
+* mpi_op is defined in mpi.h, MPI_PROD=product, Lxxx=Logical op, Bxxx=Bitwise op,
+* xxxLOC=location index. List below:
+* MPI_MAX, MPI_MIN, MPI_SUM, MPI_PROD,
+* MPI_LAND, MPI_BAND, MPI_LOR, MPI_BOR, MPI_LXOR, MPI_BXOR
+* MPI_MINLOC, MPI_MAXLOC, MPI_REPLACE
 *******************************************************************************/
-int mc_MPI_Sum(double *sbuf, long count)
+int mc_MPI_Reduce(double *sbuf, long count, MPI_Op mpi_op)
 {
   if (!sbuf || count <= 0) return(MPI_SUCCESS); /* nothing to reduce */
   else {
@@ -384,12 +389,12 @@ int mc_MPI_Sum(double *sbuf, long count)
     int    i=0;
     rbuf = calloc(count, sizeof(double));
     if (!rbuf)
-      exit(-fprintf(stderr, "Error: Out of memory %zi (mc_MPI_Sum)\n", count*sizeof(double)));
+      exit(-fprintf(stderr, "Error: Out of memory %zi (mc_MPI_Reduce)\n", count*sizeof(double)));
     while (offset < count) {
       if (!length || offset+length > count-1) length=count-offset;
       else length=MPI_REDUCE_BLOCKSIZE;
       if (MPI_Allreduce((double*)(sbuf+offset), (double*)(rbuf+offset),
-              length, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD) != MPI_SUCCESS)
+              length, MPI_DOUBLE, mpi_op, MPI_COMM_WORLD) != MPI_SUCCESS)
         return MPI_ERR_COUNT;
       offset += length;
     }
@@ -398,7 +403,28 @@ int mc_MPI_Sum(double *sbuf, long count)
     free(rbuf);
   }
   return MPI_SUCCESS;
-} /* mc_MPI_Sum */
+} /* mc_MPI_Reduce */
+
+int mc_MPI_Sum(double *buf, long count)
+{
+	return mc_MPI_Reduce(buf, count, MPI_SUM);
+}
+
+int mc_MPI_Multiply(double *buf, long count)
+{
+	return mc_MPI_Reduce(buf, count, MPI_PROD);
+}
+
+int mc_MPI_Max(double *buf, long count)
+{
+	return mc_MPI_Reduce(buf, count, MPI_MAX);
+}
+
+int mc_MPI_Min(double *buf, long count)
+{
+	return mc_MPI_Reduce(buf, count, MPI_MIN);
+}
+
 
 /*******************************************************************************
 * mc_MPI_Send: Send array to MPI node by blocks to avoid buffer limit
