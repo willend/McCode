@@ -20,7 +20,7 @@
 *
 * %I
 * Written by: Wai Tung Lee
-* Date: September 2024
+* Date: January 2024
 * Origin: ESS
 *
 * %D
@@ -81,7 +81,7 @@
 * beta:    [AA2]    curvature of reflectivity
 * If name == "SubstrateSurface", reflectivity is calculated by 
 *                   R = R0 (when q<=Qc), R0*( (q - (q^2 - Qc^2)^1/2) / (q + (q^2 - Qc^2)^1/2) )^2 (when q>Qc), with Qc=sqrt(16 Pi SLD). 
-* with Qc = Qc_sub defined in SubstrateSurfaceParameters and SLD defined in SubstrateParameters,  
+* with Qc = Qc_sub defined in RefractionParameters and SLD defined in SubstrateParameters,  
 * otherwise reflectivity is calculated by 
 *                   R = R0 (when q<=Qc), R = R0*0.5*(1-tanh((q - m*Qc)/W))*(1-alpha*(q-Qc)+beta*(q-Qc)*(q-Qc)) (when q>Qc).
 * 
@@ -242,7 +242,7 @@
 * 	neutron parameters: w_sm=p, t_sm=t, p_sm=coords_set(x,y,z), v_sm=coords_set(vx,vy,vz), s_sm=coords_set(sx,sy,sz)
 * 	last_exit_time			[s]       time of last exit from a supermirror, use F_INDETERMINED if not determined. (F_INDETERMINED defined in this file)
 * 	last_exit_point			[m,m,m]   position of last exit from a supermirror, use coords_set(F_INDETERMINED,F_INDETERMINED,F_INDETERMINED) if not determined.
-* 	last_exit_plane			[1]       plane of last exit from a supermirror, use I_INDETERMINEDif not determined.
+* 	last_exit_plane			[1]       plane of last exit from a supermirror, use I_INDETERMINED if not determined.
 * RETRUN: 
 * 	sm_Exited, sm_Absorbed, sm_Error
 * 
@@ -262,14 +262,14 @@
 * |___Polyhedron: stores the surface normal and point-on-surface of the 6 planes defining the supermirror shape, defined in Polyhedron.h
 * |___CoordOp: Coords fa (field axis); Rotation ry, rz; Coords tr; Rotation rry, rrz; Coords rtr; (rotation & translation of supermirror)
 * |___SupermirrorMaterials: ReflectionParameters mir[SM_Num_Mirror_Planes][SM_Num_Spin_States]; 
-* |   |						AbsorberParameters abs[SM_Num_Mirror_Planes];
-* |   |						SubstrateSurfaceParameters subsurface[SM_Num_Mirror_Planes];
+* |   |						AbsorptionParameters abs[SM_Num_Mirror_Planes];
+* |   |						RefractionParameters subsurface[SM_Num_Mirror_Planes];
 * |   |						SubstrateParameters sub;
 * |   |___ReflectionParameters: char name[CHAR_BUF_LENGTH]; int refl_type; double R0, Qc, m, W, alpha, beta;
 * |   |___AbsorberParameters : char name[CHAR_BUF_LENGTH]; int abs_type; double L_abs, L_inc, thickness_in_micron;
 * |   |___SubstrateSurfaceParameters: char name[CHAR_BUF_LENGTH]; int subsurface_type; double Qc_sub, delta_n_2;
 * |   |___SubstrateParameters: char name[CHAR_BUF_LENGTH]; int sub_type; double L_abs, L_inc, SLD;
-* |___SupermirrorProcess: int is_tracking; char side[3][20]; char plane[6][20]; char layer[5][30]; char event[10][20];
+* |___SupermirrorProcess: int is_tracking; char side[3][25]; char plane[6][25]; char layer[5][30]; char event[10][25];
 *    |___is_tracking: 1=tracking, 0=not tracking
 *    |___side: "ReflectedSide", "TransmittedSide", "EdgeSide"
 *    |___plane: "Surface1", "Surface2", "EdgeFront", "EdgeBack", "EdgeSide1", "EdgeSide2"
@@ -291,7 +291,7 @@
 
 //Max distance in meters normal to plane which a point is considered to be on plane.
 //Equal to max(Maximum_On_Plane_Distance, DBL_EPISILON)
-//DBL_EPISILON can be too small and can cause spurious reflections due to rounding error
+//DBL_EPISILON is too small and causes spurious reflections due to rounding error
 #ifndef Maximum_On_Plane_Distance
 #define Maximum_On_Plane_Distance 1e-10
 #endif
@@ -303,8 +303,17 @@
 #define INDETERMINED
 #endif
 
-#ifndef AMS
-#define AMS 3956.034 //[Å m/s] neutron velocity -- wavelength coversion
+#ifndef CONSTANTS
+#define LambdaV_AA_m_s 3956.034 //[Å m/s] neutron velocity -- wavelength coversion
+#define ELambda_meV_AA 81.8042103582802 //E*Lambda in meV.Å^2
+#define kB_meV_K 8.617333262145180E-02 //Boltzmann constant in meV/K
+#define EOverVSquare_meV_m_s 5.22703758904026E-06 //E/v^2 in meV/(m/s)^2
+#endif
+
+//declare DEBUG_CATCH_ANOMALY here to pass on to polyhedron.h
+
+#ifndef DEBUG_CATCH_ANOMALY
+#define DEBUG_CATCH_ANOMALY
 #endif
 
 #ifndef POLYHEDRON_LIB
@@ -312,17 +321,12 @@
 %include "polyhedron"
 #endif
 
-//record for SCATTER 
-typedef struct NeutronRecord {
-	int    nr_n; //neutron number in simulation
-	double nr_w;  //neutron weight
-	double nr_t;  //time of event
-	Coords nr_p;  //neutron position
-	Coords nr_v;  //neutron velocity
-	Coords nr_s;  //neutron 3D polarisation vector
-	void*  nr_nhn; //reserved, unused
-} NeutronRecord;
- 
+//Disable neutron history for McStas 3.0 and beyond
+//#ifndef NEUTRON_HISTORY_LIB
+//#define NEUTRON_HISTORY_LIB
+//%include "neutron_history"
+//#endif
+
 //Supermirror event code returned by StdSupermirrorFlat and IntersectStdSupermirrorFlat
 typedef enum SupermirrorEventCode { 
 	sm_Error = 0, //both IntersectStdSupermirrorFlat and StdSupermirrorFlat
@@ -338,27 +342,30 @@ typedef enum SupermirrorEventCode {
 //Users can access the internal struct to obtain the parameter values but should not assign the values directly.
 	typedef struct CoordOp {Coords fa, ty, rty, tr, rtr; Rotation ry, rz, rry, rrz; } CoordOp; 
 	typedef struct ReflectionParameters {char name[CHAR_BUF_LENGTH]; int refl_type; double R0, Qc, m, W, alpha, beta;} ReflectionParameters; 
-	typedef struct AbsorberParameters {char name[CHAR_BUF_LENGTH]; int abs_type; double L_abs, L_inc, thickness_in_micron; } AbsorberParameters; 
-	typedef struct SubstrateSurfaceParameters {char name[CHAR_BUF_LENGTH]; int subsurface_type; double Qc_sub, delta_n_2; } SubstrateSurfaceParameters;
-	typedef struct SubstrateParameters {char name[CHAR_BUF_LENGTH]; int sub_type; double L_abs, L_inc, SLD; } SubstrateParameters; 
+	typedef struct AbsorptionParameters {char name[CHAR_BUF_LENGTH]; int abs_type; double L_abs, L_inc, thickness_in_micron; } AbsorptionParameters; 
+	typedef struct RefractionParameters {char name[CHAR_BUF_LENGTH]; int subsurface_type; double Qc_sub, delta_n_2; } RefractionParameters;
+	typedef struct SubstrateParameters {char name[CHAR_BUF_LENGTH]; int sub_type; double L_abs, L_inc, SLD, S_coh, A, T_D, n, C2, a_sph, a_mph, b_mph, thickness_in_mm; } SubstrateParameters; 
 	#define SM_Num_Mirror_Planes 2 
 	#define SM_Num_Spin_States 2 
-	typedef struct SupermirrorMaterials {	ReflectionParameters mir[SM_Num_Mirror_Planes][SM_Num_Spin_States]; 
-											AbsorberParameters abs[SM_Num_Mirror_Planes]; 
-											SubstrateSurfaceParameters subsurface[SM_Num_Mirror_Planes];
+	typedef struct SupermirrorMaterials {	ReflectionParameters mir[SM_Num_Mirror_Planes][SM_Num_Spin_States]; //mirror reflection
+											//AbsorptionParameters mirabs[SM_Num_Mirror_Planes][SM_Mirror_Bilayer]; //mirror absorption
+											AbsorptionParameters abs[SM_Num_Mirror_Planes]; //absorber absorption
+											RefractionParameters subsurface[SM_Num_Mirror_Planes]; //substrate surface refraction
 											SubstrateParameters sub; 
 										} SupermirrorMaterials; 
+	#define SM_Num_Side 3
+	#define SM_Num_Plane 6
+	#define SM_Num_Layer 4
 	typedef struct SupermirrorProcess { 
 		int is_tracking; //1=tracking, 0=not tracking
-		NeutronRecord*nr; //neutron records
-		int n_nr; //number of neutron history records stored
-		int n_nr_allocated; //number of neutron history records allocated
-		int nr_allocation_size; //number of neutron records to allocate each time
-		
-		char side[3][20]; //"ReflectedSide", "TransmittedSide", "EdgeSide"
-		char plane[6][20]; //name of the planes of supermirror, "Surface1", "Surface2", "EdgeFront", "EdgeBack", "EdgeSide1", "EdgeSide2"
-		char layer[5][30]; //name of layers associated with the planes, "MirrorLayer", "AbsorberLayer", "SubstrateSurfaceLayer", "SubstrateEdgeLayer", "SubstrateLayer"
-		char event[10][20]; //events: "Error", "Exited", "Absorbed", "Intersected", "Missed", "Reflected", "Transmitted", "Refracted", "sm_NotRefracted", "InternalReflection"
+		char side[SM_Num_Side][25]; //"ReflectedSide", "TransmittedSide", "EdgeSide"
+		char plane[SM_Num_Plane][25]; //name of the planes of supermirror, "Surface1", "Surface2", "EdgeFront", "EdgeBack", "EdgeSide1", "EdgeSide2"
+		char layer[SM_Num_Layer][30]; //name of layers associated with the planes, "MirrorLayer", "AbsorberLayer", "SubstrateSurfaceLayer", "SubstrateLayer"
+		char location[SM_Num_Side][SM_Num_Plane][SM_Num_Layer][256]; //name/side/plane/layer
+		char event[13][25]; //events: "Exited", "Absorbed", "Intersected", "Missed", "Error", 
+							//"Reflected", "Transmitted", "ReflectedOutward", "TransmittedOutward", "ReflectedInward", "TransmittedInward", "TotalReflected", 
+							//"Zigzag"
+		char proc[4][25]; //"going_inward", "going_outward", "ignore_reflection", "keep_reflection"
 		int initialised; //1=initialised, 0=not initialised or initialisation failed
 	} SupermirrorProcess; 
 		
@@ -377,8 +384,18 @@ typedef struct Supermirror { char name[CHAR_BUF_LENGTH];
 /* functions */
 /*************/
 
+//Look up reflectivity parameters
+//double data[6]; R0, Qc, alpha, m, W, beta
+//return values: 1=succeed, 0=failed
+int load_mirror_material_parameters(char*mirror_material_name, double*data); 
+//Reflectivity at mirror surfaces at q
+double sm_calc_Rm(double q, double Qc, double R0, double alpha, double m, double W, double beta); 
+//q at which reflectivity at mirror surfaces = R
+double sm_calc_q(double R, double Qc, double alpha, double m, double W, double beta, 
+				 double tolerance, int max_iterations, int *converged);
+
 //Supermirror initialisation function
-//return: 1=succeed, 0=failed
+//return values: 1=succeed, 0=failed
 int InitialiseStdSupermirrorFlat( 
 		
 		char *name, //Supermirror name, do not use '/' in the name, do not use "all"
@@ -392,18 +409,19 @@ int InitialiseStdSupermirrorFlat(
 		
 		char*mirror_coated_side, //Sequential combination of keywords of
 								 //position: "Both", "Top", "Bottom";
-								 //surface property: "Coated", "SubstrateSurface", "NoReflection"; 
-								 //e.g. "BothCoated", "BottomCoatedTopSubstrateSurface",
+								 //surface property: "Coated", "Substrate", "NoReflection"; 
+								 //e.g. "BothCoated", "BottomCoatedTopSubstrate",
 		char*mirror_spin_plus_material_name, //defined in "Supermirror_reflective_coating_materials.txt", non-polarising: use same for spin minus
 		double mirror_spin_plus_m, //if non-polarising: use same for spin minus 
 		char*mirror_spin_minus_material_name, //defined in "Supermirror_reflective_coating_materials.txt", non-polarising: use same for spin plus
-		double mirror_spin_minus_m, //if non-polarising: use same for spin plus 
+		double mirror_spin_minus_m, //if non-polarising: use same for spin minus 
 		
 		char*absorber_coated_side, //"BothCoated", "TopCoated", "BottomCoated", "BothNotCoated"
 		char*absorber_material_name, //defined in "Supermirror_absorber_coating_materials.txt"
 		double absorber_thickness_in_micron, //micrometer
 		
 		char*substrate_material_name, //defined in "Supermirror_substrate_materials.txt"
+		char*substrate_edge_block, //"yes" = block neutron entry through substrate, "no" = allow neutron entry through substrate edge
 		
 		////////////////////////////////////////////////////////////////////////////////
 		//STEP 2: Orient and position the supermirror 
@@ -416,9 +434,9 @@ int InitialiseStdSupermirrorFlat(
 		double rot_about_z_third_in_degree,	 //third, rotate about global z-axis 
 
 		////////////////////////////////////////////////////////////////////////////////
-		//simulation process control parameters
+		//STEP 3: simulation process control parameters
 		int is_tracking, //1=tracking, 0=not tracking
-
+		
 		////////////////////////////////////////////////////////////////////////////////
 		//OUTPUT: Supermirror struct with all parameter values entered and initialised
 		//User declares "Supermirror supermirror;" or its equivalence, 
@@ -458,6 +476,8 @@ int InitialiseStdSupermirrorFlat_detail(
 		//If materials name is specified and matching those defined in "Supermirror_substrate_materials.txt"  
 		//material name overrides material spec, otherwise 3-parameter material spec is used.  
 		char*substrate_material_name, double substrate_L_abs, double substrate_L_inc, double substrate_SLD,
+		double substrate_S_coh, double substrate_A, double substrate_T_D, double substrate_T, double substrate_n, double substrate_C2, 
+		char*substrate_edge_block, //"yes" = block neutron entry through substrate, "no" = allow neutron entry through substrate edge
 
 		////////////////////////////////////////////////////////////////////////////////
 		//STEP 2: Orient and position the supermirror 
@@ -470,9 +490,9 @@ int InitialiseStdSupermirrorFlat_detail(
 		double rot_about_z_third_in_degree,	 //third, rotate about global z-axis 
 
 		////////////////////////////////////////////////////////////////////////////////
-		//simulation process control parameters
-		int is_tracking, //1=tracking, 0=not tracking
-
+		//STEP 3: simulation process control parameters
+		int is_tracking, //1=Tracking, 0=Not tracking
+		
 		////////////////////////////////////////////////////////////////////////////////
 		//OUTPUT: Supermirror struct with all parameter values entered and initialised
 		//User declares "Supermirror supermirror;" or its equivalence, 
@@ -481,7 +501,7 @@ int InitialiseStdSupermirrorFlat_detail(
 		); 
 
 
-//Supermirror intersect-finding function
+//Supermirror intersection-finding function
 //return values: sm_Intersected, sm_Missed, sm_Error defined in "typedef enum SupermirrorEventCode" above
 //note: sm_Missed = neutron either skips supermirror, or intersect only once (i.e. one edge or one vertex), or flies on plane or edge
 int IntersectStdSupermirrorFlat(
@@ -512,4 +532,4 @@ void EmptySupermirrorFlatData(Supermirror*sm);
 
 #endif
 
-/* end of ref-lib.h */
+/* end of SUPERMIRROR_LIB_H */
