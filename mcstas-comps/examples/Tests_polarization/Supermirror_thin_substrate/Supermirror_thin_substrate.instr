@@ -45,7 +45,6 @@
 *
 * %End
 *******************************************************************************/
-
 DEFINE INSTRUMENT Supermirror_thin_substrate(src_x=0.01, src_y=0.09,
 W_Centre=5, W_Half_Width=3, A_FWHM=0.05, Detector_Distance=1, Length=4, Thickness_In_mm=0.5,
 string Mirror_Coated_Side="BothCoated", string Mirror_Plus="FeSiPlus", Mirror_Plus_m=3.5,
