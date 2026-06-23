@@ -294,7 +294,14 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             tests = tests + populated
             pass
 
+    # Issue counters
+    num_compilefail=0
+    num_runfail=0
+    num_valfail=0
+
+    # Over all test success flag
     anyfailed=False
+
     # compile, record time
     global ncount, mpi, openacc, suffix, nexus, lint, permissive, compilemax, displaymax, runmax
     logging.info("")
@@ -306,13 +313,14 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
     for test in tests:
         # if binary exists, set compile time = 0 and continue
         binfile = os.path.splitext(test.localfile)[0] + "." + mccode_config.platform["EXESUFFIX"].lower()
-        failed=os.path.splitext(test.localfile)[0] + ".failed"
+        compilefailed=os.path.splitext(test.localfile)[0] + ".failed"
         # if we linted, continue
         linted=os.path.splitext(test.localfile)[0] + ".linted"
-        if os.path.exists(failed):
+        if os.path.exists(compilefailed):
             test.compiled = False
             test.compiletime = -1
             anyfailed=True
+            num_compilefail = num_compilefail + 1
         elif os.path.exists(binfile):
             test.compiled = True
             test.compiletime = 0
@@ -370,7 +378,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                     else:
                         formatstr = "%-" + "%ds: COMPILE ERROR using:\n" % maxnamelen
                         logging.info(formatstr % test.instrname + cmd)
-                        f = open(failed, "a")
+                        f = open(compilefailed, "a")
                         f.write(formatstr % test.instrname + cmd)
                         f.close()
             else:
@@ -383,7 +391,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
     # run, record time
     logging.info("")
     logging.info("Running tests / getting status...")
-    failed=False
+    runfailed=False
     for test in tests:
         if test.linted:
             formatstr = "%-" + "%ds:  Linter only" % (maxnamelen+1)
@@ -391,7 +399,6 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             continue
         elif not test.compiled:
             formatstr = "%-" + "%ds:   NO COMPILE" % (maxnamelen+1)
-            failed=True
             logging.info(formatstr % test.instrname)
             continue
         if test.testnb <= 1:
@@ -446,8 +453,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         if not test.didrun:
             formatstr = "%-" + "%ds: RUNTIME ERROR" % (maxnamelen+1)
             logging.info(formatstr % instrname + ", " + cmd)
-            failed=True
-            anyfailed=True
+            runfailed=True
             continue
 
         resbase="(No file)"
@@ -458,7 +464,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 test.testval = extraction[0]
             else:
                 test.testval = -1
-                failed=True
+                runfailed=True
             resbase ="run_stdout_%d.txt" % (test.testnb)
             resfile = join(testdir,test.instrname,resbase)
         # Look for detector output in run_stdout
@@ -471,11 +477,12 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 test.testval = val
             else:
                 test.testval=-1
-                failed=True
+                runfailed=True
 
         percent=0
         if test.didrun:
-            if failed:
+            if runfailed:
+                num_runfail = num_runfail + 1
                 anyfailed=True
                 suffix += " + !! RUNTIME FAILURE - see %s !! " % (resbase)
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
@@ -484,13 +491,16 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 percent=round(100.0*test.testval/test.targetval)
                 if percent<80 or percent>120:
                     suffix += " <--- BIG DISCREPANCY??"
+                    num_valfail = num_valfail + 1
+                    anyfailed=True
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " / " + str(test.targetval) + " = " + str(percent) + " %]" + suffix)
             else:                 # Special case, expected test target value is 0
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
         else:
             logging.info((formatstr % test.get_display_name()) + (" !! [TEST INDICATES RUNTIME ERROR - see %s  + suffix ] !!" % (resbase)))
         suffix=""
-        failed=False
+        # Reset
+        runfailed=False
         # save test result to disk
         test.testcomplete = True
         if not skipped:
@@ -531,7 +541,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
     for t in tests:
         obj[t.get_display_name()] = t.get_json_repr()
     obj["_meta"] = metainfo
-    return obj, anyfailed
+    return obj, anyfailed, num_compilefail, num_runfail, num_valfail
 
 #
 # Utility
@@ -599,7 +609,7 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix
     logging.info("Testing: %s" % version)
     logging.info("")
 
-    results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter)
+    results, failed, num_compilefail, num_runfail, num_valfail = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter)
     
     reportfile = os.path.join(labeldir, "testresults_%s.json" % (mccode_config.configuration["MCCODE"]+"-"+version+suffix))
     open(os.path.join(reportfile), "w").write(json.dumps(results, indent=2))
@@ -610,10 +620,10 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix
     print("Overall test result:")
     if (failed):
         if (not permissive):
-            print("FAILED! One or more tests errored")
+            print("FAILED! One or more tests errored (%d compile errs / %d runtime errs / %d values off)" % (num_compilefail, num_runfail, num_valfail) )
             exit(-1)
         else:
-            print("Failures reported but tool was run in permissive mode.")
+            print("Failures reported but tool was run in permissive mode (%d compile errs / %d runtime errs / %d values off)" % (num_compilefail, num_runfail, num_valfail) )
     else:
         print("SUCCESS")
 
@@ -633,7 +643,7 @@ def run_version_test(testdir, mccoderoot, limit, instrfilter, compfilter, versio
         logging.info("Testing: %s" % version)
         logging.info("")
 
-        results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter, version)
+        results, failed, num_compilefail, num_runfail, num_valfail = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter, version)
     finally:
         deactivate_mccode_version(oldpath)
 
@@ -702,7 +712,7 @@ def run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, compf
 
                 # craete the proper test dir
                 labeldir = create_label_dir(testdir, label)
-                results, failed = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter, label0)
+                results, failed, num_compilefail, num_runfail, num_valfail = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter, label0)
 
                 # write local test result
                 reportfile = os.path.join(labeldir, "testresults_%s.json" % (os.path.basename(labeldir)))
