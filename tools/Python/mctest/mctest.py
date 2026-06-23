@@ -320,7 +320,6 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             test.compiled = False
             test.compiletime = -1
             anyfailed=True
-            num_compilefail = num_compilefail + 1
         elif os.path.exists(binfile):
             test.compiled = True
             test.compiletime = 0
@@ -376,6 +375,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                         f.close()
                         test.linted = True
                     else:
+                        num_compilefail = num_compilefail + 1
                         formatstr = "%-" + "%ds: COMPILE ERROR using:\n" % maxnamelen
                         logging.info(formatstr % test.instrname + cmd)
                         f = open(compilefailed, "a")
@@ -541,7 +541,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
     for t in tests:
         obj[t.get_display_name()] = t.get_json_repr()
     obj["_meta"] = metainfo
-    return obj, anyfailed, num_compilefail, num_runfail, num_valfail
+    return (obj, anyfailed, num_compilefail, num_runfail, num_valfail)
 
 #
 # Utility
@@ -609,8 +609,8 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix
     logging.info("Testing: %s" % version)
     logging.info("")
 
-    results, failed, num_compilefail, num_runfail, num_valfail = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter)
-    
+    (results, failed, num_compilefail, num_runfail, num_valfail) = mccode_test(mccoderoot, labeldir, limit, instrfilter, compfilter)
+
     reportfile = os.path.join(labeldir, "testresults_%s.json" % (mccode_config.configuration["MCCODE"]+"-"+version+suffix))
     open(os.path.join(reportfile), "w").write(json.dumps(results, indent=2))
 
