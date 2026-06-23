@@ -25,7 +25,7 @@ def create_deplist( cfg ):
     if cfg.is_unix:
         deps += ['bash']
     if cfg.is_win:
-        deps += ['mslex']
+        deps += ['mslex','git']
 
     if cfg.include_mcgui:
         deps += ['qtpy', 'qscintilla2']
