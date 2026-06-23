@@ -294,7 +294,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             tests = tests + populated
             pass
 
-
+    anyfailed=False
     # compile, record time
     global ncount, mpi, openacc, suffix, nexus, lint, permissive, compilemax, displaymax, runmax
     logging.info("")
@@ -312,6 +312,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         if os.path.exists(failed):
             test.compiled = False
             test.compiletime = -1
+            anyfailed=True
         elif os.path.exists(binfile):
             test.compiled = True
             test.compiletime = 0
@@ -446,6 +447,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             formatstr = "%-" + "%ds: RUNTIME ERROR" % (maxnamelen+1)
             logging.info(formatstr % instrname + ", " + cmd)
             failed=True
+            anyfailed=True
             continue
 
         resbase="(No file)"
@@ -474,6 +476,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         percent=0
         if test.didrun:
             if failed:
+                anyfailed=True
                 suffix += " + !! RUNTIME FAILURE - see %s !! " % (resbase)
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
@@ -528,7 +531,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
     for t in tests:
         obj[t.get_display_name()] = t.get_json_repr()
     obj["_meta"] = metainfo
-    return obj, failed
+    return obj, anyfailed
 
 #
 # Utility
