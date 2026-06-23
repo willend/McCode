@@ -44,7 +44,7 @@ DECLARE
   double A1,A2;
   double A3,A4;
   double A5,A6;
-  double mono_q, Ei;
+  double mono_q, Ei
 %}
 /* end of DECLARE */
 
