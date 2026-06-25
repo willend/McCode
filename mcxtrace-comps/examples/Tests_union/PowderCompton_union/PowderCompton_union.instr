@@ -25,7 +25,7 @@
 *
 * %E
 *******************************************************************************/
-DEFINE INSTRUMENT PowderCompton_union(E0=12, string refs1="data/Corundum.cif.laz", string refs2="data/Pb.cif.hkl",YY=0)
+DEFINE INSTRUMENT PowderCompton_union(E0=12, string refs1="Al2O3_Corundum_COD_9007634.cif.hkl", string refs2="Pb_Lead_COD_9008477.cif.hkl",YY=0)
 
 DECLARE
 %{
