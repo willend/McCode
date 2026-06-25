@@ -18,27 +18,27 @@
 * %Example: -y Detector: PSDnear_I=7400
 *
 * %Parameters
-* cnum: []     Set to 0.0 for no polarizer as for benchmarking the normal SANS samples, to 2.0 for two cavities, keep default values as much as possible
-* lbdmin: []   
-* lbdmax: []   
-* NGbend: []   
-* NGblen: []   
-* Clen: []     
-* SampD: []    
-* bendL: []    
-* bendR: []    
-* bendM: []    
-* bendiM: []   
-* dfltM: []    
-* vorPl: []    for two cavities
-* PolLen: []   for two cavities
-* PolTot: []   for two cavities
-* MDOWN: []    
-* Min: []      
-* ROT: []      
-* modnum: []   
-* sglscatt: [] 
-* incs: []     
+* cnum:     [1] 'Degree of beam-polarisation'. Set to 0.0 for no polarizer as for benchmarking the normal SANS samples, to 2.0 for two cavities, keep default values as much as possible
+* lbdmin:  [AA] Minimum wavelength produced at source
+* lbdmax:  [AA] Maximum wavelength produced at source
+* NGbend:   [m] Bender dimension, horizontal
+* NGblen:   [m] Bender dimension, vertical
+* Clen:     [m] Collimation length
+* SampD:    [m] Sample 'half-dimension' (geometry is actually 2 x value)
+* bendL:  [rad] Bender angle of deflection
+* bendR:    [m] Bender radius of curvature
+* bendM:    [1] Bender 'outer curve mirror m-value'
+* bendiM:   [1] Bender 'inner curve mirror m-value'
+* dfltM:    [1] Bender 'top/bottom mirror m-value'
+* vorPl:    [m] If >0, post-bender Guide-element
+* PolLen:   [m] If >0, length of polariser
+* PolTot:   [m] Total primary optic length
+* MDOWN:    [1] m-value of the Fe/Si-wafer for spin down neutrons
+* Min:      [1] m-value of material for top. horz. mirror of the outer guide
+* ROT:    [deg] Pre-polariser cavity-rotation angle arounz (only if polarised mode)
+* modnum:   [1] Sample 'mode' (see mcdoc for SANS_benchmark2 component)
+* sglscatt: [1] Sample control of single/multiple scattering (see mcdoc for SANS_benchmark2 component)
+* incs:     [1] Sample fraction of incoherently scattered neutrons (see mcdoc for SANS_benchmark2 component)
 *
 * %End
 *******************************************************************************/
