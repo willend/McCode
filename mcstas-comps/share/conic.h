@@ -890,6 +890,18 @@ double rConic(double z, ConicSurf s) {
     return sqrt(s.k1+s.k2*z+s.k3*z*z);
 }
 
+/*! \brief Function to return width of FlatSurf at a z-axis position.
+
+Will return width even if z is outside the bounds of zs and ze
+for the particular FlatSurf.
+
+@param z z-axis position to compute radius
+@param s FlatSurf to compute width of
+*/
+double wFlat(double z, FlatSurf s) {
+    return sqrt(s.k1+s.k2*z+s.k3*z*z);
+}
+
 /*! \brief Function for generating Hyperboloid ConicSurf.
 
 @param f1 z position of focus closest to actual mirror surface
