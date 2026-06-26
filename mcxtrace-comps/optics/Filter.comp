@@ -14,14 +14,14 @@
 * Release: McXtrace 1.1
 *
 * Block of an attenuating material
-* 
+*
 * %Description
 * A chunk of attenuating material. Attenuation is computed through
-* the effective length travelled within the material. 
+* the effective length travelled within the material.
 * No scattering is modelled at present.
 *
 * Filter shape may be a cylinder, a sphere, a box or any other shape.
-*   box/plate:       xwidth x yheight x zdepth 
+*   box/plate:       xwidth x yheight x zdepth
 *   cylinder:        radius x yheight (along Y axis)
 *   sphere:          radius
 *   any shape:       geometry=OFF/PLY_file
@@ -46,7 +46,7 @@
 * %Link
 * Geomview and Object File Format (OFF) <http://www.geomview.org>
 * %Link
-* Java version of Geomview (display only) jroff.jar <http://www.holmes3d.net/graphics/roffview/> 
+* Java version of Geomview (display only) jroff.jar <http://www.holmes3d.net/graphics/roffview/>
 * %Link
 * qhull <http://qhull.org>
 * %Linkink
@@ -60,7 +60,7 @@ DEFINE COMPONENT Filter
 SETTING PARAMETERS (refraction=1,fixed_delta=0,string material_datafile="Be.txt",
     string geometry=0,xwidth=0,yheight=0,zdepth=0,radius=0)
 
-/* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */ 
+/* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 
 SHARE
 %{
@@ -223,6 +223,11 @@ TRACE
           nz = 1.0;
         };
         break;
+      case SPHERE:
+        nx = x;
+        ny = y;
+        nz = z;
+        break;
       default:
         1;
       }
@@ -264,6 +269,11 @@ TRACE
           ny = 0.0;
           nz = 1.0;
         };
+        break;
+      case SPHERE:
+        nx = x;
+        ny = y;
+        nz = z;
         break;
       default:
         1;
