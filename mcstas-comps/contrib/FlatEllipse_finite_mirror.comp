@@ -254,7 +254,8 @@ MCDISPLAY
   int i;
   for (i = 0; i < s.num_f; i++) {
     double step = (s.f[i].ze - s.f[i].zs) / 100;
-    double cz, rp, rc, last_cz;
+    double cz, rp, rc;
+	double last_cz = 0;
 
     cz = s.f[i].zs;
 
