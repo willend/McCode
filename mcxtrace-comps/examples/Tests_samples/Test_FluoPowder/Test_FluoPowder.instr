@@ -43,6 +43,7 @@ DEFINE INSTRUMENT Test_FluoPowder(E0=15, dE=0.05, L1=10, string material="LaB6.c
 
 DECLARE %{
 	char SXfile[128];
+	int barns;
 %}
 
 USERVARS %{
@@ -67,8 +68,10 @@ INITIALIZE %{
   });
   #ifndef _MSC_EXTENSIONS
   sprintf(SXfile,"%s",material);
+  barns=0;
   #else
   sprintf(SXfile,"%s.%s",material,"hkl");
+  barns=1;
   #endif
 %}
 
@@ -97,7 +100,7 @@ EXTEND %{
 %}
 
 COMPONENT SX = Single_crystal(
-    radius=0.5e-6, reflections=SXfile,powder=1, mosaic=5, delta_d_d=delta_d_d)
+    radius=0.5e-6, reflections=SXfile,powder=1, mosaic=5, delta_d_d=delta_d_d, barns=barns)
 WHEN (index == 2)
 AT (0, 0, 0) RELATIVE sample_cradle
 EXTEND %{
