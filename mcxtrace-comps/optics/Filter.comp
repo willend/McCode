@@ -39,7 +39,7 @@
 * material_datafile: [str] File where the material parameters for the filter may be found. Format is similar to what may be found off the NIST website. [Be.txt]
 * geometry:   [str] File containing the polygon definition of a general shape object. When xwidth is also given, the object is rescaled accordingly (OFF/PLY)
 * fixed_delta:[0/1] Use a fixed delta to compute refraction - useful for debugging.
-* refraction: [0/1] If nonzero, refraction is enabled.
+* refraction: [0/1] If nonzero, refraction is enabled. (Only functional for box-geometery.)
 *
 * %Link
 * Meshlab https://www.meshlab.net/
@@ -57,7 +57,7 @@
 *******************************************************************************/
 DEFINE COMPONENT Filter
 
-SETTING PARAMETERS (refraction=1,fixed_delta=0,string material_datafile="Be.txt",
+SETTING PARAMETERS (refraction=0,fixed_delta=0,string material_datafile="Be.txt",
     string geometry=0,xwidth=0,yheight=0,zdepth=0,radius=0)
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */ 
@@ -175,6 +175,12 @@ INITIALIZE
     printf ("%s: Rebinning material data (%s) for faster tracing...", NAME_CURRENT_COMP, material_datafile);
     Table_Rebin (&(table));
     printf ("done\n");
+  }
+  if (shape != CUBE) {
+    if (refraction) {
+      fprintf (stderr, "Warning(%s): refraction=1 not supported with chosen geometry\n", NAME_CURRENT_COMP);
+      refraction=0;
+    }
   }
 %}
 
