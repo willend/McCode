@@ -49,6 +49,7 @@
 * L:     [m]   Distance source-mirror and mirror-detector
 * radius:[m]   Radius of curvature
 * E0:    [keV] Mean photon energy
+* coating: [string] "None" or reflectivity file, such as "Ref_W_B4C.txt"
 *
 * %End
 *******************************************************************************/
