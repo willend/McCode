@@ -117,7 +117,7 @@ TRACE
       break;
     do {
       /*this to do a test propagation*/
-      double op[12];
+      double op[13];
       op[0] = x;
       op[1] = y;
       op[2] = z;
