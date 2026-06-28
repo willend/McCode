@@ -28,8 +28,8 @@
 * This is a simplified model with an Undulator, mirrors, a double crystal 
 * monochromator, a sample stage and a detector.
 *
-* %Example: E0=12.65 sample="Mo.lau" SPLITs=1500 Detector: Eiger9M_I=2.8e+11
-* %Example: E0=12.65 sample="adrenaline.lau" SPLITs=4200 Detector: Eiger9M_I=1.8e+15
+* %Example: E0=12.65 sample="Mo.lau" SPLITs=1500 Detector: psd4pi_I=2e+12
+* %Example: E0=12.65 sample="adrenaline.lau" SPLITs=4200 Detector: psd4pi_I=5e+15
 *
 * %Parameters
 * E0:    [keV] Energy selected at the Undulator.
@@ -70,7 +70,13 @@ INITIALIZE
     exit(fprintf(stderr, "ERROR: Monochromator can not reach this energy (arg=%g > 1)\n",
       arg));
   calculated_angle = RAD2DEG*asin(arg);
-  
+  /* Ensure that we are running with at least 1e7 neutrons if not 'displaying' */
+  if (!mcdotrace) {
+    if (mcget_ncount()<1e7) {
+      MPI_MASTER(printf("This instrument needs higher statistics to converge. Increasing your ncount=%llu to 1e7\n",mcget_ncount()));
+      mcset_ncount(1e7);
+    }
+  }
 %}
 
 TRACE
