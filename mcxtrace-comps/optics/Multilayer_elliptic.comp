@@ -128,8 +128,12 @@ INITIALIZE
   if (!Gamma && !Lambda) {
     /*refrain from using kinematical approximation - instead use reflectivity datafile*/
     kinematical = 0;
-    /* reflectivity datafile parsing COATING_UNDEFINED - means set the type according to what is found in the file*/
-    status = reflec_Init (&re, COATING_UNDEFINED, coating, NULL);
+    if (coating && strlen (coating) && strcmp (coating, "NULL")) {
+      status = reflec_Init (&re, COATING_UNDEFINED, coating, NULL);
+    } else {
+      /*assume a constant reflectivity*/
+      status = reflec_Init_const (&re, R0);
+    }
   } else {
     kinematical = 1;
     re.type = KINEMATIC;
