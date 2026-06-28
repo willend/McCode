@@ -16,6 +16,11 @@
 int reflec_Init(t_Reflec *R, enum reflec_Type typ, char *file, void *pars){
   if (R==NULL){
     R=calloc(1,sizeof(t_Reflec));
+    /* Exit if allocation failed */
+    if (!R) {
+      fprintf(stderr, "Error, allocting t_Reflect in reflec_Init - exit!\n");
+      exit(-1);
+    }
   }
   int status;
   R->type=typ;
@@ -413,7 +418,7 @@ cdouble reflec_eth_prmtc(t_Reflec r_handle, double g, double e, double th){
 /* Entry function to Parratt's recursive algorithm for multilayers.*/
 cdouble reflec_parratt(t_Reflec r_handle, double q, double g, double k){
     cdouble r,qp,rp;
-    double k2;
+    double k2=k*k;
     cdouble qinf;
     cdouble qpd,rd,p;
     t_reflec_parratt *pp=&(r_handle.prms.rp);
