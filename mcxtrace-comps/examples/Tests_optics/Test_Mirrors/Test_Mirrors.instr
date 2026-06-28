@@ -48,11 +48,11 @@ INITIALIZE %{
   switch (index) {
     case 0: printf("Using Mirror\n"); break; // OK
     case 1: printf("Using Mirror_elliptic\n"); break; // OK
-    case 2: printf("Using Mirror_parabolic\n"); break;      // not OK: beam UP
+    case 2: printf("Using Mirror_parabolic\n"); break; // OK when rotated 180 deg around z
     case 3: printf("Using Mirror_curved\n"); break; // OK
     case 4: printf("Using Mirror_toroid\n"); break;         // OK
     case 5: printf("Using Mirror_toroid_pothole\n"); break; // OK
-    case 6: printf("Using Multilayer_elliptic\n"); break; // OK
+    case 6: printf("Using Multilayer_elliptic\n"); break; // not OK
     default: exit(fprintf(stderr, "Unknown Mirror index\n"));
   }
 %}
@@ -72,6 +72,10 @@ AT(0,0,1e-3) RELATIVE PREVIOUS
 COMPONENT mirror_stage = Arm() // at distance L
 AT(0,0,L) RELATIVE Origin
 ROTATED (gamma, 0, 0) RELATIVE Origin
+
+COMPONENT psd1 = PSD_monitor(filename="ps10", xwidth=5e-2, yheight=2e-1, nx=200, ny=200, restore_xray=1)
+AT(0,0,0) RELATIVE mirror_stage
+ROTATED (90, 0, 0) RELATIVE mirror_stage
 
 // -----------------------------------------------------------------------------
 
@@ -125,13 +129,13 @@ COMPONENT mirror_out = Arm()
 AT(0,0,0) RELATIVE mirror_stage
 ROTATED (gamma,0,0) RELATIVE mirror_stage
 
-COMPONENT psd1 = PSD_monitor(xwidth=0.1, yheight=0.1, filename="psd1", nx=200, ny=200)
+COMPONENT psd2 = PSD_monitor(xwidth=0.1, yheight=0.1, filename="psd2", nx=200, ny=200)
 AT(0,0,L) RELATIVE mirror_out
 
-COMPONENT psd2 = COPY(psd1)(filename="psd2")
+COMPONENT psd3 = COPY(psd2)(filename="psd3")
 AT(0,0,1) RELATIVE PREVIOUS
 
-COMPONENT psd3 = COPY(psd1)(filename="psd3")
+COMPONENT psd4 = COPY(psd2)(filename="psd4")
 AT(0,0,1) RELATIVE PREVIOUS
 
 END
