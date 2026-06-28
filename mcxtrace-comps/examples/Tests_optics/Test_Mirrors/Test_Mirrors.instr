@@ -29,7 +29,7 @@
 * %Example: Test_Mirrors.instr index=3 gamma=5 Detector: psd3_I=2e-08
 * %Example: Test_Mirrors.instr index=4 gamma=5 Detector: psd3_I=2e-08
 * %Example: Test_Mirrors.instr index=5 gamma=5 Detector: psd3_I=2e-08
-* Example: Test_Mirrors.instr index=6 gamma=5 Detector: psd3_I=2e-08
+* %Example: Test_Mirrors.instr index=6 gamma=5 Detector: psd3_I=2e-08
 *
 * %Parameters		
 * gamma: [deg] Nominal glancing angle of mirror
@@ -116,7 +116,7 @@ AT(0,0,0) RELATIVE mirror_stage
 ROTATED (0, 0, 180) RELATIVE mirror_stage
 
 COMPONENT mt6_multilayer = Multilayer_elliptic( // default in XZ
-    coating = "Ref_W_B4C.txt", theta = gamma,
+    coating = "", theta = gamma,
     s1 = L, s2 = L, length = 0.2, width = 0.05, R0 = 1,
     Emin=E0-1, Emax=E0+1, Estep=0.05)
 WHEN (index==6) 
