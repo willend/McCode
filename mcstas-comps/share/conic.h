@@ -863,6 +863,9 @@ void traceNeutronDisk(_class_particle* p, Disk d) {
         return;
 
     move_class_particleT(t, p);
+	
+	SCATTER_func(p);
+	
     if (d.absorb)
       absorb_class_particle(p);
 }
@@ -1702,6 +1705,7 @@ void traceNeutronConic(_class_particle* _particle, ConicSurf c) {
         return;
     else {
         move_class_particleT(t, _particle);
+		SCATTER_func(_particle);
         double ga = reflectNeutronConic(_particle, c);
 #if REC_MAX_GA
         if (ga > c.max_ga) {
@@ -1725,7 +1729,7 @@ void traceNeutronFlat(_class_particle* _particle, FlatSurf f) {
     else {
 
         move_class_particleT(t, _particle);
-
+		SCATTER_func(_particle);
         double ga = reflectNeutronFlat(_particle, f);
 
 #if REC_MAX_GA
