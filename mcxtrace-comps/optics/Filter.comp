@@ -28,6 +28,9 @@
 *
 * Example: Filter(material_datafile="Ge.txt",
 *   geometry="wire.ply",xwidth=0.02,yheight=0,zdepth=0)
+* Example: Filter(material_datafile="Ge.txt",xwidth=0.02,yheight=0.02, zdepth=1e-4)
+* Example: Filter(material_datafile="Ge.txt",radius=1e-4,yheight=0.02)
+* Example: Filter(material_datafile="Ge.txt",radius=1e-3, refraction=1)
 *
 * %Parameters
 * INPUT PARAMETERS
@@ -237,7 +240,7 @@ TRACE
         } else {
           nx = x;
           nz = z;
-          y = 0.0;
+          ny = 0.0;
           NORM(nx,ny,nz);
         }
         break;
@@ -297,7 +300,7 @@ TRACE
         } else {
           nx = x;
           nz = z;
-          y = 0.0;
+          ny = 0.0;
           NORM(nx,ny,nz);
         }
         break;
