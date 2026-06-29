@@ -132,7 +132,7 @@ INITIALIZE
       status = reflec_Init (&re, COATING_UNDEFINED, coating, NULL);
     } else {
       /*assume a constant reflectivity*/
-      status = reflec_Init_const (&re, R0);
+      status = reflec_Init (&re, CONSTANT, NULL, NULL);
     }
   } else {
     kinematical = 1;
