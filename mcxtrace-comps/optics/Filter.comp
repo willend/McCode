@@ -230,10 +230,10 @@ TRACE
         nx = x;
         ny = y;
         nz = z;
-        NORM(nx,ny,nz);
+        NORM (nx, ny, nz);
         break;
       case CYLINDER:
-        if (fabs(y - yheight * 0.5)< FLT_EPSILON || fabs(y + yheight * 0.5) < FLT_EPSILON){
+        if (fabs (y - yheight * 0.5) < FLT_EPSILON || fabs (y + yheight * 0.5) < FLT_EPSILON) {
           x = 0.0;
           y = 1.0;
           z = 0.0;
@@ -241,7 +241,7 @@ TRACE
           nx = x;
           nz = z;
           ny = 0.0;
-          NORM(nx,ny,nz);
+          NORM (nx, ny, nz);
         }
         break;
       default:
@@ -290,10 +290,10 @@ TRACE
         nx = x;
         ny = y;
         nz = z;
-        NORM(nx,ny,nz);
+        NORM (nx, ny, nz);
         break;
       case CYLINDER:
-        if (fabs(y - yheight * 0.5)< FLT_EPSILON || fabs(y + yheight * 0.5) < FLT_EPSILON){
+        if (fabs (y - yheight * 0.5) < FLT_EPSILON || fabs (y + yheight * 0.5) < FLT_EPSILON) {
           x = 0.0;
           y = 1.0;
           z = 0.0;
@@ -301,7 +301,7 @@ TRACE
           nx = x;
           nz = z;
           ny = 0.0;
-          NORM(nx,ny,nz);
+          NORM (nx, ny, nz);
         }
         break;
       default:
