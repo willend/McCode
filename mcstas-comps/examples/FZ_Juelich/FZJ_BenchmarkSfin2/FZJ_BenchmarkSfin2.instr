@@ -17,6 +17,25 @@
 * The below test uses defaults of the instrument (SANS_benchmark2 modnum=11)
 * %Example: -y Detector: PSDnear_I=7400
 *
+* Many sample-modes are available, from the SANS_benchmark2 component:
+* The component includes 19 sample-model-settings:
+* case 0 - no coherent scattering
+* case 1 - polymer with Mw = 2.000g/mol
+* case 2 - polymer with Mw = 1.000.000g/mol
+* case 3 - microemulsion
+* case 4 - wormlike micelle
+* case 5 - sphere, R = 25 AA
+* case 6 - sphere, R = 500 AA
+* case 7 - polymer blend
+* case 8 - diblock copolymer
+* case 9 - multilamellar vesicles
+* case 10 - logarithmically spaced series of sharp peaks
+* case 11 - logarithmically spaced series of sharp delta peaks !!!!!!
+* ...
+* case 15 - sphere, R = 150 AA
+* case 18   free
+*
+*
 * %Parameters
 * cnum:     [1] 'Degree of beam-polarisation'. Set to 0.0 for no polarizer as for benchmarking the normal SANS samples, to 2.0 for two cavities, keep default values as much as possible
 * lbdmin:  [AA] Minimum wavelength produced at source
