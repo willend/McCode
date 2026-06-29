@@ -130,7 +130,7 @@ SHARE
     uint16_t attribute_byte_count;
   } Triangle;
   #pragma pack(pop)
- void 
+  void
   check_open_file_errors (FILE* fp, char* filename) {
     if (fp == NULL) {
       printf ("\n\nERROR: %s could not be opened by Union_mesh component.\n\n", filename);
@@ -277,8 +277,8 @@ SHARE
     int x_are_equal, y_are_equal, z_are_equal;
     int* map_old_to_unique = malloc (sizeof (int) * *n_verts);
     if (map_old_to_unique == NULL || unique_vertices == NULL) {
-      printf("\nERROR ON MALLOC IN UNION MESH STL READ\n"); 
-      exit(1);
+      printf ("\nERROR ON MALLOC IN UNION MESH STL READ\n");
+      exit (1);
     }
     int unique_counter = 0;
     int vert_index_in_faces = 0;
