@@ -213,10 +213,10 @@ SHARE
           if (count >= capacity) {
             capacity *= 2;
             void* tmp = realloc (triangles, capacity * sizeof (Triangle));
-            if (tmp) {
+            if (!tmp) {
+              perror ("ERROR: Memory reallocation failed");
               free (triangles);
               free (tmp);
-              perror ("ERROR: Memory reallocation failed");
               fclose (file);
               exit (1);
             }
