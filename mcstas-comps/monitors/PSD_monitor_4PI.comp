@@ -87,7 +87,7 @@ TRACE
     else if (i < 0)
       i = 0;
     theta = asin (y / radius);
-    j = floor (ny * (theta + PI / 2) / PI + 0.5);
+    j = floor (ny * (theta + PI / 2) / PI);
     if (j >= ny)
       j = ny - 1; /* Special case for y = radius. */
     else if (j < 0)
