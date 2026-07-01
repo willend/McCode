@@ -442,6 +442,26 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             t2 = time.time()
             didwrite = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.sim"))
             didwrite_nexus = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.h5"))
+
+            # if output is not h5, launch plotter on the output data
+            if didwrite:
+                # PDF overview plot
+                matplotter  = mccode_config.configuration["MCPLOT"].split('-')[0] + "-matplotlib"
+                cmd = matplotter + " %d/ --format=pdf --output %d/01_overview.pdf" %  (test.testnb, test.testnb)
+                plot1 = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=runmax)
+                if plot1:
+                    logging.info(" - Test %d Overview plot generated OK" % test.testnb)
+                else:
+                    logging.info(" - Test %d Overview plot Failure!" % test.testnb)
+                # Interactive html plots
+                htmlplotter = mccode_config.configuration["MCPLOT"].split('-')[0] + "-html"
+                cmd = htmlplotter + " %d/ --nobrowse --output %d/02_plots.html" %  (test.testnb, test.testnb)
+                plot2 = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=runmax)
+                if plot2:
+                    logging.info(" - Test %d HTML plot(s) generated OK" % test.testnb)
+                else:
+                    logging.info(" - Test %d HTML plot Failure!" % test.testnb)
+
             test.didrun = retcode != 0 or didwrite or didwrite_nexus
             test.runtime = t2 - t1
         else:
