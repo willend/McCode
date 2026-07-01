@@ -20,8 +20,9 @@ from mccodelib import mccode_config
 from shutil import copyfile
 from PIL import Image
 
-WIDTH = 700
-HEIGHT = 480
+global WIDTH,HEIGHT
+WIDTH = 1024
+HEIGHT = 768
 
 def file_base_name(file_name):
     if '.' in file_name:
@@ -346,6 +347,11 @@ def main(args):
     global autosize
     if args.autosize:
         autosize = True
+    global WIDTH,HEIGHT
+    if args.width:
+        WIDTH=args.width
+    if args.height:
+        WIDTH=args.height
 
     # TODO: safeguard, exit: if simfile is not a file or a directory
 
@@ -384,7 +390,8 @@ if __name__ == '__main__':
     parser.add_argument('--autosize', action='store_true', help='expand to window size on load')
     parser.add_argument('--libpath', nargs='*', help='js lib files path')
     parser.add_argument('-o','--output', nargs=1, help='specify output file (.html extension)')
-
+    parser.add_argument('-W','--width', nargs=1, help='width of iframes')
+    parser.add_argument('-H','--height', nargs=1, help='heigth of iframes')
     args = parser.parse_args()
 
     main(args)
