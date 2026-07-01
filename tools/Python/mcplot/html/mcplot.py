@@ -6,7 +6,6 @@ import logging
 import os
 import sys
 import numpy as np
-import scipy.misc
 import io
 import base64
 import json
@@ -347,11 +346,12 @@ def main(args):
     global autosize
     if args.autosize:
         autosize = True
-    global WIDTH,HEIGHT
+    global WIDTH
     if args.width:
-        WIDTH=args.width
+        WIDTH=int(args.width[0])
+    global HEIGHT
     if args.height:
-        WIDTH=args.height
+        HEIGHT=int(args.height[0])
 
     # TODO: safeguard, exit: if simfile is not a file or a directory
 
