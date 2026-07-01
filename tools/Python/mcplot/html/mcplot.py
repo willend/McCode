@@ -261,8 +261,8 @@ def plotfunc(node, filename=None):
                     # we are saving outside simulation dir
                     # we use full path
                     linkname = os.path.join(directory, basename)
-                outfile.write(f"<iframe src='{linkname}' title='{basename}' width={WIDTH} height={HEIGHT}></iframe> \n")
-                outfile.write(f"<a href='{linkname}' target=_blank>[ {basename} ]</a><br>\n")
+                outfile.write(f"<p><iframe src='{linkname}' title='{basename}' width={WIDTH} height={HEIGHT}></iframe> \n")
+                outfile.write(f"<p><a href='{linkname}' target=_blank>[ {basename} ]</a> \n")
                 # add the LOG-scale plot, if any
                 filepart = os.path.splitext(basename)
                 basename = filepart[0]+"_log"+filepart[1]
@@ -276,7 +276,7 @@ def plotfunc(node, filename=None):
                         # we are saving outside simulation dir
                         # we use full path
                         linkname = os.path.join(directory, basename)
-                    outfile.write(f"<a href='{basename}' target=_blank>[ {basename} ]</a><br>\n")
+                    outfile.write(f"<a href='{basename}' target=_blank>[ {basename} ]</a><hr hr align='left' width={WIDTH}>\n")
             outfile.write("</body></html>\n")
         return filename
     
