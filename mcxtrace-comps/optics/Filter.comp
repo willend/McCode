@@ -164,11 +164,11 @@ INITIALIZE
     rho = 1;
   }
 
-  /*If we are using a three column format assume only attenuation
-   I.e. set the delta prefactor to 0*/
-  if (table.columns == 3) {
-    mu_c = 1;
-    delta_prefactor = 0;
+  if (table.columns <= 4) {
+    /*If we are using a 2-4 column format assume only attenuation
+      I.e. set the delta prefactor to 0*/
+     mu_c = table.columns-1;
+     delta_prefactor = 0;
   } else {
     mu_c = 5;
     delta_prefactor = NA * (rho * 1e-24) / Ar * 2.0 * M_PI * RE;
