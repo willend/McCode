@@ -476,7 +476,12 @@ class Plot2D {
       .attr('width', wi)
       .attr('height', hi)
       .attr('preserveAspectRatio', 'none')
-      .attr("xlink:href","data:image/jpg;base64," + img2dData);
+      .attr("xlink:href","data:image/jpg;base64," + img2dData)
+      .attr("style",
+        "image-rendering: optimizeSpeed;" +      // legacy SVG value (old Firefox/IE)
+        "image-rendering: -moz-crisp-edges;" +   // older Firefox
+        "image-rendering: crisp-edges;" +        // spec value
+        "image-rendering: pixelated;");          // Chrome/Safari/modern Firefox (nearest-neighbor)
 
     var cbScale = d3.scaleLinear()
       .domain([cbMin, cbMax])
