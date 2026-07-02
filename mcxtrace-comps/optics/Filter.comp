@@ -163,11 +163,15 @@ INITIALIZE
     fprintf (stderr, "Warning(%s): %s not found in header of %s, set to 1\n", NAME_CURRENT_COMP, "rho", material_datafile);
     rho = 1;
   }
-
-  if (table.columns <= 4) {
-    /*If we are using a 2-4 column format assume only attenuation
+  if (table.columns == 2 ) {
+    /*If we are using a 3-4 column format assume only attenuation from last column
       I.e. set the delta prefactor to 0*/
      mu_c = table.columns-1;
+     delta_prefactor = 0;
+  } else if (2 < table.columns <= 4) {
+    /*If we are using a 3-4 column format assume only attenuation from second to last column
+      I.e. set the delta prefactor to 0*/
+     mu_c = table.columns-2;
      delta_prefactor = 0;
   } else {
     mu_c = 5;
