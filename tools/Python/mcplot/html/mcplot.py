@@ -243,14 +243,17 @@ def plotfunc(node, filename=None):
             count += 1
         # now create an overview HTML (index.html with <iframe>)
         directory  = os.path.dirname(f[0])
+        baseinstr = os.path.basename(os.getcwd())
+        print(baseinstr)
+        print(os.getcwd())
         if filename is None:
             filename = os.path.join(directory, "index.html")
             
         with open(filename, 'w') as outfile:
             outfile.write("<html><head>\n")
-            outfile.write(f"<title>Simulation results {directory}</title>\n")
+            outfile.write(f"<title>Simulation results in folder {baseinstr}/{directory}</title>\n")
             outfile.write("</head><body>\n")
-            outfile.write(f"<h1>Simulation results {directory}</h1>\n")
+            outfile.write(f"<h1>Simulation results {baseinstr}/{directory}</h1>\n")
             for fname in f:
                 basename = os.path.basename(fname)
                 if os.path.dirname(filename) == directory:  
@@ -333,7 +336,7 @@ def main(args):
             simdir = simfile
             simfile = os.path.join(simdir,'mccode.sim')
         else:
-            printf(simfile + " is neither a file or directory, exiting")
+            print(simfile + " is neither a .sim file or directory, exiting")
             exit(-1)
 
     # logscale house keeping
