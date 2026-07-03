@@ -20,8 +20,8 @@ from shutil import copyfile
 from PIL import Image
 
 global WIDTH,HEIGHT
-WIDTH = 1024
-HEIGHT = 768
+WIDTH = 640
+HEIGHT = 480
 
 def file_base_name(file_name):
     if '.' in file_name:
