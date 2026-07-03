@@ -20,8 +20,8 @@ from shutil import copyfile
 from PIL import Image
 
 global WIDTH,HEIGHT
-WIDTH = 640
-HEIGHT = 480
+WIDTH = 1024
+HEIGHT = 768
 
 def file_base_name(file_name):
     if '.' in file_name:
@@ -253,6 +253,10 @@ def plotfunc(node, filename=None):
             outfile.write("<html><head>\n")
             outfile.write(f"<title>Simulation results in folder {baseinstr}/{directory}</title>\n")
             gridgap = int(round(WIDTH * 0.05))
+            initial_scale = 0.5
+            init_w = WIDTH * initial_scale
+            init_h = HEIGHT * initial_scale
+            init_pct = int(round(initial_scale * 100))
             outfile.write("<style>\n")
             outfile.write("  body { background-color: #e0e0e0; margin: 12px; font-family: sans-serif; }\n")
             outfile.write(f"  .plotgrid {{ display: flex; flex-wrap: wrap; gap: {gridgap}px; }}\n")
@@ -268,8 +272,8 @@ def plotfunc(node, filename=None):
             outfile.write(f"<h1>Simulation results {baseinstr}/{directory}</h1>\n")
             outfile.write("<div id='sizecontrol'>\n")
             outfile.write("  <label for='sizeslider'>Figure size:</label>\n")
-            outfile.write("  <input type='range' id='sizeslider' min='25' max='200' value='100' step='5'>\n")
-            outfile.write("  <span id='sizevalue'>100%</span>\n")
+            outfile.write(f"  <input type='range' id='sizeslider' min='20' max='200' value='{init_pct}' step='5'>\n")
+            outfile.write(f"  <span id='sizevalue'>{init_pct}%</span>\n")
             outfile.write("</div>\n")
             outfile.write("<div class='plotgrid'>\n")
             for fname in f:
@@ -282,9 +286,9 @@ def plotfunc(node, filename=None):
                     # we are saving outside simulation dir
                     # we use full path
                     linkname = os.path.join(directory, basename)
-                outfile.write(f"<div class='plotcell' data-base-w='{WIDTH}' style='width:{WIDTH}px;'>\n")
-                outfile.write(f"<div class='iframe-wrap' data-base-w='{WIDTH}' data-base-h='{HEIGHT}' style='width:{WIDTH}px;height:{HEIGHT}px;'>\n")
-                outfile.write(f"<iframe src='{linkname}' title='{basename}' width={WIDTH} height={HEIGHT}></iframe>\n")
+                outfile.write(f"<div class='plotcell' data-base-w='{WIDTH}' style='width:{init_w}px;'>\n")
+                outfile.write(f"<div class='iframe-wrap' data-base-w='{WIDTH}' data-base-h='{HEIGHT}' style='width:{init_w}px;height:{init_h}px;'>\n")
+                outfile.write(f"<iframe src='{linkname}' title='{basename}' width={WIDTH} height={HEIGHT} style='transform:scale({initial_scale});'></iframe>\n")
                 outfile.write("</div>\n")
                 outfile.write("<div class='links'>\n")
                 outfile.write(f"<a href='{linkname}' target=_blank>[ {basename} ]</a>\n")
