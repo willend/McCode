@@ -585,9 +585,9 @@ function _draw_labels(w, h, xlabel, ylabel, title, svg_branch, plotfunc_inner) {
   var dl = yLabelGrp.node().getBBox().height; // height and width are confused here, due to the rotation
   var db = xLabelGrp.node().getBBox().height;
 
-  var wplt = wlab - 3.75*dl;
+  var wplt = wlab - 4.75*dl;
   var hplt = hlab - (1.3*dt + 2.1*db);
-  var xplt = 4.0*dl;
+  var xplt = 5.0*dl; // widened from 4.0*dl to give y-axis tick labels more clearance from the y-axis title
   var yplt = dt + 0.3*dl;
 
   var titx = wlab/2;

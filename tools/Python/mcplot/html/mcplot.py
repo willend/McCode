@@ -252,8 +252,17 @@ def plotfunc(node, filename=None):
         with open(filename, 'w') as outfile:
             outfile.write("<html><head>\n")
             outfile.write(f"<title>Simulation results in folder {baseinstr}/{directory}</title>\n")
+            gridgap = int(round(WIDTH * 0.05))
+            outfile.write("<style>\n")
+            outfile.write("  body { margin: 12px; font-family: sans-serif; }\n")
+            outfile.write(f"  .plotgrid {{ display: flex; flex-wrap: wrap; gap: {gridgap}px; }}\n")
+            outfile.write("  .plotcell { display: flex; flex-direction: column; align-items: flex-start; }\n")
+            outfile.write("  .plotcell iframe { border: 1px solid #ccc; }\n")
+            outfile.write("  .plotcell .links { margin-top: 4px; }\n")
+            outfile.write("</style>\n")
             outfile.write("</head><body>\n")
             outfile.write(f"<h1>Simulation results {baseinstr}/{directory}</h1>\n")
+            outfile.write("<div class='plotgrid'>\n")
             for fname in f:
                 basename = os.path.basename(fname)
                 if os.path.dirname(filename) == directory:  
@@ -264,8 +273,10 @@ def plotfunc(node, filename=None):
                     # we are saving outside simulation dir
                     # we use full path
                     linkname = os.path.join(directory, basename)
-                outfile.write(f"<p><iframe src='{linkname}' title='{basename}' width={WIDTH} height={HEIGHT}></iframe> \n")
-                outfile.write(f"<p><a href='{linkname}' target=_blank>[ {basename} ]</a> \n")
+                outfile.write("<div class='plotcell'>\n")
+                outfile.write(f"<iframe src='{linkname}' title='{basename}' width={WIDTH} height={HEIGHT}></iframe>\n")
+                outfile.write("<div class='links'>\n")
+                outfile.write(f"<a href='{linkname}' target=_blank>[ {basename} ]</a>\n")
                 # add the LOG-scale plot, if any
                 filepart = os.path.splitext(basename)
                 basename = filepart[0]+"_log"+filepart[1]
@@ -279,7 +290,10 @@ def plotfunc(node, filename=None):
                         # we are saving outside simulation dir
                         # we use full path
                         linkname = os.path.join(directory, basename)
-                    outfile.write(f"<a href='{basename}' target=_blank>[ {basename} ]</a><hr hr align='left' width={WIDTH}>\n")
+                    outfile.write(f"<a href='{basename}' target=_blank>[ {basename} ]</a>\n")
+                outfile.write("</div>\n")
+                outfile.write("</div>\n")
+            outfile.write("</div>\n")
             outfile.write("</body></html>\n")
         return filename
     
@@ -398,4 +412,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
-
