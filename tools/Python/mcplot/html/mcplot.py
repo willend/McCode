@@ -20,8 +20,8 @@ from shutil import copyfile
 from PIL import Image
 
 global WIDTH,HEIGHT
-WIDTH = 1024
-HEIGHT = 768
+WIDTH = 640
+HEIGHT = 480
 
 def file_base_name(file_name):
     if '.' in file_name:
@@ -155,7 +155,7 @@ def get_params_str_2D(data):
                 print(e)
 
     # encode png as base64 string
-    image_log = Image.fromarray(img_log.astype(np.uint8))
+    image_log = Image.fromarray(np.flipud(img_log).astype(np.uint8))
     output = io.BytesIO()
     image_log.save(output, format="png")
     encoded_2d_data_log = str(base64.b64encode(output.getvalue())).lstrip('b').strip("\'")
@@ -243,14 +243,26 @@ def plotfunc(node, filename=None):
             count += 1
         # now create an overview HTML (index.html with <iframe>)
         directory  = os.path.dirname(f[0])
+        baseinstr = os.path.basename(os.getcwd())
+        print(baseinstr)
+        print(os.getcwd())
         if filename is None:
             filename = os.path.join(directory, "index.html")
             
         with open(filename, 'w') as outfile:
             outfile.write("<html><head>\n")
-            outfile.write(f"<title>Simulation results {directory}</title>\n")
+            outfile.write(f"<title>Simulation results in folder {baseinstr}/{directory}</title>\n")
+            gridgap = int(round(WIDTH * 0.05))
+            outfile.write("<style>\n")
+            outfile.write("  body { background-color: #e0e0e0; margin: 12px; font-family: sans-serif; }\n")
+            outfile.write(f"  .plotgrid {{ display: flex; flex-wrap: wrap; gap: {gridgap}px; }}\n")
+            outfile.write("  .plotcell { background-color: #ffffff; display: flex; flex-direction: column; align-items: flex-start; }\n")
+            outfile.write("  .plotcell iframe { border: 2px solid #b0b0b0; }\n")
+            outfile.write("  .plotcell .links { margin-top: 4px; }\n")
+            outfile.write("</style>\n")
             outfile.write("</head><body>\n")
-            outfile.write(f"<h1>Simulation results {directory}</h1>\n")
+            outfile.write(f"<h1>Simulation results {baseinstr}/{directory}</h1>\n")
+            outfile.write("<div class='plotgrid'>\n")
             for fname in f:
                 basename = os.path.basename(fname)
                 if os.path.dirname(filename) == directory:  
@@ -261,8 +273,10 @@ def plotfunc(node, filename=None):
                     # we are saving outside simulation dir
                     # we use full path
                     linkname = os.path.join(directory, basename)
-                outfile.write(f"<p><iframe src='{linkname}' title='{basename}' width={WIDTH} height={HEIGHT}></iframe> \n")
-                outfile.write(f"<p><a href='{linkname}' target=_blank>[ {basename} ]</a> \n")
+                outfile.write("<div class='plotcell'>\n")
+                outfile.write(f"<iframe src='{linkname}' title='{basename}' width={WIDTH} height={HEIGHT}></iframe>\n")
+                outfile.write("<div class='links'>\n")
+                outfile.write(f"<a href='{linkname}' target=_blank>[ {basename} ]</a>\n")
                 # add the LOG-scale plot, if any
                 filepart = os.path.splitext(basename)
                 basename = filepart[0]+"_log"+filepart[1]
@@ -276,7 +290,10 @@ def plotfunc(node, filename=None):
                         # we are saving outside simulation dir
                         # we use full path
                         linkname = os.path.join(directory, basename)
-                    outfile.write(f"<a href='{basename}' target=_blank>[ {basename} ]</a><hr hr align='left' width={WIDTH}>\n")
+                    outfile.write(f"<a href='{basename}' target=_blank>[ {basename} ]</a>\n")
+                outfile.write("</div>\n")
+                outfile.write("</div>\n")
+            outfile.write("</div>\n")
             outfile.write("</body></html>\n")
         return filename
     
@@ -333,7 +350,7 @@ def main(args):
             simdir = simfile
             simfile = os.path.join(simdir,'mccode.sim')
         else:
-            printf(simfile + " is neither a file or directory, exiting")
+            print(simfile + " is neither a .sim file or directory, exiting")
             exit(-1)
 
     # logscale house keeping
@@ -395,4 +412,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
-
