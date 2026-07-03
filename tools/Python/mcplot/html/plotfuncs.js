@@ -386,9 +386,9 @@ class Plot2D {
   }
   _plot_2d_data(w, h, xmin, xmax, ymin, ymax, img2dData, imgColorbar, cbMin, cbMax, anchorElement) {
     // colorbar width
-    var w_cb = 85; // this is the total width of space, image and ticks
+    var w_cb = 100; // this is the total width of space, image and ticks
     var w_cbimg = 15;
-    var w_cbticks = 45;
+    var w_cbticks = 60; // widened from 45 to give the colorbar's tick numbers more room on the right edge
 
     if (_is_small_mode(w, h)) {
       var w_cb = 10; // this is the total width of space, image and ticks
