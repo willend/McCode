@@ -268,7 +268,7 @@ def plotfunc(node, filename=None):
             outfile.write(f"<h1>Simulation results {baseinstr}/{directory}</h1>\n")
             outfile.write("<div id='sizecontrol'>\n")
             outfile.write("  <label for='sizeslider'>Figure size:</label>\n")
-            outfile.write("  <input type='range' id='sizeslider' min='20' max='200' value='100' step='5'>\n")
+            outfile.write("  <input type='range' id='sizeslider' min='25' max='200' value='100' step='5'>\n")
             outfile.write("  <span id='sizevalue'>100%</span>\n")
             outfile.write("</div>\n")
             outfile.write("<div class='plotgrid'>\n")
