@@ -45,17 +45,12 @@
 * refraction: [0/1] If nonzero, refraction is enabled. (Only functional for box-geometery.)
 *
 * %Link
-* Meshlab https://www.meshlab.net/
-* %Link
-* Geomview and Object File Format (OFF) <http://www.geomview.org>
-* %Link
-* Java version of Geomview (display only) jroff.jar <http://www.holmes3d.net/graphics/roffview/>
-* %Link
-* qhull <http://qhull.org>
-* %Linkink
-* Powercrust https://www.cs.ucdavis.edu/~amenta/powercrust.html
-* %Link
-* material datafile obtained from http://physics.nist.gov/cgi-bin/ffast/ffast.pl
+* <a href="https://www.meshlab.net/">Meshlab</a>
+* <a href="https://www.geomview.org">Geomview and Object File Format (OFF)</a>
+* <a href="http://www.holmes3d.net/graphics/roffview/">jroff.jar - Java version of Geomview (display only)</a>
+* <a href="http://qhull.org">qhull</a>
+* <a href="https://www.cs.ucdavis.edu/~amenta/powercrust.html">Powercrust</a>
+* material datafile obtained from <a href="https://physics.nist.gov/PhysRefData/FFast/form.html<https://physics.nist.gov/PhysRefData/FFast/form.html">NIST FFast</a>
 * %End
 *******************************************************************************/
 DEFINE COMPONENT Filter
