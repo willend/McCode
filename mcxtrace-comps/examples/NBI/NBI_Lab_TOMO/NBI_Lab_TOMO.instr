@@ -111,7 +111,7 @@ COMPONENT e_mon1 = E_monitor(
 AT(0,0,d_sample_det-15e-3) RELATIVE sample_mnt
 
 COMPONENT filter_air=Filter(
-    material_datafile="FilterAir_1mm.dat" mu_col=2,xwidth=detw,yheight=deth,zdepth=1e-3*10)
+    material_datafile="FilterAir_1mm.dat", mu_col=2,xwidth=detw,yheight=deth,zdepth=1e-3*10)
 AT(0,0,d_sample_det-20e-3+1e-3-0.2) RELATIVE sample_mnt
 
 COMPONENT filter_Al=Filter(
