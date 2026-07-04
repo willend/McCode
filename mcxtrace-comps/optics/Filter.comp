@@ -46,12 +46,12 @@
 * refraction: [0/1] If nonzero, refraction is enabled. (Only functional for basic geometries, does not yet work for OFF)
 *
 * %Link
-* <a href="https://www.meshlab.net/">Meshlab</a>
-* <a href="http://www.geomview.org">Geomview and Object File Format (OFF)</a>
+* <a href="https://www.meshlab.net/">Meshlab</a> - viewer for OFF files
+* <a href="http://www.geomview.org">Geomview and Object File Format (OFF)</a> - OFF file definition and examples
 * <a href="http://www.holmes3d.net/graphics/roffview/">jroff.jar - Java version of Geomview (display only)</a>
-* <a href="http://qhull.org">qhull</a>
-* <a href="https://www.cs.ucdavis.edu/~amenta/powercrust.html">Powercrust</a>
-* material datafile obtained from <a href="https://physics.nist.gov/PhysRefData/FFast/form.html<https://physics.nist.gov/PhysRefData/FFast/form.html">NIST FFast</a>
+* <a href="http://qhull.org">Qhull</a> - for calculating a convex hull from points.
+* <a href="https://www.cs.ucdavis.edu/~amenta/powercrust.html">Powercrust</a> - for reconstructing a solid geometry from a point cloud.
+* Most material datafile inpus may obtained from <a href="https://physics.nist.gov/PhysRefData/FFast/form.html<https://physics.nist.gov/PhysRefData/FFast/form.html">NIST FFast</a>
 * %End
 *******************************************************************************/
 DEFINE COMPONENT Filter
