@@ -163,6 +163,7 @@ INITIALIZE
     // "Few or many" columns, use mu_col to pinpoint mu column location
     if (mu_col==-1 || mu_col>=table.columns) {
       fprintf (stderr, "Error(%s): Found %i columns in %s. Did NOT detect known NIST file format. Please give a relevant mu_col value to define the mu-column! Exit!\n", NAME_CURRENT_COMP, table.columns, material_datafile);
+      exit(-1);
     } else {
       mu_c=mu_col;
       delta_prefactor = 0;
