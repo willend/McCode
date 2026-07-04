@@ -42,7 +42,8 @@
 * material_datafile: [str] File where the material parameters for the filter may be found. Format is similar to what may be found off the NIST website. [Be.txt]
 * geometry:   [str] File containing the polygon definition of a general shape object. When xwidth is also given, the object is rescaled accordingly (OFF/PLY)
 * fixed_delta:[0/1] Use a fixed delta to compute refraction - useful for debugging.
-* refraction: [0/1] If nonzero, refraction is enabled. (Only functional for box-geometery.)
+* mu_col:     [idx] Column index to pick up absorption length mu, counted from 0. Use with non-standard input file, e.g. 2-3 column files. -1 means attempt autodetect.
+* refraction: [0/1] If nonzero, refraction is enabled. (Only functional for basic geometries, does not yet work for OFF)
 *
 * %Link
 * <a href="https://www.meshlab.net/">Meshlab</a>
@@ -56,7 +57,7 @@
 DEFINE COMPONENT Filter
 
 SETTING PARAMETERS (refraction=0,fixed_delta=0,string material_datafile="Be.txt",
-    string geometry=0,xwidth=0,yheight=0,zdepth=0,radius=0)
+    string geometry=0,xwidth=0,yheight=0,zdepth=0,radius=0, int mu_col=-1)
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 
@@ -158,23 +159,21 @@ INITIALIZE
     fprintf (stderr, "Warning(%s): %s not found in header of %s, set to 1\n", NAME_CURRENT_COMP, "rho", material_datafile);
     rho = 1;
   }
-  if (table.columns == 2) {
-    /*If we are using a 2 column format assume only attenuation and read from last column.
-      I.e. set the delta prefactor to 0*/
-     mu_c = 1;
-     delta_prefactor = 0;
-  } else if (table.columns == 3) {
-    /*If we are using a 3 column format assume only attenuation and read from second column.
-      I.e. set the delta prefactor to 0*/
-     mu_c = 1;
-     delta_prefactor = 0;
-  } else if (table.columns == 4) {
-    /*If we are using a 4 column format assume only attenuation and read from last column.
-      I.e. set the delta prefactor to 0*/
-     mu_c = 3;
-     delta_prefactor = 0;
-  } else {
+  if (table.columns <6 || table.columns >=8 ) {
+    // "Few or many" columns, use mu_col to pinpoint mu column location
+    if (mu_col==-1 || mu_col>=table.columns) {
+      fprintf (stderr, "Error(%s): Found %i columns in %s. Did NOT detect known NIST file format. Please give a relevant mu_col value to define the mu-column! Exit!\n", NAME_CURRENT_COMP, table.columns, material_datafile);
+    } else {
+      mu_c=mu_col;
+      delta_prefactor = 0;
+    }
+  } else if (table.columns == 6) {
+    // "Legacy" NIST format
     mu_c = 5;
+    delta_prefactor = NA * (rho * 1e-24) / Ar * 2.0 * M_PI * RE;
+  } else if (table.columns == 7) {
+    // "Updated" NIST format
+    mu_c = 6;
     delta_prefactor = NA * (rho * 1e-24) / Ar * 2.0 * M_PI * RE;
   }
   if (10 * (double)mcget_ncount () > (table.max_x - table.min_x) / (table.step_x)) {
