@@ -124,7 +124,7 @@ WHEN (index==4)
 AT(0,0,0) RELATIVE mirror_stage
 ROTATED (0, 0, 180) RELATIVE mirror_stage
 
-COMPONENT mt6_multilayer = Multilayer_elliptic( // default in XZ
+COMPONENT mt5_multilayer = Multilayer_elliptic( // default in XZ
     coating=coating, theta = gamma,
     s1 = L, s2 = L, length = 0.2, width = 0.05, R0 = 1,
     Emin=E0-1, Emax=E0+1, Estep=0.05)
@@ -132,7 +132,7 @@ WHEN (index==5)
 AT(0,0,0) RELATIVE mirror_stage
 ROTATED (0, 0, 0) RELATIVE mirror_stage
 
-COMPONENT mt5_toroid_pot = Mirror_toroid_pothole( // default in XZ
+COMPONENT mt6_toroid_pot = Mirror_toroid_pothole( // default in XZ
     radius=0.1, radius_o=radius, xwidth=5e-2, zdepth=2e-1,R0=1, coating="") /* Does not support standard coatings it seems */
 WHEN (index==6)
 AT(0,0,0) RELATIVE mirror_stage
