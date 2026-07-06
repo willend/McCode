@@ -62,7 +62,7 @@ DECLARE
 
 INITIALIZE
 %{
-  if (coating && strlen (coating)) {
+  if (coating && strlen (coating) && strcmp (coating, "NULL")) {
     char** header_parsed;
     t_Table* tp = &reflec_table;
     /* read 1st block data from file into tp */
