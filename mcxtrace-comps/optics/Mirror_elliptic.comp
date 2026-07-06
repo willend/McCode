@@ -54,7 +54,7 @@ DEPENDENCY "-std=c99"
 SHARE
 %{
   %include "perfect_crystals-lib"
-  #include <complex.h>
+  %include "mccode-complex-lib"
   %include "read_table-lib"
   %include "reflectivity-lib"
 %}
