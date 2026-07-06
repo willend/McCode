@@ -214,17 +214,8 @@ TRACE
 	double Ref=R0;
         QQ = sqrt ((kx - kxo) * (kx - kxo) + (ky - kyo) * (ky - kyo) + (kz - kzo) * (kz - kzo));
 	if (!isconst) {
-          if (kinematical) {
-            /*
-             * \Lambda: thickness of bilayer - following notation in Als-Nielsen/McMorrow
-             * \Gamma:  \Gamma*\Lambda thickness of high electron density material.
-             * r1(zeta) = 2 i r_0 \rho_{AB} \left(\frac{\Lambda^2 \Gamma}{\zeta}\right) \frac{\sin\left(\pi\Gamma\zeta\right)}{\pi\Gamma\zeta);
-             */
-            Ref = reflecq (re, QQ, 0, 0, 0);
-          } else {
-            /*interpolate in table*/
-            Ref = reflecq (re, QQ, 0, 0, 0);
-          }
+          /*interpolate in table*/
+          Ref = reflecq (re, QQ, 0, k, fabs (90 - acos (s / k) * RAD2DEG));
 	  /*Reflectivity can't be >1*/
           if (Ref>1) {
             Ref = 1.0;
