@@ -154,7 +154,7 @@ TRACE
   double kxn, kyn, kzn; // reflected ray's kvector
 
   /* get the photon's coordinates and kvector in the ellipse frame */
-  k = sqrt (kx * kx + ky * ky + kz * kz);
+  k = sqrt (scalar_prod (kx, ky, kz, kx, ky, kz));
 
   CoordTransME (&x_el, &y_el, &z_el, x, y, z, Z0, Y0, xi);
   CoordTransME (&kx_el, &ky_el, &kz_el, kx, ky, kz, 0, 0, xi);
