@@ -649,12 +649,12 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("");
 #if MCCODE_PROJECT == 1     /* neutron */
   cout("# Python McStas instrument description");
-  cout("def make():");
-  coutf("    instr = ms.McStas_instr(\"%s_generated\", author = \"McCode Py-Generator\", origin = \"ESS DMSC\")",instr->name);
+  cout("def make(input_path=None):");
+  coutf("    instr = ms.McStas_instr(\"%s_generated\", author = \"McCode Py-Generator\", origin = \"ESS DMSC\", input_path=input_path)",instr->name);
 #elif MCCODE_PROJECT == 2   /* xray */
   cout("# Python McXtrace instrument description");
-  cout("def make():");
-  coutf("    instr = ms.McXtrace_instr(\"%s_generated\", author = \"McCode Py-Generator\", origin = \"ESS DMSC\")",instr->name);
+  cout("def make(input_path=None):");
+  coutf("    instr = ms.McXtrace_instr(\"%s_generated\", author = \"McCode Py-Generator\", origin = \"ESS DMSC\", input_path=input_path)",instr->name);
 #endif
   cout("    \n# Add collected DEPENDENCY strings");
   coutf("    instr.set_dependency('%s')",instr->dependency);
