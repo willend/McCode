@@ -64,8 +64,8 @@ INITIALIZE %{
     case 2: printf("Using Mirror_parabolic\n"); break; // OK when rotated 180 deg around z
     case 3: printf("Using Mirror_curved\n"); break; // OK
     case 4: printf("Using Mirror_toroid\n"); break;         // OK
-    case 5: printf("Using Mirror_toroid_pothole\n"); break; // OK
-    case 6: printf("Using Multilayer_elliptic\n"); break; // not OK
+    case 5: printf("Using Multilayer_elliptic\n"); break; // not OK
+    case 6: printf("Using Mirror_toroid_pothole\n"); break; // OK
     default: exit(fprintf(stderr, "Unknown Mirror index\n"));
   }
   /* If "None" is given it in fact means "" */
@@ -128,13 +128,13 @@ COMPONENT mt6_multilayer = Multilayer_elliptic( // default in XZ
     coating=coating, theta = gamma,
     s1 = L, s2 = L, length = 0.2, width = 0.05, R0 = 1,
     Emin=E0-1, Emax=E0+1, Estep=0.05)
-WHEN (index==6) 
+WHEN (index==5)
 AT(0,0,0) RELATIVE mirror_stage
 ROTATED (0, 0, 0) RELATIVE mirror_stage
 
 COMPONENT mt5_toroid_pot = Mirror_toroid_pothole( // default in XZ
     radius=0.1, radius_o=radius, xwidth=5e-2, zdepth=2e-1,R0=1, coating="") /* Does not support standard coatings it seems */
-WHEN (index==5) 
+WHEN (index==6)
 AT(0,0,0) RELATIVE mirror_stage
 ROTATED (0, 0, 180) RELATIVE mirror_stage
 
