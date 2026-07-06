@@ -209,7 +209,7 @@ TRACE
         kz = k * kz;
 
         double QQ;
-        cdouble Ref;
+	double Ref=1.0;
         QQ = sqrt ((kx - kxo) * (kx - kxo) + (ky - kyo) * (ky - kyo) + (kz - kzo) * (kz - kzo));
 
         if (kinematical) {
@@ -223,13 +223,12 @@ TRACE
           /*interpolate in table*/
           Ref = reflecq (re, QQ, 0, 0, 0);
         }
-        double pmul = sqrt (creal (cmul(Ref, conj (Ref))));
-        /*Reflectivity can't be >1*/
-        if (pmul>1) {
-          pmul = 1.0;
+	/*Reflectivity can't be >1*/
+        if (Ref>1) {
+          Ref = 1.0;
         }
         /* apply reflectivity */
-        p *= pmul;
+        p *= Ref;
         SCATTER;
 
       } else {
