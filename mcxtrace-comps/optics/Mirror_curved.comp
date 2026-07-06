@@ -56,7 +56,7 @@ INITIALIZE
 %{
   int status;
 
-  if (coating && strlen (coating)) {
+  if (coating && strlen (coating) && strcmp (coating, "NULL")) {
     status = reflec_Init (&re, COATING_UNDEFINED, coating, NULL);
   } else {
     /*assume a constant reflectivity*/
