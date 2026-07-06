@@ -67,7 +67,7 @@ SETTING PARAMETERS (string coating="Ref_W_B4C.txt",
 
 SHARE 
 %{
-  #include <complex.h>
+  %include "mccode-complex-lib"
   %include "read_table-lib"
   %include "reflectivity-lib"
   /*something that would be relevant for ALL elliptical mirrors*/
@@ -132,7 +132,7 @@ INITIALIZE
       status = reflec_Init (&re, COATING_UNDEFINED, coating, NULL);
     } else {
       /*assume a constant reflectivity*/
-      status = reflec_Init_const (&re, R0);
+      status = reflec_Init (&re, CONSTANT, NULL, &(R0));
     }
   } else {
     kinematical = 1;
@@ -144,7 +144,7 @@ INITIALIZE
 
 TRACE
 %{
-  double K, vink;
+  double k, s;
   double x_el, y_el, z_el;    // beginning coordinates transformed into the ellipse system
   double kx_el, ky_el, kz_el; // kvector transformed into the ellipse system, hence
 
@@ -154,7 +154,7 @@ TRACE
   double kxn, kyn, kzn; // reflected ray's kvector
 
   /* get the photon's coordinates and kvector in the ellipse frame */
-  K = sqrt (kx * kx + ky * ky + kz * kz);
+  k = sqrt (kx * kx + ky * ky + kz * kz);
 
   CoordTransME (&x_el, &y_el, &z_el, x, y, z, Z0, Y0, xi);
   CoordTransME (&kx_el, &ky_el, &kz_el, kx, ky, kz, 0, 0, xi);
@@ -193,10 +193,10 @@ TRACE
           nz = 1.0;
         }
         NORM (nx, ny, nz);
-        vink = scalar_prod (nx, ny, nz, kx_el, ky_el, kz_el);
-        kxn = kx_el - 2.0 * vink * nx;
-        kyn = ky_el - 2.0 * vink * ny;
-        kzn = kz_el - 2.0 * vink * nz;
+        s = scalar_prod (nx, ny, nz, kx_el, ky_el, kz_el);
+        kxn = kx_el - 2.0 * s * nx;
+        kyn = ky_el - 2.0 * s * ny;
+        kzn = kz_el - 2.0 * s * nz;
         NORM (kxn, kyn, kzn);
 
         double kxo, kyo, kzo;
@@ -204,13 +204,13 @@ TRACE
         kyo = ky, kzo = kz;
         CoordTransEM (&kx, &ky, &kz, kxn, kyn, kzn, 0, 0, xi);
 
-        kx = K * kx;
-        ky = K * ky;
-        kz = K * kz;
+        kx = k * kx;
+        ky = k * ky;
+        kz = k * kz;
 
-        double QQ, EE, Ref;
+        double QQ;
+        cdouble Ref;
         QQ = sqrt ((kx - kxo) * (kx - kxo) + (ky - kyo) * (ky - kyo) + (kz - kzo) * (kz - kzo));
-        EE = K * K2E;
 
         if (kinematical) {
           /*
@@ -219,17 +219,17 @@ TRACE
            * r1(zeta) = 2 i r_0 \rho_{AB} \left(\frac{\Lambda^2 \Gamma}{\zeta}\right) \frac{\sin\left(\pi\Gamma\zeta\right)}{\pi\Gamma\zeta);
            */
           Ref = reflecq (re, QQ, 0, 0, 0);
-          if (Ref > 1) {
-            /*Reflectivity can't be >1*/
-            Ref = 1.0;
-          }
         } else {
           /*interpolate in table*/
           Ref = reflecq (re, QQ, 0, 0, 0);
         }
-
+        double pmul = sqrt (creal (cmul(Ref, conj (Ref))));
+        /*Reflectivity can't be >1*/
+        if (pmul>1) {
+          pmul = 1.0;
+        }
         /* apply reflectivity */
-        p *= Ref;
+        p *= pmul;
         SCATTER;
 
       } else {
