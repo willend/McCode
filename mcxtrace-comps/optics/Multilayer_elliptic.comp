@@ -62,7 +62,6 @@ SETTING PARAMETERS (string coating="Ref_W_B4C.txt",
     theta=1.2,s1=0,s2=0,length=0.5,width=0.2,R0=1, 
     Emin=-1, Emax=-1, Estep=-1, Gamma=0, Lambda=0, rho_AB=0, int N=0,
     xwidth=0, zdepth=0)
-NOACC
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */ 
 
@@ -206,6 +205,8 @@ TRACE
         kxo = kx;
         kyo = ky, kzo = kz;
         CoordTransEM (&kx, &ky, &kz, kxn, kyn, kzn, 0, 0, xi);
+
+	NORM (kx, ky, kz);
 
         kx = k * kx;
         ky = k * ky;
