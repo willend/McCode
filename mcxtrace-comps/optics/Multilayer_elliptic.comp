@@ -101,7 +101,6 @@ DECLARE
   double cost0;
   int kinematical;
   t_Reflec re;
-  int isconst;
 %}
 
 INITIALIZE
@@ -109,7 +108,6 @@ INITIALIZE
   /* calculation of the elliptical parameters according to the input mirror parameters:
   ellipse major axis a/2, minor axis b/2, M-magnification factor, Z0&Y0 - position of the mirror centre in the elliptical coordinate system.*/
   double Theta = DEG2RAD * theta;
-  isconst=0;
   if (xwidth)
     width = xwidth;
   if (zdepth)
@@ -133,7 +131,6 @@ INITIALIZE
       status = reflec_Init (&re, COATING_UNDEFINED, coating, NULL);
     } else {
       /*assume a constant reflectivity*/
-      isconst=1;
       status = reflec_Init (&re, CONSTANT, NULL, &(R0));
     }
   } else {
@@ -206,23 +203,22 @@ TRACE
         kyo = ky, kzo = kz;
         CoordTransEM (&kx, &ky, &kz, kxn, kyn, kzn, 0, 0, xi);
 
-	NORM (kx, ky, kz);
+        NORM (kx, ky, kz);
 
         kx = k * kx;
         ky = k * ky;
         kz = k * kz;
 
         double QQ;
-	double Ref=R0;
+        double Ref = R0;
         QQ = sqrt ((kx - kxo) * (kx - kxo) + (ky - kyo) * (ky - kyo) + (kz - kzo) * (kz - kzo));
-	if (!isconst) {
-          /*interpolate in table*/
-          Ref = reflecq (re, QQ, 0, k, fabs (90 - acos (s / k) * RAD2DEG));
-	  /*Reflectivity can't be >1*/
-          if (Ref>1) {
-            Ref = 1.0;
-          }
-	}
+        /* Evaluate reflectivity curve */
+        Ref = reflecq (re, QQ, 0, k, fabs (90 - acos (s / k) * RAD2DEG));
+        /*Reflectivity can't be >1*/
+        if (Ref > 1) {
+          Ref = 1.0;
+        }
+
         /* apply reflectivity */
         p *= Ref;
         SCATTER;
