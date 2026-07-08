@@ -108,8 +108,8 @@ EXTEND %{
   if (!SCATTERED) ABSORB;
   scatt_type=3;
 %}
-
 /* From here onwards are CPU-only if running in OpenACC/GPU mode */
+
 COMPONENT FL_pow = FluoPowder(
     radius=0.5e-6, material=material,
     delta_d_d=delta_d_d)
@@ -144,6 +144,13 @@ GROUP FluPow
 EXTEND %{
   if (SCATTERED) scatt_type=DIFFRACTION;
   else ABSORB;
+%}
+
+CPU COMPONENT FluoGinactive = Arm()
+WHEN (index !=5) AT (0, 0, 0) RELATIVE sample_cradle
+GROUP FluPow
+EXTEND %{
+  SCATTER;
 %}
 
 // detectors ------------------------------------------------------------------
