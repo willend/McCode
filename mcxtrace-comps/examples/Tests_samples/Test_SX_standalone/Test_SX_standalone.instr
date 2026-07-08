@@ -28,6 +28,11 @@
 
 DEFINE INSTRUMENT Test_SX_standalone(string reflections="Mo.lau", E0 = 7, dE = 6.9)
 
+DECLARE %{
+#define DIFFRACTION 1
+#define FLUORESCENCE 2
+%}
+
 USERVARS %{
   int Stype;
 %}
