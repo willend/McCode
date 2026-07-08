@@ -51,21 +51,21 @@ USERVARS %{
 %}
 
 INITIALIZE %{
-  MPI_MASTER(
+
   switch (index) {
     case 1:
-      printf("%s: Using PowderN (pure diffraction)\n", NAME_INSTRUMENT); break;
+      MPI_MASTER(printf("%s: Using PowderN (pure diffraction)\n", NAME_INSTRUMENT);); break;
     case 2:
-      printf("%s: Using Single_crystal (pure diffraction, powder average)\n", NAME_INSTRUMENT); break;
+      MPI_MASTER(printf("%s: Using Single_crystal (pure diffraction, powder average)\n", NAME_INSTRUMENT);); break;
     case 3:
-      printf("%s: Using FluoPowder (fluorescence+diffraction)\n", NAME_INSTRUMENT); break;
+      MPI_MASTER(printf("%s: Using FluoPowder (fluorescence+diffraction)\n", NAME_INSTRUMENT);); break;
     case 4:
-      printf("%s: Using Fluorescence (pure fluorescence)\n", NAME_INSTRUMENT); break;
+      MPI_MASTER(printf("%s: Using Fluorescence (pure fluorescence)\n", NAME_INSTRUMENT);); break;
     case 5:
-      printf("%s: Using Fluorescence+PowderN in a GROUP (fluorescence+diffraction)\n", NAME_INSTRUMENT); break;
+      MPI_MASTER(printf("%s: Using Fluorescence+PowderN in a GROUP (fluorescence+diffraction)\n", NAME_INSTRUMENT);); break;
     default:
-      exit(printf("%s: Unknown sample index %i. Use index=1-4.", NAME_INSTRUMENT, index));
-  });
+      exit(MPI_MASTER(printf("%s: Unknown sample index %i. Use index=1-4.", NAME_INSTRUMENT, index);););
+  }
   #ifndef _MSC_EXTENSIONS
   sprintf(SXfile,"%s",material);
   barns=0;
