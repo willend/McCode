@@ -55,7 +55,7 @@ COMPONENT sample = Single_crystal(reflections=reflections, material_datafile="NU
 AT (0, 0, 0) RELATIVE sample_pos
 EXTEND %{
   if(!SCATTERED) ABSORB;
-  else if (hkl_info.type == 'c') Stype=DIFFRACTION;
+  else if (type == 'c') Stype=DIFFRACTION;
   else Stype=FLUORESCENCE;
 %}
 
