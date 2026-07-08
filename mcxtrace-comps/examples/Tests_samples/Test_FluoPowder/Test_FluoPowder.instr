@@ -109,6 +109,7 @@ EXTEND %{
   scatt_type=3;
 %}
 
+/* From here onwards are CPU-only if running in OpenACC/GPU mode */
 COMPONENT FL_pow = FluoPowder(
     radius=0.5e-6, material=material,
     delta_d_d=delta_d_d)
@@ -147,38 +148,38 @@ EXTEND %{
 
 // detectors ------------------------------------------------------------------
 
-COMPONENT Sph_mon = PSD_monitor_4PI(nx=512,ny=512,
+CPU COMPONENT Sph_mon = PSD_monitor_4PI(nx=512,ny=512,
     radius=1, restore_xray=1, filename="Sphere")
   AT (0, 0, 0) RELATIVE PREVIOUS
 
-COMPONENT Sph_mon_pow = COPY(Sph_mon)(filename="Sphere_pow")
+CPU COMPONENT Sph_mon_pow = COPY(Sph_mon)(filename="Sphere_pow")
   WHEN (scatt_type == DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
 
-COMPONENT Sph_mon_flu = COPY(Sph_mon)(filename="Sphere_fluo")
+CPU COMPONENT Sph_mon_flu = COPY(Sph_mon)(filename="Sphere_fluo")
 WHEN (scatt_type != DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
 
-COMPONENT E_mon = Monitor_nD(
+CPU COMPONENT E_mon = Monitor_nD(
     options="energy", min=0, max=1.2*E0,
     bins=1024, radius=1, filename="Energy",restore_xray=1)
   AT(0,0,0) RELATIVE PREVIOUS
 
-COMPONENT E_mon_pow = COPY(E_mon)(filename="Energy_pow")
+CPU COMPONENT E_mon_pow = COPY(E_mon)(filename="Energy_pow")
   WHEN (scatt_type == DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
 
-COMPONENT E_mon_flu = COPY(E_mon)(filename="Energy_flu")
+CPU COMPONENT E_mon_flu = COPY(E_mon)(filename="Energy_flu")
   WHEN (scatt_type != DIFFRACTION)
   AT (0, 0, 0) RELATIVE PREVIOUS
 
 // ideal "banana" detector
-COMPONENT det_angle = Monitor_nD(options="abs theta limits=[5 90]",
+CPU COMPONENT det_angle = Monitor_nD(options="abs theta limits=[5 90]",
                                  radius=0.6, yheight=5e-2, bins=512, restore_xray=1)
 AT (0,0,0) RELATIVE PREVIOUS
 
 // SDD model
-COMPONENT SDD = Fluo_detector(restore_xray=1,nE=2001,Emin=0, Emax=1.5*E0,
+CPU COMPONENT SDD = Fluo_detector(restore_xray=1,nE=2001,Emin=0, Emax=1.5*E0,
                                filename="sdd.dat",radius=1, flag_lorentzian=1)
 AT(0,0,0) RELATIVE PREVIOUS
 
