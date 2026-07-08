@@ -64,7 +64,8 @@ INITIALIZE %{
     case 5:
       MPI_MASTER(printf("%s: Using Fluorescence+PowderN in a GROUP (fluorescence+diffraction)\n", NAME_INSTRUMENT);); break;
     default:
-      exit(MPI_MASTER(printf("%s: Unknown sample index %i. Use index=1-4.", NAME_INSTRUMENT, index);););
+      MPI_MASTER(printf("%s: Unknown sample index %i. Use index=1-4.\n", NAME_INSTRUMENT, index););
+      exit(-1);
   }
   #ifndef _MSC_EXTENSIONS
   sprintf(SXfile,"%s",material);
