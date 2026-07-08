@@ -136,7 +136,7 @@ EXTEND %{
   if (SCATTERED) scatt_type = type;
 %}
 
-COMPONENT PowG = COPY(Pow)
+CPU COMPONENT PowG = COPY(Pow)
 WHEN (index == 5)
 AT (0, 0, 0) RELATIVE sample_cradle
 GROUP FluPow
