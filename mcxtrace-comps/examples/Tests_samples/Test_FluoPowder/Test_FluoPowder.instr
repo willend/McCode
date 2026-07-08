@@ -129,14 +129,6 @@ EXTEND %{
   scatt_type = type;
 %}
 
-COMPONENT FluoG = COPY(Fluo)(p_interact=0.5)
-WHEN (index == 5)
-AT (0, 0, 0) RELATIVE sample_cradle
-GROUP FluPow
-EXTEND %{
-  if (SCATTERED) scatt_type = type;
-%}
-
 CPU COMPONENT PowG = COPY(Pow)
 WHEN (index == 5)
 AT (0, 0, 0) RELATIVE sample_cradle
@@ -145,6 +137,15 @@ EXTEND %{
   if (SCATTERED) scatt_type=DIFFRACTION;
   else ABSORB;
 %}
+
+COMPONENT FluoG = COPY(Fluo)(p_interact=0.5)
+WHEN (index == 5)
+AT (0, 0, 0) RELATIVE sample_cradle
+GROUP FluPow
+EXTEND %{
+  if (SCATTERED) scatt_type = type;
+%}
+
 
 CPU COMPONENT FluoGinactive = Arm()
 WHEN (index !=5) AT (0, 0, 0) RELATIVE sample_cradle
