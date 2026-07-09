@@ -73,8 +73,10 @@ include(CPack)
 
 set(WORK "${PROJECT_BINARY_DIR}/work")
 
-# Configure fallback script
+# Configure fallback scripts
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplot.in" "${WORK}/${P}plot" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplotdiff.in" "${WORK}/${P}plotdiff" @ONLY)
+
 
 # Configure doc
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplot-pyqtgraph.md.in" "${WORK}/${P}plot-pyqtgraph.md" @ONLY)
@@ -149,6 +151,12 @@ if(NOT WINDOWS)
   install(
     PROGRAMS "${WORK}/${P}plotdiff-pyqtgraph"
     DESTINATION ${DEST_BINDIR}
+  )
+
+  install(
+    PROGRAMS "${WORK}/${P}plotdiff-pyqtgraph"
+    DESTINATION ${DEST_BINDIR}
+    RENAME "${P}plotdiff"
     )
 
   install(
