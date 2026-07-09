@@ -86,6 +86,19 @@ install(
   RENAME "${P}plot.py"
   )
 
+# Configure fallback script for the a-b difference plotter
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplotdiff.in" "${WORK}/${P}plotdiff-pyqtgraph" @ONLY)
+
+# Configure doc for the a-b difference plotter
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplotdiff-pyqtgraph.md.in" "${WORK}/${P}plotdiff-pyqtgraph.md" @ONLY)
+
+# Difference-plotter script, including rename mc/mxplotdiff
+install(
+  PROGRAMS "${PROJECT_SOURCE_DIR}/mcplotdiff.py"
+  DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+  RENAME "${P}plotdiff.py"
+  )
+
 # Other .py infrastructure
 foreach(NAME "mcdataclient.py"  "mcdataserver.py"  "mcdataservice.py" "plotfuncs.py")
   install(
@@ -98,7 +111,7 @@ endforeach()
 # cmake Modules/MCUtil
 if(NOT WINDOWS)
   add_custom_target(
-    "CREATE_${PROJECT_NAME}_SYMLINK" ALL DEPENDS "${WORK}/${P}plot"
+    "CREATE_${PROJECT_NAME}_SYMLINK" ALL DEPENDS "${WORK}/${P}plot" "${WORK}/${P}plotdiff-pyqtgraph"
     )
 
   install(
@@ -126,5 +139,21 @@ if(NOT WINDOWS)
     DESTINATION "${DEST_DATADIR_DOC}"
     RENAME "${P}plot.md"
   )
-  
+
+  install(
+    PROGRAMS ${PROJECT_SOURCE_DIR}/mcplotdiff.py
+    DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+    RENAME "${P}plotdiff.py"
+  )
+
+  install(
+    PROGRAMS "${WORK}/${P}plotdiff-pyqtgraph"
+    DESTINATION ${DEST_BINDIR}
+    )
+
+  install(
+    FILES "${WORK}/${P}plotdiff-pyqtgraph.md"
+    DESTINATION "${DEST_DATADIR_DOC}"
+  )
+
 endif()

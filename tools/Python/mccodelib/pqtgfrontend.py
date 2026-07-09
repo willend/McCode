@@ -111,10 +111,10 @@ class ViewModel():
     '''
     Logstate / view-options housekeeping object.
     '''
-    def __init__(self, log=False, fromzero=False, legend=True, sourcedir=None):
+    def __init__(self, log=False, fromzero=False, legend=True, sourcedir=None, icolormap=0):
         self.log = log
         self.fromzero = fromzero
-        self.icolormap = 0
+        self.icolormap = icolormap
         self.legend = legend
         self.sourcedir = sourcedir
 
@@ -159,17 +159,23 @@ class McPyqtgraphPlotter():
     PyQt5, PyQt6, PySide2, and PySide6 without branching.
     '''
 
-    def __init__(self, plotgraph, sourcedir, plot_func, invcanvas):
+    def __init__(self, plotgraph, sourcedir, plot_func, invcanvas, title=None, icolormap=0):
         '''
         plotgraph  : plotgraph root node
-        sourcedir  : data files source directory
+        sourcedir  : data files source directory (also used for the 'x'
+                     expand-subplots shortcut, which lists and re-plots its
+                     immediate subdirectories)
         plot_func  : user-supplied plotting function
                      signature: (node, i, plt, opts) -> (view_box, plt_item)
         invcanvas  : invert background (white bg / black fg)
+        title      : window title; defaults to sourcedir if not given
+        icolormap  : starting colormap index (see plotfuncs.COLORMAP_KEYS)
         '''
         self.graph     = plotgraph
         self.sourcedir = sourcedir
         self.plot_func = plot_func
+        self.title     = title if title is not None else sourcedir
+        self.icolormap = icolormap
 
         self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
 
@@ -184,9 +190,9 @@ class McPyqtgraphPlotter():
     def runplot(self):
         node = self.graph
 
-        self.create_plotwindow(title=self.sourcedir)
+        self.create_plotwindow(title=self.title)
 
-        self.viewmodel = ViewModel(sourcedir=self.sourcedir)
+        self.viewmodel = ViewModel(sourcedir=self.sourcedir, icolormap=self.icolormap)
 
         self.plot_node(node)
         self.update_statusbar(None, node, None)
