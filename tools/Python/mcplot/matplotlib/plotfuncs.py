@@ -167,19 +167,22 @@ def plot_single_data(node, i, n, log):
             y=np.log(y)
             ylabel ="log(" + data.ylabel +")"
 
-        pylab.errorbar(x, y, yerr)
+        errbar = pylab.errorbar(x, y, yerr)
 
         pylab.xlabel(data.xlabel, fontsize=fontsize, fontweight='bold')
         pylab.ylabel(ylabel, fontsize=fontsize, fontweight='bold')
         try:
-            title = '%s\nI = %s' % (data.component, data.values[0])
+            legend_text = '%s\nI = %s' % (data.component, data.values[0])
             if verbose:
-                title = '%s [%s]\n%s\nI = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
+                legend_text = '%s [%s]\n%s\nI = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
         except:
-            title = '%s\n[%s]' % (data.component, data.filename)
+            legend_text = '%s\n[%s]' % (data.component, data.filename)
         title_fontsize = _title_fontsize(n)
-        title = _wrap_title(title, _title_wrap_width(n, title_fontsize))
-        pylab.title(title, fontsize=title_fontsize, fontweight='bold')
+        legend_text = _wrap_title(legend_text, _title_wrap_width(n, title_fontsize))
+        errbar[0].set_label(legend_text)
+        leg = pylab.legend(loc='upper left', fontsize=title_fontsize, framealpha=0.85,
+                            handlelength=1.2, handletextpad=0.5, borderpad=0.4)
+        leg.set_draggable(True)
 
     elif type(data) is Data2D:
         ''' plot 2D data '''
@@ -215,14 +218,20 @@ def plot_single_data(node, i, n, log):
         pylab.ylabel(data.ylabel, fontsize=fontsize, fontweight='bold')
 
         try:
-            title = '%s\nI = %s' % (data.component, data.values[0])
+            legend_text = '%s\nI = %s' % (data.component, data.values[0])
             if verbose:
-                title = '%s [%s]\n%s\nI = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
+                legend_text = '%s [%s]\n%s\nI = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
         except:
-            title = '%s\n[%s]' % (data.component, data.filename)
+            legend_text = '%s\n[%s]' % (data.component, data.filename)
         title_fontsize = _title_fontsize(n)
-        title = _wrap_title(title, _title_wrap_width(n, title_fontsize))
-        pylab.title(title, fontsize=title_fontsize, fontweight='bold')
+        legend_text = _wrap_title(legend_text, _title_wrap_width(n, title_fontsize))
+        # pcolor() returns a QuadMesh, which doesn't make a useful legend
+        # swatch; use an invisible dummy artist to carry the label instead
+        # (same technique the pyqtgraph tool's plot_Data2D uses).
+        pylab.plot([], [], ' ', label=legend_text)
+        leg = pylab.legend(loc='upper left', fontsize=title_fontsize, framealpha=0.85,
+                            handlelength=0, handletextpad=0, borderpad=0.4)
+        leg.set_draggable(True)
 
     else:
         print("Unsuported plot data type %s" % type(data))
@@ -276,12 +285,12 @@ class McMatplotlibPlotter():
         self.subplts = [plot_single_data(node, i, n, self.log) for i in range(n)]
 
         # Tighten the outer margins (matplotlib's defaults leave a
-        # surprisingly large blank border) and open up the vertical gap
-        # between rows so multi-line titles have room to breathe instead of
-        # overlapping the plot above them.
-        _, rows = _calc_panel_size(n)
-        fig.subplots_adjust(left=0.06, right=0.98, top=0.92, bottom=0.06,
-                             wspace=0.35, hspace=0.65 if rows > 2 else 0.45)
+        # surprisingly large blank border). Titles now live as an in-plot
+        # legend rather than text spanning above each panel, so there's no
+        # longer a need for the extra hspace headroom that used to guard
+        # against titles overlapping the row above.
+        fig.subplots_adjust(left=0.06, right=0.98, top=0.97, bottom=0.06,
+                             wspace=0.3, hspace=0.35)
 
         # create callbacks
         self.click_cbs = [lambda nde=n: self.plot_node(nde) for n in node.primaries]
@@ -313,9 +322,8 @@ class McMatplotlibPlotter():
 
         self.subplts = [plot_single_data(node, i, n, self.log) for i in range(n)]
 
-        _, rows = _calc_panel_size(n)
-        fig.subplots_adjust(left=0.06, right=0.98, top=0.92, bottom=0.06,
-                             wspace=0.35, hspace=0.65 if rows > 2 else 0.45)
+        fig.subplots_adjust(left=0.06, right=0.98, top=0.97, bottom=0.06,
+                             wspace=0.3, hspace=0.35)
 
         mpld3.save_html(pylab.gcf(), fileobj)
 
