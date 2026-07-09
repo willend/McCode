@@ -153,7 +153,7 @@ def diff_1d(key, a, b, label_a, label_b):
     except Exception:
         N = 0
     d.values = (I, Ierr, N)
-    d.statistics = '%s: %s   |   %s: %s' % (label_a, a.statistics, label_b, b.statistics)
+    d.statistics = '%s: %s\n%s: %s' % (label_a, a.statistics, label_b, b.statistics)
     d.title = 'Diff (%s - %s): %s' % (label_a, label_b, a.title)
 
     return d
@@ -192,7 +192,7 @@ def diff_2d(key, a, b, label_a, label_b):
         Ierr = 0.0
         N = 0
     d.values = (I, Ierr, N)
-    d.statistics = '%s: %s   |   %s: %s' % (label_a, a.statistics, label_b, b.statistics)
+    d.statistics = '%s: %s\n%s: %s' % (label_a, a.statistics, label_b, b.statistics)
     d.title = 'Diff (%s - %s): %s' % (label_a, label_b, a.title)
 
     return d
