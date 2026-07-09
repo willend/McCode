@@ -11,6 +11,7 @@ simulation's plot graph.
 import os
 import sys
 import math
+import textwrap
 import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -19,6 +20,9 @@ from mccodelib.plotgraph import PNSingle
 from mccodelib.mcplotloader import Data1D, Data2D
 from mccodelib.mccode_config import get_mccode_prefix
 
+# Legacy fixed font size, kept for backward compatibility with any external
+# code that may reference plotfuncs.FONTSIZE directly. Plotting itself now
+# uses _panel_fontsize(n), which scales with the number of panels in view.
 FONTSIZE = 10
 
 # Global placeholder for later import of pylab by the caller
@@ -32,21 +36,114 @@ pylab = 0
 filenamebase = get_mccode_prefix() + 'plot'
 
 
+def _calc_panel_size(nfigs):
+    ''' golden-ratio-ish grid dimensions (ncols, nrows) for nfigs panels '''
+    nx = int(math.sqrt(nfigs*1.61803398875)) # golden ratio
+    ny = nfigs // nx + int(bool(nfigs % nx))
+    return nx, ny
+
+
+# matplotlib's own stock default figure size (inches)
+_DEFAULT_FIGSIZE = (6.4, 4.8)
+
+# Scale-up applied to the single-plot (drill-down) view, relative to
+# matplotlib's stock default. The grid-based overview sizing below does NOT
+# reduce to this by itself at n=1 (it would actually come out smaller than
+# the stock default), so n<=1 is special-cased.
+_SINGLE_VIEW_SCALE = 2.0
+
+
+def _figure_size(n):
+    ''' (width, height) in inches for a view of n panels.
+
+        n <= 1: the single-plot drill-down view, sized as a multiple of
+        matplotlib's own default figure size (rather than the grid formula
+        below, which would otherwise come out smaller than that default).
+
+        n > 1: overview grid, sized to the panel grid so multi-panel views
+        actually use the available window/screen real estate, capped so
+        very large grids don't produce an unreasonably huge window. '''
+    if n <= 1:
+        return (_DEFAULT_FIGSIZE[0] * _SINGLE_VIEW_SCALE,
+                _DEFAULT_FIGSIZE[1] * _SINGLE_VIEW_SCALE)
+    cols, rows = _calc_panel_size(n)
+    fig_w = min(3.4 * cols + 1.0, 22)
+    fig_h = min(2.8 * rows + 1.0, 14)
+    return (fig_w, fig_h)
+
+
+def _panel_fontsize(n):
+    ''' Point size for axis labels, scaled by how many panels are in view:
+        a couple of panels can afford large, readable text; once a view
+        gets past a dozen or so panels, labels need to shrink substantially
+        or they crowd the plot. '''
+    if n <= 2:
+        return 14
+    elif n <= 16:
+        return 10
+    else:
+        return 8
+
+
+def _title_fontsize(n):
+    ''' Point size for panel titles specifically. Deliberately smaller than
+        _panel_fontsize(): titles here can carry a long, multi-field string
+        (component/filename/title/I/Err/N/statistics), and that combination
+        of digits, decimals and "="/"+"/"-" symbols renders noticeably wider
+        per character than ordinary prose at the same point size - so
+        titles need a smaller size than axis labels to reliably fit. '''
+    if n <= 2:
+        return 11
+    elif n <= 16:
+        return 9
+    else:
+        return 7
+
+
+def _title_wrap_width(n, fontsize):
+    ''' Approximate number of characters that fit across one panel's width
+        at the given fontsize, used to wrap long titles instead of letting
+        them overflow the figure. Deliberately a rough heuristic (average
+        bold-character width as a fraction of the font's point size) rather
+        than an exact text-measurement - good enough to catch the common
+        case of a long component/filename/statistics string, without
+        depending on a renderer being available at layout time.
+
+        The titles this wraps tend to be dense with digits and symbols
+        ("I = 1.2E+7 Err = ...; X0=...; dX=...;"), which render wider per
+        character than ordinary prose, so the width-per-character factor
+        here is deliberately generous (i.e. wraps a bit earlier than a
+        prose-tuned estimate would) to leave headroom against that. '''
+    fig_w, _ = _figure_size(n)
+    cols, _ = _calc_panel_size(n) if n > 1 else (1, 1)
+    panel_w_in = fig_w / max(cols, 1)
+
+    avg_char_width_in = (fontsize * 0.85) / 72.0  # bold, digit/symbol-heavy text
+    usable_w_in = panel_w_in * 0.88               # leave a bit more margin
+    return max(15, int(usable_w_in / avg_char_width_in))
+
+
+def _wrap_title(title, width):
+    ''' Wrap each already-newline-separated line of `title` to at most
+        `width` characters, so a long component/filename/statistics line
+        doesn't run wider than the figure. '''
+    return '\n'.join(
+        textwrap.fill(line, width=width) if line else line
+        for line in title.split('\n')
+    )
+
+
 def plot_single_data(node, i, n, log):
     ''' plot the data of node, at index i, to a subplot '''
-    def calc_panel_size(nfigs):
-        nx = int(math.sqrt(nfigs*1.61803398875)) # golden ratio
-        ny = nfigs // nx + int(bool(nfigs % nx))
-        return nx, ny
-
     if type(node) == PNSingle and i != 0:
         raise Exception("inconsistent plot request, idx=%s" % str(i))
 
-    dims = calc_panel_size(n)
+    dims = _calc_panel_size(n)
     subplt = pylab.subplot(dims[1],dims[0],i+1)
     data = node.getdata_idx(i)
 
     verbose = n == 1
+    fontsize = _panel_fontsize(n)
 
     if type(data) is Data1D:
         ''' plot 1D data '''
@@ -72,13 +169,17 @@ def plot_single_data(node, i, n, log):
 
         pylab.errorbar(x, y, yerr)
 
-        pylab.xlabel(data.xlabel, fontsize=FONTSIZE, fontweight='bold')
-        pylab.ylabel(ylabel, fontsize=FONTSIZE, fontweight='bold')
+        pylab.xlabel(data.xlabel, fontsize=fontsize, fontweight='bold')
+        pylab.ylabel(ylabel, fontsize=fontsize, fontweight='bold')
         try:
-            title = '%s [%s]\n%s\nI = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
+            title = '%s\nI = %s' % (data.component, data.values[0])
+            if verbose:
+                title = '%s [%s]\n%s\nI = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
         except:
             title = '%s\n[%s]' % (data.component, data.filename)
-        pylab.title(title, fontsize=FONTSIZE, fontweight='bold')
+        title_fontsize = _title_fontsize(n)
+        title = _wrap_title(title, _title_wrap_width(n, title_fontsize))
+        pylab.title(title, fontsize=title_fontsize, fontweight='bold')
 
     elif type(data) is Data2D:
         ''' plot 2D data '''
@@ -110,8 +211,8 @@ def plot_single_data(node, i, n, log):
         pylab.pcolor(x,y,zvals)
         pylab.colorbar()
 
-        pylab.xlabel(data.xlabel, fontsize=FONTSIZE, fontweight='bold')
-        pylab.ylabel(data.ylabel, fontsize=FONTSIZE, fontweight='bold')
+        pylab.xlabel(data.xlabel, fontsize=fontsize, fontweight='bold')
+        pylab.ylabel(data.ylabel, fontsize=fontsize, fontweight='bold')
 
         try:
             title = '%s\nI = %s' % (data.component, data.values[0])
@@ -119,7 +220,9 @@ def plot_single_data(node, i, n, log):
                 title = '%s [%s]\n%s\nI = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
         except:
             title = '%s\n[%s]' % (data.component, data.filename)
-        pylab.title(title, fontsize=FONTSIZE, fontweight='bold')
+        title_fontsize = _title_fontsize(n)
+        title = _wrap_title(title, _title_wrap_width(n, title_fontsize))
+        pylab.title(title, fontsize=title_fontsize, fontweight='bold')
 
     else:
         print("Unsuported plot data type %s" % type(data))
@@ -163,7 +266,22 @@ class McMatplotlibPlotter():
 
         # plot data and keep subplots for the click area filter
         n = node.getnumdata()
+
+        # Size the figure to the view: 2x matplotlib's stock default for a
+        # single-plot drill-down, or to the panel grid for an overview, so
+        # either way the window actually uses available screen real estate.
+        fig_w, fig_h = _figure_size(n)
+        fig = pylab.figure(figsize=(fig_w, fig_h))
+
         self.subplts = [plot_single_data(node, i, n, self.log) for i in range(n)]
+
+        # Tighten the outer margins (matplotlib's defaults leave a
+        # surprisingly large blank border) and open up the vertical gap
+        # between rows so multi-line titles have room to breathe instead of
+        # overlapping the plot above them.
+        _, rows = _calc_panel_size(n)
+        fig.subplots_adjust(left=0.06, right=0.98, top=0.92, bottom=0.06,
+                             wspace=0.35, hspace=0.65 if rows > 2 else 0.45)
 
         # create callbacks
         self.click_cbs = [lambda nde=n: self.plot_node(nde) for n in node.primaries]
@@ -189,8 +307,16 @@ class McMatplotlibPlotter():
         import mpld3
         
         n = node.getnumdata()
+
+        fig_w, fig_h = _figure_size(n)
+        fig = pylab.figure(figsize=(fig_w, fig_h))
+
         self.subplts = [plot_single_data(node, i, n, self.log) for i in range(n)]
-        
+
+        _, rows = _calc_panel_size(n)
+        fig.subplots_adjust(left=0.06, right=0.98, top=0.92, bottom=0.06,
+                             wspace=0.35, hspace=0.65 if rows > 2 else 0.45)
+
         mpld3.save_html(pylab.gcf(), fileobj)
 
 
