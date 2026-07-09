@@ -382,7 +382,7 @@ class McPyqtgraphPlotter():
     # ------------------------------------------------------------------
 
     def get_plot_func_opts(self, fromzero, log, legend, icolormap,
-                           verbose, fontsize, cbmin=None, cbmax=None):
+                           verbose, fontsize, cbmin=None, cbmax=None, cell_height=None):
         d = {}
         d['log']       = log
         d['fromzero']  = fromzero
@@ -390,6 +390,7 @@ class McPyqtgraphPlotter():
         d['icolormap'] = icolormap
         d['verbose']   = verbose
         d['fontsize']  = fontsize
+        d['cell_height'] = cell_height
         if cbmin is not None and cbmax is not None:
             d['cbmin'] = cbmin
             d['cbmax'] = cbmax
@@ -422,6 +423,15 @@ class McPyqtgraphPlotter():
 
         plt    = pg.PlotItem()
         rowlen = get_golden_rowlen(n)
+        rows   = math.ceil(n / rowlen) if rowlen > 0 else 1
+
+        # Approximate on-screen height of a single grid cell, from the
+        # *current* window size (so it reacts to live window resizes, not
+        # just the size at startup). Used to scale the colour bar's tick
+        # font: the same 12-pane overview should get a bigger colour bar
+        # font on a large/maximised window than squeezed into a small one.
+        win_size = self.main_window.size()
+        cell_height = win_size.height() / rows if rows > 0 else win_size.height()
 
         verbose  = n <= 4
         # NOTE: plotfuncs.plot_Data2D() only draws its colour-bar panel when
@@ -448,7 +458,7 @@ class McPyqtgraphPlotter():
             self.viewmodel.logstate(),
             self.viewmodel.legendstate(),
             self.viewmodel.cmapindex(),
-            verbose, fontsize, cbmin, cbmax)
+            verbose, fontsize, cbmin, cbmax, cell_height=cell_height)
 
         view_box, plt_itm = self.plot_func(node, i, plt, options)
         if view_box:

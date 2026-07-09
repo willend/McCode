@@ -34,7 +34,7 @@ def plot(node, i, plt, opts):
         view_box, lyt = plot_Data2D(data, plt, log=opts['log'], legend=opts['legend'], icolormap=opts['icolormap'],
                                     verbose=opts['verbose'], fontsize=opts['fontsize'],
                                     cbmin=opts.get('cbmin', None), cbmax=opts.get('cbmax', None),
-                                    nplots=opts.get('nplots', None))
+                                    nplots=opts.get('nplots', None), cell_height=opts.get('cell_height', None))
         return view_box, lyt
     elif type(data) is Data0D:
         view_box = plot_Data0D(data, plt, log=opts['log'], legend=opts['legend'], icolormap=opts['icolormap'],
@@ -187,25 +187,39 @@ def get_color_map(idx, pos_min, pos_max):
     return pg.ColorMap(pos, colormap)
 
 
-def _colorbar_fontsize(nplots, fontsize):
+def _colorbar_fontsize(nplots, fontsize, cell_height=None):
     ''' Point size for the colour bar's tick labels.
 
-        Scales with the total number of monitors currently in view
-        (nplots), not the already-bucketed `fontsize` used for the main
-        plot text: stays at 8pt for views of 12 monitors or fewer, then
-        shrinks gradually (floored at 6pt) as the view gets more crowded.
+        Base size scales with the total number of monitors currently in
+        view (nplots), not the already-bucketed `fontsize` used for the
+        main plot text: stays at 8pt for views of 12 monitors or fewer,
+        then shrinks gradually (floored at 6pt) as the view gets more
+        crowded. Falls back to the previous fontsize-derived sizing if
+        `nplots` isn't supplied.
 
-        Falls back to the previous fontsize-derived sizing if `nplots`
-        isn't supplied (e.g. an older caller that hasn't been updated to
-        pass it through). '''
+        That base size is then scaled by `cell_height` - the actual
+        on-screen pixel height of one grid cell - relative to a reference
+        cell height (REFERENCE_CELL_HEIGHT). This means the same 12-pane
+        overview gets a visibly bigger colour bar font on a large/maximised
+        window than when squeezed into a small one, rather than a fixed
+        size regardless of how much room is actually available. Result is
+        clamped to [6, 14]pt. '''
     if nplots is None:
-        return max(6, int(fontsize) - 4)
-    if nplots <= 12:
-        return 8
-    return max(6, 8 - (nplots - 12) // 6)
+        base = max(6, int(fontsize) - 4)
+    elif nplots <= 12:
+        base = 8
+    else:
+        base = max(6, 8 - (nplots - 12) // 6)
+
+    if not cell_height:
+        return base
+
+    REFERENCE_CELL_HEIGHT = 300  # px; roughly a 12-pane overview on a typical laptop screen
+    scaled = round(base * (cell_height / REFERENCE_CELL_HEIGHT))
+    return max(6, min(scaled, 14))
 
 
-def plot_Data2D(data, plt, log=False, legend=True, icolormap=0, verbose=False, fontsize=10, cbmin=None, cbmax=None, nplots=None):
+def plot_Data2D(data, plt, log=False, legend=True, icolormap=0, verbose=False, fontsize=10, cbmin=None, cbmax=None, nplots=None, cell_height=None):
     ''' create a layout and populate a plotItem with data Data2D, adding a color bar '''
     # data
     img = pg.ImageItem()
@@ -323,7 +337,7 @@ def plot_Data2D(data, plt, log=False, legend=True, icolormap=0, verbose=False, f
         # axis/legend text (which uses `fontsize` as-is), since the bar
         # itself is only 40px wide and doesn't need large numbers.
         cb_font = QtGui.QFont()
-        cb_font.setPointSize(_colorbar_fontsize(nplots, fontsize))
+        cb_font.setPointSize(_colorbar_fontsize(nplots, fontsize, cell_height))
         colorbar.axes['right']['item'].setTickFont(cb_font)
 
         colorbar.getViewBox().autoRange(padding=0)
