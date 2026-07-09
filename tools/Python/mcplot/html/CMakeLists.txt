@@ -88,6 +88,19 @@ install(
   RENAME "${P}plot.py"
   )
 
+# Configure fallback script for the a-b difference plotter
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplotdiff.in" "${WORK}/${P}plotdiff-html" @ONLY)
+
+# Configure doc for the a-b difference plotter
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplotdiff-html.md.in" "${WORK}/${P}plotdiff-html.md" @ONLY)
+
+# Difference-plotter script, including rename mc/mxplotdiff
+install(
+  PROGRAMS "${PROJECT_SOURCE_DIR}/mcplotdiff.py"
+  DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+  RENAME "${P}plotdiff.py"
+  )
+
 # Other .py infrastructure
 foreach(NAME d3.v4.min.js template_1d.html template_2d.html plotfuncs.js)
   install(
@@ -100,7 +113,7 @@ endforeach()
 # cmake Modules/MCUtil
 if(NOT WINDOWS)
   add_custom_target(
-    "CREATE_${PROJECT_NAME}_SYMLINK" ALL DEPENDS "${WORK}/${P}plot-html"
+    "CREATE_${PROJECT_NAME}_SYMLINK" ALL DEPENDS "${WORK}/${P}plot-html" "${WORK}/${P}plotdiff-html"
     )
 
   install(
@@ -118,5 +131,21 @@ if(NOT WINDOWS)
     FILES "${WORK}/${P}plot-html.md"
     DESTINATION "${DEST_DATADIR_DOC}"
   )
-  
+
+  install(
+    PROGRAMS ${PROJECT_SOURCE_DIR}/mcplotdiff.py
+    DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+    RENAME "${P}plotdiff.py"
+  )
+
+  install(
+    PROGRAMS "${WORK}/${P}plotdiff-html"
+    DESTINATION ${DEST_BINDIR}
+    )
+
+  install(
+    FILES "${WORK}/${P}plotdiff-html.md"
+    DESTINATION "${DEST_DATADIR_DOC}"
+  )
+
 endif()
