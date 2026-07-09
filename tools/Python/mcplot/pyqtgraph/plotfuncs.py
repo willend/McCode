@@ -33,7 +33,8 @@ def plot(node, i, plt, opts):
     elif type(data) is Data2D:
         view_box, lyt = plot_Data2D(data, plt, log=opts['log'], legend=opts['legend'], icolormap=opts['icolormap'],
                                     verbose=opts['verbose'], fontsize=opts['fontsize'],
-                                    cbmin=opts.get('cbmin', None), cbmax=opts.get('cbmax', None))
+                                    cbmin=opts.get('cbmin', None), cbmax=opts.get('cbmax', None),
+                                    nplots=opts.get('nplots', None))
         return view_box, lyt
     elif type(data) is Data0D:
         view_box = plot_Data0D(data, plt, log=opts['log'], legend=opts['legend'], icolormap=opts['icolormap'],
@@ -186,7 +187,25 @@ def get_color_map(idx, pos_min, pos_max):
     return pg.ColorMap(pos, colormap)
 
 
-def plot_Data2D(data, plt, log=False, legend=True, icolormap=0, verbose=False, fontsize=10, cbmin=None, cbmax=None):
+def _colorbar_fontsize(nplots, fontsize):
+    ''' Point size for the colour bar's tick labels.
+
+        Scales with the total number of monitors currently in view
+        (nplots), not the already-bucketed `fontsize` used for the main
+        plot text: stays at 8pt for views of 12 monitors or fewer, then
+        shrinks gradually (floored at 6pt) as the view gets more crowded.
+
+        Falls back to the previous fontsize-derived sizing if `nplots`
+        isn't supplied (e.g. an older caller that hasn't been updated to
+        pass it through). '''
+    if nplots is None:
+        return max(6, int(fontsize) - 4)
+    if nplots <= 12:
+        return 8
+    return max(6, 8 - (nplots - 12) // 6)
+
+
+def plot_Data2D(data, plt, log=False, legend=True, icolormap=0, verbose=False, fontsize=10, cbmin=None, cbmax=None, nplots=None):
     ''' create a layout and populate a plotItem with data Data2D, adding a color bar '''
     # data
     img = pg.ImageItem()
@@ -299,6 +318,13 @@ def plot_Data2D(data, plt, log=False, legend=True, icolormap=0, verbose=False, f
         colorbar.axes['left']['item'].show()
         colorbar.axes['left']['item'].setStyle(showValues=False)
         colorbar.axes['right']['item'].show()
+
+        # Colour bar tick labels: noticeably smaller than the main plot's
+        # axis/legend text (which uses `fontsize` as-is), since the bar
+        # itself is only 40px wide and doesn't need large numbers.
+        cb_font = QtGui.QFont()
+        cb_font.setPointSize(_colorbar_fontsize(nplots, fontsize))
+        colorbar.axes['right']['item'].setTickFont(cb_font)
 
         colorbar.getViewBox().autoRange(padding=0)
 

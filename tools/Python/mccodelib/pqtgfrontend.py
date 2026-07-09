@@ -426,13 +426,17 @@ class McPyqtgraphPlotter():
         verbose  = n <= 4
         # NOTE: plotfuncs.plot_Data2D() only draws its colour-bar panel when
         # fontsize >= 8 (it (mis)uses this text-sizing value as a crowding
-        # threshold). With the original (4, 10, 14) tuple, any view with
-        # n >= 12 total monitors (1D+2D combined) dropped to fontsize=4,
-        # silently suppressing the colour bar for every 2D monitor in that
-        # view - not just making it small, but never drawing it at all.
-        # Bumping the low end from 4 to 8 keeps text reasonably compact in
-        # crowded views while guaranteeing the colour bar always renders.
-        fontsize = (8, 10, 14)[int(n <= 2) + int(n < 12)]
+        # threshold), so the smallest tier below must never go under 8.
+        # The breakpoint for that smallest tier is deliberately set above 12
+        # (rather than at 12) since a 12-pane overview is common enough that
+        # it should keep the more readable 10pt size; only genuinely dense
+        # views (>16 monitors) drop to 8pt.
+        if n <= 2:
+            fontsize = 14
+        elif n <= 16:
+            fontsize = 10
+        else:
+            fontsize = 8
 
         if self.viewmodel.logstate():
             cbmin = cbmax = None
