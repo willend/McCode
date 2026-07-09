@@ -154,7 +154,7 @@ def diff_1d(key, a, b, label_a, label_b):
         N = 0
     d.values = (I, Ierr, N)
     d.statistics = '%s: %s\n%s: %s' % (label_a, a.statistics, label_b, b.statistics)
-    d.title = 'Diff (%s - %s): %s' % (label_a, label_b, a.title)
+    d.title = '\nDiff (%s - %s): %s' % (label_a, label_b, a.title)
 
     return d
 
@@ -193,7 +193,7 @@ def diff_2d(key, a, b, label_a, label_b):
         N = 0
     d.values = (I, Ierr, N)
     d.statistics = '%s: %s\n%s: %s' % (label_a, a.statistics, label_b, b.statistics)
-    d.title = 'Diff (%s - %s): %s' % (label_a, label_b, a.title)
+    d.title = '\nDiff (%s - %s): %s' % (label_a, label_b, a.title)
 
     return d
 
@@ -234,6 +234,26 @@ def compute_diffs(monitors_a, monitors_b, label_a, label_b):
             diffs.append(d)
 
     return diffs
+
+
+# ---------------------------------------------------------------------------
+# locating pre-existing mcplot-html output for the two original simulations
+# ---------------------------------------------------------------------------
+
+def find_original_plot(directory, monitor_filename):
+    """ Looks for the mcplot-html page(s) previously generated (by
+        mcplot.py / mcplot-html) for a given monitor output file in
+        `directory`, e.g. 'PSD.dat' -> 'PSD.dat.html' / 'PSD.dat_log.html'.
+        Returns (linear_path_or_None, log_path_or_None); either may be None
+        if the corresponding page hasn't been generated (yet). """
+    if not directory or not monitor_filename:
+        return None, None
+    base = os.path.join(directory, monitor_filename)
+    linear = base + ".html"
+    log = base + "_log.html"
+    linear = linear if os.path.isfile(linear) else None
+    log = log if os.path.isfile(log) else None
+    return linear, log
 
 
 # ---------------------------------------------------------------------------
@@ -466,11 +486,28 @@ def plot_diff_single(data, outdir, use_logscale):
     return f
 
 
-def write_index(outdir, files, label_a, label_b):
+def _relhref(target, outdir):
+    """ Relative link from outdir to target, using forward slashes so the
+        generated href works regardless of platform. """
+    if target is None:
+        return None
+    return os.path.relpath(target, start=outdir).replace(os.sep, '/')
+
+
+def write_index(outdir, entries, label_a, label_b):
     """ Writes an overview index.html with an iframe grid, in the same visual
-        style as mcplot.py's PNMultiple index page. 'files' is a list of
-        (linear_file, log_file_or_None) tuples, each an absolute path inside
-        outdir. """
+        style as mcplot.py's PNMultiple index page.
+
+        'entries' is a list of dicts, one per monitor, with keys:
+          'diff'      - path to the diff (linear) html page (inside outdir)
+          'diff_log'  - path to the diff (log) html page, or None
+          'a_lin'     - path to the pre-existing mcplot-html page for
+                        simulation a's monitor (linear), or None
+          'a_log'     - ... (log), or None
+          'b_lin'     - path to the pre-existing mcplot-html page for
+                        simulation b's monitor (linear), or None
+          'b_log'     - ... (log), or None
+    """
     filename = os.path.join(outdir, "index.html")
 
     gridgap = int(round(WIDTH * 0.05))
@@ -487,7 +524,8 @@ def write_index(outdir, files, label_a, label_b):
         outfile.write(f"  .plotgrid {{ display: flex; flex-wrap: wrap; gap: {gridgap}px; }}\n")
         outfile.write("  .plotcell { background-color: #ffffff; display: flex; flex-direction: column; align-items: flex-start; }\n")
         outfile.write("  .plotcell iframe { border: none; }\n")
-        outfile.write("  .plotcell .links { margin-top: 4px; width: 100%; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 4px 12px; }\n")
+        outfile.write("  .plotcell .links { margin-top: 4px; width: 100%; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }\n")
+        outfile.write("  .plotcell .links .origlinks { color: #999999; }\n")
         outfile.write("  .iframe-wrap { overflow: hidden; border: 2px solid #b0b0b0; }\n")
         outfile.write("  .iframe-wrap iframe { transform-origin: top left; display: block; }\n")
         outfile.write("  #sizecontrol { margin-bottom: 16px; font-size: 14px; }\n")
@@ -502,7 +540,9 @@ def write_index(outdir, files, label_a, label_b):
         outfile.write(f"  <span id='sizevalue'>{init_pct}%</span>\n")
         outfile.write("</div>\n")
         outfile.write("<div class='plotgrid'>\n")
-        for fname, fname_log in files:
+        for entry in entries:
+            fname = entry['diff']
+            fname_log = entry.get('diff_log')
             basename = os.path.basename(fname)
             outfile.write(f"<div class='plotcell' data-base-w='{WIDTH}' style='width:{init_w}px;'>\n")
             outfile.write(f"<div class='iframe-wrap' data-base-w='{WIDTH}' data-base-h='{HEIGHT}' style='width:{init_w}px;height:{init_h}px;'>\n")
@@ -513,6 +553,24 @@ def write_index(outdir, files, label_a, label_b):
             if fname_log:
                 basename_log = os.path.basename(fname_log)
                 outfile.write(f"<a href='{basename_log}' target=_blank>[ {basename_log} ]</a>\n")
+
+            # links to the pre-existing mcplot-html plots of the two
+            # original monitors, if they were found on disk
+            a_lin = _relhref(entry.get('a_lin'), outdir)
+            a_log = _relhref(entry.get('a_log'), outdir)
+            b_lin = _relhref(entry.get('b_lin'), outdir)
+            b_log = _relhref(entry.get('b_log'), outdir)
+            if a_lin or a_log or b_lin or b_log:
+                outfile.write("<span class='origlinks'>|</span>\n")
+            if a_lin:
+                outfile.write(f"<a href='{a_lin}' target=_blank>[ {label_a} ]</a>\n")
+            if a_log:
+                outfile.write(f"<a href='{a_log}' target=_blank>[ {label_a} (log) ]</a>\n")
+            if b_lin:
+                outfile.write(f"<a href='{b_lin}' target=_blank>[ {label_b} ]</a>\n")
+            if b_log:
+                outfile.write(f"<a href='{b_log}' target=_blank>[ {label_b} (log) ]</a>\n")
+
             outfile.write("</div>\n")
             outfile.write("</div>\n")
         outfile.write("</div>\n")
@@ -597,7 +655,7 @@ def main(args):
     # mcplot.py does for a single monitor file input
     single_input = os.path.isfile(args.a) and os.path.isfile(args.b)
 
-    files = []
+    entries = []
     for data in diffs:
         f = plot_diff_single(data, outdir, False)
         f_log = None
@@ -608,19 +666,33 @@ def main(args):
             # folder mode: always produce both linear and log variants,
             # exactly like mcplot.py does for multi-monitor overviews
             f_log = plot_diff_single(data, outdir, True)
-        files.append((f, f_log))
+
+        # locate any pre-existing mcplot-html plots for this monitor, so
+        # we can link to the original a/b data alongside the diff plot
+        a_lin, a_log = find_original_plot(dir_a, data.filename)
+        b_lin, b_log = find_original_plot(dir_b, data.filename)
+        if not (a_lin or a_log):
+            print("Note: no existing mcplot-html output found for '%s' in '%s'" % (data.filename, args.a))
+        if not (b_lin or b_log):
+            print("Note: no existing mcplot-html output found for '%s' in '%s'" % (data.filename, args.b))
+
+        entries.append({
+            'diff': f, 'diff_log': f_log,
+            'a_lin': a_lin, 'a_log': a_log,
+            'b_lin': b_lin, 'b_log': b_log,
+        })
         print("Generated: %s" % f)
         if f_log:
             print("Generated: %s" % f_log)
 
-    if single_input and len(files) == 1:
-        target = files[0][0]
+    if single_input and len(entries) == 1:
+        target = entries[0]['diff']
         print("Generated: %s" % target)
         if not args.nobrowse:
             browse(target)
         return
 
-    index_file = write_index(outdir, files, label_a, label_b)
+    index_file = write_index(outdir, entries, label_a, label_b)
     print("Generated: %s" % index_file)
 
     if not args.nobrowse:
