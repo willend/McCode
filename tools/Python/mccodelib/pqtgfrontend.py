@@ -227,8 +227,8 @@ class McPyqtgraphPlotter():
             # Very old Qt5 fallback
             rect = QtWidgets.QApplication.desktop().screenGeometry()
 
-        w = int(0.7 * rect.width())
-        h = int(0.7 * rect.height())
+        w = int(0.85 * rect.width())
+        h = int(0.85 * rect.height())
         self.main_window.resize(w, h)
 
         self.plot_layout = pg.GraphicsLayout(border=None)
