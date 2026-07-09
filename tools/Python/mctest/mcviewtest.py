@@ -31,7 +31,7 @@ def get_oldest_dir(directory_name):
     files.sort(key=lambda x:x[0])
     return files[0][1]
 
-def run_normal_mode(testdir, reflabel):
+def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300):
     ''' load test data and print to html label '''
 
     def get_col_header(label, meta):
@@ -53,7 +53,55 @@ def run_normal_mode(testdir, reflabel):
             lst.append(meta["date"])
         return lst
 
-    def get_cell_tuple(cellobj, refval=None):
+    def get_data_url(cellobj):
+        ''' Reconstructs the relative "label/instrname/testnb/" data directory
+            for a cellobj, the same way get_cell_tuple() does for its own
+            cell - used here to also locate the *reference* column's data
+            directory when generating a diff link. '''
+        label = cellobj["localfile"].split("/")
+        if len(label) == 1:
+            label = cellobj["localfile"].split("\\")
+        label = label[len(label) - 3]
+        return label + "/" + cellobj["instrname"] + "/" + str(cellobj["testnb"]) + "/"
+
+    def generate_diff_link(refcellobj, url, label):
+        ''' Generates (or reuses a cached) mcplotdiff-html comparison between
+            this cell's own test-output directory and the reference column's
+            corresponding directory, returning a relative URL to the diff
+            overview's index.html, or None if a diff isn't available/possible
+            (missing/incomplete data on either side, disabled via --nodiff,
+            or the plotter itself failing). '''
+        if nodiff:
+            return None
+        if refcellobj is None or refcellobj.get("testval") is None:
+            # no valid reference data to diff against
+            return None
+
+        ref_url = get_data_url(refcellobj)
+        test_abs = join(testdir, url)
+        ref_abs = join(testdir, ref_url)
+        if not (os.path.isfile(join(test_abs, "mccode.sim")) and os.path.isfile(join(ref_abs, "mccode.sim"))):
+            # NeXus-only output (mccode.h5) or otherwise nothing mcplotdiff-html can compare
+            return None
+
+        outdir_rel = join(url, "diff_vs_%s" % reflabel)
+        outdir_abs = join(testdir, outdir_rel)
+        index_abs = join(outdir_abs, "index.html")
+
+        if not os.path.isfile(index_abs):
+            diffplotter = mccode_config.configuration["MCPLOT"].split('-')[0] + "diff-html"
+            cmd = '%s "%s" "%s" --nobrowse -A "%s" -B "%s" --output "%s"' % (
+                diffplotter, test_abs, ref_abs, label, reflabel, outdir_abs)
+            try:
+                utils.run_subtool_noread(cmd, cwd=testdir, timeout=diffmax)
+            except Exception as e:
+                print("generate_diff_link: %s" % str(e))
+
+        if os.path.isfile(index_abs):
+            return (outdir_rel + "/index.html").replace(os.sep, '/').replace("//", "/")
+        return None
+
+    def get_cell_tuple(cellobj, refval=None, refcellobj=None):
         ''' set up and format cell data '''
         state = None
         compiletime = None
@@ -141,7 +189,9 @@ def run_normal_mode(testdir, reflabel):
             else:
                 refp = "%2.f" % refp + "%"
 
-            return (state, compiletime, runtime, testval, refp, url, display, displayurl)
+            diffurl = generate_diff_link(refcellobj, url, label)
+
+            return (state, compiletime, runtime, testval, refp, url, display, displayurl, diffurl)
 
     def get_empty_cell_tuple(tag=None):
         ''' return a "state_four" black cell, optionally with a tag, this could be "no ref" or "no test" etc. '''
@@ -188,7 +238,13 @@ def run_normal_mode(testdir, reflabel):
                     targetval = o.get("targetval", None)
                     if use_iterobj_refvalue:
                         targetval = iterobj[key]["targetval"]
-                    row.append(get_cell_tuple(o, targetval))
+                    # diff cells always compare against the true reference
+                    # column (refobj), regardless of which object is
+                    # currently driving iteration (iterobj may be a
+                    # fallback "lead" column rather than refobj itself, in
+                    # the untested multi-column case below)
+                    refcellobj = refobj.get(key, None)
+                    row.append(get_cell_tuple(o, targetval, refcellobj=refcellobj))
 
                     # delete "used" cell keys
                     if del_used_from_overobjs:
@@ -304,7 +360,10 @@ def main(args):
             print("No testdir defined, will use current dir")
             print("--> Using testdir=%s\n" % os.getcwd())
             testdir=os.getcwd()
-        run_normal_mode(testdir, reflabel)
+        diffmax = 300
+        if args.diffmax:
+            diffmax = int(args.diffmax[0])
+        run_normal_mode(testdir, reflabel, nodiff=args.nodiff, diffmax=diffmax)
 
     if not args.nobrowse:
         subprocess.Popen('%s %s' % (mccode_config.configuration['BROWSER'], os.path.join(testdir,os.path.basename(testdir) +'_output.html')), shell=True)
@@ -318,6 +377,8 @@ if __name__ == '__main__':
     parser.add_argument('--testroot', nargs="?", help='test root folder for test result management')
     parser.add_argument('--verbose', action='store_true', help='output excessive information for debug purposes')
     parser.add_argument('--nobrowse', action='store_true', help='Do not spawn browser on exit')
+    parser.add_argument('--nodiff', action='store_true', help='Do not generate mcplotdiff-html comparison cells against the reference column')
+    parser.add_argument('--diffmax', nargs=1, help='Maximum time (s) allowed per mcplotdiff-html comparison (default 300s)')
     args = parser.parse_args()
 
     main(args)
