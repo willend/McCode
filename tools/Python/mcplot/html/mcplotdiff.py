@@ -319,7 +319,7 @@ def write_index(outdir, entries, label_a, label_b):
         outfile.write("</style>\n")
         outfile.write("</head><body>\n")
         outfile.write("<h1>Difference plots:</h1>\n")
-        outfile.write(f"<strong><ol type=\"A\"><li>{label_a} vs.<li>{label_b}</ol></strong>"
+        outfile.write(f"<strong><ol type=\"A\"><li>{label_a} vs.<li>{label_b}</ol></strong>")
         outfile.write(f"<p>diff.monitor = ({label_a}).monitor &minus; ({label_b}).monitor</p>\n")
         outfile.write("<div id='sizecontrol'>\n")
         outfile.write("  <label for='sizeslider'>Figure size:</label>\n")
