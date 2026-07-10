@@ -1,41 +1,39 @@
 /*******************************************************************************
-*         McStas instrument definition URL=http://www.mcstas.org
+*         McStas instrument definition URL=https://www.mcstas.org
 *
-* Instrument: Radiography_absorbing_edge
+* Instrument: Radiography_Lithium_Battery
 *
 * %Identification
-* Written by: Linda Udby and Peter Willendrup
-* Date: July 4th, 2014
+* Written by: Mads Bertelsen and Viktor L. Holm
+* Date: 
 * Origin: University of Copenhagen
-* Release: McStas 2.0
-* Version: $December 21 (2012) $
-* %INSTRUMENT_SITE: Templates
+* %INSTRUMENT_SITE: elearning
 *
-* Instrument to study radiographic imaging of an absobing edge sample used for "Spacial resolution in neutron imaging" Moodle quiz in the Virtual Neutrons for Teaching project 
-* http://vnt.nmi3.org/moodle/mod/quiz/view.php?id=56
+* Instrument to study radiographic imaging of a LiFePO4 battery under charge/discharge. Developed for PaNOSC (EU H2020 GA No. 823852).
 *
 * %Description
-*  Instrument to study radiographic imaging of an absobing edge sample used for "Spacial resolution in neutron imaging" Moodle quiz in the Virtual Neutrons for Teaching project 
-* http://vnt.nmi3.org/moodle/mod/quiz/view.php?id=56
+* Instrument to study radiographic imaging of a LiFePO4 battery under charge/discharge. Developed for PaNOSC (EU H2020 GA No. 823852).
 *
-* Example: mcrun  Radiography_absorbing_edge.instr -n5e8 l=0.2 -d EdgeImaging
+* Nota Bene: For simpification, this version of the instrument does <strong>NOT</strong> currently react to setting "battery_charge".
 *
+* Radiography_Lithium_Battery was derived from Radiography_absorbing_edge. by Linda Udby and Peter Willendrup.
+*
+* %Example: Radiography_Lithium_Battery -y Detector: PSD_1cm_detector_50mum_I=9.97993e-16
 *
 * %Parameters
-* D: 	[m] Diameter of pinhole before sample
-* L:	[m] Distance between pinhole and sample
-* l:	[m] Distance between sample and detector
-* sigma_abs: [barns] Absorption cross-section of the sample
-* Vc: [AA^3] Unit cell volume in the sample
-* sample_Z: [m] Sample depth along the beam direction 
+* D: 	          [m] Diameter of pinhole before sample
+* L:	          [m] Distance between pinhole and sample
+* l:	          [m] Distance between sample and detector
+* sample_used:    [1] Flag to indicate if sample is in the beam or not (0 means in place, 1 out of beam)
+* battery_charge: [1] Level of charge of battery (Currently not functional!)
 *
 * %Link
-* http://vnt.nmi3.org/mcstas-web
+* Originally developed for the <a href="https://e-learning.pan-training.eu/">PaNOSC e-learning portal</a>
 *
 * %End
 *******************************************************************************/
 
-DEFINE INSTRUMENT Radiography_absorbing_edge(D=0.01,L=5, l=0.10, sample_used=0, battery_charge=1.0)	
+DEFINE INSTRUMENT Radiography_Lithium_Battery(D=0.01,L=5, l=0.10, sample_used=0, battery_charge=1.0)	
 
 DECLARE
 %{
