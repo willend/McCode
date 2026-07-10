@@ -1,8 +1,53 @@
+/************************************************
+*
+* McStas model of the ICON imaging instrument at PSI, CH.
+*
+* %Identification
+* Written by: Peter Willendrup (DTU/ESS), Estrid B. Naver (DTU), based on earlier model from Ludovic Giller.
+*
+* Date: June, 2021
+* Origin: DTU/ESSxs
+* %INSTRUMENT_SITE: PSI
+*
+* McStas model of the ICON imaging instrument at PSI, CH.
+*
+* %Description
+* McStas model of the ICON imaging instrument at PSI, CH. Based on earlier model from Ludovic Giller, see links below.
+*
+* The model was developed for an ICON beamtime focussing on exeriments using 'Propagation-based phase-contrast' aka. the Paganin-method.
+* The sample in the model is a series of metal sheets, each with different scattring/refracting properties. A refined version of this
+* instrument file was later used in the publication by Estrid B. Naver et. al., see links below.
+*
+* %Example: lambda=2.5666 Detector: Detector_I=7.5965E+02
+*
+* %Parameters
+* lambda_min: [AA] Minimum wavelength on wavelength monitors
+* lambda_max: [AA] Maximum wavelength on wavelength monitors
+* Lambda_Min: [AA] Minimum wavelength produced from source
+* Lambda_Max: [AA] Maximum wavelength produced from source
+* eventmode:   [1] Flag to store neutron events with calculated sample-detector travel
+* nx:          [1] Number of x-pixels, camera
+* ny:          [1] Number of y-pixels, camera
+* sp:          [m] Overall goniometer z-position wrt. camera
+* tx:          [m] Goniometer x-translation
+* ty:          [m] Goniometer y-translation
+* tz:          [m] Goniometer z-translation
+* rx:          [m] Goniometer x-rotation
+* ry:          [m] Goniometer y-rotation
+* rz:          [m] Goniometer z-rotation
+* delta_eps:   [m] Finite distance separating metal-slabs in sample
+* delta_y:     [1] Size-factor between slabs of Zr and Al
+*
+* %Link
+* <a href="https://doi.org/10.1016/j.nima.2007.11.061">Ludovic Gilller et. al., NIMA 586 (2008) pp. 59-63</a> 
+* <a href="https://doi.org/10.1107/S1600576724003030">Estrid B. Naver et. al., JAC 57 (2024) pp.701-713</a>
+*
+* %End
+***************************************************/
 
+DEFINE INSTRUMENT PSI_ICON(lambda_min=0.3,lambda_max=10.0, int eventmode=0, int nx=512, int ny=512, 
+			   Lambda_Min=4.1, Lambda_Max=10, sp=0,tx=0,ty=-0.0075,tz=0,rx=0,ry=0,rz=0,delta_eps=1e-9,delta_y=0.1) 
 
-DEFINE INSTRUMENT ICON(lambda_min=0.3,lambda_max=10.0,
-		       int nx=512, int ny=512, nt=10, det_size=0.025, dslab=0.005, rsphere=1e-4, dist=11.5410, focus=10, Lambda_Min=4.1, Lambda_Max=10,dd=11.5410,fx=0.01,fy=0.01,sp=0,tx=0,ty=-0.0075,tz=0,ry=0,rz=0,rx=0,delta_eps=1e-9,delta_y=0.1) 
-    
 DECLARE 
 %{ 
    double blende, blende_radius, blende_exit_radius, blende_propa_window;
@@ -215,30 +260,26 @@ COMPONENT a1 = Arm()
 
 
 COMPONENT csource = Source_gen4(
-				w = 0.06437, h=0.093, //xw = 0.01, yh = 0.01,
-				//xw=50*rsphere, yh=50*rsphere,
-				dist=4.677+7.5, xw=0.03, yh=0.03,
-				//xw=2.0*blende_radius, yh=2*blende_radius,
-				//dist = dist,
+    w = 0.06437, h=0.093,
+    dist=4.677+7.5, xw=0.03, yh=0.03,
     Lmin = Lambda_Min, Lmax = Lambda_Max,
-    /* Original model
-    T1=103.972, I1=(4.035e12/4/PI),
-    T2=25.56,I2=(2.503e12/4/PI),
-    T3=151.888,I3=(1.399e13/4/PI),
-    HEtailA=1.061e12/4/PI,
-    HEtailL0=-0.453)*/
-    /* RITA-II
-    T1=301.287, I1=(1.27e13/4/PI),
-    T2=105.655,I2=(3.818e12/4/PI),
-    T3=25.379,I3=(2.331e12/4/PI),
-    HEtailA=8.306e11/4/PI, HEtailL0=-0.398 */
-    /* BOA */
+    /* Original source parameters from Ludovic Giller */
+    /* T1=103.972, I1=(4.035e12/4/PI),
+       T2=25.56,I2=(2.503e12/4/PI),
+       T3=151.888,I3=(1.399e13/4/PI),
+       HEtailA=1.061e12/4/PI,
+       HEtailL0=-0.453)*/
+    /* RITA-II source parameters */
+    /* T1=301.287, I1=(1.27e13/4/PI),
+       T2=105.655,I2=(3.818e12/4/PI),
+       T3=25.379,I3=(2.331e12/4/PI),
+       HEtailA=8.306e11/4/PI, HEtailL0=-0.398 */
+    /* BOA  source parameters */
     T1=103.972, I1=(4.035e12/4/PI),
     T2=25.56,I2=(2.503e12/4/PI),
     T3=298.411,I3=(1.399e13/4/PI),
     HEtailA=1.061e12/4/PI,
-    HEtailL0=-0.453
-    )
+    HEtailL0=-0.453)
 AT (0,0,1.523) RELATIVE a1  
 
   COMPONENT source = Arm()
@@ -512,8 +553,8 @@ EXTEND %{
   l_sample=l_sample +sqrt((XX0-x0)*(XX0-x0)+(YY0-y0)*(YY0-y0)+(ZZ0-z0)*(ZZ0-z0));
 %}
 
-COMPONENT L_sample=Monitor_nD(user1="l_sample", username1="l_sample", options="previous parallel user1 x y z vx vy vz list all neutrons")
-  AT (0,0,0) RELATIVE PREVIOUS
+COMPONENT L_sample=Monitor_nD(user1="l_sample", username1="l_sample", options="previous parallel user1 x y z vx vy vz list all neutrons", nowritefile=(!eventmode))
+  WHEN (eventmode)  AT (0,0,0) RELATIVE PREVIOUS
 
 COMPONENT VarDetector = Monitor_nD(options=zoomoptionsICON, xwidth=0.0275, yheight=0.0275, filename="detectorVAR",restore_neutron=1)
   AT (0,0,7.5) RELATIVE Blende_entrance
