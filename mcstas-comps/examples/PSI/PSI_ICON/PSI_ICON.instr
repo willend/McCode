@@ -46,7 +46,7 @@
 * %End
 ***************************************************/
 
-DEFINE INSTRUMENT PSI_ICON(lambda_min=0.3,lambda_max=10.0, int eventmode=0, int nx=512, int ny=512, 
+DEFINE INSTRUMENT PSI_ICON(lambda_min=0.3,lambda_max=10.0, int eventmode=0, int debug_mons=0, int nx=512, int ny=512, 
 			   Lambda_Min=4.1, Lambda_Max=10, sp=0,tx=0,ty=-0.0075,tz=0,rx=0,ry=0,rz=0,delta_eps=1e-9,delta_y=0.1) 
 
 DECLARE 
