@@ -350,11 +350,11 @@ def write_index(outdir, entries, label_a, label_b):
             if a_lin or a_log or b_lin or b_log:
                 outfile.write("<span class='origlinks'></span>\n")
             if a_lin:
-                outfile.write(f"<hr><a href='{a_lin}' target=_blank>[ A ]</a>\n")
+                outfile.write(f"<br><a href='{a_lin}' target=_blank>[ A ]</a>\n")
             if a_log:
                 outfile.write(f"<a href='{a_log}' target=_blank>[ A (log) ]</a>\n")
             if b_lin:
-                outfile.write(f"<hr><a href='{b_lin}' target=_blank>[ B ]</a>\n")
+                outfile.write(f"<br><a href='{b_lin}' target=_blank>[ B ]</a>\n")
             if b_log:
                 outfile.write(f"<a href='{b_log}' target=_blank>[ B (log) ]</a>\n")
 
