@@ -88,6 +88,7 @@ def get_html(template_name, params, simfile):
     text = open(os.path.join(os.path.dirname(__file__), template_name)).read()
     text = text.replace("@PARAMS@", params)
     text = text.replace("@DATAFILE@", simfile)
+    text = text.replace("@DATALINK@", "Diff mode (no physical datafile)") # Nothing to link to  in diff-mode
 
     logscalestr = "true" if logscale == True else "false"
     text = text.replace("@LOGSCALE@", logscalestr)
