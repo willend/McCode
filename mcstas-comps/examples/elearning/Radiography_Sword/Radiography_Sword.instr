@@ -11,32 +11,34 @@
 * Written by: Viktor L. Holm
 * Date: August 2019
 * Origin: University of Copenhagen
+* %INSTRUMENT_SITE: elearning
 *
-* Viking Sword in Radiography instrument
+* Viking Sword in Radiography instrument. Developed for PaNOSC (EU H2020 GA No. 823852).
 *
 * %Description
-* This is a simulation of bragg-edge imaging preformed on a viking sword at an imaging beamline. 
-* The beam delivered from the source approximates that of the ODIN instrument at ESS. 
-* The simulation is meant for teaching perpeses.
+* This is a simulation of bragg-edge imaging preformed on a viking sword at an imaging beamline. Developed for PaNOSC (EU H2020 GA No. 823852).
+* The beam delivered from the source approximates that of the ODIN instrument at ESS and the model is meant for educational purposes.
 *
 *
 * %Parameters
-* chopper_mode: [0] Chose between 6 different chopper modes from 0 to 5. Chooper mode 5 is a white beam.
-* Lambda: [AA] Choose a specific wavelength, between 1AA and 10AA, that you want to use in the simulation. The wavelength must be pressent in the choosen chopper mode. Lambda=0 means taht all wavelegnth in the chopper mode are used. 
-* Sample: [0] choose if the sample is pressen in the simulation or not, Sample=0 means that the sample is not in the beam, Sample=1 means that the sample is in the beam.
-* pinhole_diameter: [m] sets the diameter of the pinhole. The allowed pinhole size is between 0.01m and 0.1m.
-* pinhole_detector_distance: [m] sets the distance between the pinhole and the detector. The allowed distances are between 10m and 25m.
-* pinhole_sample_distance: [m] set the distance between the pinhole and the sample. The allowed distances are between 1m and 25m.
-* X_sample_pos: [m] translat the sample in the x dirrection.
-* Y_sample_pos: [m] translat the sample in the y dirrection.
-* angle: [deg] rotate the sample around the y axis.
-* Zoom: [0] Decrease the detector area avalable but increase the resolution of the detector by the same fact. Zoom between 1 and 10.
+* chopper_mode:              [1] Choose between 6 different chopper modes from 0 to 5. Chooper mode 5 is a white beam.
+* Lambda:                   [AA] Choose a specific wavelength 1AA-10AA to use in the simulation. The wavelength must correspond to choosen chopper mode. Lambda=0 means that all wavelengths permitted by the chopper mode are used.
+* Sample:                    [0] Choose if the sample is pressent in the simulation or not, Sample=0: not in the beam, Sample=1: sample is in the beam.
+* pinhole_diameter:          [m] Diameter of the pinhole. Allowed sizes are 0.01-0.1m.
+* pinhole_detector_distance: [m] Distance between the pinhole and the detector. Allowed distances are 10m-25m.
+* pinhole_sample_distance:   [m] Distance between the pinhole and the sample. Allowed distances are between 1-25m.
+* X_sample_pos:              [m] Translation of sample in x-direction.
+* Y_sample_pos:              [m] Translation of sample in x-direction.
+* angle:                   [deg] Sample-stage rotation (around y).
+* Zoom:                      [1] Detector zooom: Reduce area and increase resolution detector by the same fact. Values between 1 and 10.
 *
+* %Link
+* Originally developed for the <a href="https://e-learning.pan-training.eu/">PaNOSC e-learning portal</a>
 *
 * %End
 *******************************************************************************/
 
-DEFINE INSTRUMENT Radiography_Sword(chopper_mode=5, Lambda=0, Sample=1, pinhole_diameter=0.1 ,pinhole_detector_distance=10.0,pinhole_sample_distance=9, X_sample_pos=0.0,Y_sample_pos=0.0, angle=0, Zoom=1)
+DEFINE INSTRUMENT Radiography_Sword(int chopper_mode=5, Lambda=0, int Sample=1, pinhole_diameter=0.1 ,pinhole_detector_distance=10.0,pinhole_sample_distance=9, X_sample_pos=0.0,Y_sample_pos=0.0, angle=0, Zoom=1)
 
 DECLARE
 %{
