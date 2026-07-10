@@ -6,7 +6,7 @@
 
 - **Site:** PSI
 - **Author:** Peter Willendrup (DTU/ESS), Estrid B. Naver (DTU), based on earlier model from Ludovic Giller.
-- **Origin:** DTU/ESSxs
+- **Origin:** DTU/ESS
 - **Date:** June, 2021
 
 ## Description
