@@ -51,7 +51,7 @@ a:visited { color: lightgrey; background-color: transparent; text-decoration: no
     <br><a href={{ c.7 }} ><strong>{{ c.6 }}</strong></a>
     <br>PLOTS: <a href={{ c.5 }}/02_plots.html >[Interactive HTML]</a> <a href={{ c.5 }}/01_overview.pdf >[PDF overview]</a>
     {%- if c.8 %}
-    <br>DIFF: <a href={{ c.8 }} >[vs ref]</a>
+    <hr><br>DIFF: <a href={{ c.8 }} >[vs ref]</a>
     {%- endif %}
   </td>
       {%- elif c.0 == 2 %}
