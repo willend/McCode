@@ -426,7 +426,7 @@ WHEN (debug_mons) AT (0, 0, 0.0002) RELATIVE Vac_pipe_exit
 
 COMPONENT PSDlinX_after_source = PSDlin_monitor(
     nbins = 100, filename = "PSDlinX_after_source.dat", xmin = -0.045, xmax = 0.045,
-    ymin = -0.045, ymax = 0.045, restore_neutron=1), nowritefile=(!debug_mons)
+    ymin = -0.045, ymax = 0.045, restore_neutron=1, nowritefile=(!debug_mons))
 WHEN (debug_mons) AT (0.002, 0.0, 0.0003) RELATIVE Vac_pipe_exit
  
 COMPONENT source_divergence_check = Divergence_monitor( 
