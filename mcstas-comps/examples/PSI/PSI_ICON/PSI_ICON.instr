@@ -37,6 +37,7 @@
 * rz:          [m] Goniometer z-rotation
 * delta_eps:   [m] Finite distance separating metal-slabs in sample
 * delta_y:     [1] Size-factor between slabs of Zr and Al
+* debug_mons:  [1] Flag to enable all monitors in the instrument
 *
 * %Link
 * <a href="https://doi.org/10.1016/j.nima.2007.11.061">Ludovic Gilller et. al., NIMA 586 (2008) pp. 59-63</a> 
@@ -282,18 +283,18 @@ COMPONENT csource = Source_gen4(
     HEtailL0=-0.453)
 AT (0,0,1.523) RELATIVE a1  
 
-  COMPONENT source = Arm()
+COMPONENT source = Arm()
   AT(0,0,0) RELATIVE PREVIOUS
 
 COMPONENT source_spectra = L_monitor( 
     nL = 250, filename = "source_spectra", xwidth = 1, 
     yheight = 1, Lmin = lambda_min, Lmax = lambda_max) 
-  AT (0, 0, 1.524) RELATIVE a1
+debug_mons  AT (0, 0, 1.524) RELATIVE a1
 
 COMPONENT PSD1 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD1.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 1.5245) Relative a1
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons)  AT (0, 0, 1.5245) Relative a1
 
 
 COMPONENT radius1_plugin = Slit(
@@ -303,8 +304,8 @@ COMPONENT radius1_plugin = Slit(
 
 COMPONENT PSD2 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD2.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 1.5255) Relative a1
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons)  AT (0, 0, 1.5255) Relative a1
 
 
 COMPONENT Wagen1_entrance = Slit(
@@ -325,8 +326,8 @@ COMPONENT Wagen1_entrance = Slit(
 
 COMPONENT PSD3 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD3.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 4.676) Relative a1
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons) AT (0, 0, 4.676) Relative a1
 
 
 COMPONENT Blende_entrance = Slit(
@@ -336,8 +337,8 @@ COMPONENT Blende_entrance = Slit(
 
 COMPONENT PSD4 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD4.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 4.678) Relative a1
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons) AT (0, 0, 4.678) Relative a1
 
 
 /* The radius of the "Blende" exit is depending on the "Blende" entrance 		*/
@@ -345,8 +346,8 @@ COMPONENT PSD4 = PSD_monitor(
 
 COMPONENT PSD5 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD5.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 4.971) Relative a1
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons) AT (0, 0, 4.971) Relative a1
 
 
 COMPONENT Blende_exit = Slit(
@@ -356,13 +357,13 @@ COMPONENT Blende_exit = Slit(
   
 COMPONENT PSD6 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD6.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 4.973) Relative a1
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons) AT (0, 0, 4.973) Relative a1
 
 COMPONENT PSD7 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD7.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 6.122) Relative a1
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons) AT (0, 0, 6.122) Relative a1
 
 
 COMPONENT Wagen4_exit = Slit(
@@ -371,8 +372,8 @@ COMPONENT Wagen4_exit = Slit(
 
 COMPONENT PSD8 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD8.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 6.124) Relative a1
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons) AT (0, 0, 6.124) Relative a1
 
 
 /* 20cm vacuum aperture and vacuum pipe (length 835mm) between the small and main bunker*/
@@ -385,8 +386,8 @@ COMPONENT extraaperture = Slit(
   
 COMPONENT PSD9 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD9.dat",
-    xwidth = 0.15, yheight = 0.15)
-  AT (0, 0, 3.4279) Relative Blende_entrance
+    xwidth = 0.15, yheight = 0.15, nowritefile=(!debug_mons))
+WHEN (debug_mons) AT (0, 0, 3.4279) Relative Blende_entrance
 
   
   
@@ -409,30 +410,30 @@ COMPONENT Vac_pipe_exit = Slit(
 
 COMPONENT source_spectra_check = L_monitor( 
     nL = 50, filename = "source_spectra_check", xwidth = 1, 
-    yheight = 1, Lmin = lambda_min, Lmax = lambda_max, restore_neutron=1) 
-  AT (0, 0, 0.0001) RELATIVE Vac_pipe_exit
+    yheight = 1, Lmin = lambda_min, Lmax = lambda_max, restore_neutron=1, nowritefile=(!debug_mons)) 
+WHEN (debug_mons) AT (0, 0, 0.0001) RELATIVE Vac_pipe_exit
  
 COMPONENT PSD_after_source = PSD_monitor( 
     nx = 200, ny = 200, filename = "PSD_after_source.dat", 
-    xwidth = 0.25, yheight = 0.25, restore_neutron=1) 
-  AT (0, 0, 0.00015) RELATIVE Vac_pipe_exit
+    xwidth = 0.25, yheight = 0.25, restore_neutron=1, nowritefile=(!debug_mons)) 
+WHEN (debug_mons) AT (0, 0, 0.00015) RELATIVE Vac_pipe_exit
 
 
 COMPONENT PSD_after_source_s = PSD_monitor( 
     nx = 200, ny = 200, filename = "PSD_after_source_s.dat", 
-    xwidth = 0.1, yheight = 0.1, restore_neutron=1) 
-  AT (0, 0, 0.0002) RELATIVE Vac_pipe_exit
+    xwidth = 0.1, yheight = 0.1, restore_neutron=1, nowritefile=(!debug_mons)) 
+WHEN (debug_mons) AT (0, 0, 0.0002) RELATIVE Vac_pipe_exit
 
 COMPONENT PSDlinX_after_source = PSDlin_monitor(
     nbins = 100, filename = "PSDlinX_after_source.dat", xmin = -0.045, xmax = 0.045,
-    ymin = -0.045, ymax = 0.045, restore_neutron=1)
-  AT (0.002, 0.0, 0.0003) RELATIVE Vac_pipe_exit
+    ymin = -0.045, ymax = 0.045, restore_neutron=1), nowritefile=(!debug_mons)
+WHEN (debug_mons) AT (0.002, 0.0, 0.0003) RELATIVE Vac_pipe_exit
  
 COMPONENT source_divergence_check = Divergence_monitor( 
     nh = 100, nv = 100, filename = "divsource.dat", xmin = -0.15, 
     xmax = 0.15, ymin = -0.15, ymax = 0.15, maxdiv_h = 5, 
-    maxdiv_v = 5, restore_neutron=1) 
-  AT (0, 0, 0.0004) RELATIVE Vac_pipe_exit
+    maxdiv_v = 5, restore_neutron=1, nowritefile=(!debug_mons)) 
+WHEN (debug_mons) AT (0, 0, 0.0004) RELATIVE Vac_pipe_exit
 
 
 COMPONENT Center0 = Arm()
@@ -440,14 +441,14 @@ COMPONENT Center0 = Arm()
 
 COMPONENT PSD_sample = PSD_monitor( 
     nx = 200, ny = 200, filename = "PSD_sample", 
-    xwidth = 0.01, yheight = 0.01, restore_neutron=1) 
-  AT (0, 0, 0.0001) RELATIVE PREVIOUS
+    xwidth = 0.01, yheight = 0.01, restore_neutron=1, nowritefile=(!debug_mons)) 
+WHEN (debug_mons)   AT (0, 0, 0.0001) RELATIVE PREVIOUS
  
 COMPONENT sample_divergence = Divergence_monitor( 
     nh = 100, nv = 100, filename = "divsample.dat", xmin = -0.01, 
     xmax = 0.01, ymin = -0.01, ymax = 0.01, maxdiv_h = 0.2, 
-    maxdiv_v = 0.2, restore_neutron=1) 
-  AT (0, 0, 0.0001) RELATIVE PREVIOUS
+    maxdiv_v = 0.2, restore_neutron=1, nowritefile=(!debug_mons)) 
+WHEN (debug_mons)  AT (0, 0, 0.0001) RELATIVE PREVIOUS
   
 COMPONENT Center = Arm()
   AT (0,0,sp0-sp) RELATIVE Blende_entrance
@@ -455,14 +456,14 @@ COMPONENT Center = Arm()
 
 COMPONENT PSD_sampleBIG = PSD_monitor( 
     nx = 200, ny = 200, filename = "PSD_sample_BIG", 
-    xwidth = 0.03, yheight = 0.03, restore_neutron=1) 
-  AT (0, 0, 0.0001) RELATIVE PREVIOUS
+    xwidth = 0.03, yheight = 0.03, restore_neutron=1, nowritefile=(!debug_mons)) 
+WHEN (debug_mons) AT (0, 0, 0.0001) RELATIVE PREVIOUS
  
 COMPONENT sample_divergenceBIG = Divergence_monitor( 
     nh = 100, nv = 100, filename = "divsample_BIG.dat", xmin = -0.01, 
     xmax = 0.03, ymin = -0.03, ymax = 0.01, maxdiv_h = 0.2, 
-    maxdiv_v = 0.2, restore_neutron=1) 
-  AT (0, 0, 0.0001) RELATIVE PREVIOUS
+    maxdiv_v = 0.2, restore_neutron=1, nowritefile=(!debug_mons)) 
+WHEN (debug_mons) AT (0, 0, 0.0001) RELATIVE PREVIOUS
     
   
 COMPONENT Goniometer = Arm()
