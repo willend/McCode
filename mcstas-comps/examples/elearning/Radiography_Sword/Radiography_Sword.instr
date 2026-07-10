@@ -771,8 +771,8 @@ COMPONENT Stop = Union_stop()
 AT(0,0,0) RELATIVE a1
 
 COMPONENT screen = PSD_monitor_Filter(xwidth=0.3,yheight=0.3,nx=300,ny=300,filename="absoprtion_picture.dat",restore_neutron=0,
-  TwoD_filename=spacial_resolution,L_filename=wavelength_spectrum,nL=200,Lmin=0, Lmax=10,aply_xy_filter=1,filter_pixels=600,
-  pinhol_filter_distance = 25.025, pinhol_detector_distance=pinhole_detector_distance,smoothing=3.0,zoom=Zoom)
+  TwoD_filename=spacial_resolution,apply_xy_filter=1,filter_pixels=600,
+  pinhole_filter_distance = 25.025, pinhole_detector_distance=pinhole_detector_distance,smoothing=3.0,zoom=Zoom)
   AT (0,0,pinhole_detector_distance) RELATIVE graph    
 
 
