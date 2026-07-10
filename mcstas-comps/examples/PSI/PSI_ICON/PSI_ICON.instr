@@ -470,7 +470,7 @@ COMPONENT Goniometer = Arm()
 AT (tx,ty,tz) RELATIVE Center
 ROTATED(rx,ry,rz) RELATIVE Center
 
-COMPONENT SampleIn = Arm()
+SPLIT 100 COMPONENT SampleIn = Arm()
 AT(0,0,-Zdepth/2.0-1e-9) RELATIVE Goniometer
 EXTEND %{
   PROP_Z0;
