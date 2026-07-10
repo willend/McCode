@@ -41,6 +41,7 @@
 * pinhole_filter_distance:   [m] Distance between upstream pinhole and the filter
 * pinhole_detector_distance: [m] Distance between upstream pinhole and the detector
 * smoothing:                 [1] Level of smoothing to apply (0-1)*rand_norm()*(pinhole_filter_distance / pinhole_detector_distance)
+* zoom:                      [1] Level of detector-zoom
 * restore_neutron:           [1] If set, the monitor does not influence the neutron state
 * nowritefile:               [1] If set, monitor will skip writing to disk
 *
