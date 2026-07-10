@@ -10,25 +10,23 @@
 * %I
 * Written by: Viktor L. Holm
 * Date: Aug 13, 2019
-* Origin: Risoe
+* Origin: University of Copenhagen
 *
 * %D
-* A Component that introduces an artificial psudo normal distributed uncurtanty in wavelength from 0 to +/- dlambda.
-* detector.
+* A component that applies a Gaussian smearing in wavelength to the incoming neutron.
+* The smearing is defined by a normal-distributed uncertainty in wavelength from 0 to +/- dlambda.
 *
 * Example: Wavelength_Diffuser(dlambda = 1)
 *
 * %P
 * INPUT PARAMETERS:
 *
-* dlambda: [AA]      Maximum posiple wavelength change
+* dlambda: [AA] Sigma-value for Gaussian wavelength-smearing
 *
 * OUTPUT PARAMETERS:
 *
 * %E
 *******************************************************************************/
-
-
 DEFINE COMPONENT Wavelength_Diffuser
 DEFINITION PARAMETERS ()
 SETTING PARAMETERS (dlambda = 1)
@@ -39,12 +37,10 @@ DECLARE
 
 %}
 INITIALIZE
-  %{
+%{
 
+%}
 
-
-
-  %}
 TRACE
   %{
   double Rand,l_save;
@@ -61,7 +57,5 @@ TRACE
   vz *= Rand;
   
   %}
-
-
 
 END
