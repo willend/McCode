@@ -40,6 +40,7 @@
 *******************************************************************************/
 
 DEFINE INSTRUMENT Radiography_Sword(int chopper_mode=5, Lambda=0, int Sample=1, pinhole_diameter=0.1 ,pinhole_detector_distance=10.0,pinhole_sample_distance=9, X_sample_pos=0.0,Y_sample_pos=0.0, angle=0, Zoom=1)
+SHELL " tar -xzf Filters.tgz "
 
 DECLARE
 %{
