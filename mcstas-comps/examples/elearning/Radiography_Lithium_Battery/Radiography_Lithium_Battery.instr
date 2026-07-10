@@ -24,7 +24,7 @@
 * D: 	          [m] Diameter of pinhole before sample
 * L:	          [m] Distance between pinhole and sample
 * l:	          [m] Distance between sample and detector
-* sample_used:    [1] Flag to indicate if sample is in the beam or not (0 means in place, 1 out of beam)
+* sample_used:    [1] Flag to indicate if battery stack sample (0) or single-slab calibration sample (1) is in the beam
 * battery_charge: [1] Level of charge of battery (Currently not functional!)
 *
 * %Link
