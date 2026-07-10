@@ -289,7 +289,7 @@ COMPONENT source = Arm()
 COMPONENT source_spectra = L_monitor( 
     nL = 250, filename = "source_spectra", xwidth = 1, 
     yheight = 1, Lmin = lambda_min, Lmax = lambda_max) 
-debug_mons  AT (0, 0, 1.524) RELATIVE a1
+WHEN (debug_mons)  AT (0, 0, 1.524) RELATIVE a1
 
 COMPONENT PSD1 = PSD_monitor(
     nx = 200, ny = 200, filename = "PSD1.dat",
