@@ -336,11 +336,12 @@ def write_index(outdir, entries, label_a, label_b):
             outfile.write(f"<iframe src='{basename}' title='{basename}' width={WIDTH} height={HEIGHT} style='transform:scale({initial_scale});'></iframe>\n")
             outfile.write("</div>\n")
             outfile.write("<div class='links'>\n")
+            outfile.write("<span class='links'>\n")
             outfile.write(f"<a href='{basename}' target=_blank>[ {basename} ]</a>\n")
             if fname_log:
                 basename_log = os.path.basename(fname_log)
                 outfile.write(f"<a href='{basename_log}' target=_blank>[ {basename_log} ]</a>\n")
-
+            outfile.write("</span><br>\n")
             # links to the pre-existing mcplot-html plots of the two
             # original monitors, if they were found on disk
             a_lin = _relhref(entry.get('a_lin'), outdir)
@@ -348,16 +349,17 @@ def write_index(outdir, entries, label_a, label_b):
             b_lin = _relhref(entry.get('b_lin'), outdir)
             b_log = _relhref(entry.get('b_log'), outdir)
             if a_lin or a_log or b_lin or b_log:
-                outfile.write("<span class='origlinks'></span>\n")
+                outfile.write("<br><span class='origlinks'>\n")
             if a_lin:
-                outfile.write(f"<br><a href='{a_lin}' target=_blank>[ A ]</a>\n")
+                outfile.write(f"<a href='{a_lin}' target=_blank>[ A ]</a>\n")
             if a_log:
                 outfile.write(f"<a href='{a_log}' target=_blank>[ A (log) ]</a>\n")
             if b_lin:
-                outfile.write(f"<br><a href='{b_lin}' target=_blank>[ B ]</a>\n")
+                outfile.write(f"<a href='{b_lin}' target=_blank>[ B ]</a>\n")
             if b_log:
                 outfile.write(f"<a href='{b_log}' target=_blank>[ B (log) ]</a>\n")
-
+            if a_lin or a_log or b_lin or b_log:
+                outfile.write("<span class='origlinks'>\n")
             outfile.write("</div>\n")
             outfile.write("</div>\n")
         outfile.write("</div>\n")
