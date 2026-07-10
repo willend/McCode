@@ -318,7 +318,8 @@ def write_index(outdir, entries, label_a, label_b):
         outfile.write("  #sizecontrol input[type=range] { vertical-align: middle; margin: 0 8px; }\n")
         outfile.write("</style>\n")
         outfile.write("</head><body>\n")
-        outfile.write(f"<h1>Difference plots: {label_a} &minus; {label_b}</h1>\n")
+        outfile.write("<h1>Difference plots:</h1>\n")
+        outfile.write(f"<strong><ol type=\"A\"><li>{label_a} vs.<li>{label_b}</ol></strong>"
         outfile.write(f"<p>diff.monitor = ({label_a}).monitor &minus; ({label_b}).monitor</p>\n")
         outfile.write("<div id='sizecontrol'>\n")
         outfile.write("  <label for='sizeslider'>Figure size:</label>\n")
@@ -349,13 +350,13 @@ def write_index(outdir, entries, label_a, label_b):
             if a_lin or a_log or b_lin or b_log:
                 outfile.write("<span class='origlinks'>|</span>\n")
             if a_lin:
-                outfile.write(f"<a href='{a_lin}' target=_blank>[ {label_a} ]</a>\n")
+                outfile.write(f"<a href='{a_lin}' target=_blank>[ A ]</a>\n")
             if a_log:
-                outfile.write(f"<a href='{a_log}' target=_blank>[ {label_a} (log) ]</a>\n")
+                outfile.write(f"<a href='{a_log}' target=_blank>[ A (log) ]</a>\n")
             if b_lin:
-                outfile.write(f"<a href='{b_lin}' target=_blank>[ {label_b} ]</a>\n")
+                outfile.write(f"<a href='{b_lin}' target=_blank>[ B ]</a>\n")
             if b_log:
-                outfile.write(f"<a href='{b_log}' target=_blank>[ {label_b} (log) ]</a>\n")
+                outfile.write(f"<a href='{b_log}' target=_blank>[ B (log) ]</a>\n")
 
             outfile.write("</div>\n")
             outfile.write("</div>\n")
