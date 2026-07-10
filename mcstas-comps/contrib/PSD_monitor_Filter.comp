@@ -58,85 +58,90 @@ DECLARE
 
 INITIALIZE
 %{
-  int i,j;
-  FILE *filePointer;
-  if (xwidth  > 0) { xmax = xwidth/2;  xmin = -xmax; }
-    if (yheight > 0) { ymax = yheight/2; ymin = -ymax; }
+  int i, j;
+  FILE* filePointer;
+  if (xwidth > 0) {
+    xmax = xwidth / 2;
+    xmin = -xmax;
+  }
+  if (yheight > 0) {
+    ymax = yheight / 2;
+    ymin = -ymax;
+  }
 
-    if ((xmin >= xmax) || (ymin >= ymax)) {
-            printf("PSD_monitor: %s: Null detection area !\n"
-                   "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
-           NAME_CURRENT_COMP);
-      exit(0);
-    }
+  if ((xmin >= xmax) || (ymin >= ymax)) {
+    printf ("PSD_monitor: %s: Null detection area !\n"
+            "ERROR        (xwidth,yheight,xmin,xmax,ymin,ymax). Exiting",
+            NAME_CURRENT_COMP);
+    exit (0);
+  }
 
-    xmin = xmin/zoom;
-    xmax = xmax/zoom;
-    ymin = ymin/zoom;
-    ymax = ymax/zoom;
+  xmin = xmin / zoom;
+  xmax = xmax / zoom;
+  ymin = ymin / zoom;
+  ymax = ymax / zoom;
 
-  PSD_N = create_darr2d(nx, ny);
-  PSD_p = create_darr2d(nx, ny);
-  PSD_p2 = create_darr2d(nx, ny);
+  PSD_N = create_darr2d (nx, ny);
+  PSD_p = create_darr2d (nx, ny);
+  PSD_p2 = create_darr2d (nx, ny);
 
-  TwoD_data=create_darr2d(filter_pixels,filter_pixels);
-  
-  filePointer = fopen(TwoD_filename, "r");
+  TwoD_data = create_darr2d (filter_pixels, filter_pixels);
 
-  for(i=0; i<filter_pixels; i++){
-    for(j=0; j<filter_pixels; j++){
-      fscanf(filePointer, "%s", TwoD);
-      TwoD_data[j][i] = atof(TwoD);
+  filePointer = fopen (TwoD_filename, "r");
+
+  for (i = 0; i < filter_pixels; i++) {
+    for (j = 0; j < filter_pixels; j++) {
+      fscanf (filePointer, "%s", TwoD);
+      TwoD_data[j][i] = atof (TwoD);
     }
   }
 
-  fclose(filePointer);
+  fclose (filePointer);
 
   Filter_scale = pinhol_filter_distance / pinhol_detector_distance;
-
   %}
 TRACE
   %{
-    int i,j,n, X_shift, Y_shift;
-    double X, Y;
-    double Rand;
+  int i, j, n, X_shift, Y_shift;
+  double X, Y;
+  double Rand;
 
-    PROP_Z0;
-    if (x>xmin && x<xmax && y>ymin && y<ymax)
-    {
+  PROP_Z0;
+  if (x > xmin && x < xmax && y > ymin && y < ymax) {
 
+    if (aply_xy_filter == 1) {
 
-      if (aply_xy_filter == 1){
+      X = x * Filter_scale;
+      Y = y * Filter_scale;
 
-        X = x * Filter_scale;
-        Y = y * Filter_scale;
+      if (smoothing > 0.0) {
+        Rand = randnorm ();
 
-        if (smoothing > 0.0){
-	Rand = randnorm();
+        X_shift = floor (Rand * smoothing);
 
-        X_shift = floor(Rand*smoothing);
+        Rand = randnorm ();
 
-        Rand = randnorm();
-
-        Y_shift = floor(Rand*smoothing);
+        Y_shift = floor (Rand * smoothing);
 
       }
 
-      else{X_shift = 0; Y_shift=0;}
-
-        i = floor((X - filter_xmin*1.8)*filter_pixels/(filter_xmax*1.8 - filter_xmin*1.8)) + X_shift;
-        j = floor((Y - filter_ymin*1.8)*filter_pixels/(filter_ymax*1.8 - filter_ymin*1.8)) + Y_shift;
-        
-        if (i>-1 && i<filter_pixels && j>-1 && j<filter_pixels)
-          {
-            p*= TwoD_data[i][j];
-          }
-        else{p*=0;}
+      else {
+        X_shift = 0;
+        Y_shift = 0;
       }
 
+      i = floor ((X - filter_xmin * 1.8) * filter_pixels / (filter_xmax * 1.8 - filter_xmin * 1.8)) + X_shift;
+      j = floor ((Y - filter_ymin * 1.8) * filter_pixels / (filter_ymax * 1.8 - filter_ymin * 1.8)) + Y_shift;
 
-    i = floor((x - xmin)*nx/(xmax - xmin));
-    j = floor((y - ymin)*ny/(ymax - ymin));
+      if (i > -1 && i < filter_pixels && j > -1 && j < filter_pixels) {
+        p *= TwoD_data[i][j];
+      } else {
+        p *= 0;
+      }
+    }
+
+    i = floor ((x - xmin) * nx / (xmax - xmin));
+    j = floor ((y - ymin) * ny / (ymax - ymin));
 
     double p2 = p * p;
     #pragma acc atomic
@@ -147,24 +152,18 @@ TRACE
 
     #pragma acc atomic
     PSD_p2[i][j] = PSD_p2[i][j] + p2;
-      SCATTER;
-    }
-    if (restore_neutron) {
-      RESTORE_NEUTRON(INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
-    }
+    SCATTER;
+  }
+  if (restore_neutron) {
+    RESTORE_NEUTRON (INDEX_CURRENT_COMP, x, y, z, vx, vy, vz, t, sx, sy, sz, p);
+  }
   %}
 SAVE
   %{
-    if (!nowritefile) {
-      DETECTOR_OUT_2D(
-          "PSD monitor Filter",
-          "X position [cm]",
-          "Y position [cm]",
-          xmin*100.0, xmax*100.0, ymin*100.0, ymax*100.0,
-          nx, ny,
-          &PSD_N[0][0],&PSD_p[0][0],&PSD_p2[0][0],
-          filename);
-    }
+  if (!nowritefile) {
+    DETECTOR_OUT_2D ("PSD monitor Filter", "X position [cm]", "Y position [cm]", xmin * 100.0, xmax * 100.0, ymin * 100.0, ymax * 100.0, nx, ny, &PSD_N[0][0],
+                     &PSD_p[0][0], &PSD_p2[0][0], filename);
+  }
   %}
 
 FINALLY %{
@@ -177,12 +176,9 @@ FINALLY %{
 
 MCDISPLAY
 %{
-  
-  multiline(5, (double)xmin, (double)ymin, 0.0,
-               (double)xmax, (double)ymin, 0.0,
-               (double)xmax, (double)ymax, 0.0,
-               (double)xmin, (double)ymax, 0.0,
-               (double)xmin, (double)ymin, 0.0);
+
+  multiline (5, (double)xmin, (double)ymin, 0.0, (double)xmax, (double)ymin, 0.0, (double)xmax, (double)ymax, 0.0, (double)xmin, (double)ymax, 0.0, (double)xmin,
+             (double)ymin, 0.0);
 %}
 
 END

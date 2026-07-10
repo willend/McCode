@@ -43,19 +43,18 @@ INITIALIZE
 
 TRACE
   %{
-  double Rand,l_save;
+  double Rand, l_save;
   int k;
-  
-  Rand = randnorm();
 
-  l_save = (2*PI/V2K)/sqrt(vx*vx + vy*vy + vz*vz);
-  
-  Rand = (2*PI/V2K) / ( (Rand * dlambda * l_save + l_save) * sqrt(vx*vx + vy*vy + vz*vz));
-  
+  Rand = randnorm ();
+
+  l_save = (2 * PI / V2K) / sqrt (vx * vx + vy * vy + vz * vz);
+
+  Rand = (2 * PI / V2K) / ((Rand * dlambda * l_save + l_save) * sqrt (vx * vx + vy * vy + vz * vz));
+
   vx *= Rand;
   vy *= Rand;
   vz *= Rand;
-  
   %}
 
 END
