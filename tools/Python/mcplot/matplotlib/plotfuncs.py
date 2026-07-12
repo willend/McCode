@@ -211,7 +211,16 @@ def plot_single_data(node, i, n, log):
         #ax = Axes3D(pylab.gcf())
         #pylab.contour(x,y,zvals)
         #ax.plot_surface(x,y,zvals)
-        pylab.pcolor(x,y,zvals)
+        # pcolormesh (QuadMesh) instead of pcolor (PolyCollection): pcolor
+        # builds one vector polygon per grid cell, which is dramatically
+        # slower to construct and render for vector output formats
+        # (mctest.py generates a PDF overview per test via --format=pdf),
+        # and produces much larger files. pcolormesh is a same-signature
+        # drop-in given our regularly-gridded x/y (from linspace), and
+        # rasterized=True has vector backends embed it as a single bitmap
+        # rather than thousands of individual polygons; PNG/interactive
+        # output is raster either way and unaffected.
+        pylab.pcolormesh(x, y, zvals, shading='auto', rasterized=True)
         pylab.colorbar()
 
         pylab.xlabel(data.xlabel, fontsize=fontsize, fontweight='bold')
