@@ -32,8 +32,23 @@ def get_oldest_dir(directory_name):
     files.sort(key=lambda x:x[0])
     return files[0][1]
 
-def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=False, diffworkers=4):
+def get_default_diffworkers():
+    ''' Number of mcplotdiff-html comparisons to run in parallel by default:
+        the number of processors available to this process. Prefers
+        os.sched_getaffinity(0) (Linux only) over os.cpu_count(), since the
+        former respects cgroup/taskset CPU restrictions (e.g. inside a
+        container or batch job allocation) that the latter ignores. '''
+    try:
+        return len(os.sched_getaffinity(0))
+    except AttributeError:
+        # os.sched_getaffinity doesn't exist on macOS/Windows
+        return os.cpu_count() or 4
+
+def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, diffworkers=None):
     ''' load test data and print to html label '''
+
+    if diffworkers is None:
+        diffworkers = get_default_diffworkers()
 
     # jobs collected during row-building, run in parallel afterwards (see
     # plan_diff_link() below for why this is a two-phase process)
@@ -417,11 +432,12 @@ def main(args):
         diffmax = 300
         if args.diffmax:
             diffmax = int(args.diffmax[0])
-        diffworkers = 4
+        diffworkers = get_default_diffworkers()
         if args.diffworkers:
             diffworkers = int(args.diffworkers[0])
+        diffall = not args.diff_errors_only
         run_normal_mode(testdir, reflabel, nodiff=args.nodiff, diffmax=diffmax,
-                        diffall=args.diffall, diffworkers=diffworkers)
+                        diffall=diffall, diffworkers=diffworkers)
 
     if not args.nobrowse:
         subprocess.Popen('%s %s' % (mccode_config.configuration['BROWSER'], os.path.join(testdir,os.path.basename(testdir) +'_output.html')), shell=True)
@@ -436,9 +452,9 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', action='store_true', help='output excessive information for debug purposes')
     parser.add_argument('--nobrowse', action='store_true', help='Do not spawn browser on exit')
     parser.add_argument('--nodiff', action='store_true', help='Do not generate mcplotdiff-html comparison cells against the reference column')
-    parser.add_argument('--diffall', action='store_true', help='Also generate diff cells for rows that already match the reference within tolerance (default: only for discrepancies)')
+    parser.add_argument('--diff-errors-only', dest='diff_errors_only', action='store_true', help='Only generate diff cells for rows that show a discrepancy against the reference (default: diff every row with valid data)')
     parser.add_argument('--diffmax', nargs=1, help='Maximum time (s) allowed per mcplotdiff-html comparison (default 300s)')
-    parser.add_argument('--diffworkers', nargs=1, help='Number of mcplotdiff-html comparisons to run in parallel (default 4)')
+    parser.add_argument('--diffworkers', nargs=1, help='Number of mcplotdiff-html comparisons to run in parallel (default: number of available processors)')
     args = parser.parse_args()
 
     main(args)
