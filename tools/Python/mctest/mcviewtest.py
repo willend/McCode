@@ -93,7 +93,9 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300):
             cmd = '%s "%s" "%s" --nobrowse -A "%s" -B "%s" --output "%s"' % (
                 diffplotter, test_abs, ref_abs, label, reflabel, outdir_abs)
             try:
+                logging.info('%s processing: \n%s vs \n%s' % (diffplotter, test_abs, ref_abs))
                 utils.run_subtool_noread(cmd, cwd=testdir, timeout=diffmax)
+                logging.info('done.\n\n')
             except Exception as e:
                 print("generate_diff_link: %s" % str(e))
 
