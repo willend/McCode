@@ -156,8 +156,9 @@ jobs:
 
     - uses: mamba-org/setup-micromamba@v3
       with:
-        environment-file: dependencies.yml
         environment-name: mcxtrace
+        environment-file: dependencies.yml
+
 
     - name: Configure build and install mcxtrace
       id: mcxtrace-install
@@ -228,7 +229,7 @@ jobs:
            set -e
            set -u
            set -x
-           mxviewtest --testdir "$PWD/combined" --reflabel "$REFLABEL" --nobrowse
+           cd "$PWD/combined" && mxviewtest --reflabel "$REFLABEL" --nobrowse
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
