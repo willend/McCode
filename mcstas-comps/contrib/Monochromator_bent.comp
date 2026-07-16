@@ -13,6 +13,7 @@
 * Origin: ILL/NBI
 *
 * A bent crystal monochromator. Based on the model implemented by Jan &Scaron;aroun in NIMA 529 (2004) pp 162-165.
+* An article describing the component has been written and can be seen in Quantum Beam Sci. 2026, 10, 6. https://doi.org/10.3390/qubs10010006
 * Mosacity and bending radius can be set.
 *
 * %D
@@ -55,6 +56,7 @@
 *
 * %L 
 * <a href="https://doi.org/10.1016/j.nima.2004.04.197">Jan &Scaron;aroun NIM A Volume 529, Issue 1-3 (2004), pp162-165</a>
+* <a href="https://www.mdpi.com/2412-382X/10/1/6"> Christensen, D.L.; Cabeza, S.; Pirling, T.; Lefmann, K.; Šaroun, J. Simulating Neutron Diffraction from Deformed Mosaic Crystals in McStas. Quantum Beam Sci. 2026, 10, 6. https://doi.org/10.3390/qubs10010006</a>
 * 
 * %E
 *******************************************************************************/
