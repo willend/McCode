@@ -628,14 +628,6 @@ jobs:
            REFLABEL=""
            FOUND_ANY="0"
 
-           # Only run_mctest/ (the general "any changed instrument/component"
-           # comparison run, produced by the "Check for modified
-           # instruments" step) is aggregated here. The supplementary
-           # per-component run_<comp>/ runs are left as individual,
-           # per-platform artifacts for manual inspection: which components
-           # changed (and therefore which run_<comp> folders exist at all)
-           # isn't a stable, enumerable set to line up across all 5
-           # platforms the way run_mctest's single column per platform is.
            for tgz in downloaded_artifacts/*/*.tgz; do
              work=$(mktemp -d)
              tar xzf "$tgz" -C "$work"
