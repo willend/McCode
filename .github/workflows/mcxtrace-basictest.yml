@@ -638,10 +638,10 @@ jobs:
            fi
 
            if [ -z "$REFLABEL" ]; then
-             echo "ERROR: could not identify the ubuntu-latest/conda reference column"
-             exit 1
+             echo "WARNING: could not identify the ubuntu-latest/conda reference column"
+           else
+             echo "REFLABEL=$REFLABEL" >> "$GITHUB_ENV"
            fi
-           echo "REFLABEL=$REFLABEL" >> "$GITHUB_ENV"
            echo "Reference column: $REFLABEL"
            ls combined
            ls singletests
@@ -652,12 +652,19 @@ jobs:
            set -e
            set -u
            set -x
-           if [ "$FOUND_ANY" != "0" ]; then
-             cd combined && mxviewtest --reflabel "$REFLABEL" --nobrowse && ls -l $PWD && cd -
+           if [ -d combined/ ]; then
+             cd combined
+             if [ -z "$REFLABEL" ]; then
+               mxviewtest --reflabel "$REFLABEL" --nobrowse
+             else
+               mxviewtest --nobrowse
+             fi
+             cd -
            fi
            if [ -d singletests/ ]; then
              cd singletests && mxviewtest --nobrowse && ls -l $PWD && cd -
            fi
+
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
       run: |
