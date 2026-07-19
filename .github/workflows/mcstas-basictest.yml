@@ -609,6 +609,13 @@ jobs:
 
     - name: 'Merge changed-instrument columns into one shared testdir'
       id: merge
+      # Plain (non-login) shell here deliberately: this step is pure
+      # tar/mv/mkdir, no conda activation needed, and a login shell's
+      # ~/.bash_logout (standard on Debian/Ubuntu images) runs
+      # `clear_console -q` on exit, which can fail in a non-interactive
+      # runner and override our own explicit `exit 0`/`exit 1` below,
+      # making a successful "nothing changed" run report as a failure.
+      shell: bash {0}
       run: |
            set -e
            set -u
