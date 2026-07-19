@@ -24,9 +24,9 @@ jobs:
           #- { method: source, os: windows-11-arm, CC: cl.exe,   CXX: cl.exe,     python: "3.13", mpi: 'msmpi'   }
           #- { method: source, os: windows-latest, CC: gcc.exe,   CXX: g++.exe,     python: "3.13", mpi: 'msmpi'   }
           # --- built via conda ---
-          - { method: conda,  os: ubuntu-latest,                                                  mpi: 'openmpi' }
-          - { method: conda,  os: macos-latest,                                                   mpi: 'openmpi' }
-          - { method: conda,  os: windows-latest,                                                 mpi: 'msmpi'   }
+          - { method: conda,  os: ubuntu-latest,  CC: gcc,   CXX: g++,  python: '3.13', mpi: 'openmpi' }
+          - { method: conda,  os: macos-latest,  CC: clang,  CXX: clang++,   python: '3.13', mpi: 'openmpi' }
+          - { method: conda,  os: windows-latest, CC: cl.exe,   CXX: cl.exe,  python: "3.13",  mpi: 'msmpi'   }
 
     name: ${{ matrix.os }}.${{ matrix.method }}.${{ matrix.CC || 'default' }}.${{ matrix.mpi }}
     runs-on: ${{ matrix.os }}
@@ -644,14 +644,6 @@ jobs:
              artifact_name=$(basename "$(dirname "$tgz")")
 
              for labeldir in "$work"/run_mctest/*/; do
-               # mctest's own CHANGES_<method>_<CC>_<mpi> suffix does not
-               # embed the OS, so e.g. the ubuntu-latest and macos-latest
-               # conda legs (both method=conda, CC unset, same mpi) produce
-               # identically-named label directories - disambiguate by
-               # appending the (OS-bearing) source artifact name. Verified
-               # this collision is real: both conda ubuntu/macos legs
-               # produce the literal same "CHANGES_conda_default_openmpi"
-               # suffix.
                dest="combined/$(basename "$labeldir")__${artifact_name}"
                mv "$labeldir" "$dest"
                if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
