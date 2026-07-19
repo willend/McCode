@@ -336,8 +336,8 @@ jobs:
            fi
            test -n "$(command -v mcxtrace${EXESUFFIX})"
            mcxtrace${EXESUFFIX} --version
-           mxtest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --suffix=${{ matrix.method }}
-           export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
+           mxtest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_rngtest --suffix=${{ matrix.method }}
+           export SUM=`find run_rngtest -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
            then
@@ -348,8 +348,8 @@ jobs:
               false
            fi
 
-    - name: Launch JJ_SAXS instrument
-      id: JJ_SAXS
+    - name: Launch Basic tests
+      id: basictests
       run: |
            set -e
            set -u
@@ -364,78 +364,8 @@ jobs:
            fi
            test -n "$(command -v mcxtrace${EXESUFFIX})"
            mcxtrace${EXESUFFIX} --version
-           mxtest${SUFFIX} --instr=JJ_SAXS --testdir=run_singletests --suffix=${{ matrix.method }}
-           if [ "${{ matrix.CC }}" != "cl.exe" ];
-           then
-             mxtest${SUFFIX} --instr=JJ_SAXS --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           fi
-
-    - name: Launch ESRF_BM29 instrument
-      id: ESRF_BM29
-      run: |
-           set -e
-           set -u
-           set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-             export EXESUFFIX=".exe"
-           else
-            export SUFFIX=""
-            export EXESUFFIX=""
-           fi
-           test -n "$(command -v mcxtrace${EXESUFFIX})"
-           mcxtrace${EXESUFFIX} --version
-           mxtest${SUFFIX} --instr=ESRF_BM29 --testdir=run_singletests --suffix=${{ matrix.method }}
-           if [ "${{ matrix.CC }}" != "cl.exe" ];
-           then
-             mxtest${SUFFIX} --instr=ESRF_BM29 --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           fi
-
-    - name: Launch MCPL test instrument
-      id: mcpl-test
-      if: matrix.method == 'conda' || runner.os != 'Windows'
-      run: |
-           set -e
-           set -u
-           set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-             export EXESUFFIX=".exe"
-           else
-            export SUFFIX=""
-            export EXESUFFIX=""
-           fi
-           test -n "$(command -v mcxtrace${EXESUFFIX})"
-           mcxtrace${EXESUFFIX} --version
-           mxtest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests --suffix=${{ matrix.method }}
-           mxtest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests --suffix=${{ matrix.method }}
-           mxtest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           mxtest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-
-    - name: Launch Absorption test instrument
-      id: Absorption-test
-      if: matrix.method == 'conda' || runner.os != 'Windows' # Source-build Windows is missing the xraylib dependency
-      run: |
-           set -e
-           set -u
-           set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-             export EXESUFFIX=".exe"
-           else
-            export SUFFIX=""
-            export EXESUFFIX=""
-           fi
-           test -n "$(command -v mcxtrace${EXESUFFIX})"
-           mcxtrace${EXESUFFIX} --version
-           mxtest${SUFFIX} --instr=Test_Absorption --testdir=run_singletests --suffix=${{ matrix.method }}
-           if [ "${{ matrix.CC }}" != "cl.exe" ];
-           then
-             mxtest${SUFFIX} --instr=Test_Absorption --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           fi
+           mxtest${SUFFIX} --instr=JJ_SAXS,ESRF_BM29,Test_MCPL_input,Test_MCPL_output,Test_Absorption --testdir=run_basictests --suffix=${{ matrix.method }}
+           mxtest${SUFFIX} --mpi=2 --instr=JJ_SAXS,ESRF_BM29,Test_MCPL_input,Test_MCPL_output,Test_Absorption --testdir=run_basictests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
 
     - name: Check for modified instruments
       id: instr-test
@@ -605,7 +535,7 @@ jobs:
            set -u
            set -x
 
-           mkdir singletests
+           mkdir basictests
 
            REFLABEL=""
            FOUND_ANY="0"
@@ -626,8 +556,8 @@ jobs:
                done
              fi
 
-             for labeldir in "$work"/run_singletests/*/; do
-               mv $labeldir singletests/
+             for labeldir in "$work"/run_basictests/*/; do
+               mv $labeldir basictests/
              done
              rm -rf "$work"
            done
@@ -659,17 +589,17 @@ jobs:
              fi
              cd -
            fi
-           if [ -d singletests/ ]; then
-             cd singletests && mxviewtest --nobrowse && ls -l $PWD && cd -
+           if [ -d basictests/ ]; then
+             cd basictests && mxviewtest --nobrowse && ls -l $PWD && cd -
            fi
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
       run: |
            if [ -d combined/ ]; then
-             tar cvfz mcxtrace-basictest-comparison.tgz combined singletests
+             tar cvfz mcxtrace-basictest-comparison.tgz combined basictests
            else
-             tar cvfz mcxtrace-basictest-comparison.tgz singletests
+             tar cvfz mcxtrace-basictest-comparison.tgz basictests
            fi
 
     - name: 'Upload comparison artifact'
