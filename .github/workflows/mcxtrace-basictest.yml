@@ -666,7 +666,11 @@ jobs:
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
       run: |
-           tar cvfz mcxtrace-basictest-comparison.tgz combined singletests
+           if [ -d combined/ ]; then
+             tar cvfz mcxtrace-basictest-comparison.tgz combined singletests
+           else
+             tar cvfz mcxtrace-basictest-comparison.tgz singletests
+           fi
 
     - name: 'Upload comparison artifact'
       id: comparison-upload
