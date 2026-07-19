@@ -200,8 +200,7 @@ jobs:
            for tgz in downloaded_artifacts/*/*.tgz; do
              work=$(mktemp -d)
              tar xzf "$tgz" -C "$work"
-             labeldir=$(ls -d "$work"/run_test-suite/*/)
-             mv "$labeldir" combined/
+             mv "$work"/run_test-suite/* combined/
 
              # Linux (ubuntu-latest) is the reference platform; the label
              # name itself embeds a version string and timestamp we can't
