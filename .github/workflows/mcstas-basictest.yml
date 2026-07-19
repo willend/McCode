@@ -623,6 +623,8 @@ jobs:
            set -x
 
            mkdir combined
+           mkdir singletests
+
            REFLABEL=""
            FOUND_ANY="0"
 
@@ -650,6 +652,13 @@ jobs:
                fi
                mv $labeldir combined/
              done
+
+             for labeldir in "$work"/run_singletests/*/; do
+               if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
+                 REFLABEL=$(basename "$labeldir")
+               fi
+               mv $labeldir singletests/
+             done
              rm -rf "$work"
            done
 
@@ -666,6 +675,7 @@ jobs:
            echo "REFLABEL=$REFLABEL" >> "$GITHUB_ENV"
            echo "Reference column: $REFLABEL"
            ls combined
+           ls singletests
 
     - name: 'Run mcviewtest across all platform columns'
       id: viewtest
@@ -675,6 +685,7 @@ jobs:
            set -u
            set -x
            cd combined && mcviewtest --reflabel "$REFLABEL" --nobrowse && ls -l $PWD && cd -
+           cd singletests && mcviewtest --nobrowse && ls -l $PWD && cd -
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
