@@ -41,7 +41,7 @@ def _parse_data_block(lines_block):
         ncols = len(lines_block[0].split())
         if ncols == 0:
             raise ValueError('empty first line in data block')
-        flat = np.fromstring(' '.join(lines_block), dtype=float, sep=' ')
+        flat = np.concatenate([np.fromstring(line, dtype=float, sep=' ') for line in lines_block])
         if flat.size != ncols * len(lines_block):
             raise ValueError('unexpected element count (jagged or malformed data block)')
         return flat.reshape(len(lines_block), ncols).tolist()
