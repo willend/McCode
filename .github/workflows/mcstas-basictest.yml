@@ -631,10 +631,6 @@ jobs:
            for tgz in downloaded_artifacts/*/*.tgz; do
              work=$(mktemp -d)
              tar xzf "$tgz" -C "$work"
-             if [ ! -d "$work/run_mctest" ]; then
-               rm -rf "$work"
-               continue
-             fi
              FOUND_ANY="1"
              artifact_name=$(basename "$(dirname "$tgz")")
 
