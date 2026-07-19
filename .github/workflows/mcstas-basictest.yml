@@ -536,7 +536,7 @@ jobs:
              else
                export SCOPE=" "
              fi
-             mkdir run_mctest && cd run_mctest
+             mkdir -p run_mctest && cd run_mctest
              ${MCTEST_EXECUTABLE} --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
              ${MCVIEWTEST_EXECUTABLE} --nobrowse $PWD
            fi
