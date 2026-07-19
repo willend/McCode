@@ -691,7 +691,7 @@ jobs:
       id: tar-package
       if: steps.merge.outputs.found_any == '1'
       run: |
-           tar cvfz mcstas-basictest-comparison.tgz combined
+           tar cvfz mcstas-basictest-comparison.tgz combined singletests
 
     - name: 'Upload comparison artifact'
       id: comparison-upload
