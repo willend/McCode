@@ -227,7 +227,7 @@ jobs:
            set -e
            set -u
            set -x
-           cd "$PWD/combined" && ls -l && mcviewtest
+           cd "$PWD/combined" && mcviewtest --reflabel "$REFLABEL" --nobrowse
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
