@@ -605,7 +605,6 @@ jobs:
            set -u
            set -x
 
-           mkdir combined
            mkdir singletests
 
            REFLABEL=""
@@ -618,6 +617,7 @@ jobs:
              artifact_name=$(basename "$(dirname "$tgz")")
 
              if [ -d "$work"/run_mxtest/ ]; then
+               mkdir -p combined
                for labeldir in "$work"/run_mxtest/*/; do
                  if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
                    REFLABEL=$(basename "$labeldir")
@@ -627,9 +627,6 @@ jobs:
              fi
 
              for labeldir in "$work"/run_singletests/*/; do
-               if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
-                 REFLABEL=$(basename "$labeldir")
-               fi
                mv $labeldir singletests/
              done
              rm -rf "$work"
@@ -658,8 +655,9 @@ jobs:
            if [ "$FOUND_ANY" != "0" ]; then
              cd combined && mxviewtest --reflabel "$REFLABEL" --nobrowse && ls -l $PWD && cd -
            fi
-           cd singletests && mxviewtest --nobrowse && ls -l $PWD && cd -
-
+           if [ -d singletests/ ]; then
+             cd singletests && mxviewtest --nobrowse && ls -l $PWD && cd -
+           fi
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
       run: |
