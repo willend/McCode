@@ -631,6 +631,7 @@ jobs:
                if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
                  REFLABEL=$(basename "$labeldir")
                fi
+               mv $labeldir combined/
              done
              rm -rf "$work"
            done
@@ -656,7 +657,7 @@ jobs:
            set -e
            set -u
            set -x
-           cd "$PWD/combined" && mxviewtest --reflabel "$REFLABEL" --nobrowse
+           cd combined && mxviewtest --reflabel "$REFLABEL" --nobrowse && ls -l $PWD && cd -
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package

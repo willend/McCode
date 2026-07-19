@@ -447,6 +447,7 @@ jobs:
             export EXESUFFIX=""
            fi
            test -n "$(command -v mcstas${EXESUFFIX})"
+           mcstas${EXESUFFIX} --version
            mctest${SUFFIX} --instr=templateSANS_Mantid --testdir=run_singletests --suffix=${{ matrix.mpi }}
            if [ "${{ matrix.CC }}" != "cl.exe" ];
            then
