@@ -634,12 +634,14 @@ jobs:
              FOUND_ANY="1"
              artifact_name=$(basename "$(dirname "$tgz")")
 
-             for labeldir in "$work"/run_mctest/*/; do
-               if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
-                 REFLABEL=$(basename "$labeldir")
-               fi
-               mv $labeldir combined/
-             done
+             if [ -d "$work"/run_mctest/ ]; then
+               for labeldir in "$work"/run_mctest/*/; do
+                 if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
+                   REFLABEL=$(basename "$labeldir")
+                 fi
+                 mv $labeldir combined/
+               done
+             fi
 
              for labeldir in "$work"/run_singletests/*/; do
                if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
@@ -652,8 +654,7 @@ jobs:
 
            echo "FOUND_ANY=$FOUND_ANY" >> "$GITHUB_ENV"
            if [ "$FOUND_ANY" == "0" ]; then
-             echo "No instrument/component changes detected on any platform - nothing to compare."
-             exit 0
+             echo "No instrument/component changes detected on any platform"
            fi
 
            if [ -z "$REFLABEL" ]; then
