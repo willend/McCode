@@ -663,7 +663,7 @@ jobs:
            set -e
            set -u
            set -x
-           mxviewtest --testdir "$PWD/combined" --reflabel "$REFLABEL" --nobrowse
+           cd "$PWD/combined" && mxviewtest --reflabel "$REFLABEL" --nobrowse
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
