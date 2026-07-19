@@ -647,6 +647,7 @@ jobs:
                if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
                  REFLABEL=$(basename "$labeldir")
                fi
+               mv $labeldir combined/
              done
              rm -rf "$work"
            done
