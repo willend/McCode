@@ -658,10 +658,8 @@ jobs:
              echo "WARNING: could not identify the ubuntu-latest/conda reference column"
            else
              echo "REFLABEL=$REFLABEL" >> "$GITHUB_ENV"
+             echo "Reference column: $REFLABEL"
            fi
-           echo "Reference column: $REFLABEL"
-           ls combined
-           ls singletests
 
     - name: 'Run mcviewtest across all platform columns'
       id: viewtest
