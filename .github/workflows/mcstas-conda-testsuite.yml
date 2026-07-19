@@ -224,7 +224,7 @@ jobs:
     - name: 'Run mcviewtest across all platform columns'
       id: viewtest
       run: |
-           cd "$PWD/combined" && echo mcviewtest --reflabel "$REFLABEL" --nobrowse
+           cd "$PWD/combined" && mcviewtest --reflabel "$REFLABEL" --nobrowse
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
