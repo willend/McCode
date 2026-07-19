@@ -664,7 +664,6 @@ jobs:
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
-      if: steps.merge.outputs.found_any == '1'
       run: |
            tar cvfz mcxtrace-basictest-comparison.tgz combined singletests
 
