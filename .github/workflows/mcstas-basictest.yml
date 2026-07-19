@@ -644,10 +644,8 @@ jobs:
              artifact_name=$(basename "$(dirname "$tgz")")
 
              for labeldir in "$work"/run_mctest/*/; do
-               dest="combined/$(basename "$labeldir")__${artifact_name}"
-               mv "$labeldir" "$dest"
                if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
-                 REFLABEL=$(basename "$dest")
+                 REFLABEL=$(basename "$labeldir")
                fi
              done
              rm -rf "$work"
