@@ -650,7 +650,7 @@ jobs:
              rm -rf "$work"
            done
 
-           echo "found_any=$FOUND_ANY" >> "$GITHUB_OUTPUT"
+           echo "FOUND_ANY=$FOUND_ANY" >> "$GITHUB_ENV"
            if [ "$FOUND_ANY" == "0" ]; then
              echo "No instrument/component changes detected on any platform - nothing to compare."
              exit 0
@@ -667,12 +667,13 @@ jobs:
 
     - name: 'Run mcviewtest across all platform columns'
       id: viewtest
-      if: steps.merge.outputs.found_any == '1'
       run: |
            set -e
            set -u
            set -x
-           cd combined && mcviewtest --reflabel "$REFLABEL" --nobrowse && ls -l $PWD && cd -
+           if [ "$FOUND_ANY" != "0" ]; then
+             cd combined && mcviewtest --reflabel "$REFLABEL" --nobrowse && ls -l $PWD && cd -
+           fi
            cd singletests && mcviewtest --nobrowse && ls -l $PWD && cd -
 
     - name: 'Tar combined output (all platform folders + comparison table)'
@@ -683,7 +684,6 @@ jobs:
     - name: 'Upload comparison artifact'
       id: comparison-upload
       uses: actions/upload-artifact@v6
-      if: steps.merge.outputs.found_any == '1'
       with:
         name: mcstas-basictest-comparison
         path: mcstas-basictest-comparison.tgz
