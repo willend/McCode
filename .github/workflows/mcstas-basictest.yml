@@ -508,7 +508,7 @@ jobs:
                  NUMMATCH=`find src/mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
                  if [ "$NUMMATCH" -gt "0" ];
                  then
-                   ${MCTEST_EXECUTABLE} --mpi=2 --testdir run_${comp} --comp=${comp} --suffix=CHANGES_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+                   ${MCTEST_EXECUTABLE} --mpi=2 --testdir run_mctest --comp=${comp} --suffix=CHANGES_${comp}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
                  else
                    echo No matching tests found
                  fi
