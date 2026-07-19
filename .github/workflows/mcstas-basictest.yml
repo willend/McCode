@@ -329,8 +329,8 @@ jobs:
            fi
            test -n "$(command -v mcstas${EXESUFFIX})"
            mcstas${EXESUFFIX} --version
-           mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           export SUM=`find run_singletests -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
+           mctest${SUFFIX} --instr=Test_RNG_rand01 --testdir=run_rngtest --suffix=${{ matrix.method }}
+           export SUM=`find run_rngtest -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
            then
@@ -341,8 +341,8 @@ jobs:
               false
            fi
 
-    - name: Launch BNL_H8 instrument
-      id: h8-test
+    - name: Launch basic tests
+      id: basictests
       run: |
            set -e
            set -u
@@ -357,102 +357,8 @@ jobs:
            fi
            test -n "$(command -v mcstas${EXESUFFIX})"
            mcstas${EXESUFFIX} --version
-           mctest${SUFFIX} --instr=BNL_H8 --testdir=run_singletests --suffix=${{ matrix.method }}
-           if [ "${{ matrix.CC }}" != "cl.exe" ];
-           then
-             mctest${SUFFIX} --instr=BNL_H8 --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           fi
-
-    - name: Launch ISIS_CRISP
-      id: ISIS_CRISP
-      if: matrix.method == 'conda' || runner.os != 'Windows'
-      run: |
-           set -e
-           set -u
-           set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-             export EXESUFFIX=".exe"
-           else
-            export SUFFIX=""
-            export EXESUFFIX=""
-           fi
-           test -n "$(command -v mcstas${EXESUFFIX})"
-           mcstas${EXESUFFIX} --version
-           mctest${SUFFIX} --instr=ISIS_CRISP --testdir=run_singletests --suffix=${{ matrix.method }}
-           mctest${SUFFIX} --instr=ISIS_CRISP --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-
-    - name: Launch MCPL and KDSource test instruments
-      id: mcpl-test
-      if: matrix.method == 'conda' || runner.os != 'Windows'
-      run: |
-           set -e
-           set -u
-           set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-             export EXESUFFIX=".exe"
-           else
-            export SUFFIX=""
-            export EXESUFFIX=""
-           fi
-           test -n "$(command -v mcstas${EXESUFFIX})"
-           mcstas${EXESUFFIX} --version
-           mctest${SUFFIX} --instr=ESS_BEER_MCPL --testdir=run_singletests --suffix=${{ matrix.method }}
-           mctest${SUFFIX} --instr=Test_MCPL_input --testdir=run_singletests --suffix=${{ matrix.method }}
-           mctest${SUFFIX} --instr=Test_MCPL_output --testdir=run_singletests --suffix=${{ matrix.method }}
-           mctest${SUFFIX} --instr=ESS_BEER_MCPL --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           mctest${SUFFIX} --instr=Test_MCPL_input --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           mctest${SUFFIX} --instr=Test_MCPL_output --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           mctest${SUFFIX} --instr=Test_KDSource --testdir=run_singletests --suffix=${{ matrix.method }}
-           mctest${SUFFIX} --instr=Test_KDSource --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-
-    - name: Launch NCrystal test instrument
-      id: ncrystal-test
-      if: matrix.method == 'conda' || runner.os != 'Windows'
-      run: |
-           set -e
-           set -u
-           set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-             export EXESUFFIX=".exe"
-           else
-            export SUFFIX=""
-            export EXESUFFIX=""
-           fi
-           test -n "$(command -v mcstas${EXESUFFIX})"
-           mctest${SUFFIX} --instr=NCrystal_example --testdir=run_singletests --suffix=${{ matrix.method }}
-           if [ "${{ matrix.CC }}" != "cl.exe" ];
-           then
-             mctest${SUFFIX} --instr=NCrystal_example --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           fi
-
-    - name: Launch NeXus test instrument
-      id: nexus-test
-      if: matrix.method == 'conda' || runner.os != 'Windows'
-      run: |
-           set -e
-           set -u
-           set -x
-           if [ "$RUNNER_OS" == "Windows" ];
-           then
-             export SUFFIX=".bat"
-             export EXESUFFIX=".exe"
-           else
-            export SUFFIX=""
-            export EXESUFFIX=""
-           fi
-           test -n "$(command -v mcstas${EXESUFFIX})"
-           mcstas${EXESUFFIX} --version
-           mctest${SUFFIX} --instr=templateSANS_Mantid --testdir=run_singletests --suffix=${{ matrix.method }}
-           if [ "${{ matrix.CC }}" != "cl.exe" ];
-           then
-             mctest${SUFFIX} --instr=templateSANS_Mantid --mpi=2 --testdir=run_singletests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
-           fi
+           mctest${SUFFIX} --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.method }}
+           mctest${SUFFIX} --mpi=auto --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
 
     - name: Check for modified instruments
       id: instr-test
@@ -622,7 +528,7 @@ jobs:
            set -u
            set -x
 
-           mkdir singletests
+           mkdir basictests
 
            REFLABEL=""
            FOUND_ANY="0"
@@ -643,8 +549,8 @@ jobs:
                done
              fi
 
-             for labeldir in "$work"/run_singletests/*/; do
-               mv $labeldir singletests/
+             for labeldir in "$work"/run_basictests/*/; do
+               mv $labeldir basictests/
              done
              rm -rf "$work"
            done
@@ -676,17 +582,17 @@ jobs:
              fi
              cd -
            fi
-           if [ -d singletests/ ]; then
-             cd singletests && mcviewtest --nobrowse && ls -l $PWD && cd -
+           if [ -d basictests/ ]; then
+             cd basictests && mcviewtest --nobrowse && ls -l $PWD && cd -
            fi
 
     - name: 'Tar combined output (all platform folders + comparison table)'
       id: tar-package
       run: |
            if [ -d combined/ ]; then
-             tar cvfz mcstas-basictest-comparison.tgz combined singletests
+             tar cvfz mcstas-basictest-comparison.tgz combined basictests
            else
-             tar cvfz mcstas-basictest-comparison.tgz singletests
+             tar cvfz mcstas-basictest-comparison.tgz basictests
            fi
 
     - name: 'Upload comparison artifact'
