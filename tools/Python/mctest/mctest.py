@@ -303,7 +303,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
     anyfailed=False
 
     # compile, record time
-    global ncount, mpi, openacc, suffix, nexus, lint, permissive, compilemax, displaymax, runmax
+    global ncount, mpi, openacc, suffix, nexus, lint, permissive, compilemax, displaymax, runmax, seed
     logging.info("")
     if not lint:
         logging.info("Compiling instruments [seconds]...")
@@ -428,15 +428,15 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 if openacc is True:
                     if version:
                         cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-                    cmd = cmd + " -s 1000 %s %s -n%s --openacc --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
+                    cmd = cmd + " -s %s %s %s -n%s --openacc --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
                 else:
                     if version:
                         cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-                    cmd = cmd + " -s 1000 %s %s -n%s --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
+                    cmd = cmd + " -s %s %s %s -n%s --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, test.parvals, ncount, mpi, test.testnb, test.testnb)
             else:
                 if version:
                     cmd = cmd + " --override-config=" + join(os.path.dirname(__file__), mccode_config.configuration["MCCODE"] + "-test",version)
-                cmd = cmd + " -s 1000 %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (test.instrname, test.parvals, ncount, test.testnb, test.testnb)
+                cmd = cmd + " -s %s %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, test.parvals, ncount, test.testnb, test.testnb)
 
             retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=runmax)
             t2 = time.time()
@@ -814,12 +814,18 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax
+    global ncount, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed
     ncount = "1e6"
     if args.ncount:
         ncount = args.ncount[0]
     elif args.n:
         ncount = args.n[0]
+
+    seed = "1000"
+    if args.seed:
+        seed = args.seed[0]
+    elif args.s:
+        seed = args.s[0]
 
     if args.local:
         runLocal = args.local
@@ -887,6 +893,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ncount', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('-n', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
+    parser.add_argument('--seed', nargs=1, help='seed sent to %s (default 1000)' % (mccode_config.configuration["MCRUN"]) )
+    parser.add_argument('-s', nargs=1, help='seed sent to %s (default 1000)' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--mpi', nargs=1, help='mpi nodecount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--openacc', action='store_true', help='openacc flag sent to %s' % (mccode_config.configuration["MCRUN"]))
     parser.add_argument('--config', nargs="?", help='test this specific config only - label name or absolute path')
