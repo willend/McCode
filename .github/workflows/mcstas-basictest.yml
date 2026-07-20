@@ -540,12 +540,12 @@ jobs:
              artifact_name=$(basename "$(dirname "$tgz")")
 
              if [ -d "$work"/run_mctest/ ]; then
-               mkdir -p combined
+               mkdir -p changes
                for labeldir in "$work"/run_mctest/*/; do
                  if [[ "$artifact_name" == *"ubuntu-latest"* ]]; then
                    REFLABEL=$(basename "$labeldir")
                  fi
-                 mv $labeldir combined/
+                 mv $labeldir changes/
                done
              fi
 
@@ -573,8 +573,8 @@ jobs:
            set -e
            set -u
            set -x
-           if [ -d combined/ ]; then
-             cd combined
+           if [ -d changes/ ]; then
+             cd changes
              if [ -z "$REFLABEL" ]; then
                mcviewtest --reflabel "$REFLABEL" --nobrowse
              else
@@ -586,11 +586,11 @@ jobs:
              cd basictests && mcviewtest --nobrowse && ls -l $PWD && cd -
            fi
 
-    - name: 'Tar combined output (all platform folders + comparison table)'
+    - name: 'Tar output (all platform folders + comparison tables)'
       id: tar-package
       run: |
-           if [ -d combined/ ]; then
-             tar cvfz mcstas-basictest-comparison.tgz combined basictests
+           if [ -d changes/ ]; then
+             tar cvfz mcstas-basictest-comparison.tgz changes basictests
            else
              tar cvfz mcstas-basictest-comparison.tgz basictests
            fi
