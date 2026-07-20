@@ -80,6 +80,28 @@ def lookup(cm, x):
     return cm[idx]
 
 
+def lookup_vec(cm, x):
+    """ Vectorized equivalent of lookup(): x is an ndarray of values
+        (nominally in [0, 1]), returns an array of shape x.shape + (4,)
+        by indexing into the colour map cm for every element at once.
+
+        This replaces what used to be a per-pixel Python-level call to
+        lookup() inside a nested "for i / for j" loop in
+        get_params_str_2D_diff() - for a modestly sized 2D monitor (e.g.
+        100x100 = 10000 pixels), that's 10000 individual Python function
+        calls per image, x2 images (linear + log) x2 (data + colourbar
+        rendering is cheap by comparison, but the main image dominates),
+        which adds up badly across hundreds of monitors. Doing the same
+        clamp/round/index operations as whole-array numpy operations here
+        is the same math, just executed in C rather than the Python
+        interpreter loop. """
+    x = np.nan_to_num(x, nan=0.5)
+    x = np.clip(x, 0.0, 1.0)
+    idx = np.round((len(cm) - 1) * x).astype(int)
+    idx = np.clip(idx, 0, len(cm) - 1)
+    return cm[idx]
+
+
 # ---------------------------------------------------------------------------
 # html / json generation (mirrors mcplot.py's get_html/get_json_*)
 # ---------------------------------------------------------------------------
@@ -88,6 +110,7 @@ def get_html(template_name, params, simfile):
     text = open(os.path.join(os.path.dirname(__file__), template_name)).read()
     text = text.replace("@PARAMS@", params)
     text = text.replace("@DATAFILE@", simfile)
+    text = text.replace("@DATALINK@", "Diff mode (no physical datafile)") # Nothing to link to  in diff-mode
 
     logscalestr = "true" if logscale == True else "false"
     text = text.replace("@LOGSCALE@", logscalestr)
@@ -168,19 +191,15 @@ def get_params_str_2D_diff(data):
         signed (symlog-style) transform: sign(v) * log10(1 + |v|/eps),
         so that small differences remain visible while preserving sign. """
     vals = np.array(data.zvals, dtype=float)
-    dims = np.shape(vals)
     cm = get_cm_diverging()
 
     # --- linear diverging image ---
     maxabs = float(np.max(np.abs(vals))) if vals.size else 0.0
-    img = np.zeros((dims[0], dims[1], 4))
-    for i in range(dims[0]):
-        for j in range(dims[1]):
-            if maxabs > 0:
-                x = (vals[i, j] / maxabs + 1.0) / 2.0
-            else:
-                x = 0.5
-            img[i, j, :] = lookup(cm, x)
+    if maxabs > 0:
+        x = (vals / maxabs + 1.0) / 2.0
+    else:
+        x = np.full(vals.shape, 0.5)
+    img = lookup_vec(cm, x)
     encoded_2d_data = _encode_png(img)
 
     # --- signed-log ("symlog") diverging image ---
@@ -192,22 +211,19 @@ def get_params_str_2D_diff(data):
         slog = vals
         maxslog = 0.0
 
-    img_log = np.zeros((dims[0], dims[1], 4))
-    for i in range(dims[0]):
-        for j in range(dims[1]):
-            if maxslog > 0:
-                x = (slog[i, j] / maxslog + 1.0) / 2.0
-            else:
-                x = 0.5
-            img_log[i, j, :] = lookup(cm, x)
+    if maxslog > 0:
+        xlog = (slog / maxslog + 1.0) / 2.0
+    else:
+        xlog = np.full(vals.shape, 0.5)
+    img_log = lookup_vec(cm, xlog)
     encoded_2d_data_log = _encode_png(img_log)
 
     # --- colour bars ---
     def make_colorbar(cm):
-        img = np.zeros((256, 1, 4))
-        for i in range(256):
-            img[255 - i, 0] = lookup(cm, i / 255)
-        return _encode_png(img)
+        # equivalent to the old "for i in range(256): img[255-i,0] = lookup(cm, i/255)":
+        # colors[i] = lookup(cm, i/255); reversing gives img[r] = colors[255-r]
+        colors = lookup_vec(cm, np.arange(256) / 255.0)
+        return _encode_png(colors[::-1].reshape(256, 1, 4))
 
     encoded_cb = make_colorbar(cm)
     encoded_cb_log = make_colorbar(cm)
@@ -318,7 +334,8 @@ def write_index(outdir, entries, label_a, label_b):
         outfile.write("  #sizecontrol input[type=range] { vertical-align: middle; margin: 0 8px; }\n")
         outfile.write("</style>\n")
         outfile.write("</head><body>\n")
-        outfile.write(f"<h1>Difference plots: {label_a} &minus; {label_b}</h1>\n")
+        outfile.write("<h1>Difference plots:</h1>\n")
+        outfile.write(f"<strong><ol type=\"A\"><li>{label_a} vs.</li><li>{label_b}</li></ol></strong>")
         outfile.write(f"<p>diff.monitor = ({label_a}).monitor &minus; ({label_b}).monitor</p>\n")
         outfile.write("<div id='sizecontrol'>\n")
         outfile.write("  <label for='sizeslider'>Figure size:</label>\n")
@@ -335,11 +352,12 @@ def write_index(outdir, entries, label_a, label_b):
             outfile.write(f"<iframe src='{basename}' title='{basename}' width={WIDTH} height={HEIGHT} style='transform:scale({initial_scale});'></iframe>\n")
             outfile.write("</div>\n")
             outfile.write("<div class='links'>\n")
+            outfile.write("<span class='links'>\n")
             outfile.write(f"<a href='{basename}' target=_blank>[ {basename} ]</a>\n")
             if fname_log:
                 basename_log = os.path.basename(fname_log)
                 outfile.write(f"<a href='{basename_log}' target=_blank>[ {basename_log} ]</a>\n")
-
+            outfile.write("</span><br>\n")
             # links to the pre-existing mcplot-html plots of the two
             # original monitors, if they were found on disk
             a_lin = _relhref(entry.get('a_lin'), outdir)
@@ -347,16 +365,17 @@ def write_index(outdir, entries, label_a, label_b):
             b_lin = _relhref(entry.get('b_lin'), outdir)
             b_log = _relhref(entry.get('b_log'), outdir)
             if a_lin or a_log or b_lin or b_log:
-                outfile.write("<span class='origlinks'>|</span>\n")
+                outfile.write("<br><span class='origlinks'>\n")
             if a_lin:
-                outfile.write(f"<a href='{a_lin}' target=_blank>[ {label_a} ]</a>\n")
+                outfile.write(f"<a href='{a_lin}' target=_blank>[ A ]</a>\n")
             if a_log:
-                outfile.write(f"<a href='{a_log}' target=_blank>[ {label_a} (log) ]</a>\n")
+                outfile.write(f"<a href='{a_log}' target=_blank>[ A (log) ]</a>\n")
             if b_lin:
-                outfile.write(f"<a href='{b_lin}' target=_blank>[ {label_b} ]</a>\n")
+                outfile.write(f"<a href='{b_lin}' target=_blank>[ B ]</a>\n")
             if b_log:
-                outfile.write(f"<a href='{b_log}' target=_blank>[ {label_b} (log) ]</a>\n")
-
+                outfile.write(f"<a href='{b_log}' target=_blank>[ B (log) ]</a>\n")
+            if a_lin or a_log or b_lin or b_log:
+                outfile.write("</span>\n")
             outfile.write("</div>\n")
             outfile.write("</div>\n")
         outfile.write("</div>\n")

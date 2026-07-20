@@ -133,3 +133,119 @@ jobs:
       if: always() && (inputs.manual-debugging == true)
       with:
         limit-access-to-actor: true
+
+  compare:
+    name: mcstas-conda-testsuite-comparison
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        path: src
+
+    - name: Get conda dependency list
+      id: conda-deps
+      run: |
+           ./src/devel/bin/mccode-create-conda-yml -m mcstas -n mcstas -o dependencies.yml
+
+    - uses: mamba-org/setup-micromamba@v3
+      with:
+        environment-name: mcstas
+        environment-file: dependencies.yml
+
+    - name: Configure build and install mcstas
+      id: mcstas-install
+      run: |
+           # Only the Python tooling (mcviewtest, mcplotdiff-html, mcplot-html) is
+           # actually needed here - the diff/report generation is platform-agnostic
+           # regardless of which OS originally produced the monitor data - but we
+           # reuse the exact same install path as the build job for consistency,
+           # rather than maintaining a second, lighter-weight install mechanism.
+           ./src/devel/bin/mccode-build-conda -m mcstas -s $PWD/src -b $PWD/build_mcstas
+
+    - name: 'Download all platform test artifacts'
+      id: download
+      uses: actions/download-artifact@v6
+      with:
+        # matches mcstas-artefacts-ubuntu-latest.openmpi.conda-testsuite,
+        # mcstas-artefacts-macos-latest.openmpi.conda-testsuite,
+        # mcstas-artefacts-windows-latest.msmpi.conda-testsuite - by pattern
+        # rather than hardcoded names, so this keeps working if the build
+        # matrix gains/loses a platform
+        pattern: mcstas-artefacts-*.conda-testsuite
+        path: downloaded_artifacts
+
+    - name: 'Merge platform columns into one shared testdir'
+      id: merge
+      run: |
+           set -e
+           set -u
+           set -x
+
+           mkdir combined
+           REFLABEL=""
+
+           # Each platform's tarball contains exactly one label directory
+           # directly under run_test-suite/ (e.g.
+           # mcstas-3.99.99_mpi_x_2_ubuntu-latest_openmpi_1e6_Linux_<datetime>).
+           # mcviewtest treats each such directory as one comparison "column",
+           # so merging them as siblings under one shared testdir is all that's
+           # needed to make them comparable.
+           for tgz in downloaded_artifacts/*/*.tgz; do
+             work=$(mktemp -d)
+             tar xzf "$tgz" -C "$work"
+             labeldir=$(ls -d "$work"/run_test-suite/*/)
+             mv "$labeldir" combined/
+
+             # Linux (ubuntu-latest) is the reference platform; the label
+             # name itself embeds a version string and timestamp we can't
+             # predict, so identify it via the source artifact/tarball name
+             # instead of hardcoding it.
+             if [[ "$tgz" == *"ubuntu-latest"* ]]; then
+               REFLABEL=$(basename "$labeldir")
+             fi
+             rm -rf "$work"
+           done
+
+           if [ -z "$REFLABEL" ]; then
+             echo "ERROR: could not identify the Linux/reference column (ubuntu-latest artifact missing?)"
+             exit 1
+           fi
+
+           echo "REFLABEL=$REFLABEL" >> "$GITHUB_ENV"
+           echo "Reference column: $REFLABEL"
+           ls combined
+
+    - name: 'Run mcviewtest across all platform columns'
+      id: viewtest
+      run: |
+           set -e
+           set -u
+           set -x
+           cd "$PWD/combined" && mcviewtest --reflabel "$REFLABEL" --nobrowse
+
+    - name: 'Tar combined output (all platform folders + comparison table)'
+      id: tar-package
+      if: always()
+      run: |
+           tar cvfz mcstas-conda-testsuite-comparison.tgz combined
+
+    - name: 'Upload comparison artifact'
+      id: comparison-upload
+      uses: actions/upload-artifact@v6
+      if: always()
+      with:
+        name: mcstas-testsuite-comparison
+        path: mcstas-conda-testsuite-comparison.tgz
+
+    - name: Setup tmate session for manual debugging
+      uses: mxschmitt/action-tmate@v3
+      if: always() && (inputs.manual-debugging == true)
+      with:
+        limit-access-to-actor: true

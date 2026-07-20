@@ -9,6 +9,7 @@ from os.path import join, dirname, isdir
 from os import walk
 import subprocess
 import shutil
+import concurrent.futures
 import jinja2
 
 ERROR_PERCENT_THRESSHOLD_ACCEPT = 20
@@ -31,8 +32,27 @@ def get_oldest_dir(directory_name):
     files.sort(key=lambda x:x[0])
     return files[0][1]
 
-def run_normal_mode(testdir, reflabel):
+def get_default_diffworkers():
+    ''' Number of mcplotdiff-html comparisons to run in parallel by default:
+        the number of processors available to this process. Prefers
+        os.sched_getaffinity(0) (Linux only) over os.cpu_count(), since the
+        former respects cgroup/taskset CPU restrictions (e.g. inside a
+        container or batch job allocation) that the latter ignores. '''
+    try:
+        return len(os.sched_getaffinity(0))
+    except AttributeError:
+        # os.sched_getaffinity doesn't exist on macOS/Windows
+        return os.cpu_count() or 4
+
+def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, diffworkers=None):
     ''' load test data and print to html label '''
+
+    if diffworkers is None:
+        diffworkers = get_default_diffworkers()
+
+    # jobs collected during row-building, run in parallel afterwards (see
+    # plan_diff_link() below for why this is a two-phase process)
+    pending_diff_jobs = []
 
     def get_col_header(label, meta):
         try:
@@ -53,7 +73,70 @@ def run_normal_mode(testdir, reflabel):
             lst.append(meta["date"])
         return lst
 
-    def get_cell_tuple(cellobj, refval=None):
+    def get_data_url(cellobj):
+        ''' Reconstructs the relative "label/instrname/testnb/" data directory
+            for a cellobj, the same way get_cell_tuple() does for its own
+            cell - used here to also locate the *reference* column's data
+            directory when generating a diff link. '''
+        label = cellobj["localfile"].split("/")
+        if len(label) == 1:
+            label = cellobj["localfile"].split("\\")
+        label = label[len(label) - 3]
+        return label + "/" + cellobj["instrname"] + "/" + str(cellobj["testnb"]) + "/"
+
+    def plan_diff_link(refcellobj, url, label, row, col_idx):
+        ''' Decides whether a diff against the reference column is
+            applicable, and if so either:
+              - returns the link immediately, if a cached diff already
+                exists on disk, or
+              - registers a pending job to be run later (see the parallel
+                execution pass after all rows have been built, below), and
+                optimistically returns the link the job is expected to
+                produce. If the job later fails, the corresponding cell in
+                `row` is patched to drop the link (see the execution pass).
+
+            This is deliberately NOT where the mcplotdiff-html subprocess is
+            actually run: with ~300+ rows x multiple columns, running these
+            one at a time while building the table serializes what is an
+            embarrassingly parallel, purely I/O+CPU bound batch of
+            independent jobs (disjoint output directories, no shared
+            state). Collecting them here and running them via a bounded
+            thread pool afterwards is a straightforward, safe win. '''
+        if nodiff:
+            return None
+        if refcellobj is None or refcellobj.get("testval") is None:
+            # no valid reference data to diff against
+            return None
+
+        ref_url = get_data_url(refcellobj)
+        test_abs = join(testdir, url)
+        ref_abs = join(testdir, ref_url)
+        if not (os.path.isfile(join(test_abs, "mccode.sim")) and os.path.isfile(join(ref_abs, "mccode.sim"))):
+            # NeXus-only output (mccode.h5) or otherwise nothing mcplotdiff-html can compare
+            return None
+
+        outdir_rel = join(url, "diff_vs_%s" % reflabel)
+        outdir_abs = join(testdir, outdir_rel)
+        index_abs = join(outdir_abs, "index.html")
+        link = (outdir_rel + "/index.html").replace(os.sep, '/').replace('//', '/')
+
+        if os.path.isfile(index_abs):
+            # already cached from a previous run, nothing to do
+            return link
+
+        diffplotter = mccode_config.configuration["MCPLOT"].split('-')[0] + "diff-html"
+        cmd = '%s "%s" "%s" --nobrowse -A "%s" -B "%s" --output "%s"' % (
+            diffplotter, test_abs, ref_abs, label, reflabel, outdir_abs)
+
+        pending_diff_jobs.append({
+            'cmd': cmd,
+            'index_abs': index_abs,
+            'row': row,
+            'col_idx': col_idx,
+        })
+        return link
+
+    def get_cell_tuple(cellobj, refval=None, refcellobj=None, row=None, col_idx=None):
         ''' set up and format cell data '''
         state = None
         compiletime = None
@@ -141,7 +224,11 @@ def run_normal_mode(testdir, reflabel):
             else:
                 refp = "%2.f" % refp + "%"
 
-            return (state, compiletime, runtime, testval, refp, url, display, displayurl)
+            diffurl = None
+            if diffall or state == 2:
+                diffurl = plan_diff_link(refcellobj, url, label, row, col_idx)
+
+            return (state, compiletime, runtime, testval, refp, url, display, displayurl, diffurl)
 
     def get_empty_cell_tuple(tag=None):
         ''' return a "state_four" black cell, optionally with a tag, this could be "no ref" or "no test" etc. '''
@@ -188,7 +275,14 @@ def run_normal_mode(testdir, reflabel):
                     targetval = o.get("targetval", None)
                     if use_iterobj_refvalue:
                         targetval = iterobj[key]["targetval"]
-                    row.append(get_cell_tuple(o, targetval))
+                    # diff cells always compare against the true reference
+                    # column (refobj), regardless of which object is
+                    # currently driving iteration (iterobj may be a
+                    # fallback "lead" column rather than refobj itself, in
+                    # the untested multi-column case below)
+                    refcellobj = refobj.get(key, None)
+                    col_idx = len(row)
+                    row.append(get_cell_tuple(o, targetval, refcellobj=refcellobj, row=row, col_idx=col_idx))
 
                     # delete "used" cell keys
                     if del_used_from_overobjs:
@@ -243,6 +337,37 @@ def run_normal_mode(testdir, reflabel):
     while has_test(testobjs):
         leadcol = testobjs.pop(0)
         iterate_obj_to_populate_rows(leadcol, testobjs, rows, ncols=numcols, use_iterobj_refvalue=False)
+
+    # Run all collected mcplotdiff-html jobs in parallel now that every row
+    # has been built (see plan_diff_link() above). Each job's cell already
+    # holds the *expected* link optimistically; if the job fails or times
+    # out, patch that specific cell back to drop the link rather than
+    # leaving a dead one in the rendered report.
+    if pending_diff_jobs:
+        logging.info("Running %d mcplotdiff-html comparison(s) (up to %d in parallel)..."
+                      % (len(pending_diff_jobs), diffworkers))
+
+        def _run_diff_job(job):
+            try:
+                utils.run_subtool_noread(job['cmd'], cwd=testdir, timeout=diffmax)
+            except Exception as e:
+                logging.info("diff job failed: %s" % str(e))
+            return job
+
+        done = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=diffworkers) as executor:
+            futures = [executor.submit(_run_diff_job, job) for job in pending_diff_jobs]
+            for future in concurrent.futures.as_completed(futures):
+                job = future.result()
+                if not os.path.isfile(job['index_abs']):
+                    # job failed/timed out: drop the optimistically-set link
+                    row = job['row']
+                    col_idx = job['col_idx']
+                    cell = row[col_idx]
+                    row[col_idx] = cell[:8] + (None,)
+                done += 1
+                if done % 20 == 0 or done == len(pending_diff_jobs):
+                    logging.info("  ...%d/%d diffs done" % (done, len(pending_diff_jobs)))
 
     text = open(join(dirname(__file__), "main.template")).read()
     html = jinja2.Template(text).render(hrow=hrow, rows=rows, header=get_header_lst(refmeta))
@@ -304,7 +429,15 @@ def main(args):
             print("No testdir defined, will use current dir")
             print("--> Using testdir=%s\n" % os.getcwd())
             testdir=os.getcwd()
-        run_normal_mode(testdir, reflabel)
+        diffmax = 300
+        if args.diffmax:
+            diffmax = int(args.diffmax[0])
+        diffworkers = get_default_diffworkers()
+        if args.diffworkers:
+            diffworkers = int(args.diffworkers[0])
+        diffall = not args.diff_errors_only
+        run_normal_mode(testdir, reflabel, nodiff=args.nodiff, diffmax=diffmax,
+                        diffall=diffall, diffworkers=diffworkers)
 
     if not args.nobrowse:
         subprocess.Popen('%s %s' % (mccode_config.configuration['BROWSER'], os.path.join(testdir,os.path.basename(testdir) +'_output.html')), shell=True)
@@ -318,6 +451,10 @@ if __name__ == '__main__':
     parser.add_argument('--testroot', nargs="?", help='test root folder for test result management')
     parser.add_argument('--verbose', action='store_true', help='output excessive information for debug purposes')
     parser.add_argument('--nobrowse', action='store_true', help='Do not spawn browser on exit')
+    parser.add_argument('--nodiff', action='store_true', help='Do not generate mcplotdiff-html comparison cells against the reference column')
+    parser.add_argument('--diff-errors-only', dest='diff_errors_only', action='store_true', help='Only generate diff cells for rows that show a discrepancy against the reference (default: diff every row with valid data)')
+    parser.add_argument('--diffmax', nargs=1, help='Maximum time (s) allowed per mcplotdiff-html comparison (default 300s)')
+    parser.add_argument('--diffworkers', nargs=1, help='Number of mcplotdiff-html comparisons to run in parallel (default: number of available processors)')
     args = parser.parse_args()
 
     main(args)
