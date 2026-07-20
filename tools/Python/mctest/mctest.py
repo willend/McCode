@@ -17,6 +17,7 @@ import shutil
 import platform
 import subprocess
 import io
+from datetime import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from mccodelib import utils, mccode_config
@@ -827,6 +828,10 @@ def main(args):
     elif args.s:
         seed = args.s[0]
 
+    if seed == "0" or seed == "NULL":
+        # Emulate McCode 'epoch' seed, however applied to all active tests / sim runs...
+        seed = round((datetime.now() - datetime(1970, 1, 1)).total_seconds())
+
     if args.local:
         runLocal = args.local
 
@@ -893,8 +898,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--ncount', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('-n', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
-    parser.add_argument('--seed', nargs=1, help='seed sent to %s (default 1000)' % (mccode_config.configuration["MCRUN"]) )
-    parser.add_argument('-s', nargs=1, help='seed sent to %s (default 1000)' % (mccode_config.configuration["MCRUN"]) )
+    parser.add_argument('--seed', nargs=1, help='seed sent to %s (default 1000 - use 0/NULL to "randomize")' % (mccode_config.configuration["MCRUN"]) )
+    parser.add_argument('-s', nargs=1, help='seed sent to %s (default 1000 - use 0/NULL to "randomize")' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--mpi', nargs=1, help='mpi nodecount sent to %s' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--openacc', action='store_true', help='openacc flag sent to %s' % (mccode_config.configuration["MCRUN"]))
     parser.add_argument('--config', nargs="?", help='test this specific config only - label name or absolute path')
