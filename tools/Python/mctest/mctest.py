@@ -828,7 +828,7 @@ def main(args):
     elif args.s:
         seed = args.s[0]
 
-    if seed == "0" or seeed == "NULL":
+    if seed == "0" or seed == "NULL":
         # Emulate McCode 'epoch' seed, however applied to all active tests / sim runs...
         seed = round((datetime.now() - datetime(1970, 1, 1)).total_seconds())
 
