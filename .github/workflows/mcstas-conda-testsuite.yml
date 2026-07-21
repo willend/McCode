@@ -188,7 +188,7 @@ jobs:
            set -u
            set -x
 
-           mkdir combined
+           mkdir mcstas-nightly
            REFLABEL=""
 
            # Each platform's tarball contains exactly one label directory
@@ -200,8 +200,7 @@ jobs:
            for tgz in downloaded_artifacts/*/*.tgz; do
              work=$(mktemp -d)
              tar xzf "$tgz" -C "$work"
-             labeldir=$(ls -d "$work"/run_test-suite/*/)
-             mv "$labeldir" combined/
+             mv "$work"/run_test-suite/* mcstas-nightly/
 
              # Linux (ubuntu-latest) is the reference platform; the label
              # name itself embeds a version string and timestamp we can't
@@ -220,21 +219,18 @@ jobs:
 
            echo "REFLABEL=$REFLABEL" >> "$GITHUB_ENV"
            echo "Reference column: $REFLABEL"
-           ls combined
+           ls mcstas-nightly
 
     - name: 'Run mcviewtest across all platform columns'
       id: viewtest
       run: |
-           set -e
-           set -u
-           set -x
-           cd "$PWD/combined" && mcviewtest --reflabel "$REFLABEL" --nobrowse
+           cd "$PWD/mcstas-nightly" && mcviewtest --reflabel "$REFLABEL" --nobrowse
 
-    - name: 'Tar combined output (all platform folders + comparison table)'
+    - name: 'Tar mcstas-nightly output (all platform folders + comparison table)'
       id: tar-package
       if: always()
       run: |
-           tar cvfz mcstas-conda-testsuite-comparison.tgz combined
+           tar cvfz mcstas-conda-testsuite-comparison.tgz mcstas-nightly
 
     - name: 'Upload comparison artifact'
       id: comparison-upload
