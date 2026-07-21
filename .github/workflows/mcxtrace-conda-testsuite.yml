@@ -189,7 +189,7 @@ jobs:
            set -u
            set -x
 
-           mkdir combined
+           mkdir mcxtrace-nightly
            REFLABEL=""
 
            # Each platform's tarball contains exactly one label directory
@@ -202,7 +202,7 @@ jobs:
              work=$(mktemp -d)
              tar xzf "$tgz" -C "$work"
              labeldir=$(ls -d "$work"/run_test-suite/*/)
-             mv "$labeldir" combined/
+             mv "$labeldir" mcxtrace-nightly/
 
              # Linux (ubuntu-latest) is the reference platform; the label
              # name itself embeds a version string and timestamp we can't
@@ -221,7 +221,7 @@ jobs:
 
            echo "REFLABEL=$REFLABEL" >> "$GITHUB_ENV"
            echo "Reference column: $REFLABEL"
-           ls combined
+           ls mcxtrace-nightly
 
     - name: 'Run mxviewtest across all platform columns'
       id: viewtest
@@ -229,13 +229,13 @@ jobs:
            set -e
            set -u
            set -x
-           cd "$PWD/combined" && mxviewtest --reflabel "$REFLABEL" --nobrowse
+           cd "$PWD/mcxtrace-nightly" && mxviewtest --reflabel "$REFLABEL" --nobrowse
 
-    - name: 'Tar combined output (all platform folders + comparison table)'
+    - name: 'Tar mcxtrace-nightly output (all platform folders + comparison table)'
       id: tar-package
       if: always()
       run: |
-           tar cvfz mcxtrace-conda-testsuite-comparison.tgz combined
+           tar cvfz mcxtrace-conda-testsuite-comparison.tgz mcxtrace-nightly
 
     - name: 'Upload comparison artifact'
       id: comparison-upload
