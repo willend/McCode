@@ -192,7 +192,7 @@ jobs:
 
            # Each platform's tarball contains exactly one label directory
            # directly under run_test-suite/ (e.g.
-           # mcstas-3.99.99_mpi_x_2_ubuntu-latest_openmpi_1e6_Linux_<datetime>).
+           # mcstas-3.99.99_mpi_x_2_ubuntu-latest_openmpi_<ncount>_Linux_<datetime>).
            # mcviewtest treats each such directory as one comparison "column",
            # so merging them as siblings under one shared testdir is all that's
            # needed to make them comparable.
