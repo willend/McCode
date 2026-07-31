@@ -365,7 +365,7 @@ jobs:
            test -n "$(command -v mcxtrace${EXESUFFIX})"
            mcxtrace${EXESUFFIX} --version
            mxtest${SUFFIX} --instr=JJ_SAXS,ESRF_BM29,Test_MCPL_input,Test_MCPL_output,Test_Absorption --testdir=run_basictests --suffix=${{ matrix.method }}
-           mxtest${SUFFIX} --mpi=auto --instr=JJ_SAXS,ESRF_BM29,Test_MCPL_input,Test_MCPL_output,Test_Absorption --testdir=run_basictests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
+           mxtest${SUFFIX} --mpi=auto -n3e6 --instr=JJ_SAXS,ESRF_BM29,Test_MCPL_input,Test_MCPL_output,Test_Absorption --testdir=run_basictests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
 
     - name: Check for modified instruments
       id: instr-test
@@ -421,7 +421,7 @@ jobs:
                  NUMMATCH=`find src/mcxtrace-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
                  if [ "$NUMMATCH" -gt "0" ];
                  then
-                   ${MXTEST_EXECUTABLE} --mpi=auto --testdir run_mxtest --comp=${comp} --suffix=CHANGES_${comp}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MXTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+                   ${MXTEST_EXECUTABLE} --mpi=auto -n3e6 --testdir run_mxtest --comp=${comp} --suffix=CHANGES_${comp}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MXTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
                  else
                    echo No matching tests found
                  fi
@@ -450,7 +450,7 @@ jobs:
                export SCOPE=" "
              fi
              mkdir -p run_mxtest && cd run_mxtest
-             ${MXTEST_EXECUTABLE} --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MXTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+             ${MXTEST_EXECUTABLE} --mpi=auto -n3e6 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MXTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
              ${MXVIEWTEST_EXECUTABLE} --nobrowse $PWD
            fi
 
