@@ -358,7 +358,7 @@ jobs:
            test -n "$(command -v mcstas${EXESUFFIX})"
            mcstas${EXESUFFIX} --version
            mctest${SUFFIX} --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.method }}
-           mctest${SUFFIX} --mpi=2 --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
+           mctest${SUFFIX} --mpi=auto -n3e6 --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
 
     - name: Check for modified instruments
       id: instr-test
@@ -414,7 +414,7 @@ jobs:
                  NUMMATCH=`find src/mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
                  if [ "$NUMMATCH" -gt "0" ];
                  then
-                   ${MCTEST_EXECUTABLE} --mpi=2 --testdir run_mctest --comp=${comp} --suffix=CHANGES_${comp}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+                   ${MCTEST_EXECUTABLE} --mpi=auto -n3e6 --testdir run_mctest --comp=${comp} --suffix=CHANGES_${comp}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
                  else
                    echo No matching tests found
                  fi
@@ -443,7 +443,7 @@ jobs:
                export SCOPE=" "
              fi
              mkdir -p run_mctest && cd run_mctest
-             ${MCTEST_EXECUTABLE} --mpi=2 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+             ${MCTEST_EXECUTABLE} --mpi=auto -n3e6 --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
              ${MCVIEWTEST_EXECUTABLE} --nobrowse $PWD
            fi
 
