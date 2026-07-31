@@ -358,7 +358,7 @@ jobs:
            test -n "$(command -v mcstas${EXESUFFIX})"
            mcstas${EXESUFFIX} --version
            mctest${SUFFIX} --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.method }}
-           mctest${SUFFIX} --mpi=auto --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
+           mctest${SUFFIX} --mpi=2 --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.method }}_${{ matrix.mpi }}
 
     - name: Check for modified instruments
       id: instr-test
