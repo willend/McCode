@@ -16,9 +16,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, mpi: 'openmpi' }
-          - { os: macos-latest, mpi: 'openmpi' }
-          - { os: windows-latest, mpi: 'msmpi' }
+          - { os: ubuntu-latest, mpi: 'openmpi', nmpi: 'auto' }
+          - { os: macos-latest, mpi: 'openmpi', nmpi: '2' }
+          - { os: windows-latest, mpi: 'msmpi', nmpi: 'auto' }
 
     name: ${{ matrix.os }}.${{ matrix.mpi }}.conda-testsuite
     runs-on: ${{ matrix.os }}
@@ -107,7 +107,7 @@ jobs:
              export TMPDIR=${HOME}/tmp
            fi
            # Run the test with 2 core mpi
-           ${MCTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }} --mpi=auto
+           ${MCTEST_EXECUTABLE} --verbose --testdir $PWD --suffix ${{ matrix.os }}_${{ matrix.mpi }} --mpi=${{ matrix.nmpi }}
     - name: 'Tar output files'
       id: tar-package
       if: always()
