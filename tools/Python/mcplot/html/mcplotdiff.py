@@ -114,15 +114,15 @@ def get_html(template_name, params, dat_basename=None):
     if dat_basename:
         # dat_basename is a relative path (same directory as the html page
         # itself), pointing at the McCode-format .dat file written by
-        # write_mccode_dat() (only present when --write-dat was given).
+        # write_mccode_dat() (absent only if --no-dat was given).
         text = text.replace("@DATAFILE@", dat_basename)
         text = text.replace("@DATALINK@", "Download difference data (McCode format): %s" % dat_basename)
     else:
-        # --write-dat wasn't requested, so there's genuinely no file to
-        # link to - keep the anchor inert rather than pointing at a
-        # basename that was never written to this directory.
+        # --no-dat was given, so there's genuinely no file to link to -
+        # keep the anchor inert rather than pointing at a basename that
+        # was never written to this directory.
         text = text.replace("@DATAFILE@", "#")
-        text = text.replace("@DATALINK@", "Diff mode (no physical datafile - rerun with --write-dat to generate one)")
+        text = text.replace("@DATALINK@", "Diff mode (no physical datafile - rerun without --no-dat to generate one)")
 
     logscalestr = "true" if logscale == True else "false"
     text = text.replace("@LOGSCALE@", logscalestr)
@@ -434,6 +434,12 @@ autosize = False
 def main(args):
     logging.basicConfig(level=logging.INFO)
 
+    # writing .dat/mccode.sim alongside the HTML plots is the default now
+    # that the HTML pages link to them properly (see get_html()) - -D/--no-dat
+    # opts back out, e.g. for a quick one-off comparison where the extra
+    # files aren't wanted.
+    write_dat = not args.no_dat
+
     global libpath
     if args.libpath:
         libpath = args.libpath[0] + "/"
@@ -485,7 +491,7 @@ def main(args):
     entries = []
     for data in diffs:
         dat_path = None
-        if args.write_dat:
+        if write_dat:
             dat_path = write_mccode_dat(data, outdir)
             print("Generated: %s" % dat_path)
         dat_basename = os.path.basename(dat_path) if dat_path else None
@@ -525,7 +531,7 @@ def main(args):
             browse(target)
         return
 
-    if args.write_dat:
+    if write_dat:
         # A mccode.sim index only makes sense for a multi-monitor output
         # directory (a lone diff .dat file has no "simulation directory"
         # to index) - lets `outdir` be opened directly as a proper McCode
@@ -548,10 +554,12 @@ if __name__ == '__main__':
     parser.add_argument('a', help='first simulation file or directory (the minuend, "a")')
     parser.add_argument('b', help='second simulation file or directory (the subtrahend, "b"); diff = a - b')
     parser.add_argument('-n', '--nobrowse', action='store_true', help='do not open a webbrowser viewer')
-    parser.add_argument('-D', '--write-dat', action='store_true',
-                         help='also write each difference dataset out in standard McCode ASCII '
-                              '("# comment header + data body") format, loadable back in by '
-                              'mcplot-html/-pyqtgraph/-matplotlib or any other McCode-format reader')
+    parser.add_argument('-D', '--no-dat', dest='no_dat', action='store_true',
+                         help='do not write each difference dataset out in standard McCode ASCII '
+                              '("# comment header + data body") format (default: written alongside '
+                              'the HTML plots, along with a mccode.sim index in folder mode, so the '
+                              'output directory can be reopened as a normal McCode simulation directory '
+                              'by mcplot-html/-pyqtgraph/-matplotlib or any other McCode-format reader)')
     parser.add_argument('-l', '--log', action='store_true',
                          help='also produce a log-scale plot when comparing two single monitor files '
                               '(folder-mode always produces both linear and log-style plots)')
