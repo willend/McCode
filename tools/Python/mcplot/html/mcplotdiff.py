@@ -107,11 +107,22 @@ def lookup_vec(cm, x):
 # html / json generation (mirrors mcplot.py's get_html/get_json_*)
 # ---------------------------------------------------------------------------
 
-def get_html(template_name, params, simfile):
+def get_html(template_name, params, dat_basename=None):
     text = open(os.path.join(os.path.dirname(__file__), template_name)).read()
     text = text.replace("@PARAMS@", params)
-    text = text.replace("@DATAFILE@", simfile)
-    text = text.replace("@DATALINK@", "Diff mode (no physical datafile)") # Nothing to link to  in diff-mode
+
+    if dat_basename:
+        # dat_basename is a relative path (same directory as the html page
+        # itself), pointing at the McCode-format .dat file written by
+        # write_mccode_dat() (only present when --write-dat was given).
+        text = text.replace("@DATAFILE@", dat_basename)
+        text = text.replace("@DATALINK@", "Download difference data (McCode format): %s" % dat_basename)
+    else:
+        # --write-dat wasn't requested, so there's genuinely no file to
+        # link to - keep the anchor inert rather than pointing at a
+        # basename that was never written to this directory.
+        text = text.replace("@DATAFILE@", "#")
+        text = text.replace("@DATALINK@", "Diff mode (no physical datafile - rerun with --write-dat to generate one)")
 
     logscalestr = "true" if logscale == True else "false"
     text = text.replace("@LOGSCALE@", logscalestr)
@@ -263,7 +274,7 @@ def browse(html_filepath):
 # per-monitor plot writers
 # ---------------------------------------------------------------------------
 
-def plot_diff_single(data, outdir, use_logscale):
+def plot_diff_single(data, outdir, use_logscale, dat_basename=None):
     """ Writes one diff monitor to an html file in outdir, mirroring
         mcplot.py's plotfunc_single. Returns the file path written. """
     global logscale
@@ -277,9 +288,9 @@ def plot_diff_single(data, outdir, use_logscale):
         os.remove(f)
 
     if isinstance(data, Data1D):
-        text = get_html('template_1d.html', get_params_str_1D(data), os.path.basename(data.filename))
+        text = get_html('template_1d.html', get_params_str_1D(data), dat_basename)
     elif isinstance(data, Data2D):
-        text = get_html('template_2d.html', get_params_str_2D_diff(data), os.path.basename(data.filename))
+        text = get_html('template_2d.html', get_params_str_2D_diff(data), dat_basename)
     else:
         return None
 
@@ -473,20 +484,21 @@ def main(args):
 
     entries = []
     for data in diffs:
-        f = plot_diff_single(data, outdir, False)
-        f_log = None
-        if single_input:
-            if args.log:
-                f_log = plot_diff_single(data, outdir, True)
-        else:
-            # folder mode: always produce both linear and log variants,
-            # exactly like mcplot.py does for multi-monitor overviews
-            f_log = plot_diff_single(data, outdir, True)
-
         dat_path = None
         if args.write_dat:
             dat_path = write_mccode_dat(data, outdir)
             print("Generated: %s" % dat_path)
+        dat_basename = os.path.basename(dat_path) if dat_path else None
+
+        f = plot_diff_single(data, outdir, False, dat_basename)
+        f_log = None
+        if single_input:
+            if args.log:
+                f_log = plot_diff_single(data, outdir, True, dat_basename)
+        else:
+            # folder mode: always produce both linear and log variants,
+            # exactly like mcplot.py does for multi-monitor overviews
+            f_log = plot_diff_single(data, outdir, True, dat_basename)
 
         # locate any pre-existing mcplot-html plots for this monitor, so
         # we can link to the original a/b data alongside the diff plot
