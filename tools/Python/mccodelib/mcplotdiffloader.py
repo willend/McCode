@@ -13,6 +13,7 @@ into any existing plot-graph-based frontend (e.g. the interactive
 pyqtgraph frontend in pqtgfrontend.py).
 '''
 import os
+import datetime
 
 import numpy as np
 
@@ -270,3 +271,222 @@ def build_diff_plotgraph(diffs):
     root.set_primaries(primnodes)
     root.set_secondaries(primnodes)  # only one way to click here, as in load_simulation()
     return root
+
+
+# ---------------------------------------------------------------------------
+# writing diff datasets back out in McCode ASCII format
+# ---------------------------------------------------------------------------
+
+def _fmt(x):
+    """ Standard number formatting for McCode-format file bodies/headers. """
+    return '%.10g' % float(x)
+
+
+def _sanitize(s):
+    """ Collapses a string to something safe for a single-line "# field:
+        value" header (diff titles in particular start with a leading
+        newline, intended for on-screen display, which would otherwise
+        split the header across two physical lines - the second of which
+        has no leading "#" and so corrupts the file for any reader). """
+    return ' '.join(str(s).split())
+
+
+def _common_header_lines(data):
+    return [
+        '# Format: McCode with text headers',
+        '# URL: http://www.mccode.org',
+        '# Creator: mcplotdiff (McCode difference tool)',
+        '# component: %s' % _sanitize(data.component),
+        '# filename: %s' % _sanitize(data.filename),
+        '# title: %s' % _sanitize(data.title),
+    ]
+
+
+def _write_1d_dat(data, outdir, prefix):
+    filename = prefix + data.filename
+    filepath = os.path.join(outdir, filename)
+
+    lines = _common_header_lines(data)
+    # Required: mcplotloader.py's _load_monitor() reads this line to decide
+    # which parser to dispatch to (_parse_1D_monitor vs _parse_2D_monitor)
+    # *before* either parser ever runs - without it, loading fails at the
+    # dispatch step itself, not inside the parser.
+    lines.insert(3, '# type: array_1d(%d)' % len(data.xvals))
+    lines.append('# xlabel: %s' % _sanitize(data.xlabel))
+    lines.append('# ylabel: %s' % _sanitize(data.ylabel))
+    lines.append('# xvar: %s' % _sanitize(data.xvar))
+    lines.append('# yvar: (%s,%s)' % (data.yvar[0], data.yvar[1]))
+    lines.append('# xlimits: %s %s' % (_fmt(data.xlimits[0]), _fmt(data.xlimits[1])))
+    lines.append('# variables: %s %s %s N' % (data.xvar, data.yvar[0], data.yvar[1]))
+    lines.append('# values: %s %s %s' % (_fmt(data.values[0]), _fmt(data.values[1]), _fmt(data.values[2])))
+    # The standard "# statistics: X0=...; dX=...;" field is a
+    # weighted centroid/width, which assumes a non-negative intensity
+    # distribution - not generally meaningful for signed difference data,
+    # so it's written as zero here rather than a misleading number. The
+    # real per-source statistics (from the original a/b datasets) are kept
+    # as an additional, non-standard comment line for human reference;
+    # readers (including mcplotloader.py's own parser) that only look for
+    # the standard fields simply ignore it.
+    lines.append('# statistics: X0=0; dX=0;')
+    lines.append('# Diff-statistics: %s' % _sanitize(data.statistics.replace('\n', ' | ')))
+
+    with open(filepath, 'w') as f:
+        f.write('\n'.join(lines) + '\n')
+        for x, y, yerr, n in zip(data.xvals, data.yvals, data.y_err_vals, data.Nvals):
+            f.write('%s %s %s %s\n' % (_fmt(x), _fmt(y), _fmt(yerr), _fmt(n)))
+
+    return filepath
+
+
+def _write_2d_dat(data, outdir, prefix):
+    filename = prefix + data.filename
+    filepath = os.path.join(outdir, filename)
+
+    lines = _common_header_lines(data)
+    zshape = np.shape(data.zvals) if data.zvals else (0, 0)
+    lines.insert(3, '# type: array_2d(%d, %d)' % (zshape[0], zshape[1] if len(zshape) > 1 else 0))
+    lines.append('# xlabel: %s' % _sanitize(data.xlabel))
+    lines.append('# ylabel: %s' % _sanitize(data.ylabel))
+    lines.append('# xvar: %s' % _sanitize(data.xvar))
+    lines.append('# yvar: %s' % _sanitize(data.yvar))
+    lines.append('# zvar: %s' % _sanitize(data.zvar))
+    lines.append('# xylimits: %s %s %s %s' % tuple(_fmt(v) for v in data.xlimits))
+    lines.append('# values: %s %s %s' % (_fmt(data.values[0]), _fmt(data.values[1]), _fmt(data.values[2])))
+    zarr = np.array(data.zvals, dtype=float) if data.zvals else np.zeros((1, 1))
+    lines.append('# signal: Min=%s; Max=%s; Mean=%s;' % (_fmt(zarr.min()), _fmt(zarr.max()), _fmt(zarr.mean())))
+    # see _write_1d_dat() for why this is zeroed rather than reusing
+    # data.statistics directly
+    lines.append('# statistics: X0=0; dX=0; Y0=0; dY=0;')
+    lines.append('# Diff-statistics: %s' % _sanitize(data.statistics.replace('\n', ' | ')))
+
+    with open(filepath, 'w') as f:
+        f.write('\n'.join(lines) + '\n')
+        f.write('# Data [%s/%s] %s:\n' % (_sanitize(data.component), _sanitize(data.filename), _sanitize(data.zvar)))
+        for row in data.zvals:
+            f.write(' '.join(_fmt(v) for v in row) + '\n')
+        if data.counts:
+            f.write('# Events [%s/%s] N:\n' % (_sanitize(data.component), _sanitize(data.filename)))
+            for row in data.counts:
+                f.write(' '.join(_fmt(v) for v in row) + '\n')
+
+    return filepath
+
+
+def write_mccode_dat(data, outdir, prefix='diff_'):
+    """ Writes a single diff Data1D/Data2D object out in the same ASCII
+        "# comment header + data body" format ordinary McCode monitor
+        output files use - readable back in by mcplotloader.py itself (and,
+        since it follows the same conventions, by any other tool that
+        already reads McCode monitor output, e.g. Mantid's loaders).
+
+        Returns the path written, or None if `data` isn't a supported type. """
+    if isinstance(data, Data1D):
+        return _write_1d_dat(data, outdir, prefix)
+    elif isinstance(data, Data2D):
+        return _write_2d_dat(data, outdir, prefix)
+    return None
+
+
+def write_all_mccode_dat(diffs, outdir, prefix='diff_'):
+    """ Convenience: write_mccode_dat() for every diff dataset in `diffs`,
+        into `outdir` (created if missing). Returns the list of paths
+        written. """
+    os.makedirs(outdir, exist_ok=True)
+    paths = []
+    for d in diffs:
+        p = write_mccode_dat(d, outdir, prefix=prefix)
+        if p:
+            paths.append(p)
+    return paths
+
+
+# ---------------------------------------------------------------------------
+# writing a mccode.sim index alongside the diff .dat files
+# ---------------------------------------------------------------------------
+
+def write_mccode_sim(diffs, outdir, label_a=None, label_b=None, instrument='diff',
+                      prefix='diff_', filename='mccode.sim'):
+    """ Writes a mccode.sim index file summarizing a set of diff datasets
+        (as returned by compute_diffs()), in the same style a real McStas/
+        McXtrace simulation directory uses, so `outdir` can be opened as a
+        genuine simulation directory (e.g. `mcplot-html <outdir>/`) via the
+        standard "mccode.sim + monitors" loading path
+        (mcplotloader.is_mccodesim_w_monitors() -> load_simulation()),
+        rather than falling back to the "folder full of loose .dat files"
+        path (which also works, but is the less standard route, and
+        wouldn't be recognised the same way by other McCode-aware tools
+        that expect a simulation directory to have an index).
+
+        Must be called *after* write_mccode_dat()/write_all_mccode_dat()
+        have already written each diff monitor's own .dat file into
+        `outdir` with the same `prefix` - this only writes the index, not
+        the monitor data itself, and the "filename:" lines it writes must
+        match the files actually on disk.
+
+        The only thing mcplotloader.py's own parser
+        (_get_filenames_from_mccodesim) actually requires is one
+        "begin data ... filename: <name> ... end data" block per monitor -
+        the surrounding instrument/simulation header blocks aren't parsed
+        by mcplotloader.py at all, and are included purely so the file
+        reads like (and is compatible with expectations set by) a genuine
+        mccode.sim, for humans and any other McCode-aware tooling.
+
+        Returns the path written. """
+    filepath = os.path.join(outdir, filename)
+    now = datetime.datetime.now().strftime('%a %b %d %H:%M:%S %Y')
+    label_a = label_a or 'A'
+    label_b = label_b or 'B'
+
+    lines = []
+    lines.append('McCode diff simulation description file for %s.' % instrument)
+    lines.append('Date:    %s' % now)
+    lines.append('Program: mcplotdiff (McCode difference tool)')
+    lines.append('')
+    lines.append('begin instrument: %s' % instrument)
+    lines.append('  File: %s' % os.path.join(outdir, instrument))
+    lines.append('  Source: diff(%s, %s)' % (_sanitize(label_a), _sanitize(label_b)))
+    lines.append('  Trace_enabled: no')
+    lines.append('  Default_main: yes')
+    lines.append('  Embedded_runtime: yes')
+    lines.append('end instrument')
+    lines.append('')
+    lines.append('begin simulation: %s' % outdir)
+    lines.append('  Format: McCode with text headers')
+    lines.append('  URL: http://www.mccode.org')
+    lines.append('  Creator: mcplotdiff (McCode difference tool)')
+    lines.append('  Instrument: diff(%s, %s)' % (_sanitize(label_a), _sanitize(label_b)))
+    lines.append('  Ncount: 0')
+    lines.append('  Trace: no')
+    lines.append('  Param: a=%s b=%s' % (_sanitize(label_a), _sanitize(label_b)))
+    lines.append('end simulation')
+    lines.append('')
+
+    for data in diffs:
+        if isinstance(data, Data1D):
+            type_line = '  type: array_1d(%d)' % len(data.xvals)
+        elif isinstance(data, Data2D):
+            zshape = np.shape(data.zvals) if data.zvals else (0, 0)
+            type_line = '  type: array_2d(%d, %d)' % (zshape[0], zshape[1] if len(zshape) > 1 else 0)
+        else:
+            continue
+
+        lines.append('begin data')
+        lines.append('  Date: %s' % now)
+        lines.append(type_line)
+        lines.append('  component: %s' % _sanitize(data.component))
+        lines.append('  title: %s' % _sanitize(data.title))
+        try:
+            lines.append('  values: %s %s %s' % (_fmt(data.values[0]), _fmt(data.values[1]), _fmt(data.values[2])))
+        except Exception:
+            pass
+        # This is the one line mcplotloader.py's _get_filenames_from_mccodesim()
+        # actually looks for - it must match the real file written by
+        # write_mccode_dat()/write_all_mccode_dat() with the same prefix.
+        lines.append('  filename: %s' % (prefix + data.filename))
+        lines.append('end data')
+        lines.append('')
+
+    with open(filepath, 'w') as f:
+        f.write('\n'.join(lines) + '\n')
+
+    return filepath
