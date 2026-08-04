@@ -36,6 +36,7 @@ from mccodelib import mccode_config
 from mccodelib import mcplotdiffloader as diffloader
 from mccodelib.mcplotdiffloader import (
     path_base_name, default_labels, load_monitors, compute_diffs, find_original_plot,
+    write_mccode_dat, write_mccode_sim,
 )
 
 global WIDTH, HEIGHT
@@ -357,6 +358,10 @@ def write_index(outdir, entries, label_a, label_b):
             if fname_log:
                 basename_log = os.path.basename(fname_log)
                 outfile.write(f"<a href='{basename_log}' target=_blank>[ {basename_log} ]</a>\n")
+            dat_path = entry.get('dat')
+            if dat_path:
+                basename_dat = os.path.basename(dat_path)
+                outfile.write(f"<a href='{basename_dat}' download>[ {basename_dat} ]</a>\n")
             outfile.write("</span><br>\n")
             # links to the pre-existing mcplot-html plots of the two
             # original monitors, if they were found on disk
@@ -478,6 +483,11 @@ def main(args):
             # exactly like mcplot.py does for multi-monitor overviews
             f_log = plot_diff_single(data, outdir, True)
 
+        dat_path = None
+        if args.write_dat:
+            dat_path = write_mccode_dat(data, outdir)
+            print("Generated: %s" % dat_path)
+
         # locate any pre-existing mcplot-html plots for this monitor, so
         # we can link to the original a/b data alongside the diff plot
         a_lin, a_log = find_original_plot(dir_a, data.filename)
@@ -488,7 +498,7 @@ def main(args):
             print("Note: no existing mcplot-html output found for '%s' in '%s'" % (data.filename, args.b))
 
         entries.append({
-            'diff': f, 'diff_log': f_log,
+            'diff': f, 'diff_log': f_log, 'dat': dat_path,
             'a_lin': a_lin, 'a_log': a_log,
             'b_lin': b_lin, 'b_log': b_log,
         })
@@ -503,6 +513,17 @@ def main(args):
             browse(target)
         return
 
+    if args.write_dat:
+        # A mccode.sim index only makes sense for a multi-monitor output
+        # directory (a lone diff .dat file has no "simulation directory"
+        # to index) - lets `outdir` be opened directly as a proper McCode
+        # simulation directory (e.g. mcplot-html <outdir>/), via the
+        # standard mccode.sim-indexed loading path, rather than only via
+        # the folder-of-loose-files fallback.
+        sim_path = write_mccode_sim(diffs, outdir, label_a=label_a, label_b=label_b,
+                                     instrument='diff_%s_vs_%s' % (label_a, label_b))
+        print("Generated: %s" % sim_path)
+
     index_file = write_index(outdir, entries, label_a, label_b)
     print("Generated: %s" % index_file)
 
@@ -515,6 +536,10 @@ if __name__ == '__main__':
     parser.add_argument('a', help='first simulation file or directory (the minuend, "a")')
     parser.add_argument('b', help='second simulation file or directory (the subtrahend, "b"); diff = a - b')
     parser.add_argument('-n', '--nobrowse', action='store_true', help='do not open a webbrowser viewer')
+    parser.add_argument('-D', '--write-dat', action='store_true',
+                         help='also write each difference dataset out in standard McCode ASCII '
+                              '("# comment header + data body") format, loadable back in by '
+                              'mcplot-html/-pyqtgraph/-matplotlib or any other McCode-format reader')
     parser.add_argument('-l', '--log', action='store_true',
                          help='also produce a log-scale plot when comparing two single monitor files '
                               '(folder-mode always produces both linear and log-style plots)')
