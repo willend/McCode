@@ -83,13 +83,27 @@ def _title_for(data, other_label, this_label, path_note=None):
             data.values[0], data.values[1], data.values[2])
     except Exception:
         title = '%s\n[%s]' % (data.component, data.filename)
+
     if path_note:
         # label_a/label_b are bare "A"/"B" here (see default_labels()),
         # since the two source paths' basenames collided (e.g. both ended
-        # in ".../<instrument>/1/") - the full paths are shown in the
-        # figure title instead, while the compact on-plot legend keeps
-        # just "A"/"B".
+        # in ".../<instrument>/1/") - path_note already spells out
+        # "A: <full path> / B: <full path>", so adding a further
+        # "A: A   B: B" line below would just be a redundant-looking
+        # restatement of the same bare letters. The compact on-plot legend
+        # still keeps just "A"/"B".
         title = path_note + '\n' + title
+    else:
+        # Otherwise, make explicit which dataset is "A" and which is "B"
+        # in the figure title itself, not just the compact on-plot legend
+        # box - without this, the "this_label: data.title" line below
+        # (e.g. "A: PSD monitor") reads as if "A" were part of the
+        # monitor's own description rather than identifying dataset A.
+        # (_title_for is only ever called for data_a - this_label is
+        # always label_a, other_label always label_b - so no swap is
+        # needed here.)
+        title = ('A: %s   B: %s\n' % (this_label, other_label)) + title
+
     return title
 
 
