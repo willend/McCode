@@ -39,6 +39,12 @@ from mccodelib.mcplotdiffloader import (
     path_base_name, default_labels, dirsafe_name, load_monitors, find_original_plot, match_1d_monitors,
 )
 
+# The bare html-plotter (mcplot-html itself), imported directly rather than
+# shelled out to, so we can guarantee each source dataset's own per-monitor
+# pages (<monitor>.dat.html / <monitor>.dat_log.html) actually exist before
+# find_original_plot() goes looking for them below - see _ensure_html_plots().
+import mcplot
+
 global WIDTH, HEIGHT
 WIDTH = 1024
 HEIGHT = 768
@@ -102,6 +108,39 @@ def get_html(params_a_json, params_b_json, label_a, label_b, colour_a, colour_b,
     text = text.replace("@LOGSCALE@", logscalestr)
     text = text.replace("@LIBPATH@", libpath)
     return text
+
+
+def _ensure_html_plots(path):
+    """ Runs the bare mcplot-html plotter (mcplot.py's own main()) on
+        `path` with --nobrowse, so its per-monitor pages
+        (<monitor>.dat.html / <monitor>.dat_log.html, next to the monitor's
+        own .dat file) are guaranteed to exist before find_original_plot()
+        looks for them - rather than depending on the user having already
+        run mcplot-html on that source directory separately (which is what
+        made the "A (plot)" / "B (plot)" links unreliable before this).
+
+        Works for both a directory and a single monitor file, matching
+        whatever args.a/args.b themselves are - mcplot.py's own main()
+        already handles both cases the same way mccoplot.py's own inputs
+        do.
+
+        Deliberately non-fatal: the co-plot itself doesn't depend on these
+        extra pages existing, only the "view original A/B plot" links do,
+        so any failure here (e.g. the path doesn't parse as a McCode
+        result for some reason) is reported but doesn't abort the co-plot
+        run - mcplot.py's own main() calls quit() (SystemExit) on a loader
+        failure rather than raising, so that's caught explicitly too. """
+    mcplot_args = argparse.Namespace(
+        simulation=[path], nobrowse=True, log=False, autosize=False,
+        libpath=None, output=None, width=None, height=None,
+    )
+    try:
+        mcplot.main(mcplot_args)
+    except SystemExit:
+        print("Warning: could not generate mcplot-html pages for '%s' "
+              "(used for the A/B 'plot' links)" % path)
+    except Exception as e:
+        print("Warning: could not generate mcplot-html pages for '%s': %s" % (path, e))
 
 
 def browse(html_filepath):
@@ -311,6 +350,13 @@ def main(args):
     except Exception as e:
         print('mccoplot loader: ' + e.__str__())
         sys.exit(-1)
+
+    # Make sure each side's own ordinary mcplot-html pages actually exist,
+    # so the "A (plot)" / "B (plot)" links below have something real to
+    # point at, rather than depending on the user having separately run
+    # mcplot-html on these directories beforehand.
+    _ensure_html_plots(args.a)
+    _ensure_html_plots(args.b)
 
     pairs = match_1d_monitors(monitors_a, monitors_b, label_a, label_b)
 
