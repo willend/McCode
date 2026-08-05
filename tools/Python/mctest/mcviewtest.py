@@ -372,10 +372,12 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
     text = open(join(dirname(__file__), "main.template")).read()
     html = jinja2.Template(text).render(hrow=hrow, rows=rows, header=get_header_lst(refmeta))
 
-    datetime = testdir.split("/")[-1]
-    ofile = "%s_output.html" % datetime
+    # Platform-independent ofile (ensures correct behaviour of mcviewtest and opens browser also on Windows, 
+    # irrespective of 'testdir' given as '.' or no inputs)
+    ofile = os.path.join(testdir, "%s_output.html" % os.path.basename(os.path.normpath(testdir)))
     print("writing ofile: %s" % ofile)
     open(ofile, "w").write(html)
+    return ofile
 
 def run_interactive_mode(testroot):
     ''' a simple utility for deleting useless test directories '''
@@ -436,11 +438,11 @@ def main(args):
         if args.diffworkers:
             diffworkers = int(args.diffworkers[0])
         diffall = not args.diff_errors_only
-        run_normal_mode(testdir, reflabel, nodiff=args.nodiff, diffmax=diffmax,
+        ofile = run_normal_mode(testdir, reflabel, nodiff=args.nodiff, diffmax=diffmax,
                         diffall=diffall, diffworkers=diffworkers)
 
     if not args.nobrowse:
-        subprocess.Popen('%s %s' % (mccode_config.configuration['BROWSER'], os.path.join(testdir,os.path.basename(testdir) +'_output.html')), shell=True)
+        subprocess.Popen('%s %s' % (mccode_config.configuration['BROWSER'], ofile), shell=True)
         quit()
 
 
