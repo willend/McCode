@@ -76,44 +76,28 @@ def get_params_json(data, colour, title):
     return json.dumps(p, indent=4)
 
 
-def _title_for(data, other_label, this_label, path_note=None):
+def _title_for(data_a, data_b, identity_a, identity_b):
+    """ identity_a/identity_b are what gets shown in the "A=.../B=..."
+        block below: normally the same as label_a/label_b, but the actual
+        source paths (args.a/args.b) when default_labels() collapsed the
+        labels to bare "A"/"B" (basenames collided) - bare letters alone
+        would carry no identifying information there, unlike in the
+        compact on-plot legend where "A"/"B" is exactly what's wanted. """
     try:
-        title = '%s [%s]\n%s: %s\nI = %s Err = %s N = %s' % (
-            data.component, data.filename, this_label, data.title,
-            data.values[0], data.values[1], data.values[2])
+        title = '%s [%s]\n \nA=%s\nB=%s\n \n%s\nA: I = %s Err = %s N = %s\nB: I = %s Err = %s N = %s' % (
+            data_a.component, data_a.filename, identity_a, identity_b, data_a.title,
+            data_a.values[0], data_a.values[1], data_a.values[2],
+            data_b.values[0], data_b.values[1], data_b.values[2])
     except Exception:
-        title = '%s\n[%s]' % (data.component, data.filename)
-
-    if path_note:
-        # label_a/label_b are bare "A"/"B" here (see default_labels()),
-        # since the two source paths' basenames collided (e.g. both ended
-        # in ".../<instrument>/1/") - path_note already spells out
-        # "A: <full path> / B: <full path>", so adding a further
-        # "A: A   B: B" line below would just be a redundant-looking
-        # restatement of the same bare letters. The compact on-plot legend
-        # still keeps just "A"/"B".
-        title = path_note + '\n' + title
-    else:
-        # Otherwise, make explicit which dataset is "A" and which is "B"
-        # in the figure title itself, not just the compact on-plot legend
-        # box - without this, the "this_label: data.title" line below
-        # (e.g. "A: PSD monitor") reads as if "A" were part of the
-        # monitor's own description rather than identifying dataset A.
-        # (_title_for is only ever called for data_a - this_label is
-        # always label_a, other_label always label_b - so no swap is
-        # needed here.)
-        title = ('A: %s   B: %s\n' % (this_label, other_label)) + title
-
+        title = '%s\n[%s]' % (data_a.component, data_a.filename)
     return title
 
 
-def get_html(params_a_json, params_b_json, label_a, label_b, colour_a, colour_b,
+def get_html(params_a_json, params_b_json, colour_a, colour_b,
              dat_link_a=None, dat_link_b=None):
     text = open(os.path.join(os.path.dirname(__file__), 'template_1d_coplot.html')).read()
     text = text.replace("@PARAMS_A@", params_a_json)
     text = text.replace("@PARAMS_B@", params_b_json)
-    text = text.replace("@LABEL_A@", label_a)
-    text = text.replace("@LABEL_B@", label_b)
     text = text.replace("@COLOUR_A@", colour_a)
     text = text.replace("@COLOUR_B@", colour_b)
     text = text.replace("@DATALINK_A@", ('(<a href="%s" target=_blank>plot</a>)' % dat_link_a) if dat_link_a else '')
@@ -169,7 +153,8 @@ def browse(html_filepath):
 # ---------------------------------------------------------------------------
 
 def coplot_single(key, data_a, data_b, outdir, use_logscale, label_a, label_b,
-                   colour_a, colour_b, dat_link_a=None, dat_link_b=None, path_note=None):
+                   colour_a, colour_b, dat_link_a=None, dat_link_b=None,
+                   identity_a=None, identity_b=None):
     """ Writes one co-plot (overlaid a/b) monitor page to outdir. Returns
         the file path written. """
     global logscale
@@ -182,11 +167,12 @@ def coplot_single(key, data_a, data_b, outdir, use_logscale, label_a, label_b,
     if os.path.exists(f):
         os.remove(f)
 
-    title_a = _title_for(data_a, label_b, label_a, path_note=path_note)
+    title_a = _title_for(data_a, data_b, identity_a if identity_a else label_a,
+                          identity_b if identity_b else label_b)
     params_a = get_params_json(data_a, colour_a, title_a)
     params_b = get_params_json(data_b, colour_b, "")  # B's title isn't used (see template)
 
-    text = get_html(params_a, params_b, label_a, label_b, colour_a, colour_b,
+    text = get_html(params_a, params_b, colour_a, colour_b,
                      dat_link_a, dat_link_b)
 
     with open(f, 'w') as fid:
@@ -243,7 +229,8 @@ def write_index(outdir, entries, label_a, label_b, path_note=None):
         outfile.write("  .pathnote { color: #666666; font-size: 13px; }\n")
         outfile.write("</style>\n")
         outfile.write("</head><body>\n")
-        outfile.write(f"<h1>Co-plots: {label_a} vs {label_b}</h1>\n")
+        outfile.write(f"<h1>Co-plots A vs B:</h1>\n")
+        outfile.write(f"<h2>A={label_a}<br>B={label_b}</h2>\n")
         outfile.write(f"<p>Each panel overlays ({label_a}).monitor and ({label_b}).monitor on the same axes.</p>\n")
         if path_note:
             note_html = path_note.replace('\n', '<br>')
@@ -333,12 +320,15 @@ def main(args):
     # When the auto-derived labels collided (e.g. two runs both ending in a
     # plain ".../<instrument>/1/" folder) and default_labels() fell back
     # to bare "A"/"B", those letters carry no identifying information on
-    # their own - show the full source paths in each figure's title (and
-    # the overview header) instead, while keeping the compact on-plot
-    # legend as just "A"/"B".
+    # their own. path_note (shown on the overview index page) and
+    # identity_a/identity_b (shown in each per-monitor figure's "A=.../
+    # B=..." block) both then use the full source paths instead - while
+    # the compact on-plot legend keeps just "A"/"B" either way.
     path_note = None
+    identity_a, identity_b = label_a, label_b
     if used_fallback:
         path_note = "A: %s\nB: %s" % (args.a, args.b)
+        identity_a, identity_b = args.a, args.b
 
     # determine output directory - deliberately built from the actual
     # input paths (dirsafe_name), not the display labels: label_a/label_b
@@ -393,17 +383,20 @@ def main(args):
         dat_link_b = _relhref(b_lin, outdir)
 
         f = coplot_single(key, data_a, data_b, outdir, False, label_a, label_b,
-                           colour_a, colour_b, dat_link_a, dat_link_b, path_note=path_note)
+                           colour_a, colour_b, dat_link_a, dat_link_b,
+                           identity_a=identity_a, identity_b=identity_b)
         f_log = None
         if single_input:
             if args.log:
                 f_log = coplot_single(key, data_a, data_b, outdir, True, label_a, label_b,
-                                       colour_a, colour_b, dat_link_a, dat_link_b, path_note=path_note)
+                                       colour_a, colour_b, dat_link_a, dat_link_b,
+                                       identity_a=identity_a, identity_b=identity_b)
         else:
             # folder mode: always produce both linear and log variants,
             # exactly like mcplotdiff.py does for multi-monitor overviews
             f_log = coplot_single(key, data_a, data_b, outdir, True, label_a, label_b,
-                                   colour_a, colour_b, dat_link_a, dat_link_b, path_note=path_note)
+                                   colour_a, colour_b, dat_link_a, dat_link_b,
+                                   identity_a=identity_a, identity_b=identity_b)
 
         entries.append({'coplot': f, 'coplot_log': f_log})
         print("Generated: %s" % f)

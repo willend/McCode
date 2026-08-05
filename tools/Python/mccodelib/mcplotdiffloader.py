@@ -242,7 +242,7 @@ def diff_2d(key, a, b, label_a, label_b):
         N = 0
     d.values = (I, Ierr, N)
     d.statistics = '%s: %s\n%s: %s' % (label_a, a.statistics, label_b, b.statistics)
-    d.title = '\nDiff (%s - %s): %s' % (label_a, label_b, a.title)
+    d.title = ' - Diff (A - B), with:\n \nA=%s\nB=%s\n \n%s' % (label_a, label_b, a.title)
 
     return d
 

@@ -177,7 +177,7 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
             return link
 
         cmd = '%s "%s" "%s" --nobrowse -A "%s" -B "%s" --output "%s"' % (
-            coplotter, test_abs, ref_abs, "A", "B", outdir_abs)
+            coplotter, test_abs, ref_abs, label, reflabel, outdir_abs)
 
         pending_diff_jobs.append({
             'cmd': cmd,

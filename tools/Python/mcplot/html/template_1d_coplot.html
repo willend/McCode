@@ -5,7 +5,7 @@
   <style>
     .coplot-legend {
       position: fixed;
-      top: 30px;
+      top: 8px;
       right: 12px;
       font-family: sans-serif;
       font-size: 13px;
@@ -27,8 +27,8 @@
 </head>
 <body style="margin:0;overflow:hidden">
 <div class="coplot-legend">
-  <div><span class="swatch" style="background:@COLOUR_A@"></span>@LABEL_A@ @DATALINK_A@</div>
-  <div><span class="swatch" style="background:@COLOUR_B@"></span>@LABEL_B@ @DATALINK_B@</div>
+  <div><span class="swatch" style="background:@COLOUR_A@"></span>A @DATALINK_A@</div>
+  <div><span class="swatch" style="background:@COLOUR_B@"></span>B @DATALINK_B@</div>
 </div>
 <script>
   var paramsA = @PARAMS_A@;
@@ -55,18 +55,6 @@
   plt.rgstrMouseClickPlot( () => { console.log("click"); } );
   plt.rgstrMouseCtrlClickPlot( () => { console.log("ctrl click"); } );
   plt.rgstrMouseRClickPlot( () => { console.log("right click"); } );
-
-  // Push the legend down below the title, rather than overlapping it: the
-  // title (drawn by Plot1D itself, from paramsA.title) can be anywhere
-  // from 1 line (plain component/filename) up to 5 (when it also carries
-  // the A/B path-disambiguation note and the verbose I/Err/N stats line),
-  // so a single fixed CSS offset would either overlap the long case or
-  // leave an awkward gap in the short one. We already know the exact line
-  // count of the title we just asked Plot1D to render, so use that
-  // directly instead of measuring the rendered SVG text after the fact.
-  var titleLineCount = (paramsA['title'] || '').split('\n').length;
-  var legendTop = 10 + titleLineCount * 20;
-  document.querySelector('.coplot-legend').style.top = legendTop + 'px';
 </script>
 </body>
 </html>
