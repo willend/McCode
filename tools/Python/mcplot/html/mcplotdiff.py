@@ -308,7 +308,7 @@ def _relhref(target, outdir):
     return os.path.relpath(target, start=outdir).replace(os.sep, '/')
 
 
-def write_index(outdir, entries, label_a, label_b):
+def write_index(outdir, entries, label_a, label_b, path_a=None, path_b=None, used_fallback=False):
     """ Writes an overview index.html with an iframe grid, in the same visual
         style as mcplot.py's PNMultiple index page.
 
@@ -321,6 +321,13 @@ def write_index(outdir, entries, label_a, label_b):
           'b_lin'     - path to the pre-existing mcplot-html page for
                         simulation b's monitor (linear), or None
           'b_log'     - ... (log), or None
+
+        path_a/path_b/used_fallback come from default_labels(): when the
+        auto-derived labels collided (e.g. two runs both ending in a plain
+        ".../<instrument>/1/" folder) and were replaced with bare "A"/"B",
+        used_fallback is True - in that case those bare letters carry no
+        identifying information on their own, so the full source paths are
+        shown as well.
     """
     filename = os.path.join(outdir, "index.html")
 
@@ -344,11 +351,18 @@ def write_index(outdir, entries, label_a, label_b):
         outfile.write("  .iframe-wrap iframe { transform-origin: top left; display: block; }\n")
         outfile.write("  #sizecontrol { margin-bottom: 16px; font-size: 14px; }\n")
         outfile.write("  #sizecontrol input[type=range] { vertical-align: middle; margin: 0 8px; }\n")
+        outfile.write("  .pathnote { color: #666666; font-size: 13px; }\n")
         outfile.write("</style>\n")
         outfile.write("</head><body>\n")
         outfile.write("<h1>Difference plots:</h1>\n")
         outfile.write(f"<strong><ol type=\"A\"><li>{label_a} vs.</li><li>{label_b}</li></ol></strong>")
         outfile.write(f"<p>diff.monitor = ({label_a}).monitor &minus; ({label_b}).monitor</p>\n")
+        if used_fallback and path_a and path_b:
+            # label_a/label_b are bare "A"/"B" here (see default_labels()),
+            # since the two source paths' basenames collided (e.g. both
+            # ended in ".../<instrument>/1/") - show the actual paths so
+            # the comparison is still identifiable.
+            outfile.write(f"<p class='pathnote'>A: {path_a}<br>B: {path_b}</p>\n")
         outfile.write("<div id='sizecontrol'>\n")
         outfile.write("  <label for='sizeslider'>Figure size:</label>\n")
         outfile.write(f"  <input type='range' id='sizeslider' min='20' max='200' value='{init_pct}' step='5'>\n")
@@ -453,7 +467,7 @@ def main(args):
     if args.height:
         HEIGHT = int(args.height[0])
 
-    label_a, label_b = default_labels(
+    label_a, label_b, used_fallback = default_labels(
         args.a, args.b,
         args.label_a[0] if args.label_a else None,
         args.label_b[0] if args.label_b else None)
@@ -542,7 +556,8 @@ def main(args):
                                      instrument='diff_%s_vs_%s' % (label_a, label_b))
         print("Generated: %s" % sim_path)
 
-    index_file = write_index(outdir, entries, label_a, label_b)
+    index_file = write_index(outdir, entries, label_a, label_b,
+                              path_a=args.a, path_b=args.b, used_fallback=used_fallback)
     print("Generated: %s" % index_file)
 
     if not args.nobrowse:

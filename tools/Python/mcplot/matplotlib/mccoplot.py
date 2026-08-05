@@ -51,6 +51,7 @@ def _plot_coplot_panel(data_a, data_b, i, n, log, label_a, label_b, colour_a, co
 
     fontsize = plotfuncs._panel_fontsize(n)
     title_fontsize = plotfuncs._title_fontsize(n)
+    verbose = (n == 1)
 
     xmin = data_a.xlimits[0]
     xmax = data_a.xlimits[1]
@@ -83,7 +84,20 @@ def _plot_coplot_panel(data_a, data_b, i, n, log, label_a, label_b, colour_a, co
     plotfuncs.pylab.xlabel(data_a.xlabel, fontsize=fontsize, fontweight='bold')
     plotfuncs.pylab.ylabel(ylabel, fontsize=fontsize, fontweight='bold')
 
-    title = '%s [%s]' % (data_a.component, data_a.filename)
+    # short title in an overview grid, fuller detail (matching data_a.title
+    # and both sides' I/statistics) once drilled down to a single panel -
+    # the same "verbose only at n==1" convention plotfuncs.plot_single_data
+    # uses for ordinary (non-coplot) monitors.
+    if verbose:
+        try:
+            title = '%s [%s]\n%s\n%s: I=%s Err=%s N=%s; %s\n%s: I=%s Err=%s N=%s; %s' % (
+                data_a.component, data_a.filename, data_a.title,
+                label_a, data_a.values[0], data_a.values[1], data_a.values[2], data_a.statistics,
+                label_b, data_b.values[0], data_b.values[1], data_b.values[2], data_b.statistics)
+        except Exception:
+            title = '%s [%s]' % (data_a.component, data_a.filename)
+    else:
+        title = '%s [%s]' % (data_a.component, data_a.filename)
     title = plotfuncs._wrap_title(title, plotfuncs._title_wrap_width(n, title_fontsize))
     plotfuncs.pylab.title(title, fontsize=title_fontsize, fontweight='bold')
 
@@ -95,53 +109,103 @@ def _plot_coplot_panel(data_a, data_b, i, n, log, label_a, label_b, colour_a, co
 
 
 class McCoplotPlotter():
-    ''' Minimal matplotlib co-plot frontend: renders a static grid of
-        overlaid (a, b) 1D monitor pairs. Deliberately has no click-based
-        drill-down (unlike McMatplotlibPlotter in plotfuncs.py) - a
-        co-plot panel is already the finest level of detail there is.
-        Keyboard shortcuts (log toggle / save / quit / help) are otherwise
-        identical, via plotfuncs.py's generic keypress()/print_help()/
-        dumpfile(), which don't depend on there being a plot graph. '''
+    ''' Matplotlib co-plot frontend: renders a grid of overlaid (a, b) 1D
+        monitor pairs, with the same overview <-> single-panel navigation
+        as ordinary mcplot-matplotlib/mcplotdiff-matplotlib (click a panel
+        to view it full-size; right-click, 'b', or back-navigate to
+        return), reusing plotfuncs.py's generic click()/keypress()/
+        print_help()/dumpfile() directly - none of those depend on there
+        being an actual plot graph, they just need a list of "click_cbs"
+        (one per currently-visible panel) and a "back_cb". Since a co-plot
+        pair has no further level of detail beyond the single-panel view
+        (unlike an ordinary monitor's plot graph, which can have further
+        primaries/secondaries to sweep through), click_cbs is simply empty
+        once drilled down - only the back-navigation remains active. '''
 
-    def __init__(self, pairs, label_a, label_b, colour_a, colour_b, log):
+    def __init__(self, pairs, label_a, label_b, colour_a, colour_b, log, path_note=None):
         self.pairs = pairs
         self.label_a = label_a
         self.label_b = label_b
         self.colour_a = colour_a
         self.colour_b = colour_b
         self.log = log
+        self.path_note = path_note
+        self.current = None  # None = overview grid; else index into self.pairs
+        self.event_dc_cid = None
 
     def _flip_log(self):
         self.log = not self.log
 
+    def _visible_pairs(self):
+        if self.current is None:
+            return self.pairs
+        return [self.pairs[self.current]]
+
+    def _show_overview(self):
+        self.current = None
+        self._replot()
+
+    def _show_single(self, idx):
+        self.current = idx
+        self._replot()
+
+    def _click_proxy(self, event):
+        ''' state-updating proxy for plotfuncs.click(), mirroring
+            McMatplotlibPlotter._click_proxy() '''
+        dc_cb = lambda: plotfuncs.pylab.disconnect(self.event_dc_cid)
+        plotfuncs.click(event, subplts=self.subplts, click_cbs=self.click_cbs,
+                         ctrl_cbs=[], back_cb=self._show_overview, dc_cb=dc_cb)
+
     def _keypress_proxy(self, event):
-        plotfuncs.keypress(event, back_cb=lambda: None, replot_cb=self._replot,
+        plotfuncs.keypress(event, back_cb=self._show_overview, replot_cb=self._replot,
                             togglelog_cb=self._flip_log)
 
     def _render(self):
-        n = len(self.pairs)
+        visible = self._visible_pairs()
+        n = len(visible)
         fig_w, fig_h = plotfuncs._figure_size(n)
         fig = plotfuncs.pylab.figure(figsize=(fig_w, fig_h))
 
-        for i, (key, data_a, data_b) in enumerate(self.pairs):
+        self.subplts = [
             _plot_coplot_panel(data_a, data_b, i, n, self.log,
                                 self.label_a, self.label_b, self.colour_a, self.colour_b)
+            for i, (key, data_a, data_b) in enumerate(visible)
+        ]
 
         fig.subplots_adjust(left=0.06, right=0.98, top=0.97, bottom=0.06,
                              wspace=0.3, hspace=0.35)
+
+        if self.path_note:
+            # label_a/label_b are bare "A"/"B" here (see default_labels()),
+            # since the two source paths' basenames collided (e.g. both
+            # ended in ".../<instrument>/1/") - shown once as a figure-
+            # level title (matplotlib's actual "figure title" concept,
+            # distinct from each panel's own title) rather than repeated
+            # inside every panel, which would get cluttered across a
+            # multi-panel overview.
+            fig.suptitle(self.path_note, fontsize=9, y=0.998, va='top')
+            fig.subplots_adjust(top=0.90 if n == 1 else 0.92)
+
+        # Left-click on a panel drills into it (only meaningful in overview
+        # mode - once already on a single panel there's nowhere further to
+        # go, so click_cbs is left empty and only right-click/'b' back-
+        # navigation remains live).
+        if self.current is None:
+            self.click_cbs = [lambda idx=i: self._show_single(idx) for i in range(n)]
+        else:
+            self.click_cbs = []
+
         return fig
 
     def _replot(self):
         plotfuncs.pylab.close()
         self._render()
+        self.event_dc_cid = plotfuncs.pylab.connect('button_press_event', self._click_proxy)
         plotfuncs.pylab.connect('key_press_event', self._keypress_proxy)
-        plotfuncs.pylab.draw()
 
     def plot(self):
         ''' render and show the interactive grid '''
-        plotfuncs.pylab.close()
-        self._render()
-        plotfuncs.pylab.connect('key_press_event', self._keypress_proxy)
+        self._replot()
         plotfuncs.pylab.show()
 
     def html(self, fileobj):
@@ -180,7 +244,17 @@ def main(args):
         from matplotlib import pylab
         plotfuncs.pylab = pylab
 
-        label_a, label_b = diffloader.default_labels(args.a, args.b, label_a, label_b)
+        label_a, label_b, used_fallback = diffloader.default_labels(args.a, args.b, label_a, label_b)
+
+        # When the auto-derived labels collided (e.g. two runs both ending
+        # in a plain ".../<instrument>/1/" folder) and default_labels()
+        # fell back to bare "A"/"B", those letters carry no identifying
+        # information on their own - show the full source paths as a
+        # figure-level suptitle instead, while the per-panel legend keeps
+        # just "A"/"B".
+        path_note = None
+        if used_fallback:
+            path_note = "A: %s   B: %s" % (args.a, args.b)
 
         try:
             monitors_a, dir_a = diffloader.load_monitors(args.a)
@@ -206,7 +280,7 @@ def main(args):
         # since there's no single simulation file to derive it from
         plotfuncs.filenamebase = "coplot_%s_vs_%s" % (label_a, label_b)
 
-        plotter = McCoplotPlotter(pairs, label_a, label_b, colour_a, colour_b, log=args.log)
+        plotter = McCoplotPlotter(pairs, label_a, label_b, colour_a, colour_b, log=args.log, path_note=path_note)
 
         if (sys.platform == "linux" or sys.platform == "linux2") and args.html:
             # save to html and exit

@@ -37,14 +37,38 @@ def path_base_name(path):
 
 
 def default_labels(path_a, path_b, label_a=None, label_b=None):
-    ''' Resolves user-facing short labels for two simulation paths, falling
+    """ Resolves user-facing short labels for two simulation paths, falling
         back to the basename of each path if a label wasn't given
-        explicitly. '''
-    if not label_a:
+        explicitly.
+
+        A basename-only fallback collides for a common layout: results
+        stored as .../<instrument>/<testnb>/, where testnb is frequently
+        "1" on both sides (e.g. two runs differing only in an MPI
+        parameter earlier in the path) - both labels would silently come
+        out as "1", indistinguishable from each other. When that happens
+        (and only when *both* labels were auto-derived - an explicitly
+        given label is never overridden), falls back to literal "A"/"B"
+        instead.
+
+        Returns (label_a, label_b, used_fallback) - used_fallback is True
+        when the "A"/"B" fallback above was applied, i.e. the labels
+        carry no identifying information of their own; callers may want to
+        show the full paths somewhere (e.g. a plot title) in that case,
+        the way mcplotdiff/mccoplot's diff='A: <path>, B: <path>' style
+        note does. """
+    auto_a = not label_a
+    auto_b = not label_b
+    if auto_a:
         label_a = path_base_name(os.path.basename(os.path.abspath(path_a.rstrip('/'))))
-    if not label_b:
+    if auto_b:
         label_b = path_base_name(os.path.basename(os.path.abspath(path_b.rstrip('/'))))
-    return label_a, label_b
+
+    used_fallback = False
+    if auto_a and auto_b and label_a == label_b:
+        label_a, label_b = 'A', 'B'
+        used_fallback = True
+
+    return label_a, label_b, used_fallback
 
 
 # ---------------------------------------------------------------------------
@@ -279,12 +303,12 @@ def match_1d_monitors(monitors_a, monitors_b, label_a, label_b):
 
 def load_and_diff(path_a, path_b, label_a=None, label_b=None):
     """ Convenience one-shot: loads both simulations, resolves labels, and
-        returns (diffs, dir_a, dir_b, label_a, label_b). """
-    label_a, label_b = default_labels(path_a, path_b, label_a, label_b)
+        returns (diffs, dir_a, dir_b, label_a, label_b, used_fallback). """
+    label_a, label_b, used_fallback = default_labels(path_a, path_b, label_a, label_b)
     monitors_a, dir_a = load_monitors(path_a)
     monitors_b, dir_b = load_monitors(path_b)
     diffs = compute_diffs(monitors_a, monitors_b, label_a, label_b)
-    return diffs, dir_a, dir_b, label_a, label_b
+    return diffs, dir_a, dir_b, label_a, label_b, used_fallback
 
 
 # ---------------------------------------------------------------------------

@@ -44,6 +44,39 @@ from mccodelib import utils
 
 _Qt = QtCore.Qt
 
+
+# ---------------------------------------------------------------------------
+# Helpers for modifier / button comparison that work across Qt5 and Qt6,
+# copied from mccodelib.pqtgfrontend's convention (see there for details:
+# under Qt5 Qt.ControlModifier is an int, under Qt6 it's an enum member;
+# qtpy exposes them at the same attribute path, but comparing enum members
+# to ints with == raises a TypeError in Qt6, hence normalising to int).
+# ---------------------------------------------------------------------------
+
+def _int_mod(mod):
+    try:
+        return int(mod)
+    except (TypeError, ValueError):
+        return mod.value
+
+
+def _event_mods_int(event):
+    try:
+        return int(event.modifiers())
+    except (TypeError, ValueError):
+        return event.modifiers().value
+
+
+def _event_button_int(event):
+    try:
+        return int(event.button())
+    except (TypeError, ValueError):
+        return event.button().value
+
+
+_LEFT_BUTTON = _int_mod(_Qt.LeftButton)
+_RIGHT_BUTTON = _int_mod(_Qt.RightButton)
+
 # Default overlay colours (a, b): a colourblind-friendly blue/red pair.
 COLOUR_A = '#1f77b4'
 COLOUR_B = '#d62728'
@@ -57,6 +90,8 @@ def get_help_string():
     helplines.append('s              - save svg')
     helplines.append('l              - log toggle')
     helplines.append('F1/h           - help')
+    helplines.append('click          - display single panel')
+    helplines.append('right-click/b  - back to overview')
     return '\n'.join(helplines)
 
 
@@ -126,18 +161,26 @@ def plot_coplot_1D(data_a, data_b, plt, label_a, label_b, colour_a, colour_b,
 
 
 class McCoplotPlotter():
-    ''' Minimal pyqtgraph co-plot frontend: renders a static grid of
-        overlaid (a, b) 1D monitor pairs. Deliberately has no click-based
-        drill-down (unlike mccodelib.pqtgfrontend.McPyqtgraphPlotter) - a
-        co-plot panel is already the finest level of detail there is. '''
+    ''' pyqtgraph co-plot frontend: renders a grid of overlaid (a, b) 1D
+        monitor pairs, with the same overview <-> single-panel navigation
+        as ordinary mcplot-pyqtgraph (mccodelib.pqtgfrontend.McPyqtgraphPlotter):
+        click a panel to view it full-size; right-click or 'b' to return.
+        Since a co-plot pair has no further level of detail beyond the
+        single-panel view (unlike an ordinary monitor's plot graph, which
+        can have further primaries/secondaries to sweep through), a click
+        on the single panel itself is a no-op - only the back-navigation
+        is live there. '''
 
-    def __init__(self, pairs, label_a, label_b, colour_a, colour_b, invcanvas=False, title=None):
+    def __init__(self, pairs, label_a, label_b, colour_a, colour_b, invcanvas=False, title=None, path_note=None):
         self.pairs = pairs
         self.label_a = label_a
         self.label_b = label_b
         self.colour_a = colour_a
         self.colour_b = colour_b
         self.log = False
+        self.path_note = path_note
+        self.current = None  # None = overview grid; else index into self.pairs
+        self.viewbox_list = []
         self.title = title if title is not None else ('coplot: %s vs %s' % (label_a, label_b))
         self.filenamebase = 'coplot_%s_vs_%s' % (label_a, label_b)
 
@@ -149,8 +192,7 @@ class McCoplotPlotter():
 
     def run(self):
         self._create_window()
-        self._render()
-        self._set_keyhandler()
+        self._replot()
 
         exec_fn = getattr(self.app, "exec", None) or self.app.exec_
         sys.exit(exec_fn())
@@ -188,11 +230,36 @@ class McCoplotPlotter():
         self.main_window.raise_()
         self.main_window.activateWindow()
 
+    def _visible_pairs(self):
+        if self.current is None:
+            return self.pairs
+        return [self.pairs[self.current]]
+
+    def _show_overview(self):
+        self.current = None
+        self._replot()
+
+    def _show_single(self, idx):
+        self.current = idx
+        self._replot()
+
     def _render(self):
         self.plot_layout.clear()
 
-        n = len(self.pairs)
+        visible = self._visible_pairs()
+        n = len(visible)
         rowlen = max(1, int(math.sqrt(n * 1.61803398875)))
+
+        row_offset = 0
+        if self.path_note:
+            # label_a/label_b are bare "A"/"B" here (see default_labels()),
+            # since the two source paths' basenames collided (e.g. both
+            # ended in ".../<instrument>/1/") - shown here as an on-canvas
+            # header row (rather than only in the window title, which
+            # dumpfile_pqtg()'s scene export wouldn't capture) so the
+            # disambiguation survives into saved PNG/SVG exports too.
+            self.plot_layout.addLabel(self.path_note, row=0, col=0, colspan=max(rowlen, 1))
+            row_offset = 1
 
         if n <= 2:
             fontsize = 14
@@ -200,20 +267,66 @@ class McCoplotPlotter():
             fontsize = 10
         else:
             fontsize = 8
-        verbose = n <= 4
+        # verbose (fuller title/statistics) once drilled down to the single
+        # panel, matching McPyqtgraphPlotter's own n<=4 overview threshold
+        # for ordinary monitors, but here n==1 always means "single view"
+        # rather than "a small overview", so use that as the trigger.
+        verbose = (n == 1)
 
-        for i, (key, data_a, data_b) in enumerate(self.pairs):
+        self.viewbox_list = []
+        for i, (key, data_a, data_b) in enumerate(visible):
             plt = pg.PlotItem()
-            plot_coplot_1D(data_a, data_b, plt, self.label_a, self.label_b,
-                            self.colour_a, self.colour_b, log=self.log,
-                            fontsize=fontsize, verbose=verbose)
-            self.plot_layout.addItem(plt, i // rowlen, i % rowlen)
+            vb = plot_coplot_1D(data_a, data_b, plt, self.label_a, self.label_b,
+                                 self.colour_a, self.colour_b, log=self.log,
+                                 fontsize=fontsize, verbose=verbose)
+            self.viewbox_list.append(vb)
+            self.plot_layout.addItem(plt, row_offset + i // rowlen, i % rowlen)
+
+    def _get_plot_index(self, pos):
+        ''' Index of the viewbox containing scene-position pos, or -1.
+            Copied from pqtgfrontend.McPyqtgraphPlotter.get_plot_index(). '''
+        if not self.viewbox_list or pos is None:
+            return -1
+        for idx, viewbox in enumerate(self.viewbox_list):
+            topRight = viewbox.mapViewToScene(viewbox.viewRect().topRight())
+            bottomLeft = viewbox.mapViewToScene(viewbox.viewRect().bottomLeft())
+            rect = QtCore.QRectF()
+            rect.setTopRight(topRight)
+            rect.setBottomLeft(bottomLeft)
+            if rect.contains(pos):
+                return idx
+        return -1
+
+    def _click_handler(self, event):
+        if _event_mods_int(event) != 0:
+            return  # no ctrl/alt-click concept for co-plot (no "sweep")
+
+        btn = _event_button_int(event)
+        try:
+            idx = self._get_plot_index(event.scenePos())
+        except AttributeError:
+            return
+        if idx < 0:
+            return
+
+        if btn == _LEFT_BUTTON and self.current is None:
+            # only meaningful in overview mode - the single view has
+            # nowhere further to drill into
+            self._show_single(idx)
+        elif btn == _RIGHT_BUTTON and self.current is not None:
+            self._show_overview()
 
     def _show_help(self):
         prefix = "mc" if mccode_config.configuration["MCCODE"] == "mcstas" else "mx"
         QtWidgets.QMessageBox.about(self.main_window, prefix + 'coplot-pyqtgraph', get_help_string())
 
-    def _set_keyhandler(self):
+    def _set_handlers(self):
+        try:
+            self.plot_layout.scene().sigMouseClicked.disconnect()
+        except TypeError:
+            pass
+        self.plot_layout.scene().sigMouseClicked.connect(self._click_handler)
+
         K = _Qt
         savefile_cb = lambda fmt: utils.dumpfile_pqtg(
             scene=self.plot_layout.scene(), filenamebase=self.filenamebase, format=fmt)
@@ -224,15 +337,22 @@ class McCoplotPlotter():
                 QtWidgets.QApplication.quit()
             elif key == K.Key_L:
                 self.log = not self.log
-                self._render()
+                self._replot()
             elif key == K.Key_P:
                 savefile_cb('png')
             elif key == K.Key_S or key == 83:  # 83 == ord('s')
                 savefile_cb('svg')
+            elif key == K.Key_B:
+                if self.current is not None:
+                    self._show_overview()
             elif key in (K.Key_F1, K.Key_H):
                 self._show_help()
 
         self.plot_layout.scene().keyPressEvent = key_handler
+
+    def _replot(self):
+        self._render()
+        self._set_handlers()
 
 
 def main(args):
@@ -250,7 +370,19 @@ def main(args):
         colour_a = args.colour_a[0] if args.colour_a else COLOUR_A
         colour_b = args.colour_b[0] if args.colour_b else COLOUR_B
 
-        label_a, label_b = diffloader.default_labels(args.a, args.b, label_a, label_b)
+        label_a, label_b, used_fallback = diffloader.default_labels(args.a, args.b, label_a, label_b)
+
+        # When the auto-derived labels collided (e.g. two runs both ending
+        # in a plain ".../<instrument>/1/" folder) and default_labels()
+        # fell back to bare "A"/"B", those letters carry no identifying
+        # information on their own - show the full source paths as an
+        # on-canvas header row (see McCoplotPlotter._render()) and in the
+        # window title, while the per-panel legend keeps just "A"/"B".
+        path_note = None
+        title = 'coplot: %s vs %s' % (label_a, label_b)
+        if used_fallback:
+            path_note = "A: %s   B: %s" % (args.a, args.b)
+            title = 'coplot: %s' % path_note
 
         try:
             monitors_a, dir_a = diffloader.load_monitors(args.a)
@@ -272,8 +404,7 @@ def main(args):
                 print("  - %s (%s)" % (key, data_a.component))
 
         plotter = McCoplotPlotter(pairs, label_a, label_b, colour_a, colour_b,
-                                   invcanvas=args.invcanvas,
-                                   title='coplot: %s vs %s' % (label_a, label_b))
+                                   invcanvas=args.invcanvas, title=title, path_note=path_note)
         print(get_help_string())
         plotter.run()
 

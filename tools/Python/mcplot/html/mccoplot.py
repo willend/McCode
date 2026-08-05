@@ -70,13 +70,21 @@ def get_params_json(data, colour, title):
     return json.dumps(p, indent=4)
 
 
-def _title_for(data, other_label, this_label):
+def _title_for(data, other_label, this_label, path_note=None):
     try:
-        return '%s [%s]\n%s: %s\nI = %s Err = %s N = %s' % (
+        title = '%s [%s]\n%s: %s\nI = %s Err = %s N = %s' % (
             data.component, data.filename, this_label, data.title,
             data.values[0], data.values[1], data.values[2])
     except Exception:
-        return '%s\n[%s]' % (data.component, data.filename)
+        title = '%s\n[%s]' % (data.component, data.filename)
+    if path_note:
+        # label_a/label_b are bare "A"/"B" here (see default_labels()),
+        # since the two source paths' basenames collided (e.g. both ended
+        # in ".../<instrument>/1/") - the full paths are shown in the
+        # figure title instead, while the compact on-plot legend keeps
+        # just "A"/"B".
+        title = path_note + '\n' + title
+    return title
 
 
 def get_html(params_a_json, params_b_json, label_a, label_b, colour_a, colour_b,
@@ -108,7 +116,7 @@ def browse(html_filepath):
 # ---------------------------------------------------------------------------
 
 def coplot_single(key, data_a, data_b, outdir, use_logscale, label_a, label_b,
-                   colour_a, colour_b, dat_link_a=None, dat_link_b=None):
+                   colour_a, colour_b, dat_link_a=None, dat_link_b=None, path_note=None):
     """ Writes one co-plot (overlaid a/b) monitor page to outdir. Returns
         the file path written. """
     global logscale
@@ -121,7 +129,7 @@ def coplot_single(key, data_a, data_b, outdir, use_logscale, label_a, label_b,
     if os.path.exists(f):
         os.remove(f)
 
-    title_a = _title_for(data_a, label_b, label_a)
+    title_a = _title_for(data_a, label_b, label_a, path_note=path_note)
     params_a = get_params_json(data_a, colour_a, title_a)
     params_b = get_params_json(data_b, colour_b, "")  # B's title isn't used (see template)
 
@@ -146,13 +154,17 @@ def _relhref(target, outdir):
 # overview index page
 # ---------------------------------------------------------------------------
 
-def write_index(outdir, entries, label_a, label_b):
+def write_index(outdir, entries, label_a, label_b, path_note=None):
     """ Writes an overview index.html with an iframe grid, in the same
         visual style as mcplotdiff.py's write_index().
 
         'entries' is a list of dicts, one per monitor, with keys:
           'coplot'     - path to the co-plot (linear) html page
           'coplot_log' - path to the co-plot (log) html page, or None
+
+        path_note, when given (see default_labels()'s used_fallback), is
+        shown under the header - label_a/label_b are bare "A"/"B" in that
+        case, carrying no identifying information of their own.
     """
     filename = os.path.join(outdir, "index.html")
 
@@ -175,10 +187,14 @@ def write_index(outdir, entries, label_a, label_b):
         outfile.write("  .iframe-wrap iframe { transform-origin: top left; display: block; }\n")
         outfile.write("  #sizecontrol { margin-bottom: 16px; font-size: 14px; }\n")
         outfile.write("  #sizecontrol input[type=range] { vertical-align: middle; margin: 0 8px; }\n")
+        outfile.write("  .pathnote { color: #666666; font-size: 13px; }\n")
         outfile.write("</style>\n")
         outfile.write("</head><body>\n")
         outfile.write(f"<h1>Co-plots: {label_a} vs {label_b}</h1>\n")
         outfile.write(f"<p>Each panel overlays ({label_a}).monitor and ({label_b}).monitor on the same axes.</p>\n")
+        if path_note:
+            note_html = path_note.replace('\n', '<br>')
+            outfile.write(f"<p class='pathnote'>{note_html}</p>\n")
         outfile.write("<div id='sizecontrol'>\n")
         outfile.write("  <label for='sizeslider'>Figure size:</label>\n")
         outfile.write(f"  <input type='range' id='sizeslider' min='20' max='200' value='{init_pct}' step='5'>\n")
@@ -256,10 +272,20 @@ def main(args):
     colour_a = args.colour_a[0] if args.colour_a else COLOUR_A
     colour_b = args.colour_b[0] if args.colour_b else COLOUR_B
 
-    label_a, label_b = default_labels(
+    label_a, label_b, used_fallback = default_labels(
         args.a, args.b,
         args.label_a[0] if args.label_a else None,
         args.label_b[0] if args.label_b else None)
+
+    # When the auto-derived labels collided (e.g. two runs both ending in a
+    # plain ".../<instrument>/1/" folder) and default_labels() fell back
+    # to bare "A"/"B", those letters carry no identifying information on
+    # their own - show the full source paths in each figure's title (and
+    # the overview header) instead, while keeping the compact on-plot
+    # legend as just "A"/"B".
+    path_note = None
+    if used_fallback:
+        path_note = "A: %s\nB: %s" % (args.a, args.b)
 
     # determine output directory
     if args.output:
@@ -302,17 +328,17 @@ def main(args):
         dat_link_b = _relhref(b_lin, outdir)
 
         f = coplot_single(key, data_a, data_b, outdir, False, label_a, label_b,
-                           colour_a, colour_b, dat_link_a, dat_link_b)
+                           colour_a, colour_b, dat_link_a, dat_link_b, path_note=path_note)
         f_log = None
         if single_input:
             if args.log:
                 f_log = coplot_single(key, data_a, data_b, outdir, True, label_a, label_b,
-                                       colour_a, colour_b, dat_link_a, dat_link_b)
+                                       colour_a, colour_b, dat_link_a, dat_link_b, path_note=path_note)
         else:
             # folder mode: always produce both linear and log variants,
             # exactly like mcplotdiff.py does for multi-monitor overviews
             f_log = coplot_single(key, data_a, data_b, outdir, True, label_a, label_b,
-                                   colour_a, colour_b, dat_link_a, dat_link_b)
+                                   colour_a, colour_b, dat_link_a, dat_link_b, path_note=path_note)
 
         entries.append({'coplot': f, 'coplot_log': f_log})
         print("Generated: %s" % f)
@@ -326,7 +352,7 @@ def main(args):
             browse(target)
         return
 
-    index_file = write_index(outdir, entries, label_a, label_b)
+    index_file = write_index(outdir, entries, label_a, label_b, path_note=path_note)
     print("Generated: %s" % index_file)
 
     if not args.nobrowse:
