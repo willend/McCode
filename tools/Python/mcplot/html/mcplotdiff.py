@@ -355,6 +355,7 @@ def write_index(outdir, entries, label_a, label_b, path_a=None, path_b=None, use
         outfile.write("</style>\n")
         outfile.write("</head><body>\n")
         outfile.write("<h1>Difference plots: A vs B</h1>\n")
+        outfile.write(f"<h2>A={label_a}<br>B={label_b}</h2>\n")
         outfile.write(f"<p>diff.monitor = ({label_a}).monitor &minus; ({label_b}).monitor</p>\n")
         if used_fallback and path_a and path_b:
             # label_a/label_b are bare "A"/"B" here (see default_labels()),
