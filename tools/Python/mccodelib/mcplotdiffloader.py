@@ -224,6 +224,59 @@ def compute_diffs(monitors_a, monitors_b, label_a, label_b):
     return diffs
 
 
+def match_1d_monitors(monitors_a, monitors_b, label_a, label_b):
+    """ Matches monitors present in both simulations by output filename,
+        the same way compute_diffs() does, but returns both original
+        Data1D objects for co-plotting/overlay instead of subtracting them.
+        Used by the mccoplot frontends (mcplot-coplot-html,
+        mcplot-coplot-matplotlib, ...).
+
+        Only 1D/1D matches with identical binning are kept; anything else
+        (a monitor present in only one side, a 2D monitor, a type
+        mismatch, or mismatched binning) is skipped with a warning -
+        overlaying two 2D images doesn't have an equally natural
+        single-plot representation, so that case is left to the diff
+        tools' diverging-colourmap image instead.
+
+        Returns an ordered list of (key, data_a, data_b). """
+    keys_a = set(monitors_a.keys())
+    keys_b = set(monitors_b.keys())
+
+    only_a = keys_a - keys_b
+    only_b = keys_b - keys_a
+    for k in sorted(only_a):
+        print("Warning: monitor '%s' present in '%s' only, skipping" % (k, label_a))
+    for k in sorted(only_b):
+        print("Warning: monitor '%s' present in '%s' only, skipping" % (k, label_b))
+
+    pairs = []
+    for key in [k for k in monitors_a.keys() if k in keys_b]:
+        a = monitors_a[key]
+        b = monitors_b[key]
+
+        if not (isinstance(a, Data1D) and isinstance(b, Data1D)):
+            if isinstance(a, Data2D) or isinstance(b, Data2D):
+                print("Warning: skipping '%s' - co-plotting only supports 1D monitors "
+                      "(got %s vs %s); try a diff tool for 2D comparisons"
+                      % (key, type(a).__name__, type(b).__name__))
+            else:
+                print("Warning: skipping '%s' - mismatched or unsupported monitor types" % key)
+            continue
+
+        if len(a.xvals) != len(b.xvals):
+            print("Warning: skipping '%s' - differing number of bins (%d vs %d)"
+                  % (key, len(a.xvals), len(b.xvals)))
+            continue
+
+        if a.component != b.component:
+            print("Warning: '%s' component name differs ('%s' vs '%s'), co-plotting anyway"
+                  % (key, a.component, b.component))
+
+        pairs.append((key, a, b))
+
+    return pairs
+
+
 def load_and_diff(path_a, path_b, label_a=None, label_b=None):
     """ Convenience one-shot: loads both simulations, resolves labels, and
         returns (diffs, dir_a, dir_b, label_a, label_b). """
