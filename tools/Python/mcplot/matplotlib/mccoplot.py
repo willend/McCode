@@ -198,15 +198,30 @@ class McCoplotPlotter():
         return fig
 
     def _replot(self):
+        ''' Re-renders from scratch and re-enters the GUI event loop.
+
+            pylab.show() must be called again here, not just once from
+            plot() below - the SAME pattern plotfuncs.McMatplotlibPlotter.
+            plot_node() already uses for every click/keypress-triggered
+            redraw. Without it: _render() calls pylab.close() (destroying
+            the figure the original blocking show() call was watching) and
+            then creates a brand new figure via pylab.figure() - but with
+            no show() call for that new figure, many backends' blocking
+            event loop exits as soon as the figure count momentarily hits
+            zero, so the process falls straight through the original
+            show() and the new figure is never actually displayed. The
+            visible symptom is exactly what it looks like: any click
+            (drilling into a panel, going back, or even just toggling log
+            via 'l') appears to close the window outright. '''
         plotfuncs.pylab.close()
         self._render()
         self.event_dc_cid = plotfuncs.pylab.connect('button_press_event', self._click_proxy)
         plotfuncs.pylab.connect('key_press_event', self._keypress_proxy)
+        plotfuncs.pylab.show()
 
     def plot(self):
         ''' render and show the interactive grid '''
         self._replot()
-        plotfuncs.pylab.show()
 
     def html(self, fileobj):
         ''' render and save to html using mpld3 '''

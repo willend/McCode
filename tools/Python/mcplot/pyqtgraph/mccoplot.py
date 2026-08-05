@@ -123,7 +123,13 @@ def plot_coplot_1D(data_a, data_b, plt, label_a, label_b, colour_a, colour_b,
     xmax = max(np.max(x_a), np.max(x_b))
     plt.setXRange(xmin, xmax, padding=0)
 
-    plt.setTitle(" ")
+    try:
+        header = '%s [%s]' % (data_a.component, data_a.filename)
+        if verbose:
+            header = '%s [%s]<br>%s' % (data_a.component, data_a.filename, data_a.title)
+    except Exception:
+        header = '%s' % data_a.component
+    plt.setTitle(header)
     plt.getAxis('bottom').setLabel(data_a.xlabel)
     plt.getAxis('left').setLabel(data_a.ylabel)
 
@@ -139,21 +145,19 @@ def plot_coplot_1D(data_a, data_b, plt, label_a, label_b, colour_a, colour_b,
         plt.legend = plotfuncs.ModLegend(offset=(-1, 1), text_size='%spt' % str(fontsize))
         plt.legend.setParentItem(plt.vb)
 
-    try:
-        header = '%s [%s]' % (data_a.component, data_a.filename)
-        if verbose:
-            header = '%s [%s]<br>%s' % (data_a.component, data_a.filename, data_a.title)
-    except Exception:
-        header = '%s' % data_a.component
-    name_a = '<b>%s</b><br>%s' % (header, label_a)
-
     # actual curves, plotted with an explicit pen per series - since
     # plt.legend is already set, plot(..., name=...) registers each curve
     # with the legend automatically, using the curve's own pen as the
     # swatch colour (no need for the "invisible dummy artist" trick
     # ordinary single-dataset plots use, since here both series are real
-    # and worth a legend entry each).
-    plt.plot(x_a, y_a, pen=colour_a, name=name_a)
+    # and worth a legend entry each). Both names are bare labels
+    # ("A"/"B" or whatever was given) - deliberately symmetric, rather
+    # than one side carrying the full component/filename/title block:
+    # ModLegend lays each entry out in its own row sized to that row's
+    # content, so a long multi-line entry next to a single short word
+    # rendered visibly misaligned (the descriptive text now lives in the
+    # panel's own title instead, via plt.setTitle() above).
+    plt.plot(x_a, y_a, pen=colour_a, name=label_a)
     plt.plot(x_b, y_b, pen=colour_b, name=label_b)
 
     plt.setMenuEnabled(False)
