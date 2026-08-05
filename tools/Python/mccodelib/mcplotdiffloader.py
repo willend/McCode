@@ -13,6 +13,7 @@ into any existing plot-graph-based frontend (e.g. the interactive
 pyqtgraph frontend in pqtgfrontend.py).
 '''
 import os
+import re
 import datetime
 
 import numpy as np
@@ -69,6 +70,42 @@ def default_labels(path_a, path_b, label_a=None, label_b=None):
         used_fallback = True
 
     return label_a, label_b, used_fallback
+
+
+def dirsafe_name(path):
+    """ Filesystem-safe slug of a full input path, for use in *output
+        directory/file* names.
+
+        This is deliberately separate from default_labels()'s short
+        display labels: those may legitimately collapse to bare "A"/"B"
+        when the basenames of two input paths collide (e.g. both
+        ".../<instrument>/1/") - fine for an on-screen legend, but if the
+        *output directory* name were built from those same collapsed
+        labels, every such comparison would land in the same
+        "..._A_vs_B" folder, clobbering previous runs. This uses the
+        input path as actually given (not just its basename), so distinct
+        source paths always produce distinct output directories - the
+        common case when batch/CI tooling runs many comparisons out of
+        the same working directory, each against a differently-timestamped
+        or differently-parameterised run.
+
+        Keeps the path as given (relative or absolute, whichever the
+        caller passed in) rather than resolving to an absolute path -
+        that matches what a human actually typed/expects to see, and
+        avoids dragging environment-specific absolute-path noise (e.g.
+        a CI runner's long checkout path) into every folder name. """
+    p = path.rstrip('/\\')
+    if p in ('', '.', '..'):
+        # degenerate case (e.g. someone ran the tool with '.' as one side) -
+        # fall back to the resolved directory's own basename instead of a
+        # bare, unhelpful "."
+        p = os.path.basename(os.path.abspath(path))
+    p = p.replace('\\', '/').replace('/', '_')
+    # collapse any remaining filesystem-unsafe characters
+    p = re.sub(r'[^\w\-.]', '_', p)
+    # tidy up repeated/leading/trailing underscores left by the above
+    p = re.sub(r'_+', '_', p).strip('_')
+    return p or 'unnamed'
 
 
 # ---------------------------------------------------------------------------

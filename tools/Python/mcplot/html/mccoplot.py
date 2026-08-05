@@ -36,7 +36,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from mccodelib.mcplotloader import Data1D, Data2D
 from mccodelib import mccode_config
 from mccodelib.mcplotdiffloader import (
-    path_base_name, default_labels, load_monitors, find_original_plot, match_1d_monitors,
+    path_base_name, default_labels, dirsafe_name, load_monitors, find_original_plot, match_1d_monitors,
 )
 
 global WIDTH, HEIGHT
@@ -287,11 +287,16 @@ def main(args):
     if used_fallback:
         path_note = "A: %s\nB: %s" % (args.a, args.b)
 
-    # determine output directory
+    # determine output directory - deliberately built from the actual
+    # input paths (dirsafe_name), not the display labels: label_a/label_b
+    # may legitimately collapse to bare "A"/"B" when their basenames
+    # collide (see default_labels()), which would otherwise put every such
+    # comparison in the same "coplot_A_vs_B" folder - a real problem for
+    # batch/CI use running many comparisons out of one working directory.
     if args.output:
         outdir = args.output[0]
     else:
-        outdir = "coplot_%s_vs_%s" % (label_a, label_b)
+        outdir = "coplot_%s_vs_%s" % (dirsafe_name(args.a), dirsafe_name(args.b))
     os.makedirs(outdir, exist_ok=True)
 
     # copy js lib files locally if no lib path was specified

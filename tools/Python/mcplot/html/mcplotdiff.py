@@ -35,7 +35,7 @@ from mccodelib.mcplotloader import Data1D, Data2D
 from mccodelib import mccode_config
 from mccodelib import mcplotdiffloader as diffloader
 from mccodelib.mcplotdiffloader import (
-    path_base_name, default_labels, load_monitors, compute_diffs, find_original_plot,
+    path_base_name, default_labels, dirsafe_name, load_monitors, compute_diffs, find_original_plot,
     write_mccode_dat, write_mccode_sim,
 )
 
@@ -471,11 +471,16 @@ def main(args):
         args.label_a[0] if args.label_a else None,
         args.label_b[0] if args.label_b else None)
 
-    # determine output directory
+    # determine output directory - deliberately built from the actual
+    # input paths (dirsafe_name), not the display labels: label_a/label_b
+    # may legitimately collapse to bare "A"/"B" when their basenames
+    # collide (see default_labels()), which would otherwise put every such
+    # comparison in the same "diff_A_vs_B" folder - a real problem for
+    # batch/CI use running many comparisons out of one working directory.
     if args.output:
         outdir = args.output[0]
     else:
-        outdir = "diff_%s_vs_%s" % (label_a, label_b)
+        outdir = "diff_%s_vs_%s" % (dirsafe_name(args.a), dirsafe_name(args.b))
     os.makedirs(outdir, exist_ok=True)
 
     # copy js lib files locally if no lib path was specified

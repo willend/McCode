@@ -292,8 +292,15 @@ def main(args):
                 print("  - %s (%s)" % (key, data_a.component))
 
         # default base name for --format/--output dumps and for --html,
-        # since there's no single simulation file to derive it from
-        plotfuncs.filenamebase = "coplot_%s_vs_%s" % (label_a, label_b)
+        # since there's no single simulation file to derive it from -
+        # deliberately built from the actual input paths (dirsafe_name),
+        # not label_a/label_b: those may legitimately collapse to bare
+        # "A"/"B" when their basenames collide (see default_labels()),
+        # which would otherwise make every such comparison overwrite the
+        # same "coplot_A_vs_B.*" files - a real problem for batch/CI use
+        # running many comparisons out of one working directory.
+        plotfuncs.filenamebase = "coplot_%s_vs_%s" % (
+            diffloader.dirsafe_name(args.a), diffloader.dirsafe_name(args.b))
 
         plotter = McCoplotPlotter(pairs, label_a, label_b, colour_a, colour_b, log=args.log, path_note=path_note)
 

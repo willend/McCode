@@ -77,8 +77,15 @@ def main(args):
             PlotGraphPrint(graph)
 
         # default base name for --format/--output dumps and for --html,
-        # since there's no single simulation file to derive it from
-        plotfuncs.filenamebase = "diff_%s_vs_%s" % (label_a, label_b)
+        # since there's no single simulation file to derive it from -
+        # deliberately built from the actual input paths (dirsafe_name),
+        # not label_a/label_b: those may legitimately collapse to bare
+        # "A"/"B" when their basenames collide (see default_labels()),
+        # which would otherwise make every such comparison overwrite the
+        # same "diff_A_vs_B.*" files - a real problem for batch/CI use
+        # running many comparisons out of one working directory.
+        plotfuncs.filenamebase = "diff_%s_vs_%s" % (
+            diffloader.dirsafe_name(args.a), diffloader.dirsafe_name(args.b))
 
         # If the auto-derived labels collided (e.g. two runs both ending in
         # a plain ".../<instrument>/1/" folder) and default_labels() fell

@@ -175,7 +175,8 @@ class McCoplotPlotter():
         on the single panel itself is a no-op - only the back-navigation
         is live there. '''
 
-    def __init__(self, pairs, label_a, label_b, colour_a, colour_b, invcanvas=False, title=None, path_note=None):
+    def __init__(self, pairs, label_a, label_b, colour_a, colour_b, invcanvas=False, title=None,
+                 path_note=None, filenamebase=None):
         self.pairs = pairs
         self.label_a = label_a
         self.label_b = label_b
@@ -186,7 +187,15 @@ class McCoplotPlotter():
         self.current = None  # None = overview grid; else index into self.pairs
         self.viewbox_list = []
         self.title = title if title is not None else ('coplot: %s vs %s' % (label_a, label_b))
-        self.filenamebase = 'coplot_%s_vs_%s' % (label_a, label_b)
+        # deliberately NOT derived from label_a/label_b here: those may
+        # legitimately collapse to bare "A"/"B" when their basenames
+        # collide (see default_labels()), which would make every such
+        # comparison overwrite the same "coplot_A_vs_B.*" export files -
+        # a real problem for batch/CI use running many comparisons out of
+        # one working directory. Callers should pass the dirsafe_name()-
+        # based name explicitly; this fallback only exists for callers
+        # that don't care (e.g. quick interactive use, direct construction).
+        self.filenamebase = filenamebase if filenamebase is not None else ('coplot_%s_vs_%s' % (label_a, label_b))
 
         self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
 
@@ -408,7 +417,9 @@ def main(args):
                 print("  - %s (%s)" % (key, data_a.component))
 
         plotter = McCoplotPlotter(pairs, label_a, label_b, colour_a, colour_b,
-                                   invcanvas=args.invcanvas, title=title, path_note=path_note)
+                                   invcanvas=args.invcanvas, title=title, path_note=path_note,
+                                   filenamebase="coplot_%s_vs_%s" % (
+                                       diffloader.dirsafe_name(args.a), diffloader.dirsafe_name(args.b)))
         print(get_help_string())
         plotter.run()
 
