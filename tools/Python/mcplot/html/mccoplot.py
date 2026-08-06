@@ -43,7 +43,10 @@ from mccodelib.mcplotdiffloader import (
 # shelled out to, so we can guarantee each source dataset's own per-monitor
 # pages (<monitor>.dat.html / <monitor>.dat_log.html) actually exist before
 # find_original_plot() goes looking for them below - see _ensure_html_plots().
-import mcplot
+try:
+    import mcplot
+except ImportError:
+    import mxplot
 
 global WIDTH, HEIGHT
 WIDTH = 1024
