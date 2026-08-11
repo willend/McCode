@@ -2,16 +2,20 @@
 '''
 pyqtgraph mccoplot frontend.
 
-This is a companion to mcplotdiff.py (mcplot-diff-pyqtgraph), sharing its
-command-line syntax and monitor-matching logic. Instead of computing and
-plotting the *difference* between two simulation results, mccoplot.py
-overlays the two datasets on the same axes, for direct visual comparison of
-curve shape and position rather than the size of the gap between them.
+This is a companion to mcplotdiff.py (mcplot-diff-pyqtgraph), sharing part
+of its command-line syntax and monitor-matching logic. Instead of
+computing and plotting the *difference* between two simulation results,
+mccoplot.py overlays any number (2 or more) of datasets on the same axes,
+for direct visual comparison across all of them at once. Unlike the diff
+tools (which are deliberately staying two-way only), this is an
+interactive, end-user comparison tool - typically used with a handful
+(2-8 or so) of related runs.
 
-Only 1D monitors are supported: a and b are matched by output filename via
-mccodelib.mcplotdiffloader.match_1d_monitors() (shared with the
-mcplot-coplot-html and mcplot-coplot-matplotlib frontends), and any matched
-pair that isn't a 1D/1D match is skipped with a warning.
+Only 1D monitors are supported: datasets are matched by output filename via
+mccodelib.mcplotdiffloader.match_monitors_multi() (shared with the
+mcplot-coplot-html and mcplot-coplot-matplotlib frontends), and any monitor
+that isn't a matching 1D monitor across *every* dataset is skipped with a
+warning.
 
 Unlike ordinary mcplot-pyqtgraph (mccodelib.pqtgfrontend.McPyqtgraphPlotter),
 there is no click-based drill-down here: a co-plot panel already overlays
@@ -77,10 +81,6 @@ def _event_button_int(event):
 _LEFT_BUTTON = _int_mod(_Qt.LeftButton)
 _RIGHT_BUTTON = _int_mod(_Qt.RightButton)
 
-# Default overlay colours (a, b): a colourblind-friendly blue/red pair.
-COLOUR_A = '#1f77b4'
-COLOUR_B = '#d62728'
-
 
 def get_help_string():
     helplines = []
@@ -95,107 +95,138 @@ def get_help_string():
     return '\n'.join(helplines)
 
 
-def plot_coplot_1D(data_a, data_b, plt, label_a, label_b, colour_a, colour_b,
-                    log=False, legend=True, fontsize=10, verbose=False):
-    ''' overlay data_a and data_b (both Data1D) into the pyqtgraph PlotItem plt '''
-    x_a = np.array(data_a.xvals).astype(float)
-    y_a = np.array(data_a.yvals).astype(float)
-    e_a = np.array(data_a.y_err_vals).astype(float)
-    x_b = np.array(data_b.xvals).astype(float)
-    y_b = np.array(data_b.yvals).astype(float)
-    e_b = np.array(data_b.y_err_vals).astype(float)
+def _legend_fontsize(n_datasets, base_fontsize):
+    """ Legend text size, shrinking as the number of co-plotted datasets
+        (not the number of panels/monitors in the grid - a separate
+        concern already handled by the caller-supplied base_fontsize)
+        grows. The legend has one row per dataset, so without this its
+        total height grows linearly and unboundedly with N, increasingly
+        overlapping (and, since ModLegend draws an opaque-ish background,
+        visually hiding) the plotted curves in the panel's corner - this
+        is what "adding more datasets extends the axes"/"cuts the
+        right-most datasets" turned out to actually be: not the axes
+        moving at all, but a growing legend box progressively covering
+        more of the real data underneath it. """
+    if n_datasets <= 4:
+        return base_fontsize
+    elif n_datasets <= 8:
+        return max(7, base_fontsize - 2)
+    else:
+        return max(6, base_fontsize - 4)
 
+
+def plot_coplot_1D(datas, plt, labels, colours, log=False, legend=True, fontsize=10, verbose=False):
+    ''' overlay N Data1D objects (datas) into the pyqtgraph PlotItem plt '''
+    d0 = datas[0]
+    series = []  # (x, y, e) per dataset
+    for data in datas:
+        x = np.array(data.xvals).astype(float)
+        y = np.array(data.yvals).astype(float)
+        e = np.array(data.y_err_vals).astype(float)
+        series.append((x, y, e))
+
+    any_log_ok = False
     if log:
-        def _tolog(y):
+        new_series = []
+        for x, y, e in series:
             nonzeros = np.where(y > 0)[0]
             if len(nonzeros) > 0:
                 y = y.copy()
                 y[y <= 0] = np.min(y[nonzeros]) / 10
-                return y, True
-            return y, False
-        y_a, ok_a = _tolog(y_a)
-        y_b, ok_b = _tolog(y_b)
-        plt.setLogMode(y=(ok_a or ok_b))
+                any_log_ok = True
+            new_series.append((x, y, e))
+        series = new_series
+        plt.setLogMode(y=any_log_ok)
     else:
         plt.setLogMode(y=False)
 
-    xmin = min(np.min(x_a), np.min(x_b))
-    xmax = max(np.max(x_a), np.max(x_b))
+    xmin = min(np.min(x) for x, y, e in series)
+    xmax = max(np.max(x) for x, y, e in series)
     plt.setXRange(xmin, xmax, padding=0)
 
     try:
-        header = '%s [%s]' % (data_a.component, data_a.filename)
+        header = '%s [%s]' % (d0.component, d0.filename)
         if verbose:
-            header = '%s [%s]<br>%s' % (data_a.component, data_a.filename, data_a.title)
+            header = '%s [%s]<br>%s' % (d0.component, d0.filename, d0.title)
     except Exception:
-        header = '%s' % data_a.component
+        header = '%s' % d0.component
     plt.setTitle(header)
-    plt.getAxis('bottom').setLabel(data_a.xlabel)
-    plt.getAxis('left').setLabel(data_a.ylabel)
-
-    beam_a = (x_a[1] - x_a[0]) * 0.5 if len(x_a) > 1 else 0
-    beam_b = (x_b[1] - x_b[0]) * 0.5 if len(x_b) > 1 else 0
+    plt.getAxis('bottom').setLabel(d0.xlabel)
+    plt.getAxis('left').setLabel(d0.ylabel)
+    # Fixed, not auto-sized: pg.GraphicsLayout gives every cell in a grid
+    # column the *same* width, driven by whichever cell's axis currently
+    # needs the most space - so if one panel's left-axis tick labels get
+    # wider (e.g. needing an extra digit once a 3rd dataset shifts that
+    # panel's merged Y-range enough to cross a tick-precision threshold -
+    # something that can depend on exact float values, so it's sensitive
+    # to platform/font/DPI in ways that are hard to predict or reproduce
+    # consistently), every *other* panel sharing that column gets dragged
+    # along with it, even though nothing about their own data changed.
+    # Locking every co-plot panel's axis to the same fixed width removes
+    # the coupling entirely, regardless of what triggers a width change on
+    # any one panel.
+    plt.getAxis('left').setWidth(95)
 
     # TODO (same as plotfuncs.plot_Data1D): no error bars in log mode
     if not log:
-        plt.addItem(pg.ErrorBarItem(x=x_a, y=y_a, height=e_a, beam=beam_a, pen=colour_a))
-        plt.addItem(pg.ErrorBarItem(x=x_b, y=y_b, height=e_b, beam=beam_b, pen=colour_b))
+        for (x, y, e), colour in zip(series, colours):
+            beam = (x[1] - x[0]) * 0.5 if len(x) > 1 else 0
+            plt.addItem(pg.ErrorBarItem(x=x, y=y, height=e, beam=beam, pen=colour))
 
     if legend:
-        plt.legend = plotfuncs.ModLegend(offset=(-1, 1), text_size='%spt' % str(fontsize))
+        legend_fontsize = _legend_fontsize(len(datas), fontsize)
+        plt.legend = plotfuncs.ModLegend(offset=(-1, 1), text_size='%spt' % str(legend_fontsize))
         plt.legend.setParentItem(plt.vb)
 
     # actual curves, plotted with an explicit pen per series - since
     # plt.legend is already set, plot(..., name=...) registers each curve
     # with the legend automatically, using the curve's own pen as the
     # swatch colour (no need for the "invisible dummy artist" trick
-    # ordinary single-dataset plots use, since here both series are real
-    # and worth a legend entry each). Both names are bare labels
-    # ("A"/"B" or whatever was given) - deliberately symmetric, rather
-    # than one side carrying the full component/filename/title block:
-    # ModLegend lays each entry out in its own row sized to that row's
-    # content, so a long multi-line entry next to a single short word
-    # rendered visibly misaligned (the descriptive text now lives in the
-    # panel's own title instead, via plt.setTitle() above).
-    plt.plot(x_a, y_a, pen=colour_a, name=label_a)
-    plt.plot(x_b, y_b, pen=colour_b, name=label_b)
+    # ordinary single-dataset plots use, since here every series is real
+    # and worth a legend entry). All names are bare labels ("A"/"B"/... or
+    # whatever was given) - deliberately symmetric, rather than one entry
+    # carrying the full component/filename/title block: ModLegend lays
+    # each entry out in its own row sized to that row's content, so a long
+    # multi-line entry next to short words renders visibly misaligned (the
+    # descriptive text lives in the panel's own title instead, via
+    # plt.setTitle() above).
+    for (x, y, e), label, colour in zip(series, labels, colours):
+        plt.plot(x, y, pen=colour, name=label)
 
     plt.setMenuEnabled(False)
     return plt.getViewBox()
 
 
 class McCoplotPlotter():
-    ''' pyqtgraph co-plot frontend: renders a grid of overlaid (a, b) 1D
-        monitor pairs, with the same overview <-> single-panel navigation
+    ''' pyqtgraph co-plot frontend: renders a grid of overlaid N-dataset
+        monitor groups, with the same overview <-> single-panel navigation
         as ordinary mcplot-pyqtgraph (mccodelib.pqtgfrontend.McPyqtgraphPlotter):
         click a panel to view it full-size; right-click or 'b' to return.
-        Since a co-plot pair has no further level of detail beyond the
+        Since a co-plot group has no further level of detail beyond the
         single-panel view (unlike an ordinary monitor's plot graph, which
         can have further primaries/secondaries to sweep through), a click
         on the single panel itself is a no-op - only the back-navigation
         is live there. '''
 
-    def __init__(self, pairs, label_a, label_b, colour_a, colour_b, invcanvas=False, title=None,
+    def __init__(self, pairs, labels, colours, invcanvas=False, title=None,
                  path_note=None, filenamebase=None):
-        self.pairs = pairs
-        self.label_a = label_a
-        self.label_b = label_b
-        self.colour_a = colour_a
-        self.colour_b = colour_b
+        self.pairs = pairs  # [(key, [data_0, ..., data_N-1]), ...]
+        self.labels = labels
+        self.colours = colours
         self.log = False
         self.path_note = path_note
         self.current = None  # None = overview grid; else index into self.pairs
         self.viewbox_list = []
-        self.title = title if title is not None else ('coplot: %s vs %s' % (label_a, label_b))
-        # deliberately NOT derived from label_a/label_b here: those may
-        # legitimately collapse to bare "A"/"B" when their basenames
-        # collide (see default_labels()), which would make every such
-        # comparison overwrite the same "coplot_A_vs_B.*" export files -
-        # a real problem for batch/CI use running many comparisons out of
-        # one working directory. Callers should pass the dirsafe_name()-
-        # based name explicitly; this fallback only exists for callers
-        # that don't care (e.g. quick interactive use, direct construction).
-        self.filenamebase = filenamebase if filenamebase is not None else ('coplot_%s_vs_%s' % (label_a, label_b))
+        self.title = title if title is not None else ('coplot: %s' % ' vs '.join(labels))
+        # deliberately NOT derived from labels here: those may legitimately
+        # collapse to bare letters when their basenames collide (see
+        # resolve_labels()), which would make every such comparison
+        # overwrite the same "coplot_A_vs_B....*" export files - a real
+        # problem for batch/CI use running many comparisons out of one
+        # working directory. Callers should pass the dirsafe_name()-based
+        # name explicitly; this fallback only exists for callers that
+        # don't care (e.g. quick interactive use, direct construction).
+        self.filenamebase = filenamebase if filenamebase is not None else ('coplot_%s' % '_vs_'.join(labels))
 
         self.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
 
@@ -265,10 +296,10 @@ class McCoplotPlotter():
 
         row_offset = 0
         if self.path_note:
-            # label_a/label_b are bare "A"/"B" here (see default_labels()),
-            # since the two source paths' basenames collided (e.g. both
-            # ended in ".../<instrument>/1/") - shown here as an on-canvas
-            # header row (rather than only in the window title, which
+            # labels are bare letters here (see resolve_labels()), since
+            # the source paths' basenames collided (e.g. all ended in
+            # ".../<instrument>/1/") - shown here as an on-canvas header
+            # row (rather than only in the window title, which
             # dumpfile_pqtg()'s scene export wouldn't capture) so the
             # disambiguation survives into saved PNG/SVG exports too.
             self.plot_layout.addLabel(self.path_note, row=0, col=0, colspan=max(rowlen, 1))
@@ -287,11 +318,10 @@ class McCoplotPlotter():
         verbose = (n == 1)
 
         self.viewbox_list = []
-        for i, (key, data_a, data_b) in enumerate(visible):
+        for i, (key, datas) in enumerate(visible):
             plt = pg.PlotItem()
-            vb = plot_coplot_1D(data_a, data_b, plt, self.label_a, self.label_b,
-                                 self.colour_a, self.colour_b, log=self.log,
-                                 fontsize=fontsize, verbose=verbose)
+            vb = plot_coplot_1D(datas, plt, self.labels, self.colours,
+                                 log=self.log, fontsize=fontsize, verbose=verbose)
             self.viewbox_list.append(vb)
             self.plot_layout.addItem(plt, row_offset + i // rowlen, i % rowlen)
 
@@ -369,8 +399,8 @@ class McCoplotPlotter():
 
 
 def main(args):
-    ''' load and match two simulation results' 1D monitors, then hand the
-        resulting pairs to the pyqtgraph co-plot frontend above. '''
+    ''' load and match N simulation results' 1D monitors, then hand the
+        resulting groups to the pyqtgraph co-plot frontend above. '''
     logging.basicConfig(level=logging.INFO)
 
     # ensure keyboardinterrupt ctr-c
@@ -378,48 +408,60 @@ def main(args):
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     try:
-        label_a = args.label_a[0] if args.label_a else None
-        label_b = args.label_b[0] if args.label_b else None
-        colour_a = args.colour_a[0] if args.colour_a else COLOUR_A
-        colour_b = args.colour_b[0] if args.colour_b else COLOUR_B
+        paths = args.datasets
+        if len(paths) < 2:
+            print("mccoplot: need at least 2 datasets to co-plot, got %d" % len(paths))
+            quit()
 
-        label_a, label_b, used_fallback = diffloader.default_labels(args.a, args.b, label_a, label_b)
+        given_labels = args.labels[0].split(',') if args.labels else [None] * len(paths)
+        if len(given_labels) != len(paths):
+            print("mccoplot: --labels has %d entries but %d datasets were given"
+                  % (len(given_labels), len(paths)))
+            quit()
+        given_labels = [l if l else None for l in given_labels]
 
-        # When the auto-derived labels collided (e.g. two runs both ending
-        # in a plain ".../<instrument>/1/" folder) and default_labels()
-        # fell back to bare "A"/"B", those letters carry no identifying
-        # information on their own - show the full source paths as an
-        # on-canvas header row (see McCoplotPlotter._render()) and in the
-        # window title, while the per-panel legend keeps just "A"/"B".
+        given_colours = args.colours[0].split(',') if args.colours else None
+
+        labels, used_fallback = diffloader.resolve_labels(paths, given_labels)
+        colours = diffloader.resolve_colours(len(paths), given_colours)
+
+        # When the auto-derived labels collided (e.g. several runs all
+        # ending in a plain ".../<instrument>/1/" folder) and
+        # resolve_labels() fell back to bare letters, those letters carry
+        # no identifying information on their own - show the full source
+        # paths as an on-canvas header row (see McCoplotPlotter._render())
+        # and in the window title, while the per-panel legend keeps just
+        # the letters.
         path_note = None
-        title = 'coplot: %s vs %s' % (label_a, label_b)
+        title = 'coplot: %s' % ' vs '.join(labels)
         if used_fallback:
-            path_note = "A: %s   B: %s" % (args.a, args.b)
+            path_note = "   ".join("%s: %s" % (lbl, p) for lbl, p in zip(labels, paths))
             title = 'coplot: %s' % path_note
 
+        monitors_list = []
         try:
-            monitors_a, dir_a = diffloader.load_monitors(args.a)
-            monitors_b, dir_b = diffloader.load_monitors(args.b)
+            for p in paths:
+                monitors, _ = diffloader.load_monitors(p)
+                monitors_list.append(monitors)
         except Exception as e:
             print('mccoplot loader: ' + e.__str__())
             quit()
 
-        pairs = diffloader.match_1d_monitors(monitors_a, monitors_b, label_a, label_b)
+        pairs = diffloader.match_monitors_multi(monitors_list, labels)
 
         if len(pairs) == 0:
-            print("mccoplot: no matching 1D monitors found between '%s' and '%s', nothing to plot."
-                  % (args.a, args.b))
+            print("mccoplot: no matching 1D monitors found across all %d datasets, nothing to plot."
+                  % len(paths))
             quit()
 
         if args.test:
-            print("mccoplot: %d matched 1D monitor pair(s):" % len(pairs))
-            for key, data_a, data_b in pairs:
-                print("  - %s (%s)" % (key, data_a.component))
+            print("mccoplot: %d matched 1D monitor group(s) across %d datasets:" % (len(pairs), len(paths)))
+            for key, datas in pairs:
+                print("  - %s (%s)" % (key, datas[0].component))
 
-        plotter = McCoplotPlotter(pairs, label_a, label_b, colour_a, colour_b,
+        plotter = McCoplotPlotter(pairs, labels, colours,
                                    invcanvas=args.invcanvas, title=title, path_note=path_note,
-                                   filenamebase="coplot_%s_vs_%s" % (
-                                       diffloader.dirsafe_name(args.a), diffloader.dirsafe_name(args.b)))
+                                   filenamebase="coplot_" + "_vs_".join(diffloader.dirsafe_name(p) for p in paths))
         print(get_help_string())
         plotter.run()
 
@@ -432,13 +474,16 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('a', help='first simulation file or directory')
-    parser.add_argument('b', help='second simulation file or directory, co-plotted alongside "a"')
-    parser.add_argument('-A', '--label-a', nargs=1, help='short label used for simulation a in the legend/titles')
-    parser.add_argument('-B', '--label-b', nargs=1, help='short label used for simulation b in the legend/titles')
-    parser.add_argument('--colour-a', nargs=1, help='override the overlay colour used for a (default %s)' % COLOUR_A)
-    parser.add_argument('--colour-b', nargs=1, help='override the overlay colour used for b (default %s)' % COLOUR_B)
-    parser.add_argument('-t', '--test', action='store_true', default=False, help='print the matched monitor pairs before plotting')
+    parser.add_argument('datasets', nargs='+',
+                         help='2 or more simulation files or directories to co-plot together '
+                              '(e.g. "mccoplot run_a run_b run_c")')
+    parser.add_argument('-L', '--labels', nargs=1,
+                         help='comma-separated short labels, one per dataset, in the same order '
+                              '(e.g. --labels "RunA,RunB,RunC"); default: derived from each path')
+    parser.add_argument('-C', '--colours', nargs=1,
+                         help='comma-separated overlay colours, one per dataset, in the same order; '
+                              'default: %s' % ', '.join(diffloader.DEFAULT_PALETTE))
+    parser.add_argument('-t', '--test', action='store_true', default=False, help='print the matched monitor groups before plotting')
     parser.add_argument('--invcanvas', action='store_true', help='invert canvas background from black to white')
     args = parser.parse_args()
 

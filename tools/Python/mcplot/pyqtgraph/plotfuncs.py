@@ -86,7 +86,13 @@ class ModLegend(pg.LegendItem):
 
     def paint(self, p, *args):
         p.setPen(pg.functions.mkPen(255,255,255,225))
-        p.setBrush(pg.functions.mkBrush(255,255,255,255))
+        # Semi-transparent (was fully opaque, alpha=255): a legend with
+        # many rows (e.g. mccoplot's N-dataset overlay legend) can grow
+        # tall enough to sit directly on top of real curve data in the
+        # plot's corner - an opaque background then genuinely hides that
+        # data rather than just labelling it. Still solid enough to keep
+        # the legend text itself readable against busy plots.
+        p.setBrush(pg.functions.mkBrush(255,255,255,200))
         p.drawRect(self.boundingRect())
 
 
