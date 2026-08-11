@@ -484,9 +484,11 @@ def main(args):
             exit(-1)
         else:
             reflabel=os.path.basename(reflabel)
-            print("--> Using reflabel=%s\n" % reflabel)
     else:
-        reflabel = args.reflabel
+        # Remove trailling Unix directory separator if present (tab-completion)
+        reflabel = args.reflabel.rstrip('/')
+
+    print("--> Using reflabel=%s\n" % reflabel)
 
     if not testdir and testroot:
         print("interactive mode")
