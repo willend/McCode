@@ -266,7 +266,6 @@ def write_index(outdir, entries, labels, path_note=None):
         letters_summary = ' vs '.join(letters)
         outfile.write(f"<h1>Co-plots {letters_summary}:</h1>\n")
         identity_lines = '<br>'.join('%s=%s' % (letter, label) for letter, label in zip(letters, labels))
-        outfile.write(f"<h2>{identity_lines}</h2>\n")
         outfile.write(f"<p>Each panel overlays {len(labels)} datasets' monitor data on the same axes.</p>\n")
         if path_note:
             note_html = path_note.replace('\n', '<br>')
