@@ -385,7 +385,17 @@ def main(args):
         outdir = args.output[0]
     else:
         outdir = "coplot_" + "_vs_".join(dirsafe_name(p) for p in paths)
-    os.makedirs(outdir, exist_ok=True)
+    try:
+        os.makedirs(outdir, exist_ok=True)
+    except:
+        # Fallback for longer outdir names than allowed by OS:
+        try:
+            print("\nWARNING mccoplot: failed to create directory:\n %s\n - reattempt with 'coplot_mutiple' \n\n" % outdir)
+            outdir = "coplot_multiple"
+            os.makedirs(outdir, exist_ok=True)
+        except Exception as e:
+            print('mccoplot loader: ' + e.__str__())
+            sys.exit(-1)
 
     # copy js lib files locally if no lib path was specified
     if libpath == "":
