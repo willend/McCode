@@ -153,19 +153,6 @@ def plot_coplot_1D(datas, plt, labels, colours, log=False, legend=True, fontsize
     plt.setTitle(header)
     plt.getAxis('bottom').setLabel(d0.xlabel)
     plt.getAxis('left').setLabel(d0.ylabel)
-    # Fixed, not auto-sized: pg.GraphicsLayout gives every cell in a grid
-    # column the *same* width, driven by whichever cell's axis currently
-    # needs the most space - so if one panel's left-axis tick labels get
-    # wider (e.g. needing an extra digit once a 3rd dataset shifts that
-    # panel's merged Y-range enough to cross a tick-precision threshold -
-    # something that can depend on exact float values, so it's sensitive
-    # to platform/font/DPI in ways that are hard to predict or reproduce
-    # consistently), every *other* panel sharing that column gets dragged
-    # along with it, even though nothing about their own data changed.
-    # Locking every co-plot panel's axis to the same fixed width removes
-    # the coupling entirely, regardless of what triggers a width change on
-    # any one panel.
-    plt.getAxis('left').setWidth(95)
 
     # TODO (same as plotfuncs.plot_Data1D): no error bars in log mode
     if not log:
@@ -430,13 +417,24 @@ def main(args):
         # resolve_labels() fell back to bare letters, those letters carry
         # no identifying information on their own - show the full source
         # paths as an on-canvas header row (see McCoplotPlotter._render())
-        # and in the window title, while the per-panel legend keeps just
-        # the letters.
+        # instead, while the per-panel legend keeps just the letters.
+        #
+        # One line per dataset (joined with <br>, the HTML line break
+        # pg.LabelItem's setHtml()-based rendering actually respects - a
+        # plain "\n" gets collapsed to a single space like any other HTML
+        # whitespace, so it wouldn't actually break the line), not all of
+        # them concatenated onto a single line: pg.GraphicsLayout sizes the
+        # header's grid column(s) to fit its text without wrapping, so one
+        # long joined line's minimum width grows directly with N - with
+        # enough datasets that minimum can exceed the window's actual
+        # width, at which point every panel's column is forced to that
+        # same minimum and can no longer be resized smaller, with the
+        # rightmost content simply clipped once the window is narrower
+        # than that floor.
         path_note = None
         title = 'coplot: %s' % ' vs '.join(labels)
         if used_fallback:
-            path_note = "   ".join("%s: %s" % (lbl, p) for lbl, p in zip(labels, paths))
-            title = 'coplot: %s' % path_note
+            path_note = "<br>".join("%s: %s" % (lbl, p) for lbl, p in zip(labels, paths))
 
         monitors_list = []
         try:
