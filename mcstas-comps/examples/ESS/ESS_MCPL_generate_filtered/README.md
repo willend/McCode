@@ -42,7 +42,7 @@ Parameters in **boldface** are required; the others are optional.
 
 ## Links
 
-- [Source code](ESS_butterfly_MCPL_geomfilter.instr) for `ESS_butterfly_MCPL_geomfilter.instr`.
+- [Source code](ESS_MCPL_generate_filtered.instr) for `ESS_MCPL_generate_filtered.instr`.
 - <reference/HTML link>
 - Benchmarking website available at <a href="http://ess_butterfly.mcstas.org">http://ess_butterfly.mcstas.org</a>
 
