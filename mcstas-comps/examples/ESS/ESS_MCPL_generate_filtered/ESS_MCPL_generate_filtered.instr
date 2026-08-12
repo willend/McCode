@@ -220,7 +220,7 @@ EXTEND %{
 %}
 
 COMPONENT POSTATSource=PSD_monitor(xwidth=0.31,yheight=0.31)
-AT (0,0,0) RELATIVE Backtrace
+AT (0,0,0) RELATIVE BackTrace
 
 COMPONENT Restore = Arm()
   AT (0,0,0) RELATIVE vin
