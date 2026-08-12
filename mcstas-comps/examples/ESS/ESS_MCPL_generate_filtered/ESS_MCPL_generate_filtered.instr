@@ -168,7 +168,7 @@ AT(0,0,0) RELATIVE PREVIOUS
 
 
 COMPONENT vin = MCPL_input_once(filename=MCPLfile,verbose=1)
-  WHEN (!filter) AT(0,0,-0.137) RELATIVE PREVIOUS
+AT(0,0,-0.137) RELATIVE PREVIOUS
 EXTEND %{
   SCATTER;
   xorig=x; yorig=y; zorig=z;
@@ -199,7 +199,7 @@ EXTEND %{
 %}
 
 COMPONENT ATSource=PSD_monitor(xwidth=0.31,yheight=0.31, nowritefile=!allmons)
-  WHEN(allmons && filter) AT (0,0,0.08) RELATIVE Source
+  WHEN (allmons) AT (0,0,0.08) RELATIVE Source
 
 COMPONENT BackTrace = Shape(xwidth=0.3,yheight=0.3)
 AT (0,0,0.08) RELATIVE Source
