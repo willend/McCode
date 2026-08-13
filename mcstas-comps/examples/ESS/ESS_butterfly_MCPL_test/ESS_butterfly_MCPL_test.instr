@@ -94,7 +94,6 @@ DECLARE %{
   double DeltaX,DeltaZ;
   char MCPLfile[128];
   char FILTERfile[128];
-  int Divisions;
 %}
 
 USERVARS %{
@@ -107,6 +106,7 @@ USERVARS %{
   double Eneutron;
   double T0;
   double L0;
+  int Divisions;
 %}
 
 INITIALIZE
