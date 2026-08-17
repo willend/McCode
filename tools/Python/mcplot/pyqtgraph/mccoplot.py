@@ -95,6 +95,23 @@ def get_help_string():
     return '\n'.join(helplines)
 
 
+def _legend_letters(n):
+    """ 'A', 'B', 'C', ... - the same compact, purely positional legend
+        markers the html co-plot tool uses (see its own _legend_letters()),
+        deliberately independent of `labels` itself: resolve_labels() now
+        defaults to each dataset's full input path when the auto-derived
+        short names would otherwise collide, which is exactly the
+        information a legend swatch has no room for - keeping the legend
+        on fixed, compact letters regardless of how long the real labels
+        are is what avoids a repeat of the earlier issue where a growing
+        legend increasingly covered the plotted data itself. """
+    import string
+    letters = string.ascii_uppercase
+    if n <= len(letters):
+        return list(letters[:n])
+    return ['S%d' % i for i in range(n)]
+
+
 def _legend_fontsize(n_datasets, base_fontsize):
     """ Legend text size, shrinking as the number of co-plotted datasets
         (not the number of panels/monitors in the grid - a separate
@@ -147,7 +164,9 @@ def plot_coplot_1D(datas, plt, labels, colours, log=False, legend=True, fontsize
     try:
         header = '%s [%s]' % (d0.component, d0.filename)
         if verbose:
-            header = '%s [%s]<br>%s' % (d0.component, d0.filename, d0.title)
+            letters = _legend_letters(len(datas))
+            identity_lines = '<br>'.join('%s=%s' % (letter, label) for letter, label in zip(letters, labels))
+            header = '%s [%s]<br>%s<br>%s' % (d0.component, d0.filename, identity_lines, d0.title)
     except Exception:
         header = '%s' % d0.component
     plt.setTitle(header)
@@ -170,15 +189,16 @@ def plot_coplot_1D(datas, plt, labels, colours, log=False, legend=True, fontsize
     # with the legend automatically, using the curve's own pen as the
     # swatch colour (no need for the "invisible dummy artist" trick
     # ordinary single-dataset plots use, since here every series is real
-    # and worth a legend entry). All names are bare labels ("A"/"B"/... or
-    # whatever was given) - deliberately symmetric, rather than one entry
-    # carrying the full component/filename/title block: ModLegend lays
-    # each entry out in its own row sized to that row's content, so a long
-    # multi-line entry next to short words renders visibly misaligned (the
-    # descriptive text lives in the panel's own title instead, via
-    # plt.setTitle() above).
-    for (x, y, e), label, colour in zip(series, labels, colours):
-        plt.plot(x, y, pen=colour, name=label)
+    # and worth a legend entry). Names are compact positional letters
+    # (_legend_letters()), not `labels` itself: resolve_labels() may now
+    # return each dataset's full input path as its label (when the
+    # auto-derived short names would otherwise collide), which is exactly
+    # the kind of long text a legend row has no room for - the real
+    # identity is mapped out in the panel's own title instead (see the
+    # verbose header above), where there's space for it.
+    letters = _legend_letters(len(datas))
+    for (x, y, e), letter, colour in zip(series, letters, colours):
+        plt.plot(x, y, pen=colour, name=letter)
 
     plt.setMenuEnabled(False)
     return plt.getViewBox()
@@ -196,12 +216,12 @@ class McCoplotPlotter():
         is live there. '''
 
     def __init__(self, pairs, labels, colours, invcanvas=False, title=None,
-                 path_note=None, filenamebase=None):
+                 identity_note=None, filenamebase=None):
         self.pairs = pairs  # [(key, [data_0, ..., data_N-1]), ...]
         self.labels = labels
         self.colours = colours
         self.log = False
-        self.path_note = path_note
+        self.identity_note = identity_note
         self.current = None  # None = overview grid; else index into self.pairs
         self.viewbox_list = []
         self.title = title if title is not None else ('coplot: %s' % ' vs '.join(labels))
@@ -275,21 +295,49 @@ class McCoplotPlotter():
         self._replot()
 
     def _render(self):
-        self.plot_layout.clear()
+        # Rebuilt from scratch each time, rather than clear()-ing and
+        # reusing the same GraphicsLayout: pg.GraphicsLayout.clear() proved
+        # unreliable specifically when the grid shape changes between
+        # renders (e.g. overview-with-header-row -> single-panel-without-
+        # one) - a stale item could still occupy a cell afterwards even
+        # though clear() completed without error. Recreating the layout
+        # object is a hard guarantee of a genuinely empty grid to build
+        # into, sidestepping whatever internal bookkeeping issue causes
+        # that. self.plot_layout.scene() below still resolves to the same
+        # persistent QGraphicsScene either way, since it's the
+        # GraphicsView's own scene (set via setCentralItem), not something
+        # owned by the layout object itself - so signal/event handling in
+        # _set_handlers() is unaffected by swapping the layout out.
+        self.plot_layout = pg.GraphicsLayout(border=None)
+        self.graphics_view.setCentralItem(self.plot_layout)
+        self.plot_layout.setContentsMargins(2, 2, 2, 2)
 
         visible = self._visible_pairs()
         n = len(visible)
         rowlen = max(1, int(math.sqrt(n * 1.61803398875)))
 
         row_offset = 0
-        if self.path_note:
-            # labels are bare letters here (see resolve_labels()), since
-            # the source paths' basenames collided (e.g. all ended in
-            # ".../<instrument>/1/") - shown here as an on-canvas header
-            # row (rather than only in the window title, which
-            # dumpfile_pqtg()'s scene export wouldn't capture) so the
-            # disambiguation survives into saved PNG/SVG exports too.
-            self.plot_layout.addLabel(self.path_note, row=0, col=0, colspan=max(rowlen, 1))
+        if self.identity_note and n > 1:
+            # The legend now always uses compact positional letters
+            # (_legend_letters()), never the real labels directly - this
+            # header row is what maps each letter back to its actual
+            # dataset. One line per dataset (joined with <br>, the HTML
+            # line break pg.LabelItem's setHtml()-based rendering actually
+            # respects - a plain "\n" gets collapsed to a single space
+            # like any other HTML whitespace, so it wouldn't actually
+            # break the line), not all of them concatenated onto a single
+            # line: pg.GraphicsLayout sizes the header's grid column(s) to
+            # fit its text without wrapping, so one long joined line's
+            # minimum width would grow directly with N, while one line per
+            # dataset keeps the minimum driven by the longest *single*
+            # label instead.
+            #
+            # Only in the overview grid (n > 1), not the single-panel
+            # drill-down view: at n==1, plot_coplot_1D()'s own verbose
+            # header (see below) already spells out the same letter=label
+            # mapping inside the panel's own title, so this row would just
+            # be a redundant duplicate.
+            self.plot_layout.addLabel(self.identity_note, row=0, col=0, colspan=max(rowlen, 1))
             row_offset = 1
 
         if n <= 2:
@@ -412,29 +460,16 @@ def main(args):
         labels, used_fallback = diffloader.resolve_labels(paths, given_labels)
         colours = diffloader.resolve_colours(len(paths), given_colours)
 
-        # When the auto-derived labels collided (e.g. several runs all
-        # ending in a plain ".../<instrument>/1/" folder) and
-        # resolve_labels() fell back to bare letters, those letters carry
-        # no identifying information on their own - show the full source
-        # paths as an on-canvas header row (see McCoplotPlotter._render())
-        # instead, while the per-panel legend keeps just the letters.
-        #
-        # One line per dataset (joined with <br>, the HTML line break
-        # pg.LabelItem's setHtml()-based rendering actually respects - a
-        # plain "\n" gets collapsed to a single space like any other HTML
-        # whitespace, so it wouldn't actually break the line), not all of
-        # them concatenated onto a single line: pg.GraphicsLayout sizes the
-        # header's grid column(s) to fit its text without wrapping, so one
-        # long joined line's minimum width grows directly with N - with
-        # enough datasets that minimum can exceed the window's actual
-        # width, at which point every panel's column is forced to that
-        # same minimum and can no longer be resized smaller, with the
-        # rightmost content simply clipped once the window is narrower
-        # than that floor.
-        path_note = None
-        title = 'coplot: %s' % ' vs '.join(labels)
-        if used_fallback:
-            path_note = "<br>".join("%s: %s" % (lbl, p) for lbl, p in zip(labels, paths))
+        # Shown as an on-canvas header row (see McCoplotPlotter._render())
+        # and in the window title: the legend itself now always uses
+        # compact positional letters (_legend_letters()), never `labels`
+        # directly, so this "A=<label>" mapping is the only place that
+        # ties a legend swatch back to which dataset it actually is -
+        # needed unconditionally now, not just when resolve_labels() had
+        # to fall back to full paths.
+        letters = _legend_letters(len(paths))
+        identity_note = "<br>".join("%s=%s" % (letter, lbl) for letter, lbl in zip(letters, labels))
+        title = 'coplot: %s' % identity_note.replace('<br>', '   ')
 
         monitors_list = []
         try:
@@ -458,7 +493,7 @@ def main(args):
                 print("  - %s (%s)" % (key, datas[0].component))
 
         plotter = McCoplotPlotter(pairs, labels, colours,
-                                   invcanvas=args.invcanvas, title=title, path_note=path_note,
+                                   invcanvas=args.invcanvas, title=title, identity_note=identity_note,
                                    filenamebase="coplot_" + "_vs_".join(diffloader.dirsafe_name(p) for p in paths))
         print(get_help_string())
         plotter.run()
