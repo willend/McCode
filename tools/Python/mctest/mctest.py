@@ -852,7 +852,7 @@ def main(args):
     if not args.uid:
         uid = "_" + utils.get_datetimestr()
     else:
-        uid = "_" + args.uid
+        uid = "_" + args.uid[0]
 
     suffix=suffix + "_" + ncount + "_" + platform.system() + uid
     if runLocal:
