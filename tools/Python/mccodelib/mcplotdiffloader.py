@@ -72,15 +72,21 @@ def resolve_labels(paths, labels=None):
         "1" across many runs (e.g. differing only in an MPI parameter
         earlier in the path) - two or more labels would silently come out
         identical. When that happens - and only when *every* label was
-        auto-derived, an explicitly given label is never overridden - all
-        labels fall back to positional letters A, B, C, ... instead (not
-        just the colliding ones, to avoid a confusing half-named,
-        half-lettered result).
+        auto-derived, an explicitly given label is never overridden - every
+        label falls back to its own full input path instead (not just the
+        colliding ones, to avoid a confusing half-basename half-path
+        result), since that's always unambiguous and, unlike a bare
+        positional letter, still tells the reader which run is which
+        without needing to look anywhere else.
 
         Returns (labels, used_fallback) - used_fallback is True when the
-        letter fallback above was applied, i.e. the labels carry no
-        identifying information of their own; callers may want to show
-        the full paths somewhere else (e.g. a plot title) in that case. """
+        full-path fallback above was applied, i.e. the returned labels are
+        the raw input paths rather than short human-chosen or
+        basename-derived names; callers that want a guaranteed-compact
+        label regardless (e.g. for a legend swatch) may still want to use
+        positional letters purely for display in that case, while using
+        these labels themselves wherever the fuller identification is
+        useful (titles, filenames, etc). """
     n = len(paths)
     if labels is None:
         labels = [None] * n
@@ -95,7 +101,7 @@ def resolve_labels(paths, labels=None):
 
     used_fallback = False
     if all(auto_flags) and len(set(resolved)) < len(resolved):
-        resolved = _fallback_letters(n)
+        resolved = [p.rstrip('/\\') for p in paths]
         used_fallback = True
 
     return resolved, used_fallback
@@ -234,6 +240,29 @@ def load_monitors(path):
 # computing the difference datasets
 # ---------------------------------------------------------------------------
 
+def _pct_diff_str(Ia, Ib):
+    """ Percent difference in total intensity, A relative to B (matching
+        the "Diff = A - B" convention already used throughout this file),
+        formatted with an explicit sign, e.g. "+3.42%" or "-12.05%".
+
+        Relative to B specifically (not a symmetric A/B average) since B
+        is the natural reference point for a two-run comparison (e.g. 'is
+        my new run within X% of the old/reference one'), and that's
+        already how the diff itself (a - b) is signed. Falls back to a
+        plain absolute difference when B's total is zero, since a percent
+        change relative to zero isn't a meaningful number. """
+    try:
+        Ia = float(Ia)
+        Ib = float(Ib)
+    except Exception:
+        return 'N/A'
+    if Ib == 0:
+        if Ia == 0:
+            return '0% (both totals zero)'
+        return 'N/A (B total is zero; A-B = %s)' % _fmt(Ia - Ib)
+    return '%+.2f%%' % (100.0 * (Ia - Ib) / Ib)
+
+
 def diff_1d(key, a, b, label_a, label_b):
     if len(a.xvals) != len(b.xvals):
         print("Warning: skipping '%s' - differing number of bins (%d vs %d)"
@@ -272,7 +301,9 @@ def diff_1d(key, a, b, label_a, label_b):
         N = 0
     d.values = (I, Ierr, N)
     d.statistics = '%s: %s\n%s: %s' % (label_a, a.statistics, label_b, b.statistics)
-    d.title = ' - Diff (A - B), with:\n \nA=%s\nB=%s\n \n%s' % (label_a, label_b, a.title)
+    pct_str = _pct_diff_str(a.values[0], b.values[0])
+    d.diff_pct_str = pct_str
+    d.title = ' - Diff (A - B), with:\n \nA=%s\nB=%s\nDiff: %s\n \n%s' % (label_a, label_b, pct_str, a.title)
 
     return d
 
@@ -311,7 +342,9 @@ def diff_2d(key, a, b, label_a, label_b):
         N = 0
     d.values = (I, Ierr, N)
     d.statistics = '%s: %s\n%s: %s' % (label_a, a.statistics, label_b, b.statistics)
-    d.title = ' - Diff (A - B), with:\n \nA=%s\nB=%s\n \n%s' % (label_a, label_b, a.title)
+    pct_str = _pct_diff_str(a.values[0], b.values[0])
+    d.diff_pct_str = pct_str
+    d.title = ' - Diff (A - B), with:\n \nA=%s\nB=%s\nDiff: %s\n \n%s' % (label_a, label_b, pct_str, a.title)
 
     return d
 

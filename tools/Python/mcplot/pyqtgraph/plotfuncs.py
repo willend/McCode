@@ -158,6 +158,8 @@ def plot_Data1D(data, plt, log=False, fromzero=False, legend=True, icolormap=0, 
         # this construct reduces the requiremet for header data in Data1D, in case of an error during parsing of the string
         try:
             lname1 = '<center>%s<br>I = %s</center>' % (data.component, data.values[0])
+            if hasattr(data, 'diff_pct_str'):
+                lname1 = '<center>%s<br>I = %s<br>Diff: %s</center>' % (data.component, data.values[0], data.diff_pct_str)
             if verbose:
                 lname1 = '%s [%s]<br><br>%s<br><br>I = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
         except:
@@ -324,6 +326,8 @@ def plot_Data2D(data, plt, log=False, legend=True, icolormap=0, verbose=False, f
 
         try:
             lname1 = '<center>%s<br>I = %s</center>' % (data.component, data.values[0])
+            if hasattr(data, 'diff_pct_str'):
+                lname1 = '<center>%s<br>I = %s<br>Diff: %s</center>' % (data.component, data.values[0], data.diff_pct_str)
             if verbose:
                 lname1 = '%s [%s]<br><br>%s<br><br>I = %s Err = %s N = %s; %s' % (data.component, data.filename, data.title, data.values[0], data.values[1], data.values[2], data.statistics)
         except:

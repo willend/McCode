@@ -47,6 +47,23 @@ from mccodelib import mcplotdiffloader as diffloader
 from mccodelib import mccode_config
 
 
+def _legend_letters(n):
+    """ 'A', 'B', 'C', ... - the same compact, purely positional legend
+        markers the html/pyqtgraph co-plot tools use, deliberately
+        independent of `labels` itself: resolve_labels() now defaults to
+        each dataset's full input path when the auto-derived short names
+        would otherwise collide, which is exactly the information a
+        legend entry has no room for - keeping the legend on fixed,
+        compact letters regardless of how long the real labels are is
+        what avoids a repeat of the earlier issue where legend content
+        grew unpredictably. """
+    import string
+    letters = string.ascii_uppercase
+    if n <= len(letters):
+        return list(letters[:n])
+    return ['S%d' % i for i in range(n)]
+
+
 def _plot_coplot_panel(datas, labels, colours, i, n, log):
     ''' plot one overlaid N-dataset group into subplot i of n '''
     dims = plotfuncs._calc_panel_size(n)
@@ -80,24 +97,23 @@ def _plot_coplot_panel(datas, labels, colours, i, n, log):
     if log:
         ylabel = "log(" + d0.ylabel + ")"
 
-    for (x, y, yerr), label, colour in zip(series, labels, colours):
-        plotfuncs.pylab.errorbar(x, y, yerr, color=colour, label=label)
+    for (x, y, yerr), letter, colour in zip(series, _legend_letters(len(datas)), colours):
+        plotfuncs.pylab.errorbar(x, y, yerr, color=colour, label=letter)
 
     plotfuncs.pylab.xlabel(d0.xlabel, fontsize=fontsize, fontweight='bold')
     plotfuncs.pylab.ylabel(ylabel, fontsize=fontsize, fontweight='bold')
 
     # short title in an overview grid, fuller detail (matching d0.title and
-    # every dataset's I/statistics) once drilled down to a single panel -
-    # the same "verbose only at n==1" convention plotfuncs.plot_single_data
-    # uses for ordinary (non-coplot) monitors. For n==2, this produces
-    # exactly the same two-line stats block the original two-dataset-only
-    # version did.
+    # every dataset's identity/I/statistics) once drilled down to a single
+    # panel - the same "verbose only at n==1" convention
+    # plotfuncs.plot_single_data uses for ordinary (non-coplot) monitors.
     if verbose:
         try:
+            letters = _legend_letters(len(datas))
             lines = ['%s [%s]' % (d0.component, d0.filename), d0.title]
-            for data, label in zip(datas, labels):
-                lines.append('%s: I=%s Err=%s N=%s; %s' % (
-                    label, data.values[0], data.values[1], data.values[2], data.statistics))
+            for data, letter, label in zip(datas, letters, labels):
+                lines.append('%s=%s: I=%s Err=%s N=%s; %s' % (
+                    letter, label, data.values[0], data.values[1], data.values[2], data.statistics))
             title = '\n'.join(lines)
         except Exception:
             title = '%s [%s]' % (d0.component, d0.filename)
@@ -127,12 +143,12 @@ class McCoplotPlotter():
         primaries/secondaries to sweep through), click_cbs is simply empty
         once drilled down - only the back-navigation remains active. '''
 
-    def __init__(self, pairs, labels, colours, log, path_note=None):
+    def __init__(self, pairs, labels, colours, log, identity_note=None):
         self.pairs = pairs  # [(key, [data_0, ..., data_N-1]), ...]
         self.labels = labels
         self.colours = colours
         self.log = log
-        self.path_note = path_note
+        self.identity_note = identity_note
         self.current = None  # None = overview grid; else index into self.pairs
         self.event_dc_cid = None
 
@@ -174,19 +190,48 @@ class McCoplotPlotter():
             for i, (key, datas) in enumerate(visible)
         ]
 
-        fig.subplots_adjust(left=0.06, right=0.98, top=0.97, bottom=0.06,
-                             wspace=0.3, hspace=0.35)
+        if n == 1:
+            # Single-panel drill-down: the verbose title now includes one
+            # letter=label identity line per dataset (in addition to the
+            # existing component/filename/monitor-title/stats lines), so
+            # its height grows with how many datasets are co-plotted - a
+            # fixed top margin tuned for the old, shorter title clipped the
+            # top lines off the figure entirely once there were more than
+            # a couple of datasets. Scale the margin down (more headroom)
+            # as N grows; this is a rough heuristic; matches the
+            # established style of _title_wrap_width()'s own "good enough"
+            # character-width estimate rather than exact text measurement.
+            n_datasets = len(visible[0][1])
+            top = max(0.45, 0.95 - 0.045 * n_datasets)
+            fig.subplots_adjust(left=0.06, right=0.98, top=top, bottom=0.06,
+                                 wspace=0.3, hspace=0.35)
+        else:
+            fig.subplots_adjust(left=0.06, right=0.98, top=0.97, bottom=0.06,
+                                 wspace=0.3, hspace=0.35)
 
-        if self.path_note:
-            # labels are bare letters here (see resolve_labels()), since
-            # the source paths' basenames collided (e.g. all ending in
-            # ".../<instrument>/1/") - shown once as a figure-level title
-            # (matplotlib's actual "figure title" concept, distinct from
-            # each panel's own title) rather than repeated inside every
-            # panel, which would get cluttered across a multi-panel
-            # overview.
-            fig.suptitle(self.path_note, fontsize=9, y=0.998, va='top')
-            fig.subplots_adjust(top=0.90 if n == 1 else 0.92)
+        if self.identity_note and n > 1:
+            # The legend now always uses compact positional letters
+            # (_legend_letters()), never the real labels directly (which
+            # may now be a full input path - see resolve_labels()) - shown
+            # once as a figure-level title (matplotlib's actual "figure
+            # title" concept, distinct from each panel's own title) rather
+            # than repeated inside every panel's legend, which would get
+            # cluttered across a multi-panel overview.
+            #
+            # Only in the overview grid (n > 1), not the single-panel
+            # drill-down view: at n==1, _plot_coplot_panel()'s own verbose
+            # title already spells out the full letter=label mapping (plus
+            # per-dataset stats) inside the panel itself, so a suptitle
+            # here would be a redundant second copy of the same text - and,
+            # with both competing for the same cramped space above a
+            # single (2x-scaled) panel, they visibly overlapped.
+            suptitle_fontsize = 9
+            usable_w_in = fig_w * 0.95
+            avg_char_width_in = (suptitle_fontsize * 0.6) / 72.0
+            wrap_width = max(20, int(usable_w_in / avg_char_width_in))
+            wrapped_note = plotfuncs.textwrap.fill(self.identity_note, width=wrap_width)
+            fig.suptitle(wrapped_note, fontsize=suptitle_fontsize, y=0.998, va='top')
+            fig.subplots_adjust(top=0.92 if '\n' not in wrapped_note else 0.88)
 
         # Left-click on a panel drills into it (only meaningful in overview
         # mode - once already on a single panel there's nowhere further to
@@ -273,15 +318,14 @@ def main(args):
         labels, used_fallback = diffloader.resolve_labels(paths, given_labels)
         colours = diffloader.resolve_colours(len(paths), given_colours)
 
-        # When the auto-derived labels collided (e.g. several runs all
-        # ending in a plain ".../<instrument>/1/" folder) and
-        # resolve_labels() fell back to bare letters, those letters carry
-        # no identifying information on their own - show the full source
-        # paths as a figure-level suptitle instead, while the per-panel
-        # legend keeps just the letters.
-        path_note = None
-        if used_fallback:
-            path_note = "   ".join("%s: %s" % (lbl, p) for lbl, p in zip(labels, paths))
+        # Shown as a figure-level suptitle: the legend itself now always
+        # uses compact positional letters (_legend_letters()), never
+        # `labels` directly, so this "A=<label>" mapping is the only place
+        # (in the overview grid at least) that ties a legend entry back to
+        # which dataset it actually is - needed unconditionally now, not
+        # just when resolve_labels() had to fall back to full paths.
+        letters = _legend_letters(len(paths))
+        identity_note = "   ".join("%s=%s" % (letter, lbl) for letter, lbl in zip(letters, labels))
 
         monitors_list = []
         try:
@@ -315,7 +359,7 @@ def main(args):
         # use running many comparisons out of one working directory.
         plotfuncs.filenamebase = "coplot_" + "_vs_".join(diffloader.dirsafe_name(p) for p in paths)
 
-        plotter = McCoplotPlotter(pairs, labels, colours, log=args.log, path_note=path_note)
+        plotter = McCoplotPlotter(pairs, labels, colours, log=args.log, identity_note=identity_note)
 
         if (sys.platform == "linux" or sys.platform == "linux2") and args.html:
             # save to html and exit

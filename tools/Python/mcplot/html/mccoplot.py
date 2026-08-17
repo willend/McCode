@@ -224,7 +224,7 @@ def _relhref(target, outdir):
 # overview index page
 # ---------------------------------------------------------------------------
 
-def write_index(outdir, entries, labels, path_note=None):
+def write_index(outdir, entries, labels):
     """ Writes an overview index.html with an iframe grid, in the same
         visual style as mcplotdiff.py's write_index().
 
@@ -232,9 +232,11 @@ def write_index(outdir, entries, labels, path_note=None):
           'coplot'     - path to the co-plot (linear) html page
           'coplot_log' - path to the co-plot (log) html page, or None
 
-        path_note, when given (see resolve_labels()'s used_fallback), is
-        shown under the header - labels are bare letters in that case,
-        carrying no identifying information of their own.
+        labels already carries full identification even when
+        resolve_labels() had to fall back (its basename-collision
+        fallback is each dataset's own full input path, not an
+        uninformative placeholder), so there's nothing further to show
+        beyond the identity_lines block below.
     """
     filename = os.path.join(outdir, "index.html")
     letters = _legend_letters(len(labels))
@@ -260,16 +262,13 @@ def write_index(outdir, entries, labels, path_note=None):
         outfile.write("  .iframe-wrap iframe { transform-origin: top left; display: block; }\n")
         outfile.write("  #sizecontrol { margin-bottom: 16px; font-size: 14px; }\n")
         outfile.write("  #sizecontrol input[type=range] { vertical-align: middle; margin: 0 8px; }\n")
-        outfile.write("  .pathnote { color: #666666; font-size: 13px; }\n")
         outfile.write("</style>\n")
         outfile.write("</head><body>\n")
         letters_summary = ' vs '.join(letters)
         outfile.write(f"<h1>Co-plots {letters_summary}:</h1>\n")
         identity_lines = '<br>'.join('%s=%s' % (letter, label) for letter, label in zip(letters, labels))
+        outfile.write(f"<h2>{identity_lines}</h2>\n")
         outfile.write(f"<p>Each panel overlays {len(labels)} datasets' monitor data on the same axes.</p>\n")
-        if path_note:
-            note_html = path_note.replace('\n', '<br>')
-            outfile.write(f"<p class='pathnote'>{note_html}</p>\n")
         outfile.write("<div id='sizecontrol'>\n")
         outfile.write("  <label for='sizeslider'>Figure size:</label>\n")
         outfile.write(f"  <input type='range' id='sizeslider' min='20' max='200' value='{init_pct}' step='5'>\n")
@@ -360,18 +359,14 @@ def main(args):
     labels, used_fallback = resolve_labels(paths, given_labels)
     colours = resolve_colours(len(paths), given_colours)
 
-    # When the auto-derived labels collided (e.g. several runs all ending
-    # in a plain ".../<instrument>/1/" folder) and resolve_labels() fell
-    # back to bare letters, those letters carry no identifying information
-    # on their own. path_note (shown on the overview index page) and
-    # identities (shown in each per-monitor figure's "A=.../B=.../..."
-    # block) both then use the full source paths instead - while the
-    # compact on-plot legend keeps just the letters either way.
-    path_note = None
+    # identities is what _title_for() shows in each per-monitor figure's
+    # "A=.../B=.../..." block: simply the resolved labels themselves -
+    # resolve_labels() already falls back to each dataset's full input
+    # path when the auto-derived labels would otherwise collide (e.g.
+    # several runs all ending in a plain ".../<instrument>/1/" folder), so
+    # there's nothing further to add here. The compact on-plot legend
+    # keeps just the letters regardless (see _legend_letters()).
     identities = labels
-    if used_fallback:
-        path_note = '\n'.join('%s: %s' % (lbl, p) for lbl, p in zip(labels, paths))
-        identities = paths
 
     # determine output directory - deliberately built from the actual
     # input paths (dirsafe_name), not the display labels: labels may
@@ -462,7 +457,7 @@ def main(args):
             browse(target)
         return
 
-    index_file = write_index(outdir, entries, labels, path_note=path_note)
+    index_file = write_index(outdir, entries, labels)
     print("Generated: %s" % index_file)
 
     if not args.nobrowse:
