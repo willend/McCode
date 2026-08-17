@@ -164,9 +164,7 @@ def plot_coplot_1D(datas, plt, labels, colours, log=False, legend=True, fontsize
     try:
         header = '%s [%s]' % (d0.component, d0.filename)
         if verbose:
-            letters = _legend_letters(len(datas))
-            identity_lines = '<br>'.join('%s=%s' % (letter, label) for letter, label in zip(letters, labels))
-            header = '%s [%s]<br>%s<br>%s' % (d0.component, d0.filename, identity_lines, d0.title)
+            header = '%s [%s]<br>%s' % (d0.component, d0.filename, d0.title)
     except Exception:
         header = '%s' % d0.component
     plt.setTitle(header)
@@ -317,26 +315,31 @@ class McCoplotPlotter():
         rowlen = max(1, int(math.sqrt(n * 1.61803398875)))
 
         row_offset = 0
-        if self.identity_note and n > 1:
+        if self.identity_note:
             # The legend now always uses compact positional letters
             # (_legend_letters()), never the real labels directly - this
             # header row is what maps each letter back to its actual
-            # dataset. One line per dataset (joined with <br>, the HTML
-            # line break pg.LabelItem's setHtml()-based rendering actually
-            # respects - a plain "\n" gets collapsed to a single space
-            # like any other HTML whitespace, so it wouldn't actually
-            # break the line), not all of them concatenated onto a single
-            # line: pg.GraphicsLayout sizes the header's grid column(s) to
-            # fit its text without wrapping, so one long joined line's
-            # minimum width would grow directly with N, while one line per
-            # dataset keeps the minimum driven by the longest *single*
-            # label instead.
+            # dataset, in every view (overview grid and single-panel
+            # drill-down alike). One line per dataset (joined with <br>,
+            # the HTML line break pg.LabelItem's setHtml()-based rendering
+            # actually respects - a plain "\n" gets collapsed to a single
+            # space like any other HTML whitespace, so it wouldn't
+            # actually break the line), not all of them concatenated onto
+            # a single line: pg.GraphicsLayout sizes the header's grid
+            # column(s) to fit its text without wrapping, so one long
+            # joined line's minimum width would grow directly with N,
+            # while one line per dataset keeps the minimum driven by the
+            # longest *single* label instead.
             #
-            # Only in the overview grid (n > 1), not the single-panel
-            # drill-down view: at n==1, plot_coplot_1D()'s own verbose
-            # header (see below) already spells out the same letter=label
-            # mapping inside the panel's own title, so this row would just
-            # be a redundant duplicate.
+            # Deliberately NOT embedded in plot_coplot_1D()'s own verbose
+            # single-panel title instead: PlotItem's native title row
+            # doesn't reliably auto-grow to fit multi-line HTML content
+            # (confirmed: it silently clips extra lines even when the
+            # window is otherwise plenty tall, and explicitly resizing the
+            # row via its own layout API had no effect either) the way a
+            # standalone GraphicsLayout.addLabel() item like this one
+            # does, so it's the only place that reliably shows the full
+            # mapping regardless of N.
             self.plot_layout.addLabel(self.identity_note, row=0, col=0, colspan=max(rowlen, 1))
             row_offset = 1
 
