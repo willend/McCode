@@ -82,6 +82,7 @@ DECLARE %{
   double DeltaX,DeltaZ;
   char MCPLfile[128];
   char FILTERfile[128];
+  char ROTfile[128];
   int Divisions;
 %}
 
@@ -144,9 +145,11 @@ INITIALIZE
   ANGLE=iBeamlines[beamline-1]-90;
   sprintf(MCPLfile,"%s%i.mcpl.gz",sector,beamline);
   sprintf(FILTERfile,"%s%i_filtered.mcpl.gz",sector,beamline);
+  sprintf(ROTfile,"%s%i_filtered_rotated.mcpl.gz",sector,beamline);
   printf("MCPLfile is %s\n",MCPLfile);
   printf("Filtered MCPLfile is %s\n",FILTERfile);
-	
+  printf("Filtered rotated MCPLfile is %s\n",ROTfile);
+  
   weightmultiplier=1.56e16/1e5; /* (ESS protons/s) / MCNP nps */
   #pragma acc update device(EminTh,EmaxTh,EminC,EmaxC,weightmultiplier)
 %}
@@ -230,9 +233,16 @@ EXTEND %{
   t=torig;
 %}
 
-COMPONENT vout = MCPL_output(filename=FILTERfile)
+/* TCS cooordinate neutrons filtered in:
+ - Wavelength (only those matching interval [Lmin Lmax]
+ - 'end coordinates' on target-insert wall (within 12x12 cm from instr axis)
+ - 'starting coordinates' ~ a the sourrce (within 24x3 cm) */
+COMPONENT vout1 = MCPL_output(filename=FILTERfile)
   AT (0,0,0) RELATIVE vin
 
+/* Same but in instrument coordinates */
+COMPONENT vout2 = MCPL_output(filename=ROTfile)
+  AT (0,0,0) RELATIVE Source
 
 FINALLY
 %{
