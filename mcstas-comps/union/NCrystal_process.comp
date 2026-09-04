@@ -27,6 +27,8 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
+* McStas, neutron ray-tracing package
+* Copyright(C) 2007 Risoe National Laboratory.
 *
 * Original header text for NCrystal_sample.comp:
 * McStas sample component for the NCrystal scattering library. Find more
@@ -78,6 +80,11 @@
 *
 * %L
 *
+* CALCULATED PARAMETERS:
+* NCrystal_storage          // Storage used to communicate with the probability and scattering function
+*
+* %L
+*
 * %E
  *******************************************************************************/
 
@@ -86,7 +93,6 @@
 * NCrystal library.                                                            *
 * Changes by Mads Bertelsen, 13/8 2020.                                        *
 *******************************************************************************/
-
 /******************************************************************************/
 /* The original code contained the following license/copyright statement:     */
 /******************************************************************************/
