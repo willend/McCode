@@ -324,8 +324,6 @@ jobs:
            # $CONDA_PREFIX/bin on PATH every step - nothing extra needed there).
            if [ "${{ matrix.method }}" == "source" ]; then
              echo "$PWD/install_mcstas/bin" >> "$GITHUB_PATH"
-             MCSTAS=$( $PWD/install_mcstas/bin/mcrun --showcfg=resourcedir)
-             echo "MCSTAS=${MCSTAS}" >> "$GITHUB_ENV"
            fi
 
     # Start of tests (shared across all 5 matrix legs)

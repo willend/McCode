@@ -330,9 +330,7 @@ jobs:
            # environment activation, via `shell: bash -el`, already puts
            # $CONDA_PREFIX/bin on PATH every step - nothing extra needed there).
            if [ "${{ matrix.method }}" == "source" ]; then
-             echo "$PWD/install_mcstas/bin" >> "$GITHUB_PATH"
-             MCXTRACE=$( $PWD/install_mcxtrace/bin/mxrun --showcfg=resourcedir)
-             echo "MCXTRACE=${MCXTRACE}" >> "$GITHUB_ENV"
+             echo "$PWD/install_mcxtrace/bin" >> "$GITHUB_PATH"
            fi
 
     # Start of tests (shared across all 5 matrix legs)
