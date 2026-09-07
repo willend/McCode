@@ -324,7 +324,8 @@ jobs:
            # $CONDA_PREFIX/bin on PATH every step - nothing extra needed there).
            if [ "${{ matrix.method }}" == "source" ]; then
              echo "$PWD/install_mcstas/bin" >> "$GITHUB_PATH"
-             echo "MCSTAS=$($PWD/install_mcstas/bin/mcrun --showcfg=resourcedir)" >> "$GITHUB_ENV"
+             MCSTAS=$( $PWD/install_mcstas/bin/mcrun --showcfg=resourcedir)
+             echo "MCSTAS=${MCSTAS}" >> "$GITHUB_ENV"
            fi
 
     - name: Setup clang/mpi on Linux (source)
@@ -334,10 +335,8 @@ jobs:
         # Cache checkout src/ with mccode-antlr
         if [ "${{ matrix.CC }}" == "clang" ];
         then
-          # Set up config file to use mcstas-antlr
-          MCCODE_CONFIG=`mcrun --write-user-config | cut -f4 -d\ `
-          sed -i.bak s+\"MPICC\"\:\ \"mpicc\",+\MPICC\"\:\ \"clang\",+g ${MCCODE_CONFIG}
-          grep -H MPICC ${MCCODE_CONFIG}
+          # Set up to use clang as mpi-compiler
+          echo "MCSTAS_MPICC_OVERRIDE=clang" >> "$GITHUB_ENV"
         fi
 
     # Start of tests (shared across all 5 matrix legs)
