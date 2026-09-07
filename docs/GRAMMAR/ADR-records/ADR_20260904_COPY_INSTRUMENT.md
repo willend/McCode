@@ -29,7 +29,8 @@ For sake of simplicity and to ensure instrument-readability @willend, @g5t and @
 
 By symmetry, `METADATA`, `GROUP`, `WHEN`, `JUMP`, and `SPLIT` are from now on also not copied - only `instance` and its `instance->actual` are copied.
 
-[`mccode-antlr`](https://github.com/mccode-dev/mccode-antlr/) already implements this behaviour for `EXTEND` since [this commit](https://github.com/mccode-dev/mccode-antlr/commit/7786fd31efde941a16e028f6a616f5b8284c0b50)
+> [!NOTE]  
+> This behavior is implement in [`mccode-antlr`](https://github.com/mccode-dev/mccode-antlr/)`>=0.28.0`
 
 ## Consequences
 
