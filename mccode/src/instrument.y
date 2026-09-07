@@ -1288,8 +1288,8 @@ instref: "COPY" '(' compref ')' actuallist /* make a copy of a previous instance
         comp->actuals= symtab_create();
         symtab_cat(comp->actuals, $5);
         symtab_cat(comp->actuals, comp_src->actuals);
-	/* All other proprties are initialized from fresh */
-	comp->extend = codeblock_new();
+        /* All other properties are initialized from fresh */
+        comp->extend = codeblock_new();
         comp->group  = NULL;
         comp->jump   = list_create();
         comp->when   = NULL;
@@ -1306,8 +1306,8 @@ instref: "COPY" '(' compref ')' actuallist /* make a copy of a previous instance
         comp->setpar = comp_src->setpar;
         comp->def    = comp_src->def;
         comp->actuals= comp_src->actuals;
-	/* All other proprties are initialized from fresh */
-	comp->extend = codeblock_new();
+        /* All other properties are initialized from fresh */
+        comp->extend = codeblock_new();
         comp->group  = NULL;
         comp->jump   = list_create();
         comp->when   = NULL;
