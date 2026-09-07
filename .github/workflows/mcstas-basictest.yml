@@ -285,6 +285,19 @@ jobs:
           mccode-antlr cache populate --from-path src/ --flavor mcstas --no-strict --check-hashes
         fi
 
+    - name: Setup clang/mpi on Linux (source)
+      id: setup-linux-source-clang
+      if: matrix.CC == 'clang' && matrix.method== 'source'
+      run: |
+        # Cache checkout src/ with mccode-antlr
+        if [ "${{ matrix.CC }}" == "clang" ];
+        then
+          # Set up config file to use mcstas-antlr
+          MCCODE_CONFIG=`mcrun --write-user-config | cut -f4 -d\ `
+          sed -i.bak s+\"MPICC\"\:\ \"mpicc\",+\MPICC\"\:\ \"/usr/bin/clang\",+g ${MCCODE_CONFIG}
+          grep -H MPICC ${MCCODE_CONFIG}
+        fi
+
     - name: Validate build output (conda)
       id: build-validation
       if: always() && matrix.method == 'conda'
