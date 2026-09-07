@@ -39,7 +39,7 @@ By symmetry, `METADATA`, `GROUP`, `WHEN`, `JUMP`, and `SPLIT` are from now on al
     `WHEN` statement, this `WHEN` statement would be carried to the copy instance.
   * After change: Neither `METADATA`, `GROUP`, `WHEN`, `JUMP`, or  `SPLIT` are copied. If required, manually copy these property to the copy.
   * Using AI methods, the full instrument suite for both of McStas and
-    McXtrace was surveyed for combinations of COPY with the other
+    McXtrace was surveyed for combinations of `COPY` with the other
     keywords. [See PR comments](https://github.com/mccode-dev/McCode/pull/2627) for detailed information.
   * The survey conclusion was that only `ILL_H5` and `ILL_H5_new` are
     affected by each including a `COPY`'d monitor with an active `WHEN`
