@@ -37,7 +37,7 @@ By symmetry, `METADATA`, `GROUP`, `WHEN`, `JUMP`, and `SPLIT` are from now on al
 * Relatively mild:
   * Before change: Using `COPY` from an instance including e.g. a
     `WHEN` statement, this `WHEN` statement would be carried to the copy instance.
-  * After change: Neither `METADATA`, `GROUP`, `WHEN`, `JUMP`, or  `SPLIT` are copied. If required, manually copy these property to the copy.
+  * After change: Neither `METADATA`, `GROUP`, `WHEN`, `JUMP`, or  `SPLIT` are copied. If required, manually copy these properties to the copy.
   * Using AI methods, the full instrument suite for both of McStas and
     McXtrace was surveyed for combinations of `COPY` with the other
     keywords. [See PR comments](https://github.com/mccode-dev/McCode/pull/2627) for detailed information.
