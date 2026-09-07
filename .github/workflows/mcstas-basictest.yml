@@ -394,7 +394,7 @@ jobs:
            fi
            test -n "$(command -v mcstas${EXESUFFIX})"
            mcstas${EXESUFFIX} --version
-           mctest${SUFFIX}  --verbose --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }} --uid=${MYWORKERID}
+           mctest${SUFFIX} --verbose --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }} --uid=${MYWORKERID}
            mctest${SUFFIX}  --verbose --mpi=${{ matrix.nmpi }} --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} --uid=${MYWORKERID}
 
     - name: Check for modified instruments
@@ -452,7 +452,7 @@ jobs:
                  NUMMATCH=`find src/mcstas-comps -name \*.instr -exec grep -H ${comp} \{\} \; | cut -f1 -d: | sort | uniq | wc -l`
                  if [ "$NUMMATCH" -gt "0" ];
                  then
-                   ${MCTEST_EXECUTABLE}  --verbose --mpi=${{ matrix.nmpi }} --testdir run_mctest --comp=${comp} --suffix=${{ matrix.cogen }}_CHANGES${compindex}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose --uid=${MYWORKERID} || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+                   ${MCTEST_EXECUTABLE} --verbose --mpi=${{ matrix.nmpi }} --testdir run_mctest --comp=${comp} --suffix=${{ matrix.cogen }}_CHANGES${compindex}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose --uid=${MYWORKERID} || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
                    compindex=$(( compindex+1 ))
                  else
                    echo No matching tests found
@@ -482,7 +482,7 @@ jobs:
                export SCOPE=" "
              fi
              mkdir -p run_mctest && cd run_mctest
-             ${MCTEST_EXECUTABLE}   --verbose --mpi=${{ matrix.nmpi }} --testdir $PWD $SCOPE --suffix=instrCHANGES_${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose --uid=${MYWORKERID} || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+             ${MCTEST_EXECUTABLE} --verbose --mpi=${{ matrix.nmpi }} --testdir $PWD $SCOPE --suffix=instrCHANGES_${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --verbose --uid=${MYWORKERID} || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
              ${MCVIEWTEST_EXECUTABLE} --nobrowse $PWD
            fi
 
