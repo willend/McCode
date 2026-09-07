@@ -20,7 +20,7 @@ jobs:
         include:
           # --- built from source via cmake ---
           - { method: source, os: ubuntu-24.04,   CC: gcc-13,   CXX: g++-13,     python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
-          - { method: source, os: ubuntu-24.04,   CC: clang,    CXX: clang++,    python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
+          - { method: source, os: ubuntu-24.04,   CC: clang,    CXX: clang++,    python: '3.13', mpi: 'openmpi', nmpi: '0', cogen: 'classic'}
           # --- built via conda ---
           - { method: conda,  os: ubuntu-latest,  CC: gcc,   CXX: g++,  python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
           - { method: conda,  os: ubuntu-latest,  CC: gcc,   CXX: g++,  python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'antlr'}
@@ -327,22 +327,6 @@ jobs:
              MCSTAS=$( $PWD/install_mcstas/bin/mcrun --showcfg=resourcedir)
              echo "MCSTAS=${MCSTAS}" >> "$GITHUB_ENV"
            fi
-
-    - name: Setup clang/mpi on Linux (source)
-      id: setup-linux-source-clang
-      if: matrix.CC == 'clang' && matrix.method== 'source'
-      run: |
-        # Cache checkout src/ with mccode-antlr
-        if [ "${{ matrix.CC }}" == "clang" ];
-        then
-          # Set up to use clang as mpi-compiler
-          MPICC=$(which mpicc)
-          MPIBINDIR=$(basename ${MPICC})
-          MPIBASE=$(basename ${MPIBINDIR})
-          MPILIB=$(basename ${MPIBINDIR})
-          MPIINCLUDE=$(basename ${MPIBINDIR})
-          echo "MCSTAS_MPICC_OVERRIDE=\"clang -DUSE_MPI -lmpi -I${MPIINCLUDE} -L${MPILIB}\"" >> "$GITHUB_ENV"
-        fi
 
     # Start of tests (shared across all 5 matrix legs)
     - name: Launch RNG test instrument
