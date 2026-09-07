@@ -816,7 +816,7 @@ def main(args):
                 utils.run_subtool_to_completion(mccode_config.configuration["MCRUN"] + " --showcfg=resourcedir", stdout_cb=metalog.logline)
                 mccoderoot=metalog.lst[0]
             except:
-                logging.info("Probe using mcrun --showcfg=resourcedir failed. Next attempt using env var...")
+                logging.info("Probe using " + mccode_config.configuration["MCRUN"] + " --showcfg=resourcedir failed. Next attempt using env var...")
         # Probe environment variable
         MCCODE = mccode_config.configuration["MCCODE"].upper()
         if os.environ[MCCODE] is not None:
