@@ -809,21 +809,21 @@ def main(args):
     if not mccoderoot:
         # Figure out "mccoderoot" location from calling local mc/mcxrunxs
         if shutil.which(mccode_config.configuration["MCRUN"]) is not None:
-            if (verbose):
-                print("Probing " + mccode_config.configuration["MCRUN"] + " --showcfg=resourcedir for 'mccoderoot'")
+            logging.info("Probing " + mccode_config.configuration["MCRUN"] + " --showcfg=resourcedir for 'mccoderoot'")
             metalog = LineLogger()
-            utils.run_subtool_to_completion(mccode_config.configuration["MCRUN"] + " --showcfg=resourcedir", stdout_cb=metalog.logline)
-            mccoderoot=metalog.lst[0]
+            try:
+                utils.run_subtool_to_completion(mccode_config.configuration["MCRUN"] + " --showcfg=resourcedir", stdout_cb=metalog.logline)
+                mccoderoot=metalog.lst[0]
+            except:
+                logging.info("Probing failed, next try "  + mccode_config.configuration["MCCODE"].upper() + "env var...")
         # Probe environment variable
         MCCODE = mccode_config.configuration["MCCODE"].upper()
         if os.environ[MCCODE] is not None:
-            if (verbose):
-                print("Probing " + MCCODE + " env var for 'mccoderoot'")
+            logging.info("Probing " + MCCODE + " env var for 'mccoderoot'")
             mccoderoot=os.environ[MCCODE]
         # Fallback attempt
         if not mccoderoot:
-            if (verbose):
-                print("Using fallback value /usr/share/mcstas for 'mccoderoot'")
+            logging.info("Using fallback value /usr/share/mcstas for 'mccoderoot'")
             mccoderoot = "/usr/share/mcstas/"
     if not os.path.exists(mccoderoot):
         logging.info("mccoderoot does not exist")
