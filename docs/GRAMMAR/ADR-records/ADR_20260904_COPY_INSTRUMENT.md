@@ -2,7 +2,7 @@
 
 ## Status
 
-*Proposed* and prototype *implemented* 
+Change *accepted* and prototype *implemented*
 
 ## Context
 
