@@ -20,7 +20,7 @@ jobs:
         include:
           # --- built from source via cmake ---
           - { method: source, os: ubuntu-24.04,   CC: gcc-13,   CXX: g++-13,     python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
-          - { method: source, os: ubuntu-24.04,   CC: clang,    CXX: clang++,    python: '3.13', mpi: 'openmpi', nmpi: '0', cogen: 'classic'}
+          - { method: source, os: ubuntu-24.04,   CC: clang,    CXX: clang++,    python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
           # --- built via conda ---
           - { method: conda,  os: ubuntu-latest,  CC: gcc,   CXX: g++,  python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
           - { method: conda,  os: ubuntu-latest,  CC: gcc,   CXX: g++,  python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'antlr'}
@@ -324,6 +324,11 @@ jobs:
            # $CONDA_PREFIX/bin on PATH every step - nothing extra needed there).
            if [ "${{ matrix.method }}" == "source" ]; then
              echo "$PWD/install_mcstas/bin" >> "$GITHUB_PATH"
+           fi
+           # If compiler is clang, set up mpicc to use clang
+           if [ "${{ matrix.CC }}" == "clang" ]; then
+             echo "OMPI_CC=clang" >> "$GITHUB_ENV"
+             echo "OMPI_CXX=clang++" >> "$GITHUB_ENV"
            fi
 
     # Start of tests (shared across all 5 matrix legs)
