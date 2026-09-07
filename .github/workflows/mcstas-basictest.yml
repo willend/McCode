@@ -324,7 +324,7 @@ jobs:
            # $CONDA_PREFIX/bin on PATH every step - nothing extra needed there).
            if [ "${{ matrix.method }}" == "source" ]; then
              echo "$PWD/install_mcstas/bin" >> "$GITHUB_PATH"
-             echo "MCSTAS=$(mcrun --showcfg=resourcedir)" >> "$GITHUB_ENV"
+             echo "MCSTAS=$($PWD/install_mcstas/bin/mcrun --showcfg=resourcedir)" >> "$GITHUB_ENV"
            fi
 
     - name: Setup clang/mpi on Linux (source)
