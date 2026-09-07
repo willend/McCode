@@ -30,10 +30,20 @@ For sake of simplicity and to ensure instrument-readability @willend, @g5t and @
 By symmetry, `METADATA`, `GROUP`, `WHEN`, `JUMP`, and `SPLIT` are from now on also not copied - only `instance` and its `instance->actual` are copied.
 
 > [!NOTE]  
-> This behavior is implement in [`mccode-antlr`](https://github.com/mccode-dev/mccode-antlr/)`>=0.28.0`
+> This behavior is implemented in [`mccode-antlr`](https://github.com/mccode-dev/mccode-antlr/)`>=0.28.0`
 
 ## Consequences
 
-* A statistic om the combined use of COPY with the affected keywords will be provided soon
+* Relatively mild:
+  * Before change: Using `COPY` from an instance including e.g. a `WHEN` statement would carry the `WHEN` to the copy nstance.
+  * After change: Neither `METADATA`, `GROUP`, `WHEN`, `JUMP`, or  `SPLIT` are copyed. If required, manually copy these property to the copy.
+  * Using AI methods, the full instrument suite for both of McStas and
+    McXtrace was surveyed for combinations of COPY with the other
+    keywords. [See PR comments](https://github.com/mccode-dev/McCode/pull/2627) for detailed information.
+  * The survey conclusion was that only `ILL_H5` and `ILL_H5_new` are
+    affected by each including a `COPY`'d monitor with an active `WHEN`
+    clause.
+  * A full statistic with all instrument combined use of COPY with the affected keywords
+    is provided in [this csv file](ADR_20260904_COPY_INSTRUMENT_data/copy_survey.csv)
 * CHANGELOG should be crystal clear on this change / potential incompatibility
 
