@@ -27,7 +27,7 @@ even in the case of an empty / non-existent EXTEND %{%} block on the copy.
 
 For sake of simplicity and to ensure instrument-readability @willend, @g5t and @mads-bertelsen have agreed to no longer include an `EXTEND` from `instance` when `COPY(instance)`. Adding an explicit `EXTEND` block (even if duplicated) is much more explicit.
 
-By symmetry, `METADATA`, `GROUP`, `WHEN`, `JUMP`, and `SPLIT` are from now on also not copied - only `instamnce` and its `instance->actual` are copied.
+By symmetry, `METADATA`, `GROUP`, `WHEN`, `JUMP`, and `SPLIT` are from now on also not copied - only `instance` and its `instance->actual` are copied.
 
 [`mccode-antlr`](https://github.com/mccode-dev/mccode-antlr/) already implements this behaviour for `EXTEND` since [this commit](https://github.com/mccode-dev/mccode-antlr/commit/7786fd31efde941a16e028f6a616f5b8284c0b50)
 
