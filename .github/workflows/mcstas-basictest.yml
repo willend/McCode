@@ -336,7 +336,12 @@ jobs:
         if [ "${{ matrix.CC }}" == "clang" ];
         then
           # Set up to use clang as mpi-compiler
-          echo "MCSTAS_MPICC_OVERRIDE=clang" >> "$GITHUB_ENV"
+          MPICC=$(which mpicc)
+          MPIBINDIR=$(basename ${MPICC})
+          MPIBASE=$(basename ${MPIBINDIR})
+          MPILIB=$(basename ${MPIBINDIR})
+          MPIINCLUDE=$(basename ${MPIBINDIR})
+          echo "MCSTAS_MPICC_OVERRIDE="clang -DUSE_MPI -lmpi -I${MPIINCLUDE} -L${MPILIB}" >> "$GITHUB_ENV"
         fi
 
     # Start of tests (shared across all 5 matrix legs)
