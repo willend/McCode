@@ -46,5 +46,5 @@ By symmetry, `METADATA`, `GROUP`, `WHEN`, `JUMP`, and `SPLIT` are from now on al
     clause.
   * A full statistic with all instrument combined use of COPY with the affected keywords
     is provided in [this csv file](ADR_20260904_COPY_INSTRUMENT_data/copy_survey.csv)
-* CHANGELOG should be crystal clear on this change / potential incompatibility
+* `CHANGELOG`s should be crystal clear on this change / potential incompatibility
 
