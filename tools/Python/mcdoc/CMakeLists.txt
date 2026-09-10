@@ -53,7 +53,22 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${NSIS_NAME}")
 
 # Debian
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${FLAVOR}, ${FLAVOR}-comps")
-set(CPACK_DEBIAN_PACKAGE_REPLACES "${FLAVOR}-tools-python-${P}doc-3.5.1")
+
+# mcdoc now installs the flat tool-doc pages (mcrun.md, mcgui.md, mctest.md,
+# mcplot.md, mcdisplay.md, ...) that used to be shipped by those tools' own
+# packages (see each one's now-removed <tool>.md.in configure/install
+# step). Any version of those packages older than this one still owns the
+# same paths under DEST_DATADIR_DOC, so dpkg refuses the overwrite unless
+# we declare it here: Replaces lets this package take the files, Breaks
+# forces dpkg/apt to upgrade or remove the older sibling package in
+# lock-step instead of leaving it installed with a file mcdoc has since
+# taken over (which is what caused "trying to overwrite .../mcgui.md").
+set(CPACK_DEBIAN_PACKAGE_REPLACES
+  "${FLAVOR}-tools-python-${P}doc-3.5.1, ${FLAVOR}-tools-python-${P}run (<< ${MCCODE_VERSION}), ${FLAVOR}-tools-python-${P}gui (<< ${MCCODE_VERSION}), ${FLAVOR}-tools-python-${P}test (<< ${MCCODE_VERSION}), ${FLAVOR}-tools-python-${P}plot-pyqtgraph (<< ${MCCODE_VERSION}), ${FLAVOR}-tools-python-${P}display-pyqtgraph (<< ${MCCODE_VERSION})"
+)
+set(CPACK_DEBIAN_PACKAGE_BREAKS
+  "${FLAVOR}-tools-python-${P}run (<< ${MCCODE_VERSION}), ${FLAVOR}-tools-python-${P}gui (<< ${MCCODE_VERSION}), ${FLAVOR}-tools-python-${P}test (<< ${MCCODE_VERSION}), ${FLAVOR}-tools-python-${P}plot-pyqtgraph (<< ${MCCODE_VERSION}), ${FLAVOR}-tools-python-${P}display-pyqtgraph (<< ${MCCODE_VERSION})"
+)
 
 # RPM
 if (RPMPROFILE)
@@ -113,12 +128,32 @@ if(NOT WINDOWS)
   # <tool>.md.in -> <tool>.md configure/install steps (now removed from
   # each tool's own CMakeLists.txt); mcdoc installs the full set once,
   # to the same DEST_DATADIR_DOC destination those used to go to.
-  set(TOOLDOCS_DIR "${PROJECT_SOURCE_DIR}/..")
+  #
+  # mkdist (see buildscripts/build_debs_*, build_windows_*, ...) packages
+  # each tool as a standalone component: it fresh-copies *only* this
+  # mcdoc/ source directory into an isolated work dir (cp -LR) and
+  # configures/cpacks from there, so anything referenced here must live
+  # inside PROJECT_SOURCE_DIR itself. That's why the flat docs and the
+  # grammar reference are pulled in via local symlinks (README.md,
+  # codegen.md, ..., Component/, Instrument/, alongside the pre-existing
+  # COPYING and cmake/ symlinks) rather than "../" paths into the wider
+  # source tree.
+  #
+  # NOTE: install(FILES ...) does NOT dereference a symlinked source -- it
+  # just re-creates the same symlink at the destination, which is broken
+  # there (the "../foo" target no longer resolves once moved). That's
+  # harmless for mkdist packaging (its cp -LR staging step dereferences
+  # everything before cmake ever runs), but breaks a plain local/CMake
+  # -driven build+install done straight against this checkout. So each
+  # path below is resolved with get_filename_component(... REALPATH) at
+  # configure time, which follows the symlink to its real file and hands
+  # install() a normal path -- installing real content either way.
   set(TOOLDOCS_PAGES README codegen mcrun mcgui mcplot mcdisplay mctest mcdoc)
 
   foreach(TOOLDOCS_PAGE ${TOOLDOCS_PAGES})
+    get_filename_component(TOOLDOCS_PAGE_REAL "${PROJECT_SOURCE_DIR}/${TOOLDOCS_PAGE}.md" REALPATH)
     install(
-      FILES "${TOOLDOCS_DIR}/${TOOLDOCS_PAGE}.md"
+      FILES "${TOOLDOCS_PAGE_REAL}"
       DESTINATION "${DEST_DATADIR_DOC}"
     )
   endforeach()
@@ -130,8 +165,9 @@ if(NOT WINDOWS)
   set(TOOLDOCS_HTML_PAGES README codegen mcrun mcgui mcplot mcdisplay mctest mcdoc_tool)
 
   foreach(TOOLDOCS_HTML_PAGE ${TOOLDOCS_HTML_PAGES})
+    get_filename_component(TOOLDOCS_HTML_PAGE_REAL "${PROJECT_SOURCE_DIR}/${TOOLDOCS_HTML_PAGE}.html" REALPATH)
     install(
-      FILES "${TOOLDOCS_DIR}/${TOOLDOCS_HTML_PAGE}.html"
+      FILES "${TOOLDOCS_HTML_PAGE_REAL}"
       DESTINATION "${DEST_DATADIR_DOC}"
     )
   endforeach()
@@ -139,17 +175,20 @@ if(NOT WINDOWS)
   # McStas/McXtrace language grammar reference (kept generic, not
   # per-flavor). Installed under its own Component/ and Instrument/
   # subdirectories so the relative cross-links between the two pages
-  # keep working once installed.
-  set(GRAMMAR_DIR "${PROJECT_SOURCE_DIR}/../../../docs/GRAMMAR")
+  # keep working once installed. Same REALPATH treatment as above.
+  get_filename_component(GRAMMAR_COMPONENT_MD_REAL   "${PROJECT_SOURCE_DIR}/Component/COMPONENT_Grammar.md"   REALPATH)
+  get_filename_component(GRAMMAR_COMPONENT_HTML_REAL  "${PROJECT_SOURCE_DIR}/Component/COMPONENT_Grammar.html" REALPATH)
+  get_filename_component(GRAMMAR_INSTRUMENT_MD_REAL   "${PROJECT_SOURCE_DIR}/Instrument/INSTRUMENT_Grammar.md"   REALPATH)
+  get_filename_component(GRAMMAR_INSTRUMENT_HTML_REAL "${PROJECT_SOURCE_DIR}/Instrument/INSTRUMENT_Grammar.html" REALPATH)
 
   install(
-    FILES "${GRAMMAR_DIR}/Component/COMPONENT_Grammar.md"
-          "${GRAMMAR_DIR}/Component/COMPONENT_Grammar.html"
+    FILES "${GRAMMAR_COMPONENT_MD_REAL}"
+          "${GRAMMAR_COMPONENT_HTML_REAL}"
     DESTINATION "${DEST_DATADIR_DOC}/Component"
   )
   install(
-    FILES "${GRAMMAR_DIR}/Instrument/INSTRUMENT_Grammar.md"
-          "${GRAMMAR_DIR}/Instrument/INSTRUMENT_Grammar.html"
+    FILES "${GRAMMAR_INSTRUMENT_MD_REAL}"
+          "${GRAMMAR_INSTRUMENT_HTML_REAL}"
     DESTINATION "${DEST_DATADIR_DOC}/Instrument"
   )
 
