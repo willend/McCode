@@ -92,9 +92,6 @@ AT (0.0, 0.0, -1.0) ABSOLUTE
 COMPONENT sample_position = Arm()
 AT (0, 0, 0) ABSOLUTE
 
-COMPONENT init = Union_init()
-AT (0, 0, 0) ABSOLUTE
-
 COMPONENT NCrystal_GS20_ncrystal_process = NCrystal_process(
  cfg = "gs20_95Li6_2p5gcm3.ncmat")
 AT (0, 0, 0) ABSOLUTE
@@ -166,9 +163,6 @@ AT (0, 0, 0) RELATIVE detector_tile_centre_position
 COMPONENT master = Union_master()
 AT (3, 0, -1) RELATIVE detector_tile_centre_position
 ROTATED (20, -5, 8) RELATIVE detector_tile_centre_position
-
-COMPONENT stop = Union_stop()
-AT (0, 0, 0) ABSOLUTE
 
 FINALLY
 %{
