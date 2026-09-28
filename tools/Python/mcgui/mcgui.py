@@ -43,7 +43,7 @@ except ImportError as e:
     print("%s WARNING: QScintilla (Qsci) is not available for the %s binding "
           "(QT_API=%s): %s\n"
           "  The built-in code editor is disabled. Install qscintilla2 for PyQt6 "
-          "and/or set QT_API=pyqt6." % (mccode_config.configuration["MCGUI"],PyQt.API_NAME, os.environ.get('QT_API'), e),
+          "and/or set QT_API=pyqt6." % (mccode_config.configuration["MCRUN"][:2] + "gui",PyQt.API_NAME, os.environ.get('QT_API'), e),
           file=sys.stderr)
 
 ''' Message emitter
