@@ -6,7 +6,7 @@ and perpendicular to the neutron beam (companion to ILL_H521_NeXT.instr)*
 ## Identification
 
 - **Site:** ILL
-- **Author:** DRAFT, generated with Claude from public ILL / NeXT-Grenoble information
+- **Author:** DRAFT, Peter Willendrup with Claude from public ILL / NeXT-Grenoble information
 - **Origin:** ILL
 - **Date:** September 2026
 
