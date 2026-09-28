@@ -37,12 +37,13 @@ scattering plane holds h and l. The instrument picks the lattice from
 ## Dispersion files
 
 The instrument writes the dispersion files that `Dispersion_relation` reads
-when it is compiled, with a `SHELL` command that runs the generator scripts:
+when it is compiled, with the `SHELL` command `python generate_dispersion_files.py`.
+That script runs the generators for the folders that do not exist yet:
 `phonon_dispersion` and `phonon_dispersion_primitive` from
 `generate_phonon_dispersion.py` (the latter with `--cell primitive --points 81`)
-and `magnon_dispersion` from `generate_magnon_dispersion.py`. A folder is only
-written if it does not exist yet, so delete it to write it again, for example
-after changing the generator. The scripts use Python 3 with numpy.
+and `magnon_dispersion` from `generate_magnon_dispersion.py`. Delete a folder
+to have it written again, for example after changing a generator. The scripts
+need Python with numpy.
 
 The instrument header has `%Example` lines for the McCode test tool, one per
 comparison, with the detector intensity for seed 1000 and 1e6 rays, as the

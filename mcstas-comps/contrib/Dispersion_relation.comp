@@ -85,7 +85,6 @@
 * cz: [AA]            z component of c
 * DW: [1]             Debye-Waller factor
 * T: [K]              Temperature
-* energy_resolution: [meV] Not used
 * focus_r: [m]        Radius of sphere containing target.
 * focus_xw: [m]       horiz. dimension of a rectangular area
 * focus_yh: [m]       vert.  dimension of a rectangular area
@@ -96,6 +95,12 @@
 * target_y: [m]       position of target to focus at. Vertical coordinate
 * target_z: [m]       position of target to focus at. Straight ahead.
 * target_index: [1]   relative index of component to focus at, e.g. next is +1 
+* e_steps_low: [1]    Number of intervals the final velocity is searched in for
+*                     roots on the energy loss side of the elastic line
+* e_steps_high: [1]   Number of intervals on the energy gain side. Each interval
+*                     holds at most one root, so two roots closer than an
+*                     interval are missed: increase these for steep or crossing
+*                     modes
 * verbose: [1]        Prints information about the component if set to 1
 *
 * OUTPUT PARAMETERS:
@@ -113,12 +118,13 @@ DEFINITION PARAMETERS ()
 SETTING PARAMETERS (radius,yheight,sigma_abs,sigma_inc,a=0,b=0,c=0,DW,T,
                     aa=90, bb=90, cc=90,
                     ax=0, ay=0, az=0, bx=0, by=0, bz=0, cx=0, cy=0, cz=0,
-                    string folder_path, energy_resolution = 10,
+                    string folder_path,
                     target_x=0, target_y=0, target_z=0,
                     int target_index=0,
                     focus_r=0,
                     focus_xw=0,focus_yh=0,
                     focus_aw=0,focus_ah=0,
+                    int e_steps_low=100, int e_steps_high=100,
                     verbose=0)
 OUTPUT PARAMETERS()
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
@@ -130,14 +136,14 @@ SHARE
     %include "interpolation-lib"
     #include <stdio.h>
     #include <stdlib.h>
-    #include <dirent.h>
+    #ifndef _MSC_EXTENSIONS
+    #include <dirent.h> /* With MSVC the McCode runtime includes its own windirent.h */
+    #endif
     #include <string.h>
     #define UNUSED (-1.11e30) /* Flag for when no roots are found in Ridders_method */
     #define MAXRIDD 100     /* Maximum iterations for Ridders_method */
     #define ROOTACC 1e-8    /* Acceptance factor for Ridders_method */
     #define T2E (1/11.605)   /* Kelvin to meV */
-    #define ROOT_SEARCH_STEPS 100 /* Root search intervals on each side of the elastic line */
-    #define MAX_SOLUTIONS (2*ROOT_SEARCH_STEPS) /* At most one root per search interval */
     /* Define functions for breaking out of the simulation if something is terribly wrong */
     void dispersion_relation_fatalerror_cpu(char *s){
         fprintf(stderr,"%s \n",s);
@@ -234,7 +240,10 @@ SHARE
                     weight *= use_upper ? t[axis] : 1 - t[axis];
                 }
                 if (weight == 0) continue;
-                value += weight*grids[field][interpolator_offset(3, dispersion_relation->bin, indices)];
+                // Row-major offset, as interpolation-lib stores the regular grid
+                long offset = (indices[0]*dispersion_relation->bin[1] + indices[1])*dispersion_relation->bin[2]
+                              + indices[2];
+                value += weight*grids[field][offset];
             }
             returns[field] = value;
         }
@@ -422,12 +431,12 @@ SHARE
 
 
     /* TODO: This name should be changed to better reflect the actions of the function */
-    /* Scan the final velocity in ROOT_SEARCH_STEPS intervals on the energy loss
-        side and ROOT_SEARCH_STEPS intervals on the energy gain side. Each interval
-        gives at most one root, so possible_final_velocities must hold
-        MAX_SOLUTIONS values. */
+    /* Scan the final velocity in steps_low intervals on the energy loss side and
+        steps_high intervals on the energy gain side. Each interval gives at most
+        one root, so possible_final_velocities must hold steps_low + steps_high
+        values. */
     void find_roots(double* possible_final_velocities, int* number_of_solutions, struct crystal* crystal,
-                    double* vel_res, double max_mode_energy,
+                    int steps_low, int steps_high, double max_mode_energy,
                     struct neutron_values* neutron,
                     struct interpolator_struct* dispersion_relation){
         double possible_final_velocity;
@@ -438,12 +447,10 @@ SHARE
         double upper_final_velocity_limit = sqrt(initial_speed_squared + max_mode_energy/VS2E);
         double range_low = mid_final_velocity_limit - lower_final_velocity_limit;
         double range_high = upper_final_velocity_limit - mid_final_velocity_limit;
-        int steps = ROOT_SEARCH_STEPS;
-
         // First in energy loss for the neutron
-        for (int i = 0; i<steps; i++){
-            possible_final_velocity = Ridders_method_for_root_finding(lower_final_velocity_limit + range_low*i/steps,
-                                            lower_final_velocity_limit + range_low*(i+1)/steps,
+        for (int i = 0; i<steps_low; i++){
+            possible_final_velocity = Ridders_method_for_root_finding(lower_final_velocity_limit + range_low*i/steps_low,
+                                            lower_final_velocity_limit + range_low*(i+1)/steps_low,
                                             ROOTACC, crystal, neutron, dispersion_relation
                                             );
             if (possible_final_velocity != UNUSED)
@@ -452,9 +459,9 @@ SHARE
             }
         }
         // Then in energy gain for the neutron
-        for (int i = 0; i<steps; i++){
-            possible_final_velocity = Ridders_method_for_root_finding(mid_final_velocity_limit + range_high*i/steps,
-                                            mid_final_velocity_limit + range_high*(i+1)/steps,
+        for (int i = 0; i<steps_high; i++){
+            possible_final_velocity = Ridders_method_for_root_finding(mid_final_velocity_limit + range_high*i/steps_high,
+                                            mid_final_velocity_limit + range_high*(i+1)/steps_high,
                                             ROOTACC, crystal, neutron, dispersion_relation
                                             );
             if (possible_final_velocity != UNUSED)
@@ -499,7 +506,7 @@ DECLARE
     struct crystal crystal;
 
     double q_cryst[3];
-    double vel_res;
+    double* possible_final_velocities; // Roots of the search, e_steps_low + e_steps_high at most
     double aiming_vector[3];
     double numerical_derivative_resolution;
     
@@ -555,10 +562,18 @@ INITIALIZE
     //=============== Importing the numerical dispersion relation ==============
     //==========================================================================
 
-    /* Converting the energy resolution into velocity resolution */
-    // TODO: Find this velocity resolution properly
-    vel_res = sqrt(energy_resolution/VS2E);
-    
+    /* Buffer for the roots of the final velocity search, one per search interval */
+    if (e_steps_low < 1 || e_steps_high < 1){
+        fprintf(stderr, "Dispersion_relation: %s: e_steps_low and e_steps_high must be at least 1.\n",
+                NAME_CURRENT_COMP);
+        exit(1);
+    }
+    possible_final_velocities = (double*) malloc((e_steps_low + e_steps_high)*sizeof(double));
+    if (possible_final_velocities == NULL){
+        fprintf(stderr, "Dispersion_relation: %s: Could not allocate the root buffer.\n", NAME_CURRENT_COMP);
+        exit(1);
+    }
+
     /* Targetting stuff */
     /* If a target is not defined, choose the following component as target */
     if (!target_index && !target_x && !target_y && !target_z) target_index= 1;
@@ -572,8 +587,8 @@ INITIALIZE
     }
 
     if (!(target_x || target_y || target_z)) {
-    printf("Dispersion_relation: %s: The target is not defined. ");
-    printf("Using direct beam (Z axis).\n", NAME_CURRENT_COMP);
+    printf("Dispersion_relation: %s: The target is not defined. Using direct beam (Z axis).\n",
+           NAME_CURRENT_COMP);
     target_z=1;
     }
 
@@ -644,21 +659,16 @@ TRACE
     double time_of_reflection;
     double distance_to_reflection, distance_to_exit;
     double solid_angle;
-    double possible_final_velocities [MAX_SOLUTIONS];
     int number_of_solutions = 0;
     int index_of_final_velocity;
     double final_velocity;
     double jacobian_factor;
-    double k_i[3] = {vx*V2K, vy*V2K, vz*V2K};
     // Check that the neutron hits the sample, and calculate geometric values related to it
     if(!cylinder_intersect(&t0, &t1, x, y, z, vx, vy, vz, radius, yheight)){
         ABSORB;
     }
     // Choose the dispersion relation this neutron will simulate
     int dispersion_mode = (int)(rand01() * n_modes);
- /*    if (verbose){
-        printf("Incoming_wavevector = [%g, %g, %g]\n", k_i[0], k_i[1], k_i[2]);
-    } */
     time_in_sample = t1-t0; 
     time_of_reflection = rand01()*time_in_sample;
     // Propagate neutron to point of reflection
@@ -673,7 +683,7 @@ TRACE
              aiming_vector, focus_ah, focus_aw, focus_xw, focus_yh, focus_r,
                     ROT_A_CURRENT_COMP);
     // Find the different possible final velocities the neutron can have
-    find_roots(possible_final_velocities, &number_of_solutions,&crystal, &vel_res, max_mode_energy,
+    find_roots(possible_final_velocities, &number_of_solutions, &crystal, e_steps_low, e_steps_high, max_mode_energy,
                &neutron, dispersion_relations[dispersion_mode]);
     if (number_of_solutions == 0) {
         ABSORB; // No final velocity satisfies energy and momentum conservation
@@ -719,12 +729,6 @@ TRACE
          *(final_velocity/neutron.initial_size)*DW*cross_section
          *bose_factor(omega, T)*jacobian_factor;
 
-    double k_f[3] = {vx*V2K, vy*V2K, vz*V2K};
-  /*   if (verbose) {
-        printf("Outgoing_wavevector = [%g, %g, %g]\n", k_f[0], k_f[1], k_f[2]);
-        printf("Scattering_vector = [%g, %g, %g]\n", k_i[0]-k_f[0], k_i[1]-k_f[1], k_i[2]-k_f[2]);
-        printf("\n\n");} */
-
     // The following is only for testing purposes.
 
     double scat_vect[3] = {V2K*(neutron.initial_vx - final_velocity*neutron.direction_vx),
@@ -748,7 +752,7 @@ TRACE
 
 FINALLY
 %{
-
+    free(possible_final_velocities);
 %}
 
 MCDISPLAY

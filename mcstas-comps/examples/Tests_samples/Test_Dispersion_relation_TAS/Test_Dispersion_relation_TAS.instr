@@ -46,7 +46,8 @@
 * Example: mcrun Test_Dispersion_relation_TAS.instr -M -N 21,21 -n 2e5 h=0.6,1.4 l=0.6,1.4 dE=5 sample_choice=0
 *
 * The dispersion files are written by the SHELL command below when the
-* instrument is compiled, if they do not exist yet.
+* instrument is compiled, if they do not exist yet, by
+* generate_dispersion_files.py (Python with numpy).
 *
 * %Example: h=1.2 l=1 dE=5 sample_choice=0 Detector: detector_I=1.46e-11
 * %Example: h=1.2 l=1 dE=5 sample_choice=1 Detector: detector_I=1.41e-11
@@ -82,7 +83,7 @@ DEFINE INSTRUMENT Test_Dispersion_relation_TAS(
 
 // Write the dispersion files the samples read, unless they already exist.
 // Delete a folder to have it written again.
-SHELL "[ -f phonon_dispersion/phonon.dat ] || python3 generate_phonon_dispersion.py; [ -f phonon_dispersion_primitive/phonon.dat ] || python3 generate_phonon_dispersion.py --cell primitive --points 81 --output phonon_dispersion_primitive/phonon.dat; [ -f magnon_dispersion/mode_0.dat ] || python3 generate_magnon_dispersion.py"
+SHELL "python generate_dispersion_files.py"
 
 DECLARE
 %{
