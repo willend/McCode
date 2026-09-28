@@ -9,9 +9,14 @@
 * Version: $Revision: 0.1 $
 * Origin: University of Copenhagen
 *
-* Functions and structure definitons for Union components.
-*
-******************************************************************************/
+ * Functions and structure definitons for Union components.
+ *
+ ******************************************************************************/
+
+// Include guard: this file is auto-injected by the code generator and must
+// expand exactly once even if referenced more than once.
+#ifndef UNION_LIB_C
+#define UNION_LIB_C
 
 // -------------    Definition of data structures   ---------------------------------------------
 // GPU
@@ -230,6 +235,7 @@ union abs_logger_data_union{
   struct a_1D_event_abs_storage_struct *p_1D_event_abs_storage;
   struct a_nD_abs_storage_struct *p_nD_abs_storage;
   struct a_time_abs_storage_struct  *p_time_abs_storage;
+  struct a_nD_scintillator_abs_storage_struct *p_nD_scintillator_abs_storage;
   // Additional logger storage structs to be addedd
 };
 
@@ -2278,6 +2284,7 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     struct pointer_to_1d_double_list intersection_list;
 
     intersection_list.num_elements = 0;
+    intersection_list.elements = NULL;
 
     r1[0] = position1.x;
     r1[1] = position1.y;
@@ -2334,8 +2341,9 @@ struct lines_to_draw draw_line_with_highest_priority(Coords position1,Coords pos
     free(temp_intersection);
     // Now we have a list of intersection distances between r1 and r2 and all volumes.
     // This list needs to be sorted before we continue!
-
-    qsort(intersection_list.elements,intersection_list.num_elements,sizeof (double), Sample_compare_doubles);
+	if (intersection_list.num_elements > 0) {
+    	qsort(intersection_list.elements,intersection_list.num_elements,sizeof (double), Sample_compare_doubles);
+	}
     
     Coords *points=malloc((intersection_list.num_elements+2)*sizeof(Coords));
     if (!points) {
@@ -9215,7 +9223,9 @@ void fill_surface_stack(char *input_string, struct pointer_to_global_surface_lis
 
 void overwrite_if_empty(char *input_string, char *overwrite) {
    if (!(input_string && strlen(input_string) && strcmp(input_string, "NULL") && strcmp(input_string, "0"))) {
-	   strcpy(input_string, overwrite);
+       strcpy(input_string, overwrite);
    }
 }
+
+#endif /* UNION_LIB_C */
 

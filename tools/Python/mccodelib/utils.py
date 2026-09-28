@@ -50,7 +50,7 @@ class ComponentParser(object):
             return
         
         # load component from file
-        text = open(self.file).read()
+        text = open(self.file, encoding='utf-8').read()
         if text == '':
             raise Exception('parse: component file is empty.')
         
@@ -70,7 +70,7 @@ class ComponentParser(object):
         ''' optional: call to parse MCDISPLAY section and save in member "mcdisplay" '''
         
         # load component from file
-        text = open(self.file).read()
+        text = open(self.file, encoding='utf-8').read()
         if text == '':
             raise Exception('parse: component file is empty.')
         
@@ -480,6 +480,28 @@ def parse_header(text):
     
     return info
 
+def format_examples(test_text):
+    '''
+    Splits the raw %Example header text (as stored in
+    InstrCompHeaderInfo.test) into an ordered list of (line, is_example)
+    tuples. Lines starting with the '%Example:' tag have the leading
+    '%Example:' tag replaced with 'Test:' (so they render as
+    'Test: ...') and are flagged True so that doc writers can highlight
+    them (e.g. in bold); all other lines are passed through unchanged and
+    flagged False. Order is preserved even when %Example: lines are
+    interspersed with other text.
+    '''
+    lines = []
+    if not test_text:
+        return lines
+    for l in test_text.splitlines():
+        m = re.match(r'%Example:\s*(.*)', l)
+        if m:
+            lines.append(('Test: ' + m.group(1), True))
+        else:
+            lines.append((l, False))
+    return lines
+
 def read_define_instr(file):
     '''
     Reads lines from file obj until DEFINE INSTRUMENT, then reads lines until ")".
@@ -691,12 +713,22 @@ def get_instr_site(instr_file):
         
     return site
 
+# Directory names used to hold auto-generated .instr snippets that are
+# %include'd by a parent instrument, e.g.
+# mcstas-comps/examples/.../generated_includes/foo.instr. These are not
+# standalone instruments in their own right, so get_instr_comp_files() prunes
+# them from traversal entirely -- keeping them out of mctest, mcgui, mcdoc,
+# and any other consumer of this function.
+EXCLUDED_INSTR_DIRNAMES = {"generated_includes","includes","snippets"}
+
 def get_instr_comp_files(mydir, recursive=True, instrfilter=None, withcomp=None, compfilter=None):
     ''' returns list of filename with path of all .instr and .comp recursively from dir "mydir"
 
     181211: added recursive, defaults to True to preserve backwards compatibility
     191114: added instrfilter and compfilter, which filters results based on filename (before the dot)
     061225: added withcomp, for filtering instruments using a certain comp
+    260828: added pruning of EXCLUDED_INSTR_DIRNAMES (e.g. generated_includes),
+            which hold generated/included .instr snippets rather than standalone instruments
     '''
     instrreg = None
     compreg = None
@@ -706,7 +738,8 @@ def get_instr_comp_files(mydir, recursive=True, instrfilter=None, withcomp=None,
     files_instr = [] 
     files_comp = []
 
-    for (dirpath, _, files) in os.walk(mydir):
+    for (dirpath, dirnames, files) in os.walk(mydir):
+        dirnames[:] = [d for d in dirnames if d not in EXCLUDED_INSTR_DIRNAMES]
         for f in files:
             # get instr files
             if splitext(f)[1] == '.instr':
@@ -755,7 +788,7 @@ def save_instrfile(instr, text):
         instr = instr + '.instr'
     
     # TODO: add try-finally and error handling
-    f = open(str(instr), 'w', newline='\n')
+    f = open(str(instr), 'w', newline='\n', encoding='utf-8')
     f.write(text)
     f.close()
     

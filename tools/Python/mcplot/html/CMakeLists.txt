@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17.0)
+cmake_minimum_required(VERSION 3.19)
 cmake_policy(VERSION 3.17.0)
 
 # This will install McStas or McXtrace mc/mxplot-pyqtgraph
@@ -78,9 +78,6 @@ set(WORK "${PROJECT_BINARY_DIR}/work")
 # Configure fallback script
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplot.in" "${WORK}/${P}plot-html" @ONLY)
 
-# Configure doc
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplot-html.md.in" "${WORK}/${P}plot-html.md" @ONLY)
-
 # Main script, including rename mc/mxplot
 install(
   PROGRAMS "${PROJECT_SOURCE_DIR}/mcplot.py"
@@ -88,8 +85,28 @@ install(
   RENAME "${P}plot.py"
   )
 
+# Configure fallback script for the a-b difference plotter
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mcplotdiff.in" "${WORK}/${P}plotdiff-html" @ONLY)
+
+# Difference-plotter script, including rename mc/mxplotdiff
+install(
+  PROGRAMS "${PROJECT_SOURCE_DIR}/mcplotdiff.py"
+  DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+  RENAME "${P}plotdiff.py"
+  )
+
+# Configure fallback script for the a-b co-plotter
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/mccoplot.in" "${WORK}/${P}coplot-html" @ONLY)
+
+# Co-plotter script, including rename mc/mxcoplot
+install(
+  PROGRAMS "${PROJECT_SOURCE_DIR}/mccoplot.py"
+  DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+  RENAME "${P}coplot.py"
+  )
+
 # Other .py infrastructure
-foreach(NAME d3.v4.min.js template_1d.html template_2d.html plotfuncs.js)
+foreach(NAME d3.v4.min.js template_1d.html template_2d.html template_1d_coplot.html plotfuncs.js)
   install(
     FILES "${PROJECT_SOURCE_DIR}/${NAME}"
     DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
@@ -100,7 +117,7 @@ endforeach()
 # cmake Modules/MCUtil
 if(NOT WINDOWS)
   add_custom_target(
-    "CREATE_${PROJECT_NAME}_SYMLINK" ALL DEPENDS "${WORK}/${P}plot-html"
+    "CREATE_${PROJECT_NAME}_SYMLINK" ALL DEPENDS "${WORK}/${P}plot-html" "${WORK}/${P}plotdiff-html" "${WORK}/${P}coplot-html"
     )
 
   install(
@@ -115,8 +132,25 @@ if(NOT WINDOWS)
     )
     
   install(
-    FILES "${WORK}/${P}plot-html.md"
-    DESTINATION "${DEST_DATADIR_DOC}"
+    PROGRAMS ${PROJECT_SOURCE_DIR}/mcplotdiff.py
+    DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+    RENAME "${P}plotdiff.py"
   )
-  
+
+  install(
+    PROGRAMS "${WORK}/${P}plotdiff-html"
+    DESTINATION ${DEST_BINDIR}
+    )
+
+  install(
+    PROGRAMS ${PROJECT_SOURCE_DIR}/mccoplot.py
+    DESTINATION "${DEST_TOOLDIR}/${TOOLS_NAME}"
+    RENAME "${P}coplot.py"
+  )
+
+  install(
+    PROGRAMS "${WORK}/${P}coplot-html"
+    DESTINATION ${DEST_BINDIR}
+    )
+
 endif()
