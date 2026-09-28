@@ -5,7 +5,7 @@
 ## Identification
 
 - **Site:** ILL
-- **Author:** DRAFT, generated with Claude from public ILL web information
+- **Author:** DRAFT, Peter Willendrup with Claude from public ILL web information
 - **Origin:** ILL
 - **Date:** September 2026
 
