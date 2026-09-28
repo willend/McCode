@@ -42,7 +42,8 @@ COMPONENT NCrystal_mono_material = Union_make_NCrystal_material(
 AT (0,0,0) ABSOLUTE
 
 COMPONENT NCrystal_sample_material = Union_make_NCrystal_material(
-    cfg = "Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x"
+    cfg = "Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x",
+    include_SLD = 1
 )
 AT (0,0,0) ABSOLUTE
 

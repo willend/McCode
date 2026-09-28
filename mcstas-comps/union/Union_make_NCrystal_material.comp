@@ -50,6 +50,7 @@
 * INPUT PARAMETERS:
 * cfg:                    [str]    NCrystal material configuration string (details <a href="https://github.com/mctools/ncrystal/wiki/Using-NCrystal">on this page</a>).
 * interact_fraction:      [1]      Fraction of scattering events assigned to this process 0-1 (default -1 lets Union assign it).
+* include_SLD:            [0/1]    Include the scattering length density calculated from cfg in the material refraction information.
 * refraction_density:    [g/cm3]  Density of the refracting material. density < 0 means the material is outside/before the shape.
 * refraction_sigma_coh:  [barn]   Coherent cross section of the refracting material. Use negative value to indicate a negative coherent scattering length.
 * refraction_weight:     [g/mol]  Molar mass of the refracting material.
@@ -80,7 +81,7 @@
 
 DEFINE COMPONENT Union_make_NCrystal_material
 
-SETTING PARAMETERS(string cfg="", interact_fraction=-1,
+SETTING PARAMETERS(string cfg="", interact_fraction=-1, include_SLD=0,
                    refraction_density=0, refraction_sigma_coh=0,
                    refraction_weight=0, refraction_SLD=-1500,
                    string init="init")
@@ -156,6 +157,8 @@ INITIALIZE
   ncrystal_info_t info = ncrystal_create_info (cfg);
   double numberdensity = ncrystal_union_get_numberdensity (info, NAME_CURRENT_COMP);
   double absorption_cross_section = ncrystal_info_getxsectabsorption (info);
+  if (include_SLD)
+    refraction_SLD = 1e-6 * ncrystal_info_getsld (info);
   if (absorption_cross_section < 0.0)
     NCMCERR2 (NAME_CURRENT_COMP, "Negative absorption cross section in the loaded NCrystal Info");
   ncrystal_unref (&info);

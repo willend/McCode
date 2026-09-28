@@ -18,7 +18,10 @@ NCrystal_process together with Union_make_material when NCrystal scattering
 must be combined with other Union processes.
 The user does not provide my_absorption for this component.
 
-This component requires Union_init, a Union geometry, and Union_master.
+This component requires a Union geometry and Union_master.
+When include_SLD is enabled, the scattering length density calculated from cfg
+is included in the material refraction information and overrides the manual
+refraction parameters.
 \end{lstlisting}
 
 \subsection*{Input parameters}
@@ -31,6 +34,7 @@ Parameters in \textbf{boldface} are required; the others are optional.
 \endhead
 cfg & str & NCrystal material configuration string (details \textless{}a href="https://github.com/mctools/ncrystal/wiki/Using-NCrystal"\textgreater{}on this page\textless{}/a\textgreater{}). & "" \\
 interact\_fraction & 1 & Fraction of scattering events assigned to this process 0-1 (default -1 lets Union assign it). & -1 \\
+include\_SLD & 0/1 & Include the scattering length density calculated from cfg in the material refraction information. & 0 \\
 refraction\_density & g/cm3 & Density of the refracting material. density \textless{} 0 means the material is outside/before the shape. & 0 \\
 refraction\_sigma\_coh & barn & Coherent cross section of the refracting material. Use negative value to indicate a negative coherent scattering length. & 0 \\
 refraction\_weight & g/mol & Molar mass of the refracting material. & 0 \\
