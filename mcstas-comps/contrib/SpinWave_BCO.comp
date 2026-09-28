@@ -182,7 +182,7 @@ SHARE
       if (FM_TAG == 0) {
         coherence_factor = 2 * S * ((S * (J0 - Jq) - S * (J10 - J1q) - 2 * D * (S - 0.5)))
                            / (omega_magnon + (2 * branch - 1) * (B * B2E + 2 * S * (j_110 - j_110_prime) * sin (qx * a1) * sin (qy * a2)));
-        if (verbose = 3) {
+        if (verbose == 3) {
           printf ("Coherence factor = %g\n", coherence_factor);
         }
       } else {
