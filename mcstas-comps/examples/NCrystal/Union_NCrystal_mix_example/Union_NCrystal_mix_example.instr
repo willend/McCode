@@ -68,7 +68,7 @@ AT (0,0,0) RELATIVE mono_arm
 COMPONENT mono_out = Arm()
   AT (0, 0, 0) RELATIVE mono_arm ROTATED (0, -90, 0) RELATIVE source
 
-COMPONENT NCrystal_sample_material = Union_make_NCrystal_material(
+COMPONENT NCrystal_sample_material = Union_NCrystal_material(
     cfg="Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x")
 AT (0,0,0) ABSOLUTE
 

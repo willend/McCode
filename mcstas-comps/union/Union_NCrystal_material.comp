@@ -74,7 +74,7 @@
 /*                                                                            */
 /******************************************************************************/
 
-DEFINE COMPONENT Union_make_NCrystal_material
+DEFINE COMPONENT Union_NCrystal_material
 
 SETTING PARAMETERS(string cfg="", interact_fraction=-1, include_SLD=0)
 DEPENDENCY "@NCRYSTALFLAGS@"
@@ -82,7 +82,7 @@ DEPENDENCY "@NCRYSTALFLAGS@"
 SHARE
 %{
   #ifndef Union
-  #error "ERROR: Union_make_NCrystal_material requires the Union library. Add a Union_master component to load the libraries."
+  #error "ERROR: Union_NCrystal_material requires the Union library. Add a Union_master component to load the libraries."
   #endif
 
   %include "union_ncrystal.c"

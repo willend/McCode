@@ -36,12 +36,12 @@ AT (0,0,0) ABSOLUTE
 // A complete NCrystal-backed Union material can be declared directly from its
 // configuration string. Absorption is read from the same configuration.
 //
-COMPONENT NCrystal_mono_material = Union_make_NCrystal_material(
+COMPONENT NCrystal_mono_material = Union_NCrystal_material(
     cfg = "Ge_sg227.ncmat;dir1=@crys_hkl:5,1,1@lab:0,0,1;dir2=@crys_hkl:0,1,-1@lab:0,1,0;incoh_elas=0;inelas=0;mos=0.3deg;sans=0"
 )
 AT (0,0,0) ABSOLUTE
 
-COMPONENT NCrystal_sample_material = Union_make_NCrystal_material(
+COMPONENT NCrystal_sample_material = Union_NCrystal_material(
     cfg = "Y2O3_sg206_Yttrium_Oxide.ncmat;density=0.6x",
     include_SLD = 1
 )
