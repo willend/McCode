@@ -66,9 +66,7 @@ SETTING PARAMETERS(string reflections="NULL",packing_factor=1, Vc=0, delta_d_d=0
 
 SHARE
 %{
-  #ifndef Union
-  #error "ERROR: Powder_process requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
 
   // Share section of PowderN 8/3 2016 from McStas.org
 
@@ -683,6 +681,12 @@ SHARE
   #ifndef PROCESS_POWDER_DETECTOR
   #define PROCESS_POWDER_DETECTOR dummy
   #endif
+
+  // Register this process with the Union_master dispatch (see union-lib.h)
+  #undef UNION_CASE_PHYSICS_MY_POWDER
+  #define UNION_CASE_PHYSICS_MY_POWDER(out, ...) case Powder: out = Powder_physics_my(__VA_ARGS__); break;
+  #undef UNION_CASE_PHYSICS_SCATTERING_POWDER
+  #define UNION_CASE_PHYSICS_SCATTERING_POWDER(out, ...) case Powder: out = Powder_physics_scattering(__VA_ARGS__); break;
 %}
 
 DECLARE
@@ -833,8 +837,7 @@ INITIALIZE
   global_process_element.component_index = INDEX_CURRENT_COMP;
   global_process_element.p_scattering_process = &This_process;
 
-  struct pointer_to_global_process_list* global_process_list = &g_process_list;
-  add_element_to_process_list (global_process_list, global_process_element);
+  add_element_to_process_list (&union_acquire ()->u_process_list, global_process_element);
  %}
 
 TRACE
@@ -847,6 +850,7 @@ FINALLY
   free (line_info.q_v);
   free (line_info.w_v);
   free (line_info.my_s_v2);
+  union_release (NAME_CURRENT_COMP);
 %}
 
 END

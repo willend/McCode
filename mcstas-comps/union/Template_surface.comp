@@ -61,9 +61,7 @@ SETTING PARAMETERS(string reflect=0, R0=0.99, Qc=0.0219, alpha=6.07, m=2, W=0.00
 
 SHARE
 %{
-  #ifndef Union
-  #error "ERROR: Template_surface requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
 
   %include "read_table-lib"
   %include "ref-lib"
@@ -138,6 +136,10 @@ SHARE
   #ifndef SURFACE_PROCESS_TEMPLATE_DETECTOR
   #define SURFACE_PROCESS_TEMPLATE_DETECTOR dummy
   #endif
+
+  // Register this surface with the Union_master dispatch (see union-lib.h)
+  #undef UNION_CASE_PHYSICS_SURFACE_TEMPLATE
+  #define UNION_CASE_PHYSICS_SURFACE_TEMPLATE(out, ...) case SurfaceTemplate: out = Template_surface_function(__VA_ARGS__); break;
 %}
 
 DECLARE
