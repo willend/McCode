@@ -676,7 +676,7 @@ INITIALIZE
 
   // printf("past logger_list_element assignment \n");
 
-  // Global variables from the auto-injected Union state
+  // Global variables from the shared Union state
   struct global_rotations_to_transform_list_struct* global_rotations_to_transform_list = &union_state_p->u_rotations_to_transform_list;
 
   rot_copy (this_storage.rotation, ROT_A_CURRENT_COMP);

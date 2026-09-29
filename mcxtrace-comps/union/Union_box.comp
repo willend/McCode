@@ -248,7 +248,7 @@ INITIALIZE
     exit (1);
   }
 
-  // Get global variable from the auto-injected Union state
+  // Get global variable from the shared Union state
   struct pointer_to_global_material_list* global_material_list = &union_state_p->u_material_list;
   // Use sanitation
   if (global_material_list->num_elements == 0) {
