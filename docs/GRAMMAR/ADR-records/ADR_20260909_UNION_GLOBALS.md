@@ -2,7 +2,29 @@
 
 ## Status
 
-This is a proposed change
+*Rejected*. The implementation merged in #2655 while this record was still proposed has
+been reverted: the code generator no longer knows about Union. The Union components now
+meet the same goals by themselves.
+
+Reasons:
+
+- Nothing Union needs requires the code generator. Loading the library once, before any
+  component SHARE section, is what `%include "union-lib"` already does in every McCode code
+  generator. The dispatch switch has to be compiled after every process's SHARE section,
+  which is true of `Union_master`'s TRACE code in every McCode code generator. Each process
+  now supplies its own `case` as a macro, and the master expands the switch there.
+- Special-casing one component library in the code generator couples the two. Every McCode
+  code generator, classic and McCode-ANTLR alike, must carry the same special case. It must
+  change whenever the library's file names or `Union_master`'s name change, or when another
+  library needs the same treatment. Component libraries are meant to be self-contained.
+- The self-contained Union keeps what this record wanted. `Union_init` and `Union_stop` are
+  not needed; they remain as deprecated no-ops. The `init` parameter stays removed. An
+  instrument with Union components but no `Union_master` still fails to compile. It also
+  gains a warning for Union components placed after the last master. Every Union component
+  takes and releases the shared state through a reference count, so the lists are freed
+  whatever order FINALLY runs in.
+
+The rest of this record is kept as it was proposed.
 
 ## Context
 
