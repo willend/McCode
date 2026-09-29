@@ -23,7 +23,7 @@
 #ifndef UNION_LIB_C
 #define UNION_LIB_C
 
-// Marks the Union library as loaded, for components that still test for it.
+// Lets code test whether the Union library is loaded.
 #ifndef Union
 #define Union 1
 #endif
@@ -127,15 +127,25 @@ enum surface {
   UNION_CASE_PHYSICS_SURFACE_MIRROR(out, __VA_ARGS__) \
   UNION_CASE_PHYSICS_SURFACE_TEMPLATE(out, __VA_ARGS__)
 
+// A process that defines no case (e.g. a user's own process component written
+// before these macros existed) falls back to its function pointer on the CPU.
+// Device code cannot call through a function pointer, so an OpenACC build
+// reports the missing case instead.
+#ifdef OPENACC
+#define UNION_PROCESS_FALLBACK(out, name, call) \
+  printf("%s: no Union dispatch case for this scattering process\n", name); \
+  out = 0;
+#else
+#define UNION_PROCESS_FALLBACK(out, name, call) out = call;
+#endif
+
 // Statement macros used by Union_master TRACE; `out` receives the return value.
-// A process without a case falls back to its function pointer, which is only
-// valid on the CPU: this keeps processes that do not yet define their cases
-// working in the NOACC Union_master, and must become an error in a GPU master.
 #define UNION_PHYSICS_MY(out, process, my, k_initial, focus_data, particle) \
   switch ((process)->eProcess) { \
     UNION_CASES_PHYSICS_MY(out, my, k_initial, (process)->data_transfer, focus_data, particle) \
     default: \
-      out = (process)->probability_for_scattering_function(my, k_initial, (process)->data_transfer, focus_data, particle); \
+      UNION_PROCESS_FALLBACK(out, "physics_my", \
+        (process)->probability_for_scattering_function(my, k_initial, (process)->data_transfer, focus_data, particle)) \
       break; \
   }
 
@@ -143,7 +153,8 @@ enum surface {
   switch ((process)->eProcess) { \
     UNION_CASES_PHYSICS_SCATTERING(out, k_final, k_initial, weight, (process)->data_transfer, focus_data, particle) \
     default: \
-      out = (process)->scattering_function(k_final, k_initial, weight, (process)->data_transfer, focus_data, particle); \
+      UNION_PROCESS_FALLBACK(out, "physics_scattering", \
+        (process)->scattering_function(k_final, k_initial, weight, (process)->data_transfer, focus_data, particle)) \
       break; \
   }
 
@@ -9365,35 +9376,24 @@ struct union_state_struct {
 // Zero-initialised: every list starts empty.
 struct union_state_struct union_state;
 
-// Components that do not yet call union_acquire() still use the old globals.
-#define g_positions_to_transform_list (union_state.u_positions_to_transform_list)
-#define g_rotations_to_transform_list (union_state.u_rotations_to_transform_list)
-#define g_process_list (union_state.u_process_list)
-#define g_material_list (union_state.u_material_list)
-#define g_surface_list (union_state.u_surface_list)
-#define g_geometry_list (union_state.u_geometry_list)
-#define g_all_volume_logger_list (union_state.u_all_volume_logger_list)
-#define g_specific_volumes_logger_list (union_state.u_specific_volumes_logger_list)
-#define g_all_volume_abs_logger_list (union_state.u_all_volume_abs_logger_list)
-#define g_specific_volumes_abs_logger_list (union_state.u_specific_volumes_abs_logger_list)
-#define g_tagging_conditional_list (union_state.u_tagging_conditional_list)
-#define g_master_list (union_state.u_master_list)
-#define g_mantid_min_pixel_id (union_state.u_mantid_min_pixel_id)
-
-struct union_state_struct *union_acquire(void) {
+struct union_state_struct *union_acquire_state(int master_present) {
+  (void)master_present;
   union_state.refcount++;
   return &union_state;
 }
 
+// Union components do nothing without a Union_master (or Union_master_GPU),
+// whose SHARE section defines the identifier below. Components call
+// union_acquire() in INITIALIZE, which every code generator emits after all
+// SHARE sections, so an instrument without a master fails to compile with an
+// error naming this identifier.
+#define union_acquire() union_acquire_state(Union_components_need_a_Union_master_in_the_instrument)
+
 // A Union_master consumes the components placed before it, so anything placed
-// after the last master (or in an instrument without one) never takes part.
+// after the last master never takes part.
 void union_report_unconsumed(const char *name, int component_index, int last_master_index) {
-  if (component_index <= last_master_index) return;
-  if (last_master_index < 0) {
-    MPI_MASTER(fprintf(stderr, "WARNING: Union component %s had no effect: the instrument has no Union_master.\n", name););
-  } else {
+  if (component_index > last_master_index)
     MPI_MASTER(fprintf(stderr, "WARNING: Union component %s had no effect: it is placed after the last Union_master.\n", name););
-  }
 }
 
 void union_check_unconsumed(void) {

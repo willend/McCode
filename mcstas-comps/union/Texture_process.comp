@@ -58,9 +58,7 @@ SETTING PARAMETERS(string crystal_fn=0, string fcoef_fn=0, int lmax_user=-1,
 
 SHARE
 %{
-  #ifndef Union
-  #error "ERROR: Texture_process requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
 
   %include "read_table-lib"
   %include "interoff-lib"
@@ -2056,7 +2054,7 @@ SHARE
 
   #endif /* !TEXTURE_PROCESS_DECL */
 
-  // Very important to add a pointer to this struct in the union-lib.c file
+  // Very important to add a pointer to this struct in the union-lib.h file
   struct Texture_physics_storage_struct {
     // Variables that needs to be transfered between any of the following places:
     // The initialize in this component
@@ -2309,6 +2307,12 @@ SHARE
   #ifndef PROCESS_TEXTURE_DETECTOR
   #define PROCESS_TEXTURE_DETECTOR dummy
   #endif
+
+  // Register this process with the Union_master dispatch (see union-lib.h)
+  #undef UNION_CASE_PHYSICS_MY_TEXTURE
+  #define UNION_CASE_PHYSICS_MY_TEXTURE(out, ...) case Texture: out = Texture_physics_my(__VA_ARGS__); break;
+  #undef UNION_CASE_PHYSICS_SCATTERING_TEXTURE
+  #define UNION_CASE_PHYSICS_SCATTERING_TEXTURE(out, ...) case Texture: out = Texture_physics_scattering(__VA_ARGS__); break;
 %}
 
 DECLARE
@@ -2326,6 +2330,7 @@ DECLARE
 
 INITIALIZE
 %{
+  struct union_state_struct* union_state_p = union_acquire ();
   // Texture initialize
   // double as, bs, cs;
   // double lambda, k, kct, kst, kphi, ki[3], kf[3];
@@ -2426,7 +2431,7 @@ INITIALIZE
   global_process_element.component_index = INDEX_CURRENT_COMP;
   global_process_element.p_scattering_process = &This_process;
 
-  struct pointer_to_global_process_list* global_process_list = &g_process_list;
+  struct pointer_to_global_process_list* global_process_list = &union_state_p->u_process_list;
   add_element_to_process_list (global_process_list, global_process_element);
  %}
 
@@ -2453,6 +2458,7 @@ FINALLY
   }
   // deallocate allocated memory, etc.
   free_texture (hkl_info);
+  union_release (NAME_CURRENT_COMP);
 %}
 
 END

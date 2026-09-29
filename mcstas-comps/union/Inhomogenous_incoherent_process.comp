@@ -143,9 +143,7 @@ SHARE
 %{
   %include "tinyexpr.h"
   %include "tinyexpr.c"
-  #ifndef Union
-  #error "ERROR: Inhomogenous_incoherent_process requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
 
   struct Inhomogenous_incoherent_struct {
     // Variables that needs to be transfered between any of the following places:
@@ -258,6 +256,12 @@ SHARE
   #ifndef PROCESS_INHOMOGENOUS_INCOHERENT_DETECTOR
   #define PROCESS_INHOMOGENOUS_INCOHERENT_DETECTOR dummy
   #endif
+
+  // Register this process with the Union_master dispatch (see union-lib.h)
+  #undef UNION_CASE_PHYSICS_MY_INHOMOGENOUS_INCOHERENT
+  #define UNION_CASE_PHYSICS_MY_INHOMOGENOUS_INCOHERENT(out, ...) case Inhomogenous_incoherent: out = Inhomogenous_incoherent_physics_my(__VA_ARGS__); break;
+  #undef UNION_CASE_PHYSICS_SCATTERING_INHOMOGENOUS_INCOHERENT
+  #define UNION_CASE_PHYSICS_SCATTERING_INHOMOGENOUS_INCOHERENT(out, ...) case Inhomogenous_incoherent: out = Inhomogenous_incoherent_physics_scattering(__VA_ARGS__); break;
 %}
 
 DECLARE
@@ -272,6 +276,7 @@ DECLARE
 
 INITIALIZE
 %{
+  struct union_state_struct* union_state_p = union_acquire ();
   // =========================================================================
   // ========================== Input sanitation =============================
   // =========================================================================
@@ -371,7 +376,7 @@ INITIALIZE
   global_process_element.component_index = INDEX_CURRENT_COMP;
   global_process_element.p_scattering_process = &This_process;
 
-  struct pointer_to_global_process_list* global_process_list = &g_process_list;
+  struct pointer_to_global_process_list* global_process_list = &union_state_p->u_process_list;
   add_element_to_process_list (global_process_list, global_process_element);
 %}
 
@@ -382,6 +387,7 @@ TRACE
 FINALLY
 %{
   // Since the process and it's storage is a static allocation, there is nothing to deallocate
+  union_release (NAME_CURRENT_COMP);
 %}
 
 END

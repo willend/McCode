@@ -74,6 +74,9 @@ SHARE
 
   %include "union-lib"
 
+  // Lets Union components compile: see union_acquire() in union-lib.h
+  #define Union_components_need_a_Union_master_in_the_instrument 1
+
   struct logger_with_data_struct loggers_with_data_array;
   struct abs_logger_with_data_struct abs_loggers_with_data_array;
 

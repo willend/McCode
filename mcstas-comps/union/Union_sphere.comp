@@ -73,9 +73,7 @@ SETTING PARAMETERS(string material_string=0, priority, radius, visualize=1,
 
 SHARE
 %{
-  #ifndef Union
-  #error "ERROR: Union_sphere requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
 
   void
   mcdisplay_sphere_function (struct lines_to_draw* lines_to_draw_output, int index, struct geometry_struct** Geometries, int number_of_volumes) {
@@ -184,6 +182,7 @@ DECLARE
 
 INITIALIZE
 %{
+  struct union_state_struct* union_state_p = union_acquire ();
 
   geometry_struct_init (&(this_sphere_volume.geometry));
   // Initializes the focusing system for this volume including input sanitation.
@@ -197,7 +196,7 @@ INITIALIZE
   }
 
   // Get global variable from the auto-injected Union state
-  struct pointer_to_global_material_list* global_material_list = &g_material_list;
+  struct pointer_to_global_material_list* global_material_list = &union_state_p->u_material_list;
   // Use sanitation
   #ifdef MATERIAL_DETECTOR
   if (global_material_list->num_elements == 0) {
@@ -216,7 +215,7 @@ INITIALIZE
   this_sphere_volume.geometry.is_exit_volume = 0;
   this_sphere_volume.geometry.is_mask_volume = 0;
 
-  struct pointer_to_global_geometry_list* global_geometry_list = &g_geometry_list;
+  struct pointer_to_global_geometry_list* global_geometry_list = &union_state_p->u_geometry_list;
   // Read the material input, or if it lacks, use automatic linking.
   if (mask_string && strlen (mask_string) && strcmp (mask_string, "NULL") && strcmp (mask_string, "0")) {
     // A mask volume is used to limit the extend of other volumes, called the masked volumes. These are specified in the mask_string.
@@ -320,7 +319,7 @@ INITIALIZE
   this_sphere_volume.geometry.internal_cut_surface_stack
       = &cut_surface_stack; // This surface is used if the volume is cut by overlapping of higher priority volume
 
-  struct pointer_to_global_surface_list* global_surface_list = &g_surface_list;
+  struct pointer_to_global_surface_list* global_surface_list = &union_state_p->u_surface_list;
   fill_surface_stack (surface, global_surface_list, NAME_CURRENT_COMP, &surface_stack);
   fill_surface_stack (cut_surface, global_surface_list, NAME_CURRENT_COMP, &cut_surface_stack);
 
@@ -383,6 +382,11 @@ INITIALIZE
 
 TRACE
 %{
+%}
+
+FINALLY
+%{
+  union_release (NAME_CURRENT_COMP);
 %}
 
 END

@@ -180,9 +180,7 @@ OUTPUT PARAMETERS ()
 
 SHARE
 %{
-  #ifndef Union
-  #error "ERROR: Union_abs_logger_nD_scintillator requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
 
   %include "monitor_nd-lib"
   %include "read_table-lib"
@@ -712,6 +710,7 @@ DECLARE
 
 INITIALIZE INHERIT Monitor_nD EXTEND
 %{
+  struct union_state_struct* union_state_p = union_acquire ();
   if (is_high_resolution) {
     if (high_resolution_efficiency_tables_already_read == 0) {
       if (Table_Read (&high_resolution_true_pixel_detection_efficiency_table, "true_pixel_hit_efficiency_high_resolution.txt", 0) <= 0) {
@@ -798,8 +797,8 @@ INITIALIZE INHERIT Monitor_nD EXTEND
     this_abs_storage.right_pixel_detection_efficiency_table = &low_resolution_right_pixel_detection_efficiency_table;
   }
 
-  struct global_positions_to_transform_list_struct* global_positions_to_transform_list = &g_positions_to_transform_list;
-  struct global_rotations_to_transform_list_struct* global_rotations_to_transform_list = &g_rotations_to_transform_list;
+  struct global_positions_to_transform_list_struct* global_positions_to_transform_list = &union_state_p->u_positions_to_transform_list;
+  struct global_rotations_to_transform_list_struct* global_rotations_to_transform_list = &union_state_p->u_rotations_to_transform_list;
   // Test position and rotation stored in a data storage, and pointers assigned to transform lists
   this_abs_storage.position = POS_A_CURRENT_COMP;
   add_position_pointer_to_list (global_positions_to_transform_list, &this_abs_storage.position);
@@ -826,8 +825,8 @@ INITIALIZE INHERIT Monitor_nD EXTEND
   abs_logger_list_element.component_index = INDEX_CURRENT_COMP;
   abs_logger_list_element.abs_logger = &this_abs_logger;
 
-  struct pointer_to_global_geometry_list* global_geometry_list = &g_geometry_list;
-  struct pointer_to_global_abs_logger_list* global_specific_volumes_abs_logger_list = &g_specific_volumes_abs_logger_list;
+  struct pointer_to_global_geometry_list* global_geometry_list = &union_state_p->u_geometry_list;
+  struct pointer_to_global_abs_logger_list* global_specific_volumes_abs_logger_list = &union_state_p->u_specific_volumes_abs_logger_list;
   // In order to run the logger at the right times, pointers to this logger is stored in each volume it logs,
   //  and additionally for each avaiable process. If a process is not logged, the pointer is simply not stored.
   int process_index;
@@ -848,7 +847,7 @@ INITIALIZE INHERIT Monitor_nD EXTEND
   } else {
     // Send to global_all_volumes_logger_list
     // Here there is no system for selecting processes as well
-    struct pointer_to_global_abs_logger_list* global_all_volume_abs_logger_list = &g_all_volume_abs_logger_list;
+    struct pointer_to_global_abs_logger_list* global_all_volume_abs_logger_list = &union_state_p->u_all_volume_abs_logger_list;
     add_element_to_abs_logger_list (global_all_volume_abs_logger_list, abs_logger_list_element);
   }
  %}
@@ -886,6 +885,7 @@ FINALLY INHERIT Monitor_nD EXTEND
     Table_Free (&high_resolution_right_pixel_detection_efficiency_table);
     high_resolution_efficiency_tables_already_read = 0;
   }
+  union_release (NAME_CURRENT_COMP);
 %}
 
 MCDISPLAY INHERIT Monitor_nD

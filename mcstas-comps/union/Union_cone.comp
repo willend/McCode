@@ -81,9 +81,7 @@ SETTING PARAMETERS(string material_string=0, priority, radius=0,radius_top=0,rad
 
 SHARE
 %{
-  #ifndef Union
-  #error "ERROR: Union_cone requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
 
   void
   mcdisplay_cone_function (struct lines_to_draw* lines_to_draw_output, int index, struct geometry_struct** Geometries, int number_of_volumes) {
@@ -221,6 +219,7 @@ DECLARE
 
 INITIALIZE
 %{
+  struct union_state_struct* union_state_p = union_acquire ();
   geometry_struct_init (&(this_cone_volume.geometry));
   // Initializes the focusing system for this volume including input sanitation.
   focus_initialize (&this_cone_volume.geometry, POS_A_COMP_INDEX (INDEX_CURRENT_COMP + target_index), POS_A_CURRENT_COMP, ROT_A_CURRENT_COMP, target_index,
@@ -244,7 +243,7 @@ INITIALIZE
     exit (1);
   }
 
-  struct pointer_to_global_material_list* global_material_list = &g_material_list;
+  struct pointer_to_global_material_list* global_material_list = &union_state_p->u_material_list;
   // Use sanitation
   #ifdef MATERIAL_DETECTOR
   if (global_material_list->num_elements == 0) {
@@ -262,7 +261,7 @@ INITIALIZE
   this_cone_volume.geometry.is_masked_volume = 0;
   this_cone_volume.geometry.is_exit_volume = 0;
   this_cone_volume.geometry.is_mask_volume = 0;
-  struct pointer_to_global_geometry_list* global_geometry_list = &g_geometry_list;
+  struct pointer_to_global_geometry_list* global_geometry_list = &union_state_p->u_geometry_list;
 
   // Read the material input, or if it lacks, use automatic linking.
   if (mask_string && strlen (mask_string) && strcmp (mask_string, "NULL") && strcmp (mask_string, "0")) {
@@ -376,7 +375,7 @@ INITIALIZE
   this_cone_volume.geometry.surface_stack_for_each_face[2] = &bottom_surface_stack;
   this_cone_volume.geometry.internal_cut_surface_stack = &cut_surface_stack; // This surface is used if the volume is cut by overlapping of higher priority volume
 
-  struct pointer_to_global_surface_list* global_surface_list = &g_surface_list;
+  struct pointer_to_global_surface_list* global_surface_list = &union_state_p->u_surface_list;
   fill_surface_stack (curved_surface, global_surface_list, NAME_CURRENT_COMP, &curved_surface_stack);
   fill_surface_stack (top_surface, global_surface_list, NAME_CURRENT_COMP, &top_surface_stack);
   fill_surface_stack (bottom_surface, global_surface_list, NAME_CURRENT_COMP, &bottom_surface_stack);
@@ -448,6 +447,11 @@ INITIALIZE
 
 TRACE
 %{
+%}
+
+FINALLY
+%{
+  union_release (NAME_CURRENT_COMP);
 %}
 
 END
