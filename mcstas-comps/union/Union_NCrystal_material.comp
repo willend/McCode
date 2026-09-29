@@ -33,8 +33,10 @@
 * details.
 *
 * %I
-* Written by: McStas developers
-* Origin: McStas Union components
+* Written by: Mads Bertelsen
+* Date: 2026-09-28
+* Origin: ESS DMSC
+* Version: $Revision: 0.1 $
 *
 * %D
 * Creates one NCrystal scattering process and a complete Union material. The
@@ -44,13 +46,13 @@
 * must be combined with other Union processes.
 * The user does not provide my_absorption for this component.
 *
- * This component requires a Union geometry and Union_master.
+* This component requires a Union geometry and Union_master.
 *
 * %P
 * INPUT PARAMETERS:
 * cfg:                    [str]    NCrystal material configuration string (details <a href="https://github.com/mctools/ncrystal/wiki/Using-NCrystal">on this page</a>).
 * interact_fraction:      [1]      Fraction of scattering events assigned to this process 0-1 (default -1 lets Union assign it).
- * include_SLD:            [0/1]    Include the scattering length density calculated from cfg in the material refraction information.
+* include_SLD:            [0/1]    Include the scattering length density calculated from cfg in the material refraction information.
  *******************************************************************************/
 
 /******************************************************************************/
