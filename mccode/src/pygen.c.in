@@ -31,6 +31,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "mccode.h"
+#if defined(WIN32) || defined(_WIN32)
+#include <direct.h>
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
 
 #define GENERATE_PY 1
 
@@ -619,6 +625,62 @@ int cogen_raytrace(struct instr_def *instr)
 * right files during compilation and linking, but this may be changed using
 * the --no-runtime compiler switch.
 *******************************************************************************/
+/* Single-quoted Python string literal for s (to be freed with memfree). */
+static char *
+pygen_pystr(char *s)
+{
+  char *res = mem(2*strlen(s) + 3);
+  char *p = res;
+  *p++ = '\'';
+  for (; *s; ++s) {
+    if (*s == '\\' || *s == '\'')
+      *p++ = '\\';
+    *p++ = *s;
+  }
+  *p++ = '\'';
+  *p = '\0';
+  return res;
+}
+
+/* Emit instr.add_search() calls. Relative paths are made relative to the script,
+   or absolute if the script is not written to the working directory. */
+static void
+cogen_searches(struct instr_def *instr, char *output_name)
+{
+  List_handle liter;
+  struct search_def *sd;
+  char cwd[1024];
+  int script_in_cwd = output_name && output_name[0] && strcmp(output_name, "-")
+                      && !strchr(output_name, '/') && !strchr(output_name, MC_PATHSEP_C);
+
+  if (!instr->searches || !list_len(instr->searches))
+    return;
+  if (!script_in_cwd && !getcwd(cwd, sizeof(cwd)))
+    fatal_error("Could not determine the current working directory\n");
+  cout("    # SEARCH statements");
+  liter = list_iterate(instr->searches);
+  while ((sd = list_next(liter))) {
+    char *q;
+    int is_abs = sd->path[0] == '/' || sd->path[0] == '\\' || (sd->path[0] && sd->path[1] == ':');
+    if (sd->shell || is_abs || script_in_cwd) {
+      q = pygen_pystr(sd->path);
+    } else {
+      char *abspath = str_cat(cwd, MC_PATHSEP_S, sd->path, NULL);
+      q = pygen_pystr(abspath);
+      str_free(abspath);
+    }
+    if (sd->shell)
+      coutf("    instr.add_search(%s, SHELL=True)", q);
+    else if (!is_abs && script_in_cwd)
+      coutf("    instr.add_search(os.path.join(os.path.dirname(os.path.abspath(__file__)), %s))", q);
+    else
+      coutf("    instr.add_search(%s)", q);
+    memfree(q);
+  }
+  list_iterate_end(liter);
+  cout("");
+}
+
 static void
 cogen_header(struct instr_def *instr, char *output_name)
 {
@@ -649,10 +711,14 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("");
   cout("import mcstasscript as ms");
   cout("import argparse");
+  cout("import os");
   cout("");
 #if MCCODE_PROJECT == 1     /* neutron */
   cout("# Python McStas instrument description");
   cout("def make(input_path=None):");
+  cout("    # Default: the directory of this script");
+  cout("    if input_path is None:");
+  cout("        input_path = os.path.dirname(os.path.abspath(__file__))");
   if (pygen_instrument_name)
     coutf("    instr = ms.McStas_instr(\"%s\", author = \"McCode Py-Generator\", origin = \"ESS DMSC\", input_path=input_path)",pygen_instrument_name);
   else
@@ -660,6 +726,9 @@ cogen_header(struct instr_def *instr, char *output_name)
 #elif MCCODE_PROJECT == 2   /* xray */
   cout("# Python McXtrace instrument description");
   cout("def make(input_path=None):");
+  cout("    # Default: the directory of this script");
+  cout("    if input_path is None:");
+  cout("        input_path = os.path.dirname(os.path.abspath(__file__))");
   if (pygen_instrument_name)
     coutf("    instr = ms.McXtrace_instr(\"%s\", author = \"McCode Py-Generator\", origin = \"ESS DMSC\", input_path=input_path)",pygen_instrument_name);
   else
@@ -693,6 +762,8 @@ cogen_header(struct instr_def *instr, char *output_name)
   coutf("    # " MCCODE_LIBENV " system dir is \"%s%s\"", sysdir_new,pathsep);
 
   cout("");
+
+  cogen_searches(instr, output_name);
 
 } /* cogen_header */
 
