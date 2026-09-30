@@ -150,6 +150,7 @@
 * nowritefile: [1]       If set, logger will skip writing to disk
 * nexus_bins: [1]        NeXus mode only: store component BIN information <br>(-1 disable, 0 enable for list mode monitor, 1 enable for any montor)
 * is_high_resolution: [0|1]    Selects the MAPMT pixel size (0: low resolution, 6 mm pixels; 1: high resolution, 3 mm pixels), and correspondingly which set of pixel-hit-efficiency table files is read.
+* table_dir: [str]       Directory of the table files (default: none)
 *
 * OUTPUT PARAMETERS:
 *
@@ -173,7 +174,7 @@ SETTING PARAMETERS(string target_geometry="NULL",
 				   string options="NULL", string filename="NULL",string geometry="NULL", int nowritefile=0, int nexus_bins=0,
 				   string username0="NULL", string username1="NULL", string username2="NULL", string username3="NULL", string username4="NULL",
 				   string username5="NULL", string username6="NULL", string username7="NULL", string username8="NULL", string username9="NULL",
-                   int is_high_resolution=0)
+                   int is_high_resolution=0, string table_dir="")
 OUTPUT PARAMETERS ()
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
@@ -185,6 +186,16 @@ SHARE
   #endif
 
   %include "monitor_nd-lib"
+
+  // The file name, in the directory dir (if not empty):
+  char*
+  scintillator_table_file (char* buffer, size_t size, char* dir, char* file) {
+    if (dir && dir[0])
+      snprintf (buffer, size, "%s/%s", dir, file);
+    else
+      snprintf (buffer, size, "%s", file);
+    return buffer;
+  }
   %include "read_table-lib"
   %include "interoff-lib"
 
@@ -712,25 +723,27 @@ DECLARE
 
 INITIALIZE INHERIT Monitor_nD EXTEND
 %{
+  char table_file[1024];
+  #define TABLE_FILE(file) scintillator_table_file (table_file, sizeof (table_file), table_dir, file)
   if (is_high_resolution) {
     if (high_resolution_efficiency_tables_already_read == 0) {
-      if (Table_Read (&high_resolution_true_pixel_detection_efficiency_table, "true_pixel_hit_efficiency_high_resolution.txt", 0) <= 0) {
+      if (Table_Read (&high_resolution_true_pixel_detection_efficiency_table, TABLE_FILE ("true_pixel_hit_efficiency_high_resolution.txt"), 0) <= 0) {
         exit (fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file true_pixel_hit_efficiency_high_resolution.txt\n",
                        NAME_CURRENT_COMP));
       }
-      if (Table_Read (&high_resolution_up_pixel_detection_efficiency_table, "up_pixel_hit_efficiency_high_resolution.txt", 0) <= 0) {
+      if (Table_Read (&high_resolution_up_pixel_detection_efficiency_table, TABLE_FILE ("up_pixel_hit_efficiency_high_resolution.txt"), 0) <= 0) {
         exit (fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file up_pixel_hit_efficiency_high_resolution.txt\n",
                        NAME_CURRENT_COMP));
       }
-      if (Table_Read (&high_resolution_down_pixel_detection_efficiency_table, "down_pixel_hit_efficiency_high_resolution.txt", 0) <= 0) {
+      if (Table_Read (&high_resolution_down_pixel_detection_efficiency_table, TABLE_FILE ("down_pixel_hit_efficiency_high_resolution.txt"), 0) <= 0) {
         exit (fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file down_pixel_hit_efficiency_high_resolution.txt\n",
                        NAME_CURRENT_COMP));
       }
-      if (Table_Read (&high_resolution_left_pixel_detection_efficiency_table, "left_pixel_hit_efficiency_high_resolution.txt", 0) <= 0) {
+      if (Table_Read (&high_resolution_left_pixel_detection_efficiency_table, TABLE_FILE ("left_pixel_hit_efficiency_high_resolution.txt"), 0) <= 0) {
         exit (fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file left_pixel_hit_efficiency_high_resolution.txt\n",
                        NAME_CURRENT_COMP));
       }
-      if (Table_Read (&high_resolution_right_pixel_detection_efficiency_table, "right_pixel_hit_efficiency_high_resolution.txt", 0) <= 0) {
+      if (Table_Read (&high_resolution_right_pixel_detection_efficiency_table, TABLE_FILE ("right_pixel_hit_efficiency_high_resolution.txt"), 0) <= 0) {
         exit (fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file right_pixel_hit_efficiency_high_resolution.txt\n",
                        NAME_CURRENT_COMP));
       }
@@ -738,22 +751,22 @@ INITIALIZE INHERIT Monitor_nD EXTEND
     }
   } else {
     if (low_resolution_efficiency_tables_already_read == 0) {
-      if (Table_Read (&low_resolution_true_pixel_detection_efficiency_table, "true_pixel_hit_efficiency.txt", 0) <= 0) {
+      if (Table_Read (&low_resolution_true_pixel_detection_efficiency_table, TABLE_FILE ("true_pixel_hit_efficiency.txt"), 0) <= 0) {
         exit (
             fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file true_pixel_hit_efficiency.txt\n", NAME_CURRENT_COMP));
       }
-      if (Table_Read (&low_resolution_up_pixel_detection_efficiency_table, "up_pixel_hit_efficiency.txt", 0) <= 0) {
+      if (Table_Read (&low_resolution_up_pixel_detection_efficiency_table, TABLE_FILE ("up_pixel_hit_efficiency.txt"), 0) <= 0) {
         exit (fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file up_pixel_hit_efficiency.txt\n", NAME_CURRENT_COMP));
       }
-      if (Table_Read (&low_resolution_down_pixel_detection_efficiency_table, "down_pixel_hit_efficiency.txt", 0) <= 0) {
+      if (Table_Read (&low_resolution_down_pixel_detection_efficiency_table, TABLE_FILE ("down_pixel_hit_efficiency.txt"), 0) <= 0) {
         exit (
             fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file down_pixel_hit_efficiency.txt\n", NAME_CURRENT_COMP));
       }
-      if (Table_Read (&low_resolution_left_pixel_detection_efficiency_table, "left_pixel_hit_efficiency.txt", 0) <= 0) {
+      if (Table_Read (&low_resolution_left_pixel_detection_efficiency_table, TABLE_FILE ("left_pixel_hit_efficiency.txt"), 0) <= 0) {
         exit (
             fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file left_pixel_hit_efficiency.txt\n", NAME_CURRENT_COMP));
       }
-      if (Table_Read (&low_resolution_right_pixel_detection_efficiency_table, "right_pixel_hit_efficiency.txt", 0) <= 0) {
+      if (Table_Read (&low_resolution_right_pixel_detection_efficiency_table, TABLE_FILE ("right_pixel_hit_efficiency.txt"), 0) <= 0) {
         exit (
             fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: can not read pixel hit efficiency file right_pixel_hit_efficiency.txt\n", NAME_CURRENT_COMP));
       }
@@ -781,6 +794,8 @@ INITIALIZE INHERIT Monitor_nD EXTEND
       = malloc (this_abs_storage.temp_abs_nD_scintillator_data.allocated_elements * sizeof (struct temp_abs_nD_scintillator_data_element_struct));
   if (!this_abs_storage.temp_abs_nD_scintillator_data.elements)
     exit (fprintf (stderr, "Union_abs_logger_nD_scintillator: %s: ERROR allocating memory (init)\n", NAME_CURRENT_COMP));
+
+  #undef TABLE_FILE
 
   this_abs_storage.pixel_size = is_high_resolution ? 0.003 : 0.006; // 3 mm for high resolution, 6 mm for low resolution
 
