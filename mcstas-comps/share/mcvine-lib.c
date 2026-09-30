@@ -2230,7 +2230,7 @@ int
 mcvine_S_Phonon_IncoherentInelastic (void* kk, const double* r, double* v, double t, double* p, _class_particle* _particle) {
   mcvine_kernel_Phonon_IncoherentInelastic* k = (mcvine_kernel_Phonon_IncoherentInelastic*)kk;
   double vi = mcvine_len3 (v), Ei = VS2E * vi * vi, Ef, e_range, omega, vf, d[3], Q[3], Ql, beta, DW, EQ;
-  int i, small;
+  int i, is_small;
   mcvine_random_direction (d, _particle);
   if (k->m_focusing) {
     double Efmax = k->m_Ef + k->m_dEf / 2.;
@@ -2248,7 +2248,7 @@ mcvine_S_Phonon_IncoherentInelastic (void* kk, const double* r, double* v, doubl
     Ef = rand01 () * e_range;
   }
   omega = Ei - Ef;
-  small = fabs (omega) < 1e-2 * k->m_max_omega;
+  is_small = fabs (omega) < 1e-2 * k->m_max_omega;
   vf = SE2V * sqrt (Ef);
   for (i = 0; i < 3; i++) {
     Q[i] = V2K * (v[i] - vf * d[i]);
@@ -2259,7 +2259,7 @@ mcvine_S_Phonon_IncoherentInelastic (void* kk, const double* r, double* v, doubl
   DW = exp (-k->m_dw_core * Ql * Ql);
   EQ = mcvine_k2E (Ql);
   *p *= e_range / k->m_mass * (vf / vi) * DW;
-  if (small)
+  if (is_small)
     *p *= k->m_dos.sod / beta * EQ;
   else
     *p *= mcvine_phonon_bose_factor (omega, k->m_T) * mcvine_dos_value (&k->m_dos, fabs (omega)) * EQ / fabs (omega);
