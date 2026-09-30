@@ -63,10 +63,8 @@
 * T: [K]            Sample temperature
 * sigma_abs: [barns] Absorption cross section of the samples
 * sigma_inc: [barns] Incoherent scattering cross section of the samples
-* sample_choice: [1] 0: Dispersion_relation (phonon), 1: Phonon_simple,
-*                    2: SpinWave_BCO, 3: Dispersion_relation (magnon)
-* primitive_cell: [1] 1 gives the phonon Dispersion_relation sample the
-*                    primitive fcc lattice vectors
+* sample_choice: [1] 0: Dispersion_relation (phonon), 1: Phonon_simple, 2: SpinWave_BCO, 3: Dispersion_relation (magnon)
+* primitive_cell: [1] setting this to 1 gives the phonon Dispersion_relation sampling the primitive fcc lattice vectors
 *
 * %End
 *******************************************************************************/
