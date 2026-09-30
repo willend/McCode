@@ -126,6 +126,7 @@ SHARE
   #error "ERROR: NCrystal_process requires the Union library. Add a Union_master component to load the libraries."
   #endif
 
+  %include "mccode-ncrystal-lib"
   %include "union_ncrystal.c"
 %}
 
@@ -155,6 +156,7 @@ INITIALIZE
   // For our sanity, zero-initialise all instance-specific data.
   memset (&params, 0, sizeof (params));
   ncrystal_union_setup_rng ();
+  mccode_setup_ncrystal_search_paths ();
 
   // Access crystal structure to get number density (natoms/volume).
   ncrystal_info_t info = ncrystal_create_info (cfg);

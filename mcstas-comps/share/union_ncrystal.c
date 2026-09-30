@@ -66,12 +66,9 @@
 #ifndef UNION_NCRYSTAL_C
 #define UNION_NCRYSTAL_C
 
-/* Common includes, defines, functions, etc. shared by all Union NCrystal components. */
-#if defined(WIN32) || defined(_WIN32)
-#include "NCrystal\\ncrystal.h"
-#else
-#include "NCrystal/ncrystal.h"
-#endif
+/* Common includes, defines, functions, etc. shared by all Union NCrystal components.
+   NCrystal's C API (ncrystal.h) is included by mccode-ncrystal-lib, which must
+   be included first. */
 #include "stdio.h"
 #include "stdlib.h"
 
