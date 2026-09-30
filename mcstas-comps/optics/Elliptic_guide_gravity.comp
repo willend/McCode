@@ -110,14 +110,14 @@
 * mright: [1]               m-value of material for right vertical mirror
 * alphaleft: [AA]           Slope of reflectivity for left vertical mirror
 * mleft: [1]                m-value of material for left vertical mirror
-* option: [string]          options are 'ellipse' and 'halfEllipse'. Ellipse is defined by both the focal points, while halfEllipse locked the center of the ellipse either the entrance or exit of the guide, and use the focal point of the other end to define the ellipse
-* dimensionsAt: [string]    define whether xwidth and yheight sets the size of the opening, minor axis or the end of the guide.
-** majorAxisxw: [m]          direct defination of the guide geometry, will ignore w,h lin and lout parameters if this is nonzero. Length of the axis parallel to the z for the horizontal ellipse
-* minorAxisxw: [m]          direct defination of the guide geometry, will ignore w,h lin and lout parameters if this is nonzero. Length of the axis Perpendicular to the z for the horizontal ellipse
-* majorAxisyh: [m]          direct defination of the guide geometry, will ignore w,h lin and lout parameters if this is nonzero. Length of the axis parallel to the z for the vertical ellipse
-* minorAxisyh: [m]          direct defination of the guide geometry, will ignore w,h lin and lout parameters if this is nonzero. Length of the axis Perpendicular to the z for the vertical ellipse
-* majorAxisoffsetxw: [m]    direct defination of the guide geometry, distance between the center of the horizontal ellipse and the guide entrance
-* majorAxisoffsetyh: [m]    direct defination of the guide geometry, distance between the center of the vertical ellipse and the guide entrance
+* option: [string]          Options are 'ellipse' and 'halfEllipse'. Ellipse is defined by both the focal points, while halfEllipse locked the center of the ellipse either the entrance or exit of the guide, and use the focal point of the other end to define the ellipse
+* dimensionsAt: [string]    Define whether xwidth and yheight sets the size of the opening, minor axis or the end of the guide.
+** majorAxisxw: [m]         Direct definition of the guide geometry, will ignore linxw, loutxw, linyh, and loutyh if this is nonzero. Length of the axis parallel to z for the horizontal ellipse.
+* minorAxisxw: [m]          Direct definition of the guide geometry, will ignore linxw, loutxw, linyh, and loutyh if this is nonzero. Length of the axis perpendicular to z for the horizontal ellipse.
+* majorAxisyh: [m]          Direct definition of the guide geometry, will ignore linxw, loutxw, linyh, and loutyh if this is nonzero. Length of the axis parallel to z for the vertical ellipse.
+* minorAxisyh: [m]          Direct definition of the guide geometry, will ignore linxw, loutxw, linyh, and loutyh if this is nonzero. Length of the axis perpendicular to z for the vertical ellipse.
+* majorAxisoffsetxw: [m]    Direct definition of the guide geometry, distance between the center of the horizontal ellipse and the guide entrance.
+* majorAxisoffsetyh: [m]    Direct definition of the guide geometry, distance between the center of the vertical ellipse and the guide entrance.
 * verbose: [bool]           Give extra information about calculations
 * curvature: [m]            Simulate horizontal radius of curvature by centripetal force added to the gravity. Note: Does not curve the guide in mcdisplay but "curves the neutron". Has opposite sign definition of Guide_curved.
 * nSegments: [m]            Must be used to specify number of guide segments, i.e. when giving inputs mvaluesright ... etc.
@@ -762,13 +762,13 @@ INITIALIZE
 
   /*  Calculate the focal lines for the ellipses.
           These can be used to calculate the axes of the ellipses
-          using pyth and defination of the ellipse that says distance
+          using pyth and definition of the ellipse that says distance
           between the foci and every point on the ellipse is constant.
   */
-  int directDefination = 0;
+  int directDefinition = 0;
 
   if (majorAxisyh != 0 || minorAxisyh != 0 || majorAxisxw != 0 || minorAxisxw != 0) {
-    directDefination = 1;
+    directDefinition = 1;
     guideInfo.Length = l;
 
     guideInfo.ellipseMajorAxis[RightSide] = majorAxisxw;
@@ -795,7 +795,7 @@ INITIALIZE
     guideInfo.entranceVerticalWidth = 2 * sqrt (1 - (majorAxisoffsetxw * majorAxisoffsetxw) / (majorAxisxw * majorAxisxw)) * minorAxisxw;
   }
 
-  if (strcmp (option, "ellipse") == 0 && directDefination == 0) {
+  if (strcmp (option, "ellipse") == 0 && directDefinition == 0) {
     if (strcmp (dimensionsAt, "entrance") == 0) {
       double lofbs_horizontal = sqrt (linxw * linxw + xwidth * xwidth * 0.25) + sqrt ((l + loutxw) * (l + loutxw) + xwidth * xwidth * 0.25);
 
@@ -895,7 +895,7 @@ INITIALIZE
                                                   / (guideInfo.ellipseMajorAxis[TopSide] * guideInfo.ellipseMajorAxis[TopSide]))
                                     * guideInfo.ellipseMinorAxis[TopSide];
 
-  if (strcmp (option, "halfellipse") == 0 && directDefination == 0) {
+  if (strcmp (option, "halfellipse") == 0 && directDefinition == 0) {
     exit (printf ("Critical error in %s; the option for option = halfellipse is currently disabled.", NAME_CURRENT_COMP));
 
     double used_focal_vertical;
@@ -960,7 +960,7 @@ INITIALIZE
   if (guideInfo.mArr[BottomSide] <= 0)
     guideInfo.InnerSide[BottomSide] = MirrorTypeabsorption;
 
-  if (strcmp (option, "halfellipse") == 0 && directDefination == 0) {
+  if (strcmp (option, "halfellipse") == 0 && directDefinition == 0) {
     guideInfo.entranceHorizontalWidth = (guideInfo.ellipseMinorAxis[RightSide]
                                              * sqrt (1
                                                      - (guideInfo.ellipseMajorOffset[RightSide] * guideInfo.ellipseMajorOffset[RightSide])
@@ -1176,7 +1176,7 @@ MCDISPLAY
   /*
           Calculate the second coordinates to the points on the ellipse with z_i
           as the first coordinate. We transform the point to the coordinate system
-          there the ellipse is a unit circle. And use the defination of this circle
+          where the ellipse is a unit circle. And use the definition of this circle
           to find second coordinate (x^2+z^2 = 1)
   */
 
