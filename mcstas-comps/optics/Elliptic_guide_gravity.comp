@@ -12,24 +12,30 @@
 * Date: 27 Aug 2012
 * Origin: NBI
 *
-* Perfect elliptic guide which allow for simulations with gravity.
+* Perfect elliptic guide which allows for simulations with gravity.
 * The guide mirrors can be divided into segments with individual m-values.
 * Parabolic guide components can also be simulated.
 *
 * %D
 *
-* The perfect elliptic guide is centered along the z-axis with the entrance
-* and exit in the xy-plane. The horizontal and vertical ellipses defining
-* the guide geometry is by default set by two focal points.
-* These are placed a distance away from the guide openings along the z-axis;
-* if distance given is positive, when the focal point is outside the guide.
+* The Elliptic_guide_gravity component models a true elliptic guide, with separate
+* ellipses in the vertical (top/bottom) and horizontal (left/right) directions,
+* allowing gravity to be simulated.
 *
-* Multiple options for defining these ellipse exist including approximation of
-* parabolas and half ellipses (mid point of the ellipse or one of the guide openings)
+* The guide is centered along the z-axis, with entry and exit planes parallel to the
+* xy-plane. The guide entry is at z=0 (in line with other guide components).
+* By default, the ellipses are defined by specifying their focal points as
+* distances from the guide entry (linxw, loutxw, linyh, loutyh). In addition,
+* it is possible to directly define the ellipse through the parameter set:
+* majorAxisxw, minorAxisxw, majorAxisyh, minorAxisyh, together with
+* majorAxisoffsetxw and majorAxisoffsetyh, where the offset parameters place the
+* ellipse centers respectively.
+* Further, it is possible to approximate the ellipses through parabolas, or as
+* half ellipses.
 *
-* The guide coating parameters can be set for each side of the guide.
-* Furthermore the m-value can be specified for user defined segments
-* of the guide.
+* m-values for the guides may be specified independently for each of the four walls,
+* as a scalar value for the entire wall, or as a vector distributing the m-values
+* evenly (seglength left unset) or according to the vector seglength.
 *
 * <b>Example 1, Elliptical definition using focal points:</b>
 *
@@ -751,10 +757,10 @@ INITIALIZE
   }
 
   ///////////////////////////////////////////////////////////////////////////
-  /////////////// Calculate intern guide values from user input
+  /////////////// Calculate internal guide values from user input
   ///////////////////////////////////////////////////////////////////////////
 
-  /*  Calculate the foci line for the ellipses.
+  /*  Calculate the focal lines for the ellipses.
           These can be used to calculate the axes of the ellipses
           using pyth and defination of the ellipse that says distance
           between the foci and every point on the ellipse is constant.
