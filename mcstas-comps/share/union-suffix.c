@@ -66,6 +66,11 @@ int physics_my(enum process choice, double *my,double *k_initial, union data_tra
             output = Non_physics_my(my, k_initial, data_transfer, focus_data, _particle);
             break;
         #endif
+        #ifdef PROCESS_MCVINE_DETECTOR
+        case MCViNE:
+            output = MCViNE_physics_my(my, k_initial, data_transfer, focus_data, _particle);
+            break;
+        #endif
         #ifdef PROCESS_TEMPLATE_DETECTOR
         case Template:
             output = Template_physics_my(my, k_initial, data_transfer, focus_data, _particle);
@@ -135,6 +140,11 @@ int physics_scattering(enum process choice, double *k_final, double *k_initial, 
             output = Non_physics_scattering(k_final, k_initial, weight, data_transfer, focus_data, _particle);
             break;
         #endif			
+        #ifdef PROCESS_MCVINE_DETECTOR
+        case MCViNE:
+            output = MCViNE_physics_scattering(k_final, k_initial, weight, data_transfer, focus_data, _particle);
+            break;
+        #endif
         #ifdef PROCESS_TEMPLATE_DETECTOR
         case Template:
             output = Template_physics_scattering(k_final, k_initial, weight, data_transfer, focus_data, _particle);
