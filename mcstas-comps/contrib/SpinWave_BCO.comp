@@ -310,7 +310,7 @@ SHARE
 
   int
   disp_SBCO_findroots (double brack_low, double brack_mid, double brack_high, double* list, int* index, double (*f) (double*), double* parms, int steps_low,
-             int steps_high) {
+                       int steps_high) {
     double root, range;
     int i;
     range = brack_mid - brack_low;
@@ -515,7 +515,8 @@ TRACE
     #ifndef OPENACC
     disp_SBCO_findroots (0, v_i, sqrt (v_i * v_i + 1 / VS2E * E_max) + 20, vf_list, &nf, disp_SBCO_omega_q, parms, e_steps_low, e_steps_high);
     #else
-    disp_SBCO_findroots_gpu (0, v_i, sqrt (v_i * v_i + 1 / VS2E * E_max) + 20, vf_list, &nf, parms, e_steps_low, e_steps_high); /*+10 to make sure final point is included*/
+    disp_SBCO_findroots_gpu (0, v_i, sqrt (v_i * v_i + 1 / VS2E * E_max) + 20, vf_list, &nf, parms, e_steps_low,
+                             e_steps_high); /*+10 to make sure final point is included*/
     #endif
 
     index = (int)floor (rand01 () * nf);
