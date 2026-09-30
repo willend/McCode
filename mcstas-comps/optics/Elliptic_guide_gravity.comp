@@ -266,9 +266,9 @@ SHARE
   guide_elliptical_illegalInputFocalPointsHyperbola (char* in, char* out, double inValue, double outValue, int verbose) {
     if (verbose) {
       printf ("The user defined length of the guide, length \
-  				and the focal points %s and %s does not result \
-  				in an well defined ellipse. swap the focal points \
-  				or increase L, %s or %s to fix this problem\n",
+            and the focal points %s and %s does not result \
+            in a well defined ellipse. Swap the focal points \
+            or increase L, %s, or %s to fix this problem\n",
               in, out, in, out);
       printf ("The mininum length of the should be around %e\n", inValue + outValue + 0.000001);
     }
@@ -285,7 +285,7 @@ SHARE
     if (verbose)
       printf ("A CRITICAL WARNING has been called inside %s by function %s."
               "This is most likely due to a programming error \
-  			inside the component. \n",
+            inside the component. \n",
               "Elliptic_guide_gravity", func);
   }
 
