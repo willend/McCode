@@ -87,6 +87,7 @@ SHARE
   #error "ERROR: Union_NCrystal_material requires the Union library. Add a Union_master component to load the libraries."
   #endif
 
+  %include "mccode-ncrystal-lib"
   %include "union_ncrystal.c"
 
   #ifndef MATERIAL_DETECTOR
@@ -142,6 +143,7 @@ INITIALIZE
   ncrystal_union_check_version (NAME_CURRENT_COMP);
   ncrystal_union_setup_conversion (&NCrystal_storage.ncrystal_convfact_vsq2ekin, &NCrystal_storage.ncrystal_convfact_ekin2vsq);
   ncrystal_union_setup_rng ();
+  mccode_setup_ncrystal_search_paths ();
 
   ncrystal_info_t info = ncrystal_create_info (cfg);
   double numberdensity = ncrystal_union_get_numberdensity (info, NAME_CURRENT_COMP);
