@@ -73,7 +73,7 @@ jobs:
       id: setup-linux
       if: matrix.method == 'source' && runner.os == 'Linux'
       run: |
-           sudo apt -y install libgsl-dev libxrl-dev
+           sudo apt -y install libgsl-dev libxrl-dev libnexus-dev
 
     - name: Setup (macOS, source build)
       id: setup-macos
