@@ -164,8 +164,7 @@ SHARE
     printf ("Initial size %g\nInitial speed vector %g, %g, %g\nDirection %g, %g, %g\n\n", neutron->initial_size, neutron->initial_vx, neutron->initial_vy,
             neutron->initial_vz, neutron->direction_vx, neutron->direction_vy, neutron->direction_vz);
   };
-  /* Define a struct for the crystal.
-   * TODO: Rename to better show what the variables are. */
+  /* Define a struct for the crystal. */
   struct crystal {
     double vectors[3][3]; // Real-space lattice vectors a, b, c in the component frame [AA]
     double cell_size;
@@ -330,8 +329,6 @@ SHARE
   /////////////// General function for finding the root of a real valued
   /////////////// function. Based off of Ridders method for finding the root.
   ///////////////////////////////////////////////////////////////////////////
-  /* TODO: This name should be changed, to better reflect the actions of the
-      function and the variable. */
   double
   Ridders_method_for_root_finding (double x1, double x2, double xacc, struct crystal* crystal, struct neutron_values* neutron,
                                    struct interpolator_struct* dispersion_relation) {
@@ -412,13 +409,12 @@ SHARE
     return 0.0; // Never get here
   }
 
-  /* TODO: This name should be changed to better reflect the actions of the function */
   /* Scan the final velocity in steps_low intervals on the energy loss side and
       steps_high intervals on the energy gain side. Each interval gives at most
       one root, so possible_final_velocities must hold steps_low + steps_high
       values. */
   void
-  find_roots (double* possible_final_velocities, int* number_of_solutions, struct crystal* crystal, int steps_low, int steps_high, double max_mode_energy,
+  find_possible_final_velocities (double* possible_final_velocities, int* number_of_solutions, struct crystal* crystal, int steps_low, int steps_high, double max_mode_energy,
               struct neutron_values* neutron, struct interpolator_struct* dispersion_relation) {
     double possible_final_velocity;
     // The neutron can at most lose or gain the largest energy in the dispersion relation
@@ -663,11 +659,10 @@ TRACE
   set_init_speeds (vx, vy, vz, &neutron);
   distance_to_reflection = time_of_reflection * neutron.initial_size;
   // Focus the neutrons artificially, forward in the system.
-  // TODO: Rename focus_aw and focus_ah etc. to better reflect their purposes.
   solid_angle = focus_neutron (&neutron.direction_vx, &neutron.direction_vy, &neutron.direction_vz, aiming_vector, focus_ah, focus_aw, focus_xw, focus_yh,
                                focus_r, ROT_A_CURRENT_COMP);
   // Find the different possible final velocities the neutron can have
-  find_roots (possible_final_velocities, &number_of_solutions, &crystal, e_steps_low, e_steps_high, max_mode_energy, &neutron,
+  find_possible_final_velocities (possible_final_velocities, &number_of_solutions, &crystal, e_steps_low, e_steps_high, max_mode_energy, &neutron,
               dispersion_relations[dispersion_mode]);
   if (number_of_solutions == 0) {
     ABSORB; // No final velocity satisfies energy and momentum conservation
