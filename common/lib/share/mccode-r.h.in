@@ -948,6 +948,7 @@ typedef struct mcdetector_struct MCDETECTOR;
 static   char *dirname             = NULL;      /* name of output directory */
 static   char *siminfo_name        = "mccode";  /* default output sim file name */
 char    *mcformat                    = NULL;      /* NULL (default) or a specific format */
+static   int   mcsave_final        = 0;         /* 1 during the final save, done by all MPI nodes together (see mccode_main) */
 
 /* file I/O definitions and function prototypes */
 
