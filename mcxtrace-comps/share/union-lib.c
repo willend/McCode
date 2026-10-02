@@ -1,11 +1,18 @@
 /*******************************************************************************
 *
-*  McXtrace, X-ray ray-tracing package
+*  McXtrace, photon ray-tracing package
+*  Copyright(C) 2007 Risoe National Laboratory.
 *
-* Function definitions for the Union component library, declared in
-* union-lib.h. Components load both with %include "union-lib".
+* %I
+* Written by: Mads Bertelsen
+* Date: 20.08.15
+* Version: $Revision: 0.1 $
+* Origin: University of Copenhagen
 *
-*******************************************************************************/
+ * Function definitions for the Union component library, declared in
+ * union-lib.h. Components load both with %include "union-lib".
+ *
+ ******************************************************************************/
 
 #ifndef UNION_LIB_C
 #define UNION_LIB_C
