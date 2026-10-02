@@ -34,7 +34,7 @@ monochromator, a sample stage and a detector.
 ## Examples
 
 - **Test: E0=12.65 sample="Mo.lau" SPLITs=1500 Detector: psd4pi_I=1.75e+12**
-- **Test: E0=12.65 sample="adrenaline.lau" SPLITs=4200 Detector: psd4pi_I=4.5e+15**
+- **Test: E0=12.65 sample="adrenaline.lau" SPLITs=4200 Detector: psd4pi_I=3.8e+15**
 
 ## Input parameters
 
