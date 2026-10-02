@@ -191,6 +191,49 @@ A process component's position in the instrument file is irrelevant to the
 physics (it has no shape); its \emph{name} is what matters, since materials
 refer to processes by name.
 
+\subsubsection*{Contributed processes: MCViNE kernels}
+\index{Union!MCViNE}
+
+A substantial set of further processes, ported from the
+\href{https://github.com/mcvine/mcvine}{MCViNE} sample-scattering kernels,
+is contributed in the \texttt{contrib} component category rather than
+\texttt{union} (table~\ref{t:union-processes-mcvine}); they follow the
+same Union process interface as the ones above and are used the same way.
+Each is paired with a standalone, non-Union component of the same name
+(without the \texttt{\_process} suffix) sharing the same underlying
+kernel code.
+
+\begin{table}[htb!]
+  \begin{center}
+    {\let\my=\\
+    \begin{tabular}{|l|p{0.55\textwidth}|}
+      \hline
+      \textbf{Component} & \textbf{Description} \\
+      \hline
+      \texttt{MCViNE\_SQ\_process} & Elastic isotropic scatterer with structure factor $S(|Q|)$ (expression or table). \\
+      \texttt{MCViNE\_SQE\_process} & Isotropic $S(Q,E)$ scatterer from an analytic expression or grid, with optional final-energy focusing. \\
+      \texttt{MCViNE\_SvQ\_process} & Elastic scatterer with a vector structure factor $S(Q_x,Q_y,Q_z)$ (expression or 3D grid). \\
+      \texttt{MCViNE\_E\_Q\_process} & Isotropic dispersion: $S(Q,E)=S(Q)\delta(E-E(Q))$ with analytic $E(Q)$, $S(Q)$. \\
+      \texttt{MCViNE\_E\_vQ\_process} & Single-crystal dispersion: $S(Q,E)=S(Q)\delta(E-E(Q))$ with analytic $E(Q_x,Q_y,Q_z)$. \\
+      \texttt{MCViNE\_Broadened\_E\_Q\_process} & Isotropic dispersion $E(Q)$ broadened by a Gaussian of $Q$-dependent width. \\
+      \texttt{MCViNE\_LorentzianBroadened\_E\_Q\_process} & Isotropic dispersion $E(Q)$ broadened by a Lorentzian of $Q$-dependent width. \\
+      \texttt{MCViNE\_ConstantEnergyTransfer\_process} & Isotropic scatterer with a fixed energy transfer. \\
+      \texttt{MCViNE\_ConstantQE\_process} & Scatterer with fixed momentum transfer $|Q|$ and energy transfer $E$. \\
+      \texttt{MCViNE\_ConstantvQE\_process} & Scatterer with a fixed momentum-transfer vector $Q$, weighted by a Gaussian in $E$. \\
+      \texttt{MCViNE\_Phonon\_CoherentInelastic\_PolyXtal\_process} & Coherent one-phonon scattering from a powder, using a full phonon dispersion (energies and polarizations) on a grid. \\
+      \texttt{MCViNE\_Phonon\_CoherentInelastic\_SingleXtal\_process} & Coherent one-phonon scattering from a single crystal, using a full phonon dispersion on a grid. \\
+      \texttt{MCViNE\_Phonon\_IncoherentElastic\_process} & Incoherent elastic scattering with a Debye-Waller factor. \\
+      \texttt{MCViNE\_Phonon\_IncoherentInelastic\_process} & One-phonon incoherent inelastic scattering from a phonon density of states, optional final-energy focusing. \\
+      \texttt{MCViNE\_DGSSXRes\_process} & Resolution kernel for direct-geometry single-crystal spectrometers (aims at a pixel and time-of-flight window). \\
+      \texttt{MCViNE\_SANS2D\_ongrid\_process} & SANS from a 2D $S(Q_x,Q_y)$ map on a grid (beam along $z$). \\
+      \hline
+    \end{tabular}
+    \caption{Processes contributed from MCViNE, in the \texttt{contrib} component category.}
+    \label{t:union-processes-mcvine}
+    }
+  \end{center}
+\end{table}
+
 A process does, however, use its rotation relative to ABSOLUTE to rotate
 its local frame. This can be used to create a small offset between two
 \texttt{Single\_crystal\_process} instances to describe a simple version
@@ -221,6 +264,20 @@ absorption) and \texttt{"Exit"} (behaves like vacuum, but see
 section~\ref{sec:union-exit} below). Setting \texttt{absorber=1} instead of
 giving a \texttt{process\_string} creates a purely absorbing material with
 no scattering processes at all.
+
+For the common case of a material that is purely NCrystal, with no other
+processes to combine it with, \texttt{Union\_NCrystal\_material} is a
+shortcut that creates the underlying NCrystal process and the material in
+a single component:
+\begin{lstlisting}
+COMPONENT Cu = Union_NCrystal_material(cfg="Cu_sg225.ncmat")
+AT (0,0,0) ABSOLUTE
+\end{lstlisting}
+Its absorption is derived automatically from the same NCrystal
+configuration string, so, unlike \texttt{Union\_make\_material}, it takes
+no \texttt{my\_absorption} parameter. Use \texttt{NCrystal\_process}
+together with \texttt{Union\_make\_material} instead whenever NCrystal
+scattering needs to be combined with other processes in the same material.
 
 \subsection{Geometry components}
 \label{sec:union-geometry}
