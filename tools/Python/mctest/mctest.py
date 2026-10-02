@@ -311,7 +311,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
     anyfailed=False
 
     # compile, record time
-    global ncount, no_mpi, mpi, openacc, suffix, nexus, lint, permissive, compilemax, displaymax, runmax, seed, strict
+    global ncount, no_mpi, mpi, openacc, suffix, nexus, lint, permissive, compilemax, displaymax, runmax, seed, strict, noplots
     logging.info("")
     if not lint:
         logging.info("Compiling instruments [seconds]...")
@@ -536,7 +536,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             else:                 # Special case, expected test target value is 0
                 logging.info(formatstr % test.get_display_name() + "    [val: " + str(test.testval) + " vs " + str(test.targetval) + " (absolute vs 0) ]" + suffix)
                         # if output is not h5, launch plotter on the output data
-            if didwrite:
+            if didwrite and not noplots:
                 # PDF overview plot
                 matplotter  = mccode_config.configuration["MCPLOT"].split('-')[0] + "-matplotlib"
                 cmd = matplotter + " %d/ --format=pdf --output %d/01_overview.pdf" %  (test.testnb, test.testnb)
@@ -801,6 +801,7 @@ runLocal = None
 runmax = None
 compilemax = None
 displaymax = None
+noplots = None
 
 def main(args):
     # mutually excusive main branches
@@ -860,7 +861,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict
+    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots
     ncount = "1e6"
     no_mpi = False
     if args.ncount:
@@ -975,6 +976,10 @@ def main(args):
         strict = True
         logging.info("Strict mode, tool will report failure for instruments without %Example")
 
+    noplots = args.noplots
+    if noplots:
+        logging.info("No plots of the test output will be generated")
+
     if not configfilter:
         run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix)
     else:
@@ -1006,6 +1011,7 @@ if __name__ == '__main__':
     parser.add_argument('--displaymax', nargs=1, help='Maximum time allowed pr. test Example DISPLAY run (default 60s)')
     parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional. Can not be combined with --strict.')
     parser.add_argument('--strict', action='store_true', help='Let instruments without %%Example line(s) instantly fail. Can not be combined with --permissive.')
+    parser.add_argument('--noplots', action='store_true', help='Do not generate plots (01_overview.pdf and 02_plots.html) of the test output. Useful e.g. in CI, where the plots are not looked at, and can take long for instruments with many monitors.')
     parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR. Local path and --testdir can not overlap!')
     args = parser.parse_args()
 
