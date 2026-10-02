@@ -56,6 +56,7 @@
 * total_order_max:      [1]      Max scattering order, if not set ignored
 * overwrite_logger_weight: [1]   Default = 0, overwrite = 1
 * last_volume_index:    [1]      Not used yet
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 *
 * CALCULATED PARAMETERS:
@@ -69,7 +70,7 @@
 
 DEFINE COMPONENT Union_conditional_standard
 
-SETTING PARAMETERS(string target_loggers="NULL", int master_tagging=0, int tagging_extend_index = -1, time_min=0, time_max=0, E_min=0, E_max=0, total_order_min=0, total_order_max=0, last_volume_index=-1,overwrite_logger_weight=0) // E limit, |k| limit, volumes to have visited, processes that was used, end volume, last process
+SETTING PARAMETERS(string target_loggers="NULL", int master_tagging=0, int tagging_extend_index = -1, time_min=0, time_max=0, E_min=0, E_max=0, total_order_min=0, total_order_max=0, last_volume_index=-1,overwrite_logger_weight=0, string init="") // E limit, |k| limit, volumes to have visited, processes that was used, end volume, last process
 
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */

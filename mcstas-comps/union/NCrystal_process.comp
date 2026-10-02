@@ -74,6 +74,7 @@
 * INPUT PARAMETERS:
 * cfg:               [str]    NCrystal material configuration string (details <a href="https://github.com/mctools/ncrystal/wiki/Using-NCrystal">on this page</a>).
 * interact_fraction: [1]      How large a part of the scattering events should use this process 0-1 (sum of all processes in material = 1)
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 * CALCULATED PARAMETERS:
 * NCrystal_storage          // Storage used to communicate with the probability and scattering function
@@ -117,7 +118,7 @@
 
 DEFINE COMPONENT NCrystal_process // Remember to change the name of process here
 
-SETTING PARAMETERS(string cfg = "", interact_fraction=-1)
+SETTING PARAMETERS(string cfg = "", interact_fraction=-1, string init="")
 DEPENDENCY "@NCRYSTALFLAGS@"
 
 SHARE

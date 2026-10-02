@@ -49,6 +49,7 @@
 * m:                  [1]      m-value of material. Zero means completely absorbing.
 * W:                  [AA^-1]   Width of supermirror cut-off
 * reflect:            [str]    Name of reflectivity file. Format q(Angs-1) R(0-1)
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 * %L
 *
@@ -57,7 +58,7 @@
 
 DEFINE COMPONENT Template_surface // Remember to change the name of process here
 
-SETTING PARAMETERS(string reflect=0, R0=0.99, Qc=0.0219, alpha=6.07, m=2, W=0.003)
+SETTING PARAMETERS(string reflect=0, R0=0.99, Qc=0.0219, alpha=6.07, m=2, W=0.003, string init="")
 
 
 SHARE

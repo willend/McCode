@@ -36,6 +36,7 @@
 * %P
 * INPUT PARAMETERS:
 * density: [g/cm^3]       Nominal density of material.
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 * OUTPUT PARAMETERS:
 *
 * %L
@@ -46,7 +47,7 @@
 
 DEFINE COMPONENT KN_xrl_process
 DEFINITION PARAMETERS ()
-SETTING PARAMETERS (density=0)
+SETTING PARAMETERS (density=0, string init="")
 OUTPUT PARAMETERS (This_process,KN_xrl_storage)
 DEPENDENCY " @XRLFLAGS@ "
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */

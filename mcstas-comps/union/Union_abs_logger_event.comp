@@ -73,6 +73,7 @@
 * ybins:           [1] Number of bins along y in logging volume
 * zbns:            [1] Number of bins along z in logging volume
 * nowritefile:     [1]      If set, logger will skip writing to disk
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 * CALCULATED PARAMETERS:
 *
@@ -87,7 +88,7 @@ DEFINE COMPONENT Union_abs_logger_event
 
 SETTING PARAMETERS(string target_geometry="NULL", string filename="NULL",
                    xwidth=0, xbins=0, yheight=0, ybins=0, zdepth=0, zbins=0,
-                   order_total=-1, order_volume=-1, logger_conditional_extend_index=-1, int nowritefile=0)
+                   order_total=-1, order_volume=-1, logger_conditional_extend_index=-1, int nowritefile=0, string init="")
 
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */

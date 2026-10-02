@@ -38,6 +38,7 @@
 * maxNeutronSaved:   [1]      Maximum number of neutron cross sections saved for reusing
 * barns:             [1]      Flag to indicate if |F|^2 from 'crystal_fn' is in barns or fm^2. barns=1 for laz and isotropic constant elastic scattering (reflections=NULL), barns=0 for lau type files
 * order:             [1]      Limit scattering to this order
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 * CALCULATED PARAMETERS:
 * Template_storage          // Important to update this output paramter
@@ -53,7 +54,7 @@ DEFINE COMPONENT Texture_process // Remember to change the name of process here
 
 SETTING PARAMETERS(string crystal_fn=0, string fcoef_fn=0, int lmax_user=-1,
             barns = 0, order = 0, interact_fraction = -1, packing_factor = 1,
-	        int maxNeutronSaved = 1)
+	        int maxNeutronSaved = 1, string init="")
 
 
 SHARE

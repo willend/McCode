@@ -151,6 +151,7 @@
 * nexus_bins: [1]        NeXus mode only: store component BIN information <br>(-1 disable, 0 enable for list mode monitor, 1 enable for any montor)
 * is_high_resolution: [0|1]    Selects the MAPMT pixel size (0: low resolution, 6 mm pixels; 1: high resolution, 3 mm pixels), and correspondingly which set of pixel-hit-efficiency table files is read.
 * table_dir: [str]       Directory of the table files (default: none)
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 * OUTPUT PARAMETERS:
 *
@@ -174,7 +175,7 @@ SETTING PARAMETERS(string target_geometry="NULL",
 				   string options="NULL", string filename="NULL",string geometry="NULL", int nowritefile=0, int nexus_bins=0,
 				   string username0="NULL", string username1="NULL", string username2="NULL", string username3="NULL", string username4="NULL",
 				   string username5="NULL", string username6="NULL", string username7="NULL", string username8="NULL", string username9="NULL",
-                   int is_high_resolution=0, string table_dir="")
+                   int is_high_resolution=0, string table_dir="", string init="")
 OUTPUT PARAMETERS ()
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */

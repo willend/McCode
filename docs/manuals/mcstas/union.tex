@@ -126,7 +126,9 @@ effect, and the simulation warns about each of them when it finishes.
 \texttt{Union\_init} and \texttt{Union\_stop}, which older instruments
 place first and last among their Union components, are no longer needed.
 They are kept without effect, apart from a deprecation warning, so that such
-instruments still compile.
+instruments still compile. For the same reason every Union component still
+accepts the string parameter \texttt{init}, which older instruments set to the
+name of their \texttt{Union\_init} component; its value is ignored.
 
 \subsection{Scattering processes}
 \label{sec:union-processes}

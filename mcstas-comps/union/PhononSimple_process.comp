@@ -47,6 +47,7 @@
 * packing_factor:    [1]      How dense is the material compared to optimal 0-1
 * interact_fraction: [1]      How large a part of the scattering events should use this process 0-1 (sum of all processes in material = 1)
 * DW:                [1]      Debye-Waller factor
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 * CALCULATED PARAMETERS:
 * PhononSimple_storage      // Important to update this output paramter
 * effective_my_scattering   // Variable used in initialize
@@ -58,7 +59,7 @@
 
 DEFINE COMPONENT PhononSimple_process
 
-SETTING PARAMETERS(packing_factor=1,unit_cell_volume=13.8,interact_fraction=-1,a=4.95,c=10,M=207.2,b=9.4,T=290,DW=1,longitudinal=1,transverse=1)
+SETTING PARAMETERS(packing_factor=1,unit_cell_volume=13.8,interact_fraction=-1,a=4.95,c=10,M=207.2,b=9.4,T=290,DW=1,longitudinal=1,transverse=1, string init="")
 
 
 SHARE

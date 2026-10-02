@@ -101,6 +101,7 @@
 * order_volume:       [1]      Only log rays that have scattered n times in the same geometry, -1 for all orders
 * logger_conditional_extend_index: [1] If a conditional is used with this logger, the result of each conditional calculation can be made available in extend as a array called "logger_conditional_extend", and one would then access logger_conditional_extend[n] if logger_conditional_extend_index is set to n
 * nowritefile:        [1]      If set, logger will skip writing to disk
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 * CALCULATED PARAMETERS:
 *
@@ -119,7 +120,7 @@ SETTING PARAMETERS(string target_geometry="NULL",
                    lambda_m_min=-1, lambda_m_max=-1, lambda_m_bins=-1,
                    lambda_t_min=-1, lambda_t_max=-1, lambda_t_bins=-1,
                    relative_measured=0, relative_min=0.5, relative_max=1.5, relative_bins=100,
-                   string filename="NULL", order_total=-1, order_volume=-1, logger_conditional_extend_index=-1, int nowritefile=0)
+                   string filename="NULL", order_total=-1, order_volume=-1, logger_conditional_extend_index=-1, int nowritefile=0, string init="")
 
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */

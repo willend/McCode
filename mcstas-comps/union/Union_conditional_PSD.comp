@@ -58,6 +58,7 @@
 * overwrite_logger_weight: [1]   Default = 0, overwrite = 1
 * end_volume:           [1]      Not used yet
 * last_volume_index:    [1]      Not used yet
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 * CALCULATED PARAMETERS:
 * this_material:            Structure that contains information on this material
@@ -73,7 +74,7 @@
 
 DEFINE COMPONENT Union_conditional_PSD
 
-SETTING PARAMETERS(string target_loggers="NULL", int master_tagging=0, int tagging_extend_index = -1, xwidth, yheight,time_min=0, time_max=0, overwrite_logger_weight=0) // E limit, |k| limit, volumes to have visited, processes that was used, end volume, last process
+SETTING PARAMETERS(string target_loggers="NULL", int master_tagging=0, int tagging_extend_index = -1, xwidth, yheight,time_min=0, time_max=0, overwrite_logger_weight=0, string init="") // E limit, |k| limit, volumes to have visited, processes that was used, end volume, last process
 
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */

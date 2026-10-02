@@ -71,6 +71,7 @@
 * time_min:        [s] Minimum time to log
 * time_max:        [s] Maximum time to log
 * nowritefile:     [1]      If set, logger will skip writing to disk
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 *
 * OUTPUT PARAMETERS:
 *
@@ -85,7 +86,7 @@ DEFINE COMPONENT Union_abs_logger_1D_time
 DEFINITION PARAMETERS ()
 SETTING PARAMETERS(string target_geometry="NULL",
                    time_min=0, time_max, n=100,
-                   string filename="NULL", order_total=-1, order_volume=-1, logger_conditional_extend_index=-1, int nowritefile=0)
+                   string filename="NULL", order_total=-1, order_volume=-1, logger_conditional_extend_index=-1, int nowritefile=0, string init="")
 OUTPUT PARAMETERS ()
 
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */

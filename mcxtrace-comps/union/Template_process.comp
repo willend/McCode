@@ -42,6 +42,7 @@
 * unit_cell_volume:  [AA^3]   Unit cell volume
 * packing_factor:    [1]      Material packing factor
 * interact_fraction: [1]      How large a part of the scattering events should use this process 0-1 (sum of all processes in material = 1)
+* init:              [string]    Deprecated and unused. Accepted so that instruments written for McStas/McXtrace 3.8.7 and earlier, which name the Union_init component here, still compile.
 * OUTPUT PARAMETERS:
 * Template_storage          // Important to update this output paramter
 * effective_my_scattering   // Variable used in initialize
@@ -53,7 +54,7 @@
 
 DEFINE COMPONENT Template_process // Remember to change the name of process here
 DEFINITION PARAMETERS ()
-SETTING PARAMETERS(sigma=5.08,packing_factor=1,unit_cell_volume=13.8,interact_fraction=-1)
+SETTING PARAMETERS(sigma=5.08,packing_factor=1,unit_cell_volume=13.8,interact_fraction=-1, string init="")
 OUTPUT PARAMETERS (This_process,Template_storage,effective_my_scattering)
 
 SHARE
