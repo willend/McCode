@@ -39,6 +39,7 @@
 
 /** Include header files to avoid implicit declarations (not allowed on LLVM) */
 #include <ctype.h>
+#include <stddef.h> /* offsetof, used by NeXus runtime parameter capture */
 #include <sys/types.h>
 #ifndef _MSC_EXTENSIONS
 #include <dirent.h>
@@ -1820,6 +1821,441 @@ static void mcinfo_out_nexus(NXhandle f)
 } /* mcinfo_out_nexus */
 
 /*******************************************************************************
+* Runtime capture of component SETTING parameter values (NeXus only)
+*
+* mccomp_param_nexus() only receives the literal parameter expressions from the
+* instrument file. To also store the numerical value present at the end of
+* INITIALIZE, the runtime keeps a small registry, filled from the existing
+* (generated) calls in _<comp>_setpos():
+*
+*   mccomp_placement_type_nexus() -> mcrt_register_comp()  (instance + type)
+*   mccomp_param_nexus()          -> mcrt_register_param() (one per SETTING par)
+*
+* The parameter struct base comes from the generated _getvar_parameters(name).
+* Member offsets are reconstructed from the order of the calls and the type
+* strings, following the struct layout written by cogen_comp_declare():
+*   - SETTING parameters come first, in set_par order (= order of the calls)
+*   - int -> int, char* -> char[16384], char -> char, double -> double (symbol),
+*     MCNUM -> double, MCNUM* (vector) or MCNUM[n] (static {..} vector, sized
+*     from the FIRST instance of the component type)
+* The layout is validated at setpos time (strings by content, numbers when the
+* literal is a plain number); mismatching instances are not reported.
+*
+* mccomp_param_runtime_nexus_all(), called from mccode_main() after init(),
+* adds 'runtime_value' and 'runtime_value_status' attributes to
+*   entry<N>/instrument/components/NNNN_<comp>/parameters/<par>
+*******************************************************************************/
+
+/* MUST match the char[16384] declaration of string parameters in
+   cogen_comp_declare() (mccode/src/cogen.c.in) */
+#ifndef MCCODE_COMP_STRING_PAR_LEN
+#define MCCODE_COMP_STRING_PAR_LEN 16384
+#endif
+
+enum mcrtpar_kind {
+  MCRTPAR_INT, MCRTPAR_STRING, MCRTPAR_CHAR, MCRTPAR_DOUBLE, MCRTPAR_SYMBOL,
+  MCRTPAR_VECTOR_PTR, MCRTPAR_VECTOR_ARR, MCRTPAR_UNKNOWN
+};
+
+struct mcrtcomp_struct {
+  char  *nexuscomp;     /* e.g. 0003_Mon      */
+  char  *name;          /* e.g. Mon           */
+  char  *comptype;      /* e.g. PSD_monitor   */
+  void  *base;          /* &_Mon_var._parameters */
+  size_t next_offset;   /* running offset while registering pars */
+  long   first_of_type; /* registry index of first instance of comptype */
+  int    n_checked;     /* number of successful layout checks */
+  int    n_failed;      /* number of failed layout checks */
+  int    unknown_type;  /* a parameter type could not be mapped */
+};
+
+struct mcrtpar_struct {
+  long   comp;          /* index in mcrtcomp_list */
+  char  *parameter;
+  char  *value;         /* literal (or string value) from setpos */
+  int    kind;
+  size_t offset;
+  long   nelem;         /* for MCRTPAR_VECTOR_ARR */
+};
+
+static struct mcrtcomp_struct *mcrtcomp_list  = NULL;
+static long                    mcrtcomp_num   = 0;
+static long                    mcrtcomp_alloc = 0;
+static struct mcrtpar_struct  *mcrtpar_list   = NULL;
+static long                    mcrtpar_num    = 0;
+static long                    mcrtpar_alloc  = 0;
+
+/* portable alignment probes */
+struct mcrt_align_int { char c; int     t; };
+struct mcrt_align_dbl { char c; double  t; };
+struct mcrt_align_ptr { char c; double *t; };
+#define MCRT_ALIGN_INT offsetof(struct mcrt_align_int, t)
+#define MCRT_ALIGN_DBL offsetof(struct mcrt_align_dbl, t)
+#define MCRT_ALIGN_PTR offsetof(struct mcrt_align_ptr, t)
+
+static char *mcrt_strdup(const char *s)
+{
+  char  *d;
+  size_t n;
+  if (!s) s = "";
+  n = strlen(s) + 1;
+  d = (char *)malloc(n);
+  if (d) memcpy(d, s, n);
+  return d;
+}
+
+/* mirrors parse_curlybrackets_vector() in cogen.c.in, which sizes MCNUM[n] */
+static long mcrt_parse_curly(const char *string, double *values, long maxn)
+{
+  const char *s = string;
+  char *r;
+  long vidx = 0;
+  if (!s) return 0;
+  while (*s != '\0') {
+    double val;
+    if (*s == ' ' || *s == ',' || *s == '{') { ++s; continue; }
+    if (*s == '}') return vidx;
+    val = strtod(s, &r);
+    if (values && vidx < maxn) values[vidx] = val;
+    ++vidx;
+    if (*r == '\0') return vidx;
+    s = r + 1;
+  }
+  return vidx;
+}
+
+/* plain numeric literal check: only digits/sign/dot start, no identifiers */
+static int mcrt_numeric_start(const char *s)
+{
+  while (*s && isspace((unsigned char)*s)) s++;
+  if (*s == '+' || *s == '-') s++;
+  return (isdigit((unsigned char)*s) || (*s == '.' && isdigit((unsigned char)s[1])));
+}
+
+static int mcrt_literal_double(const char *s, double *v)
+{
+  char *end;
+  if (!s || !mcrt_numeric_start(s)) return 0;
+  errno = 0;
+  *v = strtod(s, &end);
+  while (*end && isspace((unsigned char)*end)) end++;
+  return (*end == '\0' && errno == 0);
+}
+
+static int mcrt_literal_long(const char *s, long *v)
+{
+  char *end;
+  if (!s || !mcrt_numeric_start(s)) return 0;
+  errno = 0;
+  *v = strtol(s, &end, 0); /* base 0: C literal semantics (0x.., 0..) */
+  while (*end && isspace((unsigned char)*end)) end++;
+  return (*end == '\0' && errno == 0);
+}
+
+/* shortest of %.15g/%.17g that reads back to exactly the same double */
+static void mcrt_format_double(char *buf, size_t n, double v)
+{
+  snprintf(buf, n, "%.15g", v);
+  if (strtod(buf, NULL) != v) snprintf(buf, n, "%.17g", v);
+}
+
+/* non-zero subnormal: what a heap/static pointer typically looks like as a double */
+static int mcrt_looks_like_pointer(double v)
+{
+  uint64_t bits;
+  memcpy(&bits, &v, sizeof(bits));
+  return (((bits >> 52) & 0x7ff) == 0) && ((bits & 0xfffffffffffffULL) != 0);
+}
+
+static void mcrt_register_comp(char *nexuscomp, char *comptype)
+{
+  struct mcrtcomp_struct *c;
+  long i;
+  char *n;
+
+  if (!nexuscomp || !comptype) return;
+  if (mcrtcomp_num >= mcrtcomp_alloc) {
+    long na = mcrtcomp_alloc ? 2*mcrtcomp_alloc : 64;
+    struct mcrtcomp_struct *tmp = realloc(mcrtcomp_list, na*sizeof(*tmp));
+    if (!tmp) return;
+    mcrtcomp_list = tmp; mcrtcomp_alloc = na;
+  }
+  c = &mcrtcomp_list[mcrtcomp_num];
+  memset(c, 0, sizeof(*c));
+  c->nexuscomp = mcrt_strdup(nexuscomp);
+  c->comptype  = mcrt_strdup(comptype);
+  /* strip the 4-digit 'NNNN_' prefix written by cogen_comp_setpos() */
+  n = nexuscomp;
+  if (strlen(n) > 5 && isdigit((unsigned char)n[0]) && isdigit((unsigned char)n[1])
+      && isdigit((unsigned char)n[2]) && isdigit((unsigned char)n[3]) && n[4] == '_')
+    n += 5;
+  c->name = mcrt_strdup(n);
+  c->base = c->name ? _getvar_parameters(c->name) : NULL;
+  c->first_of_type = mcrtcomp_num;
+  for (i = 0; i < mcrtcomp_num; i++)
+    if (!strcmp(mcrtcomp_list[i].comptype, c->comptype)) {
+      c->first_of_type = mcrtcomp_list[i].first_of_type;
+      break;
+    }
+  mcrtcomp_num++;
+}
+
+/* literal of the same parameter for the first instance of this comp type */
+static const char *mcrt_first_instance_literal(long compidx, const char *parameter, const char *own)
+{
+  long i, first = mcrtcomp_list[compidx].first_of_type;
+  if (first == compidx) return own;
+  for (i = 0; i < mcrtpar_num; i++)
+    if (mcrtpar_list[i].comp == first && !strcmp(mcrtpar_list[i].parameter, parameter))
+      return mcrtpar_list[i].value;
+  return own;
+}
+
+static void mcrt_register_param(char *nexuscomp, char *parameter, char *defval,
+                                char *value, char *type)
+{
+  struct mcrtcomp_struct *c = NULL;
+  struct mcrtpar_struct  *p;
+  long   ci;
+  size_t size = 0, align = 1;
+
+  if (!nexuscomp || !parameter || !type) return;
+  for (ci = mcrtcomp_num-1; ci >= 0; ci--)
+    if (!strcmp(mcrtcomp_list[ci].nexuscomp, nexuscomp)) { c = &mcrtcomp_list[ci]; break; }
+  if (!c) return;
+
+  if (mcrtpar_num >= mcrtpar_alloc) {
+    long na = mcrtpar_alloc ? 2*mcrtpar_alloc : 256;
+    struct mcrtpar_struct *tmp = realloc(mcrtpar_list, na*sizeof(*tmp));
+    if (!tmp) return;
+    mcrtpar_list = tmp; mcrtpar_alloc = na;
+  }
+  p = &mcrtpar_list[mcrtpar_num];
+  memset(p, 0, sizeof(*p));
+  p->comp      = ci;
+  p->parameter = mcrt_strdup(parameter);
+  p->value     = mcrt_strdup(value);
+
+  /* map type string (instr_formal_type_names_real in cogen.c.in) to kind/size */
+  if (!strcmp(type, "int")) {
+    p->kind = MCRTPAR_INT;    size = sizeof(int);    align = MCRT_ALIGN_INT;
+  } else if (!strcmp(type, "char*")) {
+    p->kind = MCRTPAR_STRING; size = MCCODE_COMP_STRING_PAR_LEN; align = 1;
+  } else if (!strcmp(type, "char")) {
+    p->kind = MCRTPAR_CHAR;   size = 1;              align = 1;
+  } else if (!strcmp(type, "double")) {
+    p->kind = MCRTPAR_SYMBOL; size = sizeof(double); align = MCRT_ALIGN_DBL;
+  } else if (!strcmp(type, "MCNUM")) {
+    /* double, vector pointer or static vector: all share this type string */
+    const char *first = mcrt_first_instance_literal(ci, parameter, p->value);
+    if (first && first[0] == '{') {
+      p->kind  = MCRTPAR_VECTOR_ARR;
+      p->nelem = mcrt_parse_curly(first, NULL, 0);
+      size = p->nelem*sizeof(double); align = MCRT_ALIGN_DBL;
+    } else if ((defval && !strcmp(defval, "NULL"))
+            || (p->value && (!strcmp(p->value, "NULL") || p->value[0] == '&'))) {
+      p->kind = MCRTPAR_VECTOR_PTR; size = sizeof(double*); align = MCRT_ALIGN_PTR;
+    } else {
+      p->kind = MCRTPAR_DOUBLE; size = sizeof(double); align = MCRT_ALIGN_DBL;
+    }
+  } else {
+    p->kind = MCRTPAR_UNKNOWN;
+    c->unknown_type = 1;
+  }
+
+  p->offset = (c->next_offset + align - 1) / align * align;
+  c->next_offset = p->offset + size;
+  mcrtpar_num++;
+
+  /* validate reconstructed layout against the values just assigned in setpos */
+  if (!c->base || c->unknown_type) return;
+  {
+    char *addr = (char *)c->base + p->offset;
+    switch (p->kind) {
+      case MCRTPAR_STRING: {
+        const char *expect = value ? value : "";
+        if (strncmp(addr, expect, MCCODE_COMP_STRING_PAR_LEN-1)) c->n_failed++;
+        else c->n_checked++;
+        break;
+      }
+      case MCRTPAR_INT: {
+        long l; int iv;
+        memcpy(&iv, addr, sizeof(int));
+        if (mcrt_literal_long(p->value, &l)) {
+          if ((long)iv == l) c->n_checked++; else c->n_failed++;
+        }
+        break;
+      }
+      case MCRTPAR_DOUBLE: {
+        double d, v;
+        memcpy(&v, addr, sizeof(double));
+        if (mcrt_literal_double(p->value, &d)) {
+          if (v == d) c->n_checked++; else c->n_failed++;
+        } else if (p->value && !strcmp(p->value, "UNSET")) {
+          /* UNSET is a NaN with a specific payload: a strong layout check */
+          if (is_unset(v)) c->n_checked++; else c->n_failed++;
+        } else if (mcrt_looks_like_pointer(v)) {
+          p->kind = MCRTPAR_VECTOR_PTR; /* same size and alignment on LP64/LLP64 */
+        }
+        break;
+      }
+      case MCRTPAR_VECTOR_ARR: {
+        if (p->value && p->value[0] == '{' && p->nelem > 0) {
+          long k, n;
+          double *vals = calloc(p->nelem, sizeof(double));
+          if (vals) {
+            int ok = 1;
+            n = mcrt_parse_curly(p->value, vals, p->nelem);
+            if (n > p->nelem) n = p->nelem;
+            for (k = 0; k < n; k++) {
+              double v;
+              memcpy(&v, addr + k*sizeof(double), sizeof(double));
+              if (v != vals[k]) ok = 0;
+            }
+            if (ok) c->n_checked++; else c->n_failed++;
+            free(vals);
+          }
+        }
+        break;
+      }
+      default: break; /* CHAR, SYMBOL, VECTOR_PTR: not checkable */
+    }
+  }
+}
+
+/* write runtime_value/runtime_value_status into an existing parameter NXnote */
+static void mcrt_write_attrs(NXhandle f, char *nexuscomp, char *parameter,
+                             const char *value, const char *status)
+{
+  NXMDisableErrorReporting();
+  if (NXopengroup(f, "instrument", "NXinstrument") == NX_OK) {
+    if (NXopengroup(f, "components", "NXdata") == NX_OK) {
+      if (NXopengroup(f, nexuscomp, "NXdata") == NX_OK) {
+        if (NXopengroup(f, "parameters", "NXdata") == NX_OK) {
+          if (NXopengroup(f, parameter, "NXnote") == NX_OK) {
+            /* zero-length attributes are not supported: omit empty values */
+            if (value && strlen(value))
+              NXputattr(f, "runtime_value", (void *)value, strlen(value), NX_CHAR);
+            NXputattr(f, "runtime_value_status", (void *)status, strlen(status), NX_CHAR);
+            NXclosegroup(f); /* parameter */
+          }
+          NXclosegroup(f);   /* parameters */
+        }
+        NXclosegroup(f);     /* component */
+      }
+      NXclosegroup(f);       /* components */
+    }
+    NXclosegroup(f);         /* instrument */
+  }
+  NXMEnableErrorReporting();
+}
+
+static void mcrt_free_registry(void)
+{
+  long i;
+  for (i = 0; i < mcrtpar_num; i++) {
+    free(mcrtpar_list[i].parameter); free(mcrtpar_list[i].value);
+  }
+  for (i = 0; i < mcrtcomp_num; i++) {
+    free(mcrtcomp_list[i].nexuscomp); free(mcrtcomp_list[i].name);
+    free(mcrtcomp_list[i].comptype);
+  }
+  free(mcrtpar_list);  mcrtpar_list  = NULL; mcrtpar_num  = mcrtpar_alloc  = 0;
+  free(mcrtcomp_list); mcrtcomp_list = NULL; mcrtcomp_num = mcrtcomp_alloc = 0;
+}
+
+/*******************************************************************************
+* mccomp_param_runtime_nexus_all: write post-INIT values of all registered
+*   component SETTING parameters. Called from mccode_main() after init().
+*   requires: NXentry to be opened
+*******************************************************************************/
+void mccomp_param_runtime_nexus_all(NXhandle f)
+{
+  long i;
+
+  if (!f || mcdisable_output_files) { mcrt_free_registry(); return; }
+
+  for (i = 0; i < mcrtcomp_num; i++)
+    if (mcrtcomp_list[i].n_failed) {
+      fprintf(stderr, "Warning: NeXus runtime parameter values not stored for component %s=%s() "
+              "(parameter layout check failed %i times) (mccomp_param_runtime_nexus_all)\n",
+              mcrtcomp_list[i].name, mcrtcomp_list[i].comptype, mcrtcomp_list[i].n_failed);
+    }
+
+  for (i = 0; i < mcrtpar_num; i++) {
+    struct mcrtpar_struct  *p = &mcrtpar_list[i];
+    struct mcrtcomp_struct *c = &mcrtcomp_list[p->comp];
+    const char *status = NULL;
+    char  num[64];
+    char *buffer = NULL;
+    const char *strval = NULL;
+
+    if (!c->base)              status = "unsupported:no-instance";
+    else if (c->unknown_type)  status = "unsupported:unknown-type";
+    else if (c->n_failed)      status = "layout-mismatch";
+    else {
+      char *addr = (char *)c->base + p->offset;
+      switch (p->kind) {
+        case MCRTPAR_INT: {
+          int iv; memcpy(&iv, addr, sizeof(int));
+          snprintf(num, sizeof(num), "%d", iv); strval = num;
+          break;
+        }
+        case MCRTPAR_CHAR:
+          snprintf(num, sizeof(num), "%d", (int)*addr); strval = num;
+          break;
+        case MCRTPAR_STRING: {
+          size_t len = 0;
+          while (len < MCCODE_COMP_STRING_PAR_LEN-1 && addr[len]) len++;
+          buffer = malloc(len+1);
+          if (buffer) { memcpy(buffer, addr, len); buffer[len] = '\0'; strval = buffer; }
+          break;
+        }
+        case MCRTPAR_DOUBLE:
+        case MCRTPAR_SYMBOL: {
+          double v; memcpy(&v, addr, sizeof(double));
+          if (p->kind == MCRTPAR_DOUBLE && mcrt_looks_like_pointer(v))
+            status = "unsupported:pointer";
+          else {
+            if (is_unset(v)) strcpy(num, "UNSET");
+            else mcrt_format_double(num, sizeof(num), v);
+            strval = num;
+          }
+          break;
+        }
+        case MCRTPAR_VECTOR_ARR: {
+          long k;
+          size_t blen = (size_t)p->nelem*32 + 4;
+          buffer = malloc(blen);
+          if (buffer) {
+            size_t pos = 0;
+            pos += snprintf(buffer+pos, blen-pos, "{");
+            for (k = 0; k < p->nelem; k++) {
+              double v; char elem[32];
+              memcpy(&v, addr + k*sizeof(double), sizeof(double));
+              mcrt_format_double(elem, sizeof(elem), v);
+              pos += snprintf(buffer+pos, blen-pos, "%s%s", k ? ", " : "", elem);
+            }
+            snprintf(buffer+pos, blen-pos, "}");
+            strval = buffer;
+          }
+          break;
+        }
+        case MCRTPAR_VECTOR_PTR:
+          status = "unsupported:pointer";
+          break;
+        default:
+          status = "unsupported:unknown-type";
+      }
+      if (!status) status = c->n_checked ? "ok" : "unverified";
+    }
+    mcrt_write_attrs(f, c->nexuscomp, p->parameter, strval, status);
+    free(buffer);
+  }
+  mcrt_free_registry();
+} /* mccomp_param_runtime_nexus_all */
+
+/*******************************************************************************
 * mccomp_placement_type_nexus:
 *   Places
 *    - absolute (3x1) position
@@ -1834,6 +2270,7 @@ static void mccomp_placement_type_nexus(NXhandle nxhandle, char* component, Coor
 
   #ifdef USE_NEXUS
   if(nxhandle) {
+    mcrt_register_comp(component, comptype); /* for post-INIT runtime values */
     if (NXopengroup(nxhandle, "instrument", "NXinstrument") == NX_OK) {
       if (NXopengroup(nxhandle, "components", "NXdata") == NX_OK) {
 	if (NXmakegroup(nxhandle, component, "NXdata") == NX_OK) {
@@ -1898,6 +2335,7 @@ static void mccomp_param_nexus(NXhandle nxhandle, char* component, char* paramet
 
   #ifdef USE_NEXUS
   if(nxhandle) {
+    mcrt_register_param(component, parameter, defval, value, type); /* for post-INIT runtime values */
     if (NXopengroup(nxhandle, "instrument", "NXinstrument") == NX_OK) {
       if (NXopengroup(nxhandle, "components", "NXdata") == NX_OK) {
 	if (NXopengroup(nxhandle, component, "NXdata") == NX_OK) {
