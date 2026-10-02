@@ -20,7 +20,9 @@ int mccode_main(int argc, char *argv[])
   MPI_Init(&argc,&argv);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_node_count); /* get number of nodes */
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_node_rank);
-  MPI_Comm_set_name(MPI_COMM_WORLD, instrument_name);
+  /* PW 2026100 - workaround for issue on macOS arm64 with openmpi=5:
+    https://github.com/open-mpi/ompi/issues/14558
+  /* MPI_Comm_set_name(MPI_COMM_WORLD, instrument_name); */
   MPI_Get_processor_name(mpi_node_name, &mpi_node_name_len);
 #endif /* USE_MPI */
 
