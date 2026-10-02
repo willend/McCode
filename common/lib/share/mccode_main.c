@@ -135,6 +135,14 @@ int mccode_main(int argc, char *argv[])
   SIG_MESSAGE("[" __FILE__ "] main INITIALISE");
   init();
 
+#ifdef USE_NEXUS
+  /* store component SETTING parameter values as present at end of INITIALISE */
+  MPI_MASTER(
+    if (nxhandle && !mcdotrace && mcformat && strcasestr(mcformat, "NeXus"))
+      mccomp_param_runtime_nexus_all(nxhandle);
+  );
+#endif
+
 
 #ifndef NOSIGNALS
 #ifdef SIGINT
