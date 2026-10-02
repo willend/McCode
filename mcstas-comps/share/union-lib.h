@@ -49,6 +49,7 @@ enum process {
   IncoherentPhonon,
   NCrystal,
   Non,
+  MCViNE,
   Template
 };
 
@@ -79,6 +80,7 @@ enum surface {
 #define UNION_CASE_PHYSICS_MY_INCOHERENTPHONON(out, ...)
 #define UNION_CASE_PHYSICS_MY_NCRYSTAL(out, ...)
 #define UNION_CASE_PHYSICS_MY_NON(out, ...)
+#define UNION_CASE_PHYSICS_MY_MCVINE(out, ...)
 #define UNION_CASE_PHYSICS_MY_TEMPLATE(out, ...)
 
 #define UNION_CASE_PHYSICS_SCATTERING_INHOMOGENOUS_INCOHERENT(out, ...)
@@ -91,6 +93,7 @@ enum surface {
 #define UNION_CASE_PHYSICS_SCATTERING_INCOHERENTPHONON(out, ...)
 #define UNION_CASE_PHYSICS_SCATTERING_NCRYSTAL(out, ...)
 #define UNION_CASE_PHYSICS_SCATTERING_NON(out, ...)
+#define UNION_CASE_PHYSICS_SCATTERING_MCVINE(out, ...)
 #define UNION_CASE_PHYSICS_SCATTERING_TEMPLATE(out, ...)
 
 #define UNION_CASE_PHYSICS_SURFACE_MIRROR(out, ...)
@@ -107,6 +110,7 @@ enum surface {
   UNION_CASE_PHYSICS_MY_INCOHERENTPHONON(out, __VA_ARGS__) \
   UNION_CASE_PHYSICS_MY_NCRYSTAL(out, __VA_ARGS__) \
   UNION_CASE_PHYSICS_MY_NON(out, __VA_ARGS__) \
+  UNION_CASE_PHYSICS_MY_MCVINE(out, __VA_ARGS__) \
   UNION_CASE_PHYSICS_MY_TEMPLATE(out, __VA_ARGS__)
 
 #define UNION_CASES_PHYSICS_SCATTERING(out, ...) \
@@ -120,6 +124,7 @@ enum surface {
   UNION_CASE_PHYSICS_SCATTERING_INCOHERENTPHONON(out, __VA_ARGS__) \
   UNION_CASE_PHYSICS_SCATTERING_NCRYSTAL(out, __VA_ARGS__) \
   UNION_CASE_PHYSICS_SCATTERING_NON(out, __VA_ARGS__) \
+  UNION_CASE_PHYSICS_SCATTERING_MCVINE(out, __VA_ARGS__) \
   UNION_CASE_PHYSICS_SCATTERING_TEMPLATE(out, __VA_ARGS__)
 
 #define UNION_CASES_PHYSICS_SURFACE(out, ...) \
@@ -619,6 +624,7 @@ union data_transfer_union{
     struct Texture_physics_storage_struct *pointer_to_a_Texture_physics_storage_struct;
     struct NCrystal_physics_storage_struct *pointer_to_a_NCrystal_physics_storage_struct;
     struct Non_physics_storage_struct *pointer_to_a_Non_physics_storage_struct;
+    struct MCViNE_physics_storage_struct *pointer_to_a_MCViNE_physics_storage_struct;
     struct Template_physics_storage_struct *pointer_to_a_Template_physics_storage_struct;
     // possible to add as many structs as wanted, without increasing memory footprint.
 };
