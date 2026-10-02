@@ -83,9 +83,7 @@ DEPENDENCY "@NCRYSTALFLAGS@"
 
 SHARE
 %{
-  #ifndef Union
-  #error "ERROR: Union_NCrystal_material requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
 
   %include "mccode-ncrystal-lib"
   %include "union_ncrystal.c"
@@ -129,6 +127,7 @@ DECLARE
 
 INITIALIZE
 %{
+  struct union_state_struct* union_state_p = union_acquire ();
   memset (&params, 0, sizeof (params));
   memset (&NCrystal_storage, 0, sizeof (NCrystal_storage));
 
@@ -192,7 +191,7 @@ INITIALIZE
   sprintf (global_material_element.name, "%s", NAME_CURRENT_COMP);
   global_material_element.component_index = INDEX_CURRENT_COMP;
   global_material_element.physics = &this_material;
-  struct pointer_to_global_material_list* global_material_list = &g_material_list;
+  struct pointer_to_global_material_list* global_material_list = &union_state_p->u_material_list;
   add_element_to_material_list (global_material_list, global_material_element);
 %}
 
@@ -205,6 +204,7 @@ FINALLY
   ncrystal_unref (&params.scat);
   ncrystal_invalidate (&params.proc_scat);
   free (this_material.p_scattering_array);
+  union_release (NAME_CURRENT_COMP);
 %}
 
 END
