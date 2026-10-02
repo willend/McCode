@@ -44,7 +44,7 @@ Test instruments: `examples/Tests_samples/Test_MCViNE_<kernel>/`. Each runs the 
 |---|---|
 | `share/mcvine-lib.h/.c` | kernel physics, run-time expression evaluator, table/grid readers, DOS and Debye–Waller helpers, MCViNE IDF phonon readers, shapes and standalone transport |
 | `share/mcvine-union-lib.h/.c` | Union glue: a single process type `MCViNE` used by all kernels |
-| `share/union-lib.c`, `share/union-suffix.c` | registration of the `MCViNE` process type (enum entry, `data_transfer_union` member, two dispatch cases) |
+| `share/union-lib.h` | declaration of the `MCViNE` process type (enum entry, `data_transfer_union` member, empty default dispatch cases) |
 | `contrib/MCViNE_*_process.comp` | 16 Union processes |
 | `contrib/MCViNE_*.comp` | 16 standalone samples |
 | `examples/Tests_samples/Test_MCViNE_*` | 16 test instruments (Union and standalone) |
@@ -70,7 +70,7 @@ COMPONENT master = Union_master() AT (0,0,5) ABSOLUTE
 
 ### Implementation note on the Union core
 
-Union selects the physics functions with a `switch` on `enum process` (no function pointers, for GPU builds). One new entry, `MCViNE`, is added. Its storage struct carries a pointer to the kernel and to its sampling function, so further MCViNE kernels can be added without touching the Union core again. The change adds 12 lines (`share/union-lib.c`: enum entry and union member; `share/union-suffix.c`: two `case MCViNE:` blocks guarded by `PROCESS_MCVINE_DETECTOR`) and does not affect existing processes.
+Union selects the physics functions with a `switch` on `enum process` (no function pointers, for GPU builds). One new entry, `MCViNE`, is added. Its storage struct carries a pointer to the kernel and to its sampling function, so further MCViNE kernels can be added without touching the Union core again. In `share/union-lib.h` the change adds the enum entry, the `data_transfer_union` member and empty default dispatch macros (`UNION_CASE_PHYSICS_MY_MCVINE`, `UNION_CASE_PHYSICS_SCATTERING_MCVINE`); `share/mcvine-union-lib.h` replaces those defaults with the two `case MCViNE:` entries, so they are only active in instruments that use an MCViNE process. Like the other Union components, each process takes the shared Union state with `union_acquire()` in INITIALIZE and returns it with `union_release()` in FINALLY, and accepts the deprecated, unused `init` parameter. It does not affect existing processes.
 
 ## 4. Standalone components: transport, expressions and data formats
 

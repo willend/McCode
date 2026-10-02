@@ -33,8 +33,9 @@
 * Orientation: this process is anisotropic; its frame (Q vectors, reciprocal
 * vectors, atom positions) follows the ROTATED placement of this component.
 * The kernel code is shared with the standalone component MCViNE_E_vQ (mcvine-lib.c).
-* Uses share/mcvine-lib.h/.c and share/mcvine-union-lib.h/.c; the Union core
-* registers the process type MCViNE (share/union-lib.c, share/union-suffix.c).
+* Uses share/mcvine-lib.h/.c and share/mcvine-union-lib.h/.c; the process type
+* MCViNE is declared in share/union-lib.h and registered with Union_master in
+* share/mcvine-union-lib.h.
 *
 * Example: MCViNE_E_vQ_process(E_Q="20*(sin(Qx*1.57)^2+sin(Qy*1.57)^2+sin(Qz*1.57)^2)", S_Q="1", Emax=60, scattering_coefficient=10)
 *
@@ -50,6 +51,7 @@
 * Vc: [AA^3] Unit cell volume; when >0 the coefficient is sigma_scat/Vc
 * packing_factor: [1] Packing factor (scales the scattering coefficient)
 * interact_fraction: [1] Union: fraction of interactions forced to this process (-1: by cross section)
+* init: [string] Deprecated and unused, accepted like on the other Union components (see Union_init).
 *
 * %L
 * MCViNE documentation: https://mcvine.github.io
@@ -59,23 +61,18 @@
 
 DEFINE COMPONENT MCViNE_E_vQ_process
 
-SETTING PARAMETERS (string E_Q="10", string S_Q="1", Emax=10, int nsteps=1000, xacc=1e-3, scattering_coefficient=0, sigma_scat=0, Vc=0, packing_factor=1, interact_fraction=-1)
+SETTING PARAMETERS (string E_Q="10", string S_Q="1", Emax=10, int nsteps=1000, xacc=1e-3, scattering_coefficient=0, sigma_scat=0, Vc=0, packing_factor=1, interact_fraction=-1, string init="")
 
 NOACC
 
 SHARE
 %{
-  #ifndef Union
-  #error "ERROR: MCViNE_E_vQ_process requires the Union library. Add a Union_master component to load the libraries."
-  #endif
+  %include "union-lib"
   %include "read_table-lib"
   %include "mcvine-lib"
   %include "mcvine-union-lib"
   #ifndef PROCESS_DETECTOR
   #define PROCESS_DETECTOR dummy
-  #endif
-  #ifndef PROCESS_MCVINE_DETECTOR
-  #define PROCESS_MCVINE_DETECTOR dummy
   #endif
 %}
 
@@ -89,6 +86,7 @@ DECLARE
 
 INITIALIZE
 %{
+  struct union_state_struct* union_state_p = union_acquire ();
   double mu = 0, sig = 0;
   memset (&kernel, 0, sizeof (kernel));
   const char* vars[] = { "Qx", "Qy", "Qz" };
@@ -112,12 +110,17 @@ INITIALIZE
   storage.m_S = mcvine_S_E_vQ;
   storage.m_my_scattering = sig * packing_factor;
   storage.m_kind = MCVINE_UNION_GENERIC;
-  mcvine_union_register (&This_process, &global_process_element, &storage, NAME_CURRENT_COMP, INDEX_CURRENT_COMP, interact_fraction, 1, ROT_A_CURRENT_COMP);
+  mcvine_union_register (&union_state_p->u_process_list, &This_process, &global_process_element, &storage, NAME_CURRENT_COMP, INDEX_CURRENT_COMP, interact_fraction, 1, ROT_A_CURRENT_COMP);
 %}
 
 TRACE
 %{
   // the simulation is done in Union_master
+%}
+
+FINALLY
+%{
+  union_release (NAME_CURRENT_COMP);
 %}
 
 END

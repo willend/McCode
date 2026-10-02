@@ -45,7 +45,8 @@ MCViNE_physics_scattering (double* k_final, double* k_initial, double* weight, u
 }
 
 void
-mcvine_union_register (struct scattering_process_struct* proc, struct global_process_element_struct* elem, struct MCViNE_physics_storage_struct* storage,
+mcvine_union_register (struct pointer_to_global_process_list* process_list, struct scattering_process_struct* proc,
+                       struct global_process_element_struct* elem, struct MCViNE_physics_storage_struct* storage,
                        const char* name, int comp_index, double interact_fraction, int anisotropic, Rotation rot) {
   scattering_process_struct_init (proc);
   proc->non_isotropic_rot_index = anisotropic ? 1 : -1;
@@ -60,6 +61,6 @@ mcvine_union_register (struct scattering_process_struct* proc, struct global_pro
   sprintf (elem->name, "%s", name);
   elem->component_index = comp_index;
   elem->p_scattering_process = proc;
-  add_element_to_process_list (&g_process_list, *elem);
+  add_element_to_process_list (process_list, *elem);
 }
 #endif
