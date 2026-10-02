@@ -867,7 +867,8 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
 	    printf("Failed to open NeXus component hierarchy\n");
 	  }
 	  NXclosegroup(nxhandle); // instrument
-	} // nxhandle available
+	}
+      } // nxhandle available
     #ifdef USE_MPI
       } // Master only
     #endif

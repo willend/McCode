@@ -189,6 +189,9 @@ int mccode_main(int argc, char *argv[])
 
 
   // save/finally executed by master node/thread/host
+  // All MPI nodes reach this final save together: collective output (e.g.
+  // gathering event lists on the master) is only allowed from here on.
+  mcsave_final = 1;
   finally();
 
 

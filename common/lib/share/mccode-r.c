@@ -1046,7 +1046,8 @@ MCDETECTOR detector_import(
   /* determine detector rank (dimensionality) */
   if (!m || !n || !p || !p1) detector.rank = 4; /* invalid: exit with m=0 filename="" */
   else if (m*n*p == 1)       detector.rank = 0; /* 0D */
-  else if (n == 1 || m == 1) detector.rank = 1; /* 1D */
+  else if ((n == 1 || m == 1)
+        && !strcasestr(detector.format, "list")) detector.rank = 1; /* 1D (a single-event list stays a list) */
   else if (p == 1)           detector.rank = 2; /* 2D */
   else                       detector.rank = 3; /* 3D */
 
@@ -1510,29 +1511,8 @@ MCDETECTOR mcdetector_out_2D_ascii(MCDETECTOR detector)
       }
     } /* if outfile */
   ); /* MPI_MASTER */
-#ifdef USE_MPI
-  if (strcasestr(detector.format, "list") && mpi_node_count > 1) {
-    int node_i=0;
-    /* loop along MPI nodes to write sequentially */
-    for(node_i=0; node_i<mpi_node_count; node_i++) {
-      /* MPI: slaves wait for the master to write its block, then append theirs */
-      MPI_Barrier(MPI_COMM_WORLD);
-      if (node_i != mpi_node_root && node_i == mpi_node_rank) {
-        if(strlen(detector.filename) && !mcdisable_output_files)	/* Don't write if filename is NULL */
-          outfile = mcnew_file(detector.filename, "dat", &exists);
-        if (!exists)
-          fprintf(stderr, "Warning: [MPI node %i] file '%s' does not exist yet, "
-                          "MASTER should have opened it before.\n",
-            mpi_node_rank, detector.filename);
-        if(outfile) {
-          mcdetector_out_array_ascii(detector.m, detector.n*detector.p, detector.p1,
-            outfile, detector.istransposed);
-          fclose(outfile);
-        }
-      }
-    }
-  } /* if strcasestr list */
-#endif
+  /* MPI list mode: rows from all nodes are written by the master in
+     mcdetector_out_list_mpi (see mcdetector_out_2D_list) */
   return(detector);
 } /* mcdetector_out_2D_ascii */
 
@@ -2644,69 +2624,6 @@ int mcdetector_out_data_nexus(NXhandle f, MCDETECTOR detector)
   return(NX_OK);
 } /* mcdetector_out_array_nexus */
 
-#ifdef USE_MPI
-/*******************************************************************************
-* mcdetector_out_list_slaves: slaves send their list data to master which writes
-*   requires: NXentry to be opened
-* WARNING: this method has a flaw: it requires all nodes to flush the lists
-*   the same number of times. In case one node is just below the buffer size
-*   when finishing (e.g. monitor_nd), it may not trigger save but others may.
-*   Then the number of recv/send is not constant along nodes, and simulation stalls.
-*******************************************************************************/
-MCDETECTOR mcdetector_out_list_slaves(MCDETECTOR detector)
-{
-  int     node_i=0;
-  MPI_MASTER(
-	     printf("\n** MPI master gathering slave node list data ** \n");
-  );
-
-  if (mpi_node_rank != mpi_node_root) {
-    /* MPI slave: slaves send their data to master: 2 MPI_Send calls */
-    /* m, n, p must be sent first, since all slaves do not have the same number of events */
-    int mnp[3]={detector.m,detector.n,detector.p};
-
-    if (mc_MPI_Send(mnp, 3, MPI_INT, mpi_node_root)!= MPI_SUCCESS)
-      fprintf(stderr, "Warning: proc %i to master: MPI_Send mnp list error (mcdetector_out_list_slaves)\n", mpi_node_rank);
-    if (!detector.p1
-     || mc_MPI_Send(detector.p1, mnp[0]*mnp[1]*mnp[2], MPI_DOUBLE, mpi_node_root) != MPI_SUCCESS)
-      fprintf(stderr, "Warning: proc %i to master: MPI_Send p1 list error: mnp=%i (mcdetector_out_list_slaves)\n", mpi_node_rank, abs(mnp[0]*mnp[1]*mnp[2]));
-    /* slaves are done: sent mnp and p1 */
-  } /* end slaves */
-
-  /* MPI master: receive data from slaves sequentially: 2 MPI_Recv calls */
-
-  if (mpi_node_rank == mpi_node_root) {
-    for(node_i=0; node_i<mpi_node_count; node_i++) {
-      double *this_p1=NULL;                               /* buffer to hold the list from slaves */
-      int     mnp[3]={0,0,0};  /* size of this buffer */
-      if (node_i != mpi_node_root) { /* get data from slaves */
-	if (mc_MPI_Recv(mnp, 3, MPI_INT, node_i) != MPI_SUCCESS)
-	  fprintf(stderr, "Warning: master from proc %i: "
-		  "MPI_Recv mnp list error (mcdetector_write_data)\n", node_i);
-	if (mnp[0]*mnp[1]*mnp[2]) {
-	  this_p1 = (double *)calloc(mnp[0]*mnp[1]*mnp[2], sizeof(double));
-	  if (!this_p1 || mc_MPI_Recv(this_p1, abs(mnp[0]*mnp[1]*mnp[2]), MPI_DOUBLE, node_i)!= MPI_SUCCESS)
-	    fprintf(stderr, "Warning: master from proc %i: "
-		    "MPI_Recv p1 list error: mnp=%i (mcdetector_write_data)\n", node_i, mnp[0]*mnp[1]*mnp[2]);
-	  else {
-	    printf(". MPI master writing data for slave node %i\n",node_i);
-	    detector.p1 = this_p1;
-	    detector.m  = mnp[0]; detector.n  = mnp[1]; detector.p  = mnp[2];
-
-	    mcdetector_out_data_nexus(nxhandle, detector);
-	  }
-	}
-      } /* if not master */
-      free(this_p1);
-    } /* for */
-  MPI_MASTER(
-	     printf("\n** Done ** \n");
-  );
-  }
-  // Common return statement for slaves / master alike
-  return(detector);
-}
-#endif
 
 MCDETECTOR mcdetector_out_0D_nexus(MCDETECTOR detector)
 {
@@ -2734,12 +2651,6 @@ MCDETECTOR mcdetector_out_2D_nexus(MCDETECTOR detector)
   mcdetector_out_data_nexus(nxhandle, detector);
   );
 
-#ifdef USE_MPI // and USE_NEXUS
-  /* NeXus: slave nodes have master write their lists */
-  if (strcasestr(detector.format, "list") && mpi_node_count > 1) {
-    mcdetector_out_list_slaves(detector);
-  }
-#endif /* USE_MPI */
 
   return(detector);
 } /* mcdetector_out_2D_nexus */
@@ -3045,11 +2956,271 @@ MCDETECTOR mcdetector_out_2D(char *t, char *xl, char *yl,
 } /* mcdetector_out_2D */
 
 /*******************************************************************************
+* mcdetector_list_import: build the MCDETECTOR structure for a 2D_list call
+*   (no MPI communication for event lists, histograms are MPI_Reduce'd as usual)
+*******************************************************************************/
+static MCDETECTOR mcdetector_list_import(char *t, char *xl, char *yl,
+                  double x1, double x2, double y1, double y2,
+                  long m, long n,
+                  double *p0, double *p1, double *p2, char *f,
+                  char *c, Coords posa, Rotation rota, char* options, int index)
+{
+  char xvar[CHAR_BUF_LENGTH];
+  char yvar[CHAR_BUF_LENGTH];
+  int  islist = (mcformat && strcasestr(mcformat, "list") != NULL);
+
+  /* create short axes labels */
+  if (xl && strlen(xl)) { strncpy(xvar, xl, CHAR_BUF_LENGTH); xvar[2]='\0'; }
+  else strcpy(xvar, "x");
+  if (yl && strlen(yl)) { strncpy(yvar, yl, CHAR_BUF_LENGTH); yvar[2]='\0'; }
+  else strcpy(yvar, "y");
+
+  MCDETECTOR detector;
+
+  /* import and perform basic detector analysis (and handle MPI_Reduce) */
+  if (!islist && labs(m) == 1) {/* n>1 on Y, m==1 on X: 1D, no X axis*/
+    detector = detector_import(mcformat,
+      c, (t ? t : MCCODE_STRING " 1D data"),
+      n, 1, 1,
+      yl, "", "Signal per bin",
+      yvar, "(I,Ierr)", "I",
+      y1, y2, x1, x2, 0, 0, f,
+      p0, p1, p2, posa, rota, index); /* write Detector: line */
+  } else if (!islist && labs(n)==1) {/* m>1 on X, n==1 on Y: 1D, no Y axis*/
+    detector = detector_import(mcformat,
+      c, (t ? t : MCCODE_STRING " 1D data"),
+      m, 1, 1,
+      xl, "", "Signal per bin",
+      xvar, "(I,Ierr)", "I",
+      x1, x2, y1, y2, 0, 0, f,
+      p0, p1, p2, posa, rota, index); /* write Detector: line */
+  }else {
+    detector = detector_import(mcformat,
+      c, (t ? t : MCCODE_STRING " 2D data"),
+      m, n, 1,
+      xl, yl, "Signal per bin",
+      xvar, yvar, "I",
+      x1, x2, y1, y2, 0, 0, f,
+     p0, p1, p2, posa, rota, index); /* write Detector: line */
+  }
+
+  if (options && strlen(options)) {
+    strncpy(detector.options, options, CHAR_BUF_LENGTH-1);
+    detector.options[CHAR_BUF_LENGTH-1] = '\0';
+  } else {
+    strcpy(detector.options,"None");
+  }
+
+
+  return(detector);
+} /* mcdetector_list_import */
+
+/*******************************************************************************
+* mcdetector_list_write: write one imported block (local, no MPI communication).
+*   append_raw=0: full write (NeXus data info + data, or ASCII header/# Data + rows)
+*   append_raw=1: continuation block, rows are appended to the existing data set
+*******************************************************************************/
+static void mcdetector_list_write(MCDETECTOR detector, int append_raw)
+{
+  if (!detector.p1 || !detector.m || mcdisable_output_files) return;
+
+#ifdef USE_NEXUS
+  if (strcasestr(detector.format, "NeXus")) {
+    if (!append_raw) mcdatainfo_out_nexus(nxhandle, detector);
+    mcdetector_out_data_nexus(nxhandle, detector);
+    return;
+  }
+#endif
+  if (!append_raw) {
+    mcdetector_out_2D_ascii(detector);
+  } else {
+    int   exists  = 0;
+    FILE *outfile = mcnew_file(detector.filename, "dat", &exists);
+    if (outfile) {
+      mcdetector_out_array_ascii(detector.m, detector.n*detector.p, detector.p1,
+        outfile, detector.istransposed);
+      fclose(outfile);
+    }
+  }
+} /* mcdetector_list_write */
+
+#ifdef USE_MPI
+/*******************************************************************************
+* MPI event-list output
+*
+*   Event lists are concatenated on the master node, which is the only writer.
+*
+*   During the final save (mcsave_final=1, set by mccode_main before finally())
+*   every node executes the same SAVE sequence, so the exchange is collective:
+*   the number of blocks per node is gathered first, hence nodes without any
+*   event still take part, and the master receives exactly what is announced.
+*
+*   Any other call (a list buffer flushed during TRACE, e.g. Monitor_nD
+*   'list all', or a signal-triggered save) happens at a different time on each
+*   node and must not communicate: the master writes its block directly, the
+*   other nodes append theirs to a local spool file which is sent to the master
+*   during the final save and then removed.
+*******************************************************************************/
+static char *mclist_spool_name(char *f, char *c, int index, int node)
+{
+  char valid[CHAR_BUF_LENGTH+1];
+  char name[2*CHAR_BUF_LENGTH];
+
+  if (!strcpy_valid(valid, (f && strlen(f)) ? f : c)) strcpy(valid, "list");
+  snprintf(name, sizeof(name), "mcspool_%d_%s_node%d", index, valid, node);
+  return(mcfull_file(name, "tmp")); /* dirname/name.tmp, to be freed */
+}
+
+/* number of complete blocks in a spool file; the file is rewound.
+   Sequential reads only (no fseek/ftell), so spool files may exceed 2 GB. */
+static long long mclist_spool_blocks(FILE *sp)
+{
+  long long blocks = 0, hdr[2];
+  double    scratch[4096];
+  if (!sp) return(0);
+  rewind(sp);
+  while (fread(hdr, sizeof(hdr), 1, sp) == 1) {
+    long long count = llabs(hdr[0])*llabs(hdr[1]);
+    while (count > 0) {
+      size_t chunk = count > 4096 ? 4096 : (size_t)count;
+      if (fread(scratch, sizeof(double), chunk, sp) != chunk) break;
+      count -= chunk;
+    }
+    if (count) break; /* incomplete last block: ignored */
+    blocks++;
+  }
+  rewind(sp);
+  return(blocks);
+}
+
+static MCDETECTOR mcdetector_out_list_mpi(char *t, char *xl, char *yl,
+                  double x1, double x2, double y1, double y2,
+                  long m, long n,
+                  double *p0, double *p1, double *p2, char *f,
+                  char *c, Coords posa, Rotation rota, char* options, int index)
+{
+  long long rows = p1 ? labs(m) : 0;
+  long long cols = labs(n);
+  MCDETECTOR detector;
+
+  /* local block: no MPI communication is done for lists in detector_import */
+  detector = mcdetector_list_import(t, xl, yl, x1, x2, y1, y2, m, n,
+    p0, p1, p2, f, c, posa, rota, options, index);
+
+  if (mcdisable_output_files) return(detector);
+
+  if (!mcsave_final) {
+    /* nodes are not synchronised: write (master) or spool (others) locally */
+    if (mpi_node_rank == mpi_node_root)
+      mcdetector_list_write(detector, 0);
+    else if (rows && cols) {
+      char *spool = mclist_spool_name(f, c, index, mpi_node_rank);
+      FILE *sp    = spool ? fopen(spool, "ab") : NULL;
+      long long hdr[2] = { m, n };
+      if (!sp
+       || fwrite(hdr, sizeof(hdr), 1, sp) != 1
+       || fwrite(p1, sizeof(double), rows*cols, sp) != (size_t)(rows*cols))
+        fprintf(stderr, "Warning: [MPI node %i] could not spool %lli events of %s to '%s' (mcdetector_out_list_mpi)\n",
+          mpi_node_rank, rows, c, spool ? spool : "(null)");
+      if (sp) fclose(sp);
+      free(spool);
+    }
+    return(detector);
+  }
+
+  /* final save: collective, every node takes part whatever its number of events */
+  long long  nblocks = 0, spooled = 0;
+  long long *blocks  = NULL;
+  char      *spool   = NULL;
+  FILE      *sp      = NULL;
+
+  if (mpi_node_rank != mpi_node_root) {
+    spool = mclist_spool_name(f, c, index, mpi_node_rank);
+    if (spool) sp = fopen(spool, "rb");
+    spooled = mclist_spool_blocks(sp);
+    nblocks = spooled + (rows && cols ? 1 : 0);
+  } else
+    blocks = (long long *)calloc(mpi_node_count, sizeof(long long));
+
+  MPI_Gather(&nblocks, 1, MPI_LONG_LONG, blocks, 1, MPI_LONG_LONG,
+    mpi_node_root, MPI_COMM_WORLD);
+
+  if (mpi_node_rank != mpi_node_root) {
+    /* send spooled blocks, then the current one */
+    long long hdr[2], sent = 0;
+    while (sent < nblocks) {
+      double *buf = NULL;
+      long long count;
+      if (sent < spooled) {
+        count = 0;
+        buf   = NULL;
+        if (fread(hdr, sizeof(hdr), 1, sp) == 1) {
+          count = llabs(hdr[0])*llabs(hdr[1]);
+          buf   = (double *)malloc(count*sizeof(double));
+        }
+        if (!buf || fread(buf, sizeof(double), count, sp) != (size_t)count) {
+          fprintf(stderr, "Error: [MPI node %i] could not read spooled events from '%s' (mcdetector_out_list_mpi)\n",
+            mpi_node_rank, spool);
+          MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+      } else { /* spool exhausted: current block */
+        hdr[0] = m; hdr[1] = n; count = rows*cols;
+        buf = p1;
+      }
+      mc_MPI_Send(hdr, 2, MPI_LONG_LONG, mpi_node_root);
+      mc_MPI_Send(buf, count, MPI_DOUBLE, mpi_node_root);
+      if (buf != p1) free(buf);
+      sent++;
+    }
+    if (sp) fclose(sp);
+    if (spool) { remove(spool); free(spool); }
+  } else {
+    /* master: own block first, then the other nodes in rank order */
+    int written = 0;
+    int node_i;
+    if (rows && cols && detector.m) { mcdetector_list_write(detector, 0); written = 1; }
+    for (node_i = 0; node_i < mpi_node_count; node_i++) {
+      long long k;
+      if (node_i == mpi_node_root) continue;
+      for (k = 0; k < blocks[node_i]; k++) {
+        long long hdr[2] = {0, 0};
+        long long count;
+        double   *buf;
+        MCDETECTOR block;
+        if (mc_MPI_Recv(hdr, 2, MPI_LONG_LONG, node_i) != MPI_SUCCESS) {
+          fprintf(stderr, "Error: MPI master could not receive event list header from node %i (mcdetector_out_list_mpi)\n", node_i);
+          MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+        count = llabs(hdr[0])*llabs(hdr[1]);
+        buf   = (double *)malloc((count ? count : 1)*sizeof(double));
+        if (!buf || mc_MPI_Recv(buf, count, MPI_DOUBLE, node_i) != MPI_SUCCESS) {
+          fprintf(stderr, "Error: MPI master could not receive %lli event list values from node %i (mcdetector_out_list_mpi)\n", count, node_i);
+          MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+        if (llabs(hdr[1]) != cols)
+          fprintf(stderr, "Warning: MPI node %i sent %lli columns for %s, master has %lli. Appending anyway.\n",
+            node_i, llabs(hdr[1]), c, cols);
+        if (count) {
+          block = mcdetector_list_import(t, xl, yl, x1, x2, y1, y2, (long)hdr[0], (long)hdr[1],
+            NULL, buf, NULL, f, c, posa, rota, options, index);
+          mcdetector_list_write(block, written);
+          written = 1;
+        }
+        free(buf);
+      }
+    }
+    free(blocks);
+  }
+  return(detector);
+} /* mcdetector_out_list_mpi */
+#endif /* USE_MPI */
+
+/*******************************************************************************
 * mcdetector_out_2D_list: List mode 2D including forwarding "options" from
 * Monitor_nD
 *
-*   Special case for list: master creates file first, then slaves append their
-*   blocks without header-
+*   With MPI, event lists from all nodes are written by the master, see
+*   mcdetector_out_list_mpi.
 *
 *   t:    title
 *   xl:   x-label
@@ -3076,51 +3247,17 @@ MCDETECTOR mcdetector_out_2D_list(char *t, char *xl, char *yl,
                   double *p0, double *p1, double *p2, char *f,
 		  char *c, Coords posa, Rotation rota, char* options, int index)
 {
-  char xvar[CHAR_BUF_LENGTH];
-  char yvar[CHAR_BUF_LENGTH];
-
-  /* create short axes labels */
-  if (xl && strlen(xl)) { strncpy(xvar, xl, CHAR_BUF_LENGTH); xvar[2]='\0'; }
-  else strcpy(xvar, "x");
-  if (yl && strlen(yl)) { strncpy(yvar, yl, CHAR_BUF_LENGTH); yvar[2]='\0'; }
-  else strcpy(yvar, "y");
-
   MCDETECTOR detector;
 
-  /* import and perform basic detector analysis (and handle MPI_Reduce) */
-  if (labs(m) == 1) {/* n>1 on Y, m==1 on X: 1D, no X axis*/
-    detector = detector_import(mcformat,
-      c, (t ? t : MCCODE_STRING " 1D data"),
-      n, 1, 1,
-      yl, "", "Signal per bin",
-      yvar, "(I,Ierr)", "I",
-      y1, y2, x1, x2, 0, 0, f,
-      p0, p1, p2, posa, rota, index); /* write Detector: line */
-  } else if (labs(n)==1) {/* m>1 on X, n==1 on Y: 1D, no Y axis*/
-    detector = detector_import(mcformat,
-      c, (t ? t : MCCODE_STRING " 1D data"),
-      m, 1, 1,
-      xl, "", "Signal per bin",
-      xvar, "(I,Ierr)", "I",
-      x1, x2, y1, y2, 0, 0, f,
-      p0, p1, p2, posa, rota, index); /* write Detector: line */
-  }else {
-    detector = detector_import(mcformat,
-      c, (t ? t : MCCODE_STRING " 2D data"),
-      m, n, 1,
-      xl, yl, "Signal per bin",
-      xvar, yvar, "I",
-      x1, x2, y1, y2, 0, 0, f,
-     p0, p1, p2, posa, rota, index); /* write Detector: line */
-  }
+#ifdef USE_MPI
+  /* event lists: all nodes must take part, also those without events */
+  if (mpi_node_count > 1 && mcformat && strcasestr(mcformat, "list"))
+    return(mcdetector_out_list_mpi(t, xl, yl, x1, x2, y1, y2, m, n,
+      p0, p1, p2, f, c, posa, rota, options, index));
+#endif
 
-  MPI_MASTER(
-  if (strlen(options)) {
-    strcpy(detector.options,options);
-  } else {
-    strcpy(detector.options,"None");
-  }
-  );
+  detector = mcdetector_list_import(t, xl, yl, x1, x2, y1, y2, m, n,
+    p0, p1, p2, f, c, posa, rota, options, index);
 
   if (!detector.p1 || !detector.m) return(detector);
 
