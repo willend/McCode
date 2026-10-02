@@ -4533,7 +4533,7 @@ mchelp(char *pgmname)
 "  -h        --help           Show this help message.\n"
 "  -i        --info           Detailed instrument information.\n"
 "  --list-parameters          Print the instrument parameters to standard out\n"
-"  -y        --yes            Assume default values for all parameters with a default\n"
+"  -y        --yes            Assume default values for parameters not given\n"
 "  --meta-list                Print names of components which defined metadata\n"
 "  --meta-defined COMP[:NAME] Print component defined metadata names, or (0,1) if NAME provided\n"
 "  --meta-type COMP:NAME      Print metadata format type specified in definition\n"
@@ -4916,17 +4916,9 @@ mcparseoptions(int argc, char *argv[])
   }
   if (mcusedefaults) {
     MPI_MASTER(
-     printf("Using all default parameter values\n");
+     printf("Using default values for parameters not given\n");
     );
-    for(j = 0; j < numipar; j++) {
-      int status;
-      if(mcinputtable[j].val && strlen(mcinputtable[j].val)){
-	status = (*mcinputtypes[mcinputtable[j].type].getparm)(mcinputtable[j].val,
-                        mcinputtable[j].par);
-	paramsetarray[j] = 1;
-	paramset = 1;
-      }
-    }
+    paramset = 1; /* defaults were already set above */
   }
   if(!paramset)
     mcreadparams();                /* Prompt for parameters if not specified. */

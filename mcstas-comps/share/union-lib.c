@@ -1274,9 +1274,10 @@ void write_tagging_tree(struct list_of_tagging_tree_node_pointers *master_list, 
     printf_history((struct dynamic_history_list *)(&total_history.saved_histories[history_iterate]));
   }
 
+  int exists=0;
   FILE *fp;
   
-  fp = fopen("union_history.dat","w");
+  fp = mcnew_file("union_history", "dat", &exists);
   if(!fp) {
     fprintf(stderr,"WARNING: Could not write to logging output file union_history.dat\n");
   } else {

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Instrument: Test_NMO
+* Instrument: Test_FlatEllipse_finite_mirror
 *
 * %I
 * Written by: Christoph Herb, TUM
@@ -7,11 +7,10 @@
 * Origin: TUM
 * %INSTRUMENT_SITE: Tests_optics
 *
-* Implements a test instrument for the component NMO
-* (an alias of FlatEllipse_finite_mirror).
+* Implements a test instrument for the component FlatEllipse_finite_mirror.
 *
 * %D
-* Implements a test instrument for the NMO component ,
+* Implements a test instrument for the component FlatEllipse_finite_mirror,
 * implementing Nested Mirror Optic (NMO) as suggested by B&ouml;ni et al.
 *
 * %P
@@ -43,7 +42,7 @@
 *
 * %E
 *******************************************************************************/
-DEFINE INSTRUMENT Test_NMO(
+DEFINE INSTRUMENT Test_FlatEllipse_finite_mirror(
     det_width=0.218,
     source_width=0.03,
     source_height=0.00000001,
@@ -124,7 +123,7 @@ ROTATED (0, 0, 0) RELATIVE source
 
 
 //----------------------------------- Now add the elliptical mirror ------------------------------------------------------
-COMPONENT flat_ellipse_horizontal = NMO(
+COMPONENT flat_ellipse_horizontal = FlatEllipse_finite_mirror(
     sourceDist=-(focal_length),
     LStart=-(focal_length),
     LEnd=focal_length,
