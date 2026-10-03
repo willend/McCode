@@ -1494,13 +1494,20 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
         if (i >= 0 && i < Vars->Coord_Bin[1] && j >= 0 && j < Vars->Coord_Bin[2])
         {
           if (Vars->Mon2D_N) {
+	    /* Temporary workaround for the NVC OpenACC ICE (NVIDIA TPR#39009):
+	       use local pointer aliases for atomic writes through struct members.
+	       Once fixed upstream, remove these aliases and restore the original
+	       Vars->... atomic expressions. */
+	    double *Mon2D_N = Vars->Mon2D_N[i];
+	    double *Mon2D_p = Vars->Mon2D_p[i];
+	    double *Mon2D_p2 = Vars->Mon2D_p2[i];
 	    double p2 = pp*pp;
             #pragma acc atomic
-	    Vars->Mon2D_N[i][j] = Vars->Mon2D_N[i][j]+1;
+	    Mon2D_N[j] = Mon2D_N[j]+1;
             #pragma acc atomic
-	    Vars->Mon2D_p[i][j] = Vars->Mon2D_p[i][j]+pp;
+	    Mon2D_p[j] = Mon2D_p[j]+pp;
             #pragma acc atomic
-	    Vars->Mon2D_p2[i][j] = Vars->Mon2D_p2[i][j] + p2;
+	    Mon2D_p2[j] = Mon2D_p2[j] + p2;
 	  }
         } else {
           outsidebounds=1; 
@@ -1514,13 +1521,16 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
           if (j >= 0 && j < Vars->Coord_Bin[i]) {
             if  (Vars->Flag_Multiple && Vars->Mon2D_N) {
 	      if (Vars->Mon2D_N) {
+		double *Mon2D_N = Vars->Mon2D_N[i-1];
+		double *Mon2D_p = Vars->Mon2D_p[i-1];
+		double *Mon2D_p2 = Vars->Mon2D_p2[i-1];
 		double p2 = pp*pp;
                 #pragma acc atomic
-		Vars->Mon2D_N[i-1][j] = Vars->Mon2D_N[i-1][j]+1;
+		Mon2D_N[j] = Mon2D_N[j]+1;
                 #pragma acc atomic
-		Vars->Mon2D_p[i-1][j] = Vars->Mon2D_p[i-1][j]+pp;
+		Mon2D_p[j] = Mon2D_p[j]+pp;
 		#pragma acc atomic
-		Vars->Mon2D_p2[i-1][j] = Vars->Mon2D_p2[i-1][j] + p2;
+		Mon2D_p2[j] = Mon2D_p2[j] + p2;
 	      }
 	    }
           } else { 
@@ -1535,11 +1545,12 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
     { /* now store Coord into Buffer (no index needed) if necessary (list or auto limits) */
       if ((Vars->Buffer_Counter < Vars->Buffer_Block) && ((Vars->Flag_List) || (Vars->Flag_Auto_Limits == 1)))
       {
+        double *Mon2D_Buffer = Vars->Mon2D_Buffer;
         for (i = 0; i <= Vars->Coord_Number; i++)
         {
 	  // This is is where the list is appended. How to make this "atomic"?
           #pragma acc atomic write 
-          Vars->Mon2D_Buffer[i + Vars->Buffer_Counter*(Vars->Coord_Number+1)] = Coord[i];
+          Mon2D_Buffer[i + Vars->Buffer_Counter*(Vars->Coord_Number+1)] = Coord[i];
         }
 	    #pragma acc atomic update
         Vars->Buffer_Counter = Vars->Buffer_Counter + 1;
@@ -1595,6 +1606,7 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
     char    label[CHAR_BUF_LENGTH];
 
     MCDETECTOR detector;
+    memset(&detector, 0, sizeof(detector));
     strcpy(detector.options,Vars->option);
     if (Vars->Flag_Verbose && Vars->Flag_per_cm2) {
       printf("Monitor_nD: %s: active flat detector area is %g [cm^2], total area is %g [cm^2]\n",
@@ -1795,7 +1807,7 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
             if (min1d == max1d) max1d = min1d+1e-6;
             p1m = (double *)malloc(Vars->Coord_Bin[i+1]*sizeof(double));
             p2m = (double *)malloc(Vars->Coord_Bin[i+1]*sizeof(double));
-            if (p2m == NULL) /* use Raw Buffer line output */
+            if (p1m == NULL || p2m == NULL) /* use Raw Buffer line output */
             {
               if (Vars->Flag_Verbose) printf("Monitor_nD: %s cannot allocate memory for output. Using raw data.\n", Vars->compcurname);
               if (p1m != NULL) free(p1m);
@@ -1873,14 +1885,11 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
         p0m = (double *)malloc(Vars->Coord_Bin[1]*Vars->Coord_Bin[2]*sizeof(double));
         p1m = (double *)malloc(Vars->Coord_Bin[1]*Vars->Coord_Bin[2]*sizeof(double));
         p2m = (double *)malloc(Vars->Coord_Bin[1]*Vars->Coord_Bin[2]*sizeof(double));
-        if (p2m == NULL)
+        if (p0m == NULL || p1m == NULL || p2m == NULL)
         {
           if (Vars->Flag_Verbose) printf("Monitor_nD: %s cannot allocate memory for 2D array (%zi). Skipping.\n", Vars->compcurname, 3*Vars->Coord_Bin[1]*Vars->Coord_Bin[2]*sizeof(double));
-          /* comment out 'free memory' lines to avoid loosing arrays if
-               'detector' structure is used by other instrument parts
           if (p0m != NULL) free(p0m);
           if (p1m != NULL) free(p1m);
-          */
         }
         else
         {
