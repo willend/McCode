@@ -28,7 +28,7 @@
 * 30       | Sample Stage (XAS configuration)
 * 35       | Sample Stage (SEXAFS configuration)
 *
-* %Example: E0=8, dE=0.1, M1_angle=0.5, M2_angle=0.5, def_angle=2.0, sample_pos=30
+* %Example: E0=8 dE=0.1 M1_angle=0.5 M2_angle=0.5 def_angle=2.0 sample_pos=30
 *
 * %Parameters
 * E0:               [keV]  Central energy (1.4 - 13 keV)
