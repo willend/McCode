@@ -44,8 +44,6 @@ Parameters in **boldface** are required; the others are optional.
 | DCM |  | If nonzero the high-resolution SI DCM is active. | 1 |
 | DMM |  | If nonzero the multilayer mono is active. | 0 |
 | OH_2DCRL_N |  | Number of 2D focus CRLs in the optics hutch transfocator. 0 means transfocator is inactive. | 0 |
-| EH_2DCRL_N |  |  | 0 |
-| D_EH_2DCRL |  |  | 0 |
 | sample_radius | m | Powder sample cylinder radius | 100e-6 |
 | pxrd_2d_y | m | Offset of 2d-area detector centre perpendicular to the detector arm. | 135e-3 |
 | pxrd_2d_tthc |  | Rotation around the sample tube (i.e. the x-axis) of the 2d-area detector arm. | 0 |
