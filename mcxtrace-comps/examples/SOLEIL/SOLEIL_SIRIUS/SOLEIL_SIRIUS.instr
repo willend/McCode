@@ -28,7 +28,7 @@
 * 30       | Sample Stage (XAS configuration)
 * 35       | Sample Stage (SEXAFS configuration)
 *
-* %Example: E0=8 Detector: det_2d_I=1.11163e+07
+* %Example: E0=8 Detector: def_loc_I=2.14522e+10
 *
 * %Parameters
 * E0:               [keV]  Central energy (1.4 - 13 keV)
@@ -200,6 +200,10 @@ ROTATED (-def_angle, 0, 0) RELATIVE def_loc
 // -----------------------------------------------------------------------------
 COMPONENT sample_stage = COPY(M1_loc)
 AT (0, 0, sample_pos - 18) RELATIVE def_out 
+EXTEND
+%{ 
+	if (!SCATTERED) ABSORB;
+%}
 
 SPLIT COMPONENT fluo = FluoPowder(
     material=sample,
