@@ -447,9 +447,12 @@ jobs:
              export DIFFBASE=$(git merge-base origin/main HEAD)
            fi
            echo "Diffing against: $DIFFBASE"
+           # Only count .comp/.instr files whose code changed (body from DEFINE
+           # onward, plus %Example lines); doc-header-only edits are skipped.
+           PY=$(command -v python3 || command -v python)
            export RUNALL="NO"
-           export CHANGEDCOMPS=$(git diff --name-only $DIFFBASE HEAD | grep '\.comp$' | grep mcstas-comps | xargs -n1 basename | sed 's/\.comp//g' | sort | uniq | xargs echo)
-           export NUMCHANGEDCOMPS=$(git diff --name-only $DIFFBASE HEAD | grep '\.comp$' | grep mcstas-comps | wc -l | xargs echo)
+           export CHANGEDCOMPS=$(${PY} devel/bin/mccode-git-diff-code $DIFFBASE HEAD | grep '\.comp$' | grep mcstas-comps | xargs -n1 basename | sed 's/\.comp//g' | sort | uniq | xargs echo)
+           export NUMCHANGEDCOMPS=$(${PY} devel/bin/mccode-git-diff-code $DIFFBASE HEAD | grep '\.comp$' | grep mcstas-comps | wc -l | xargs echo)
            cd -
            compindex=0
            if [ "$NUMCHANGEDCOMPS" != "0" ];
@@ -473,8 +476,8 @@ jobs:
            fi
 
            cd src
-           export CHANGEDINSTR=$(git diff --name-only $DIFFBASE HEAD | grep '\.instr$' | grep mcstas-comps | xargs -n1 basename | sed 's/\.instr//g' | sort | uniq | xargs echo | sed 's/ /,/g')
-           export NUMCHANGEDINSTR=$(git diff --name-only $DIFFBASE HEAD | grep '\.instr$' | grep mcstas-comps | wc -l | xargs echo)
+           export CHANGEDINSTR=$(${PY} devel/bin/mccode-git-diff-code $DIFFBASE HEAD | grep '\.instr$' | grep mcstas-comps | xargs -n1 basename | sed 's/\.instr//g' | sort | uniq | xargs echo | sed 's/ /,/g')
+           export NUMCHANGEDINSTR=$(${PY} devel/bin/mccode-git-diff-code $DIFFBASE HEAD | grep '\.instr$' | grep mcstas-comps | wc -l | xargs echo)
            echo ----
            echo $NUMCHANGEDCOMPS components and $NUMCHANGEDINSTR instruments were changed, resulting in this list:
            echo $CHANGEDINSTR
