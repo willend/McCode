@@ -28,23 +28,23 @@
 * 30       | Sample Stage (XAS configuration)
 * 35       | Sample Stage (SEXAFS configuration)
 *
-* %Example: E0=8 dE=0.1 M1_angle=0.5 M2_angle=0.5 def_angle=2.0 sample_pos=30
+* %Example: E0=8 Detector: det_2d_I=1.11163e+07
 *
 * %Parameters
 * E0:               [keV]  Central energy (1.4 - 13 keV)
 * dE:               [keV]  Energy spread
-* M1_angle:         [deg]  Incidence angle of M1
-* M2_angle:         [deg]  Incidence angle of M2
-* def_angle:        [deg]  Deflection mirror tilt (for grazing incidence)
+* M1_angle:         [mrad] Incidence angle of M1
+* M2_angle:         [mrad] Incidence angle of M2
+* def_angle:        [mrad] Deflection mirror tilt (for grazing incidence)
 * sample_pos:       [m]    Distance to sample (30 for XAS, 35 for SEXAFS)
-* sample:           [str] Sample structure file
+* sample:           [str]  Sample structure file
 *
 * %Link
 * Documentation: APS_BL20.pdf
 *******************************************************************************/
 
 DEFINE INSTRUMENT SOLEIL_SIRIUS(E0=8, dE=0.1, 
-  M1_angle=0.5, M2_angle=0.5, def_angle=2.0,
+  M1_angle=3, M2_angle=3, def_angle=2.0,
   sample_pos=30,
   string sample="LaB6.cif")
 
@@ -55,14 +55,17 @@ DECLARE
   double M1_radius;
   double M2_radius;
   double def_mirror_radius;
+  double dcm_gap;
 %}
 
 INITIALIZE
 %{
   // 1. Monochromator Setup (Si 111)
-  d_si = 0.3135e-3; // Si(111) d-spacing
-  double lambda = 12.3984 / E0;
-  DCM_theta = asin(lambda / (2.0 * d_si)) * RAD2DEG;
+  double DM= 5.4909;     // Si d-spacing
+  double d = DM/sqrt(3); // <111> reflection |<111>|=3
+  double sin_theta = 2*PI/E2K/E0 / 2 / d;
+  DCM_theta = asin(sin_theta)*RAD2DEG;
+  dcm_gap  = 0.01;       // gap between the 2 monochromator crystals
 
   // 2. Mirror Radii (Approximation based on typical vertical focusing)
   M1_radius = 1000.0; 
@@ -71,8 +74,12 @@ INITIALIZE
 
   MPI_MASTER(
     printf("%s: E0=%g [keV] DCM_theta=%g [deg]\n", NAME_INSTRUMENT, E0, DCM_theta);
-    printf("%s: M1_angle=%g [deg] M2_angle=%g [deg] Deflect=%g [deg]\n", NAME_INSTRUMENT, M1_angle, M2_angle, def_angle);
+    printf("%s: M1_angle=%g [mrad] M2_angle=%g [mrad] Deflect=%g [mrad]\n", NAME_INSTRUMENT, M1_angle, M2_angle, def_angle);
   );
+  
+  M1_angle *= RAD2DEG/1000;
+  M2_angle *= RAD2DEG/1000;
+  def_angle *= RAD2DEG/1000;
 %}
 
 TRACE
@@ -91,7 +98,8 @@ AT (0, 0, 0) RELATIVE origin
 // -----------------------------------------------------------------------------
 // OPTICS 1: Primary Mirrors (M1 & M2 - Vertically Focusing)
 // -----------------------------------------------------------------------------
-COMPONENT M1_loc = Arm()
+COMPONENT M1_loc = Monitor_nD(
+  xwidth=0.02, yheight=0.02, options="x y", restore_xray=1)
 AT (0, 0, 14) RELATIVE origin
 
 COMPONENT M1_rot = Arm()
@@ -114,36 +122,62 @@ ROTATED (-M1_angle, 0, 0) RELATIVE M1_loc
 // -----------------------------------------------------------------------------
 // OPTICS 2: Fixed-exit Double Crystal Monochromator (DCM)
 // -----------------------------------------------------------------------------
-COMPONENT DCM_loc = Arm()
+
+COMPONENT DCM_location = COPY(M1_loc)
 AT (0, 0, 2) RELATIVE M1_out // 14 + 2 = 16m
 
-// Crystal 1 (Flat)
-COMPONENT crystal1 = Bragg_crystal(
-    length=0.1, width=0.05,
-    material="Si.txt", h=1, k=1, l=1, crystal_type=1)
-AT (0, 0, 0) RELATIVE DCM_loc
-ROTATED (-DCM_theta, 0, 0) RELATIVE DCM_loc
-EXTEND %{ 
-  if (!SCATTERED) ABSORB; 
+// the M1 mirror should reduce the divergence so that the beam is parallel
+// when hitting the monochromators, to reduce the energy spread
+COMPONENT bragg_crystal = Bragg_crystal(
+    length=0.2, 
+    width=0.1,
+    material = "Si.txt",
+    h = 1, k = 1, l = 1,
+    crystal_type = 2
+)
+AT (0, 0, 0)               RELATIVE DCM_location
+ROTATED (-DCM_theta, 0, 0) RELATIVE DCM_location
+EXTEND
+%{ 
+	if (!SCATTERED) ABSORB;
 %}
 
-// Crystal 2 (Bent for Sagittal focusing)
-COMPONENT crystal2 = COPY(crystal1)(
-    length=0.09)
-AT (0, 0, 0.01) RELATIVE crystal1
-ROTATED (DCM_theta, 0, 0) RELATIVE crystal1
-EXTEND %{ 
-  if (!SCATTERED) ABSORB; 
+COMPONENT arm_crystal1 = Arm()
+AT (0, 0, 0)               RELATIVE PREVIOUS
+ROTATED (-DCM_theta, 0, 0) RELATIVE PREVIOUS
+
+/* -------------------------------------------------- CC crystal 2 */
+COMPONENT bragg_crystal_two = COPY(bragg_crystal)(
+    length=0.2) 
+AT (0, dcm_gap, DCM_theta ? dcm_gap/tan(DCM_theta*DEG2RAD) : 0) RELATIVE bragg_crystal
+ROTATED (DCM_theta, 0, 0) RELATIVE arm_crystal1
+EXTEND
+%{ 
+	if (!SCATTERED) ABSORB;
 %}
 
-COMPONENT DCM_out = Arm()
-AT (0, 0, 0) RELATIVE crystal2
-ROTATED (DCM_theta, 0, 0) RELATIVE DCM_loc
+COMPONENT arm_crystal2 = Arm()
+AT (0, 0, 0) RELATIVE PREVIOUS
+ROTATED (DCM_theta, 0, 0) RELATIVE PREVIOUS
+
+/* -------------------------------------------------- Horizontal slit 5 */
+// the beam is positioned at Y=+dy*sin(2*DCM_theta*DEG2RAD)/sin(DCM_theta*DEG2RAD) 
+// with dy=0.01 (CC gap) wrt the CC entry
+COMPONENT DCM_out = COPY(DCM_location)(yheight=0.02)
+AT (0, 0, 0.2) RELATIVE arm_crystal2
+ROTATED (0,0,0) RELATIVE arm_crystal2          // TODO: small rotation to move beam at 0 divergence
+
+COMPONENT DCM_out_div = COPY(DCM_location)(options="dx limits=[-0.5 0.5], dy limits=[-0.5 0.5]", yheight=0.2)
+AT (0, 0,0) RELATIVE DCM_out
+
+COMPONENT DCM_out_e = Monitor_nD(
+   options="energy", xwidth=0.1, yheight=0.2, bins=512, min=E0-dE, max=E0+dE)
+AT (0, 0,0) RELATIVE DCM_out
 
 // -----------------------------------------------------------------------------
 // OPTICS 3: Deflection Mirror (for Grazing Incidence)
 // -----------------------------------------------------------------------------
-COMPONENT def_loc = Arm()
+COMPONENT def_loc = COPY(M1_loc)
 AT (0, 0, 2) RELATIVE DCM_out // 16 + 2 = 18m
 
 COMPONENT def_rot = Arm()
@@ -164,22 +198,14 @@ ROTATED (-def_angle, 0, 0) RELATIVE def_loc
 // -----------------------------------------------------------------------------
 // SAMPLE STAGE
 // -----------------------------------------------------------------------------
-COMPONENT sample_stage = Arm()
+COMPONENT sample_stage = COPY(M1_loc)
 AT (0, 0, sample_pos - 18) RELATIVE def_out 
 
-SPLIT COMPONENT powder = PowderN(
-    reflections=sample, 
-    xwidth=0.002, yheight=0.002, zdepth=1e-5,
-    p_interact=0.5)
-AT (0, 0, 0) RELATIVE sample_stage
-GROUP samples
-
-COMPONENT fluo = Fluorescence(
+SPLIT COMPONENT fluo = FluoPowder(
     material=sample,
     xwidth=0.002, yheight=0.002, zdepth=1e-5,
     p_interact=1, target_z=1)
 AT (0, 0, 0) RELATIVE sample_stage
-GROUP samples
 
 // -----------------------------------------------------------------------------
 // DETECTORS
