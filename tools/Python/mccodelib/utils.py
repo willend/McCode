@@ -643,8 +643,7 @@ def parse_params(params_line):
         tpe = None
         dval = None
         name = None
-        if re.search(r'^ ', part):
-            part = part[1:]
+        part = part.strip()
         if re.match(r'double ', part):
             part = part.replace('double ', '').strip()
         if re.match(r'string ', part):
