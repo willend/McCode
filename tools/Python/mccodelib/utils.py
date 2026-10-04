@@ -459,6 +459,7 @@ def parse_header(text):
     
     # params
     par_doc = None
+    cont = False
     for l in bites[tag_P].splitlines():
         # regex is tolerant for mising ':' in  param: [unit] description
         m = re.match(r'(\w+)[: \t]*\[([ \w\/\(\)\\\~\-.,\":\%\^\|\{\};\*\&\#]*)\][ \t]*(.*)', l)
@@ -466,11 +467,19 @@ def parse_header(text):
         if m:
             par_doc = (m.group(1), m.group(2), m.group(3).strip())
             info.params_docs.append(par_doc)
+            cont = True
         else:
             m = re.match(r'(\w+):[ \t]*(.*)', l)
             if m:
                 par_doc = (m.group(1), "", m.group(2).strip())
                 info.params_docs.append(par_doc)
+                cont = True
+            elif cont and l.strip() and not re.match(r'[%/]', l):
+                # continuation line of a multi-line parameter doc string
+                n, u, d = info.params_docs[-1]
+                info.params_docs[-1] = (n, u, (d + ' ' + l.strip()).strip())
+            else:
+                cont = False
     
     # links
     for l in bites[tag_L].splitlines():
