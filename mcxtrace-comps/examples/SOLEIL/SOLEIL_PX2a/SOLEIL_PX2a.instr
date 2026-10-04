@@ -40,6 +40,7 @@
 * rotX:  [deg] Sample rotation around X
 * rotY:  [deg] Sample rotation around Y
 * rotZ:  [deg] Sample rotation around Z
+* SPLITs: [1] Number of SPLIT repetitions at the sample
 * 
 * %Link
 * https://www.synchrotron-soleil.fr/en/beamlines/proxima-2a
