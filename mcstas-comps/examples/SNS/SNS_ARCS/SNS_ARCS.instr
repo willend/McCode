@@ -39,6 +39,7 @@
 * symin: [m]      Sample slit vert min value
 * symax: [m]      Sample slit vert max value
 * run_num: [1]    Virtual source run number (unused at present)
+* filename: [str] Source spectrum file for SNS_source
 * T_off: []       
 *
 * %Link

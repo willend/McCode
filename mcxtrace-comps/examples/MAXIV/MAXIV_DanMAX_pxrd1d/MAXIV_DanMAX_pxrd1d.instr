@@ -38,6 +38,7 @@
 * DMM: [ ]         If nonzero the multilayer mono is active.
 * DMM_e0: [keV]    The energy to tune the ML monochromator to. May be different from E0. If 0 the DMM is controlled by DMM_angle.
 * OH_2DCRL_N: [ ]  Number of 2D focus CRLs in the optics hutch transfocator. 0 means transfocator is inactive.
+* EH_2DCRL_N: [1] Number of 2D focus CRLs in the experimental hutch transfocator. 0 means transfocator is inactive.
 * PXRD_SIMPLE: [ ] If zero - the full powder diffraction strip detector is active, else a single circular approximation is active.
 * pxrd_strip_tth0: [deg] Angle offset of the PXRD 1d-strip detector from the optical axis. 
 * debugMon: [ ]    If nonzero, all intermediate monitors appear for debugging purposes.

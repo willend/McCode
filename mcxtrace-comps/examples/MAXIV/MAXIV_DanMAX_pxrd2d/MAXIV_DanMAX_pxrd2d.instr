@@ -38,8 +38,10 @@
 * DMM: [ ]         If nonzero the multilayer mono is active.
 * DMM_e0: [keV]    The energy to tune the ML monochromator to. May be different from E0. If 0 the DMM is controlled by DMM_angle.
 * OH_2DCRL_N: [ ]  Number of 2D focus CRLs in the optics hutch transfocator. 0 means transfocator is inactive.
-* pxrd_2d_tthc: [ ] Rotation around the sample tube (i.e. the x-axis) of the 2d-area detector arm.
+* EH_2DCRL_N: [1] Number of 2D focus CRLs in the experimental hutch transfocator. 0 means transfocator is inactive.
+* pxrd_2d_tthc: [deg] Rotation around the sample tube (i.e. the x-axis) of the 2d-area detector arm.
 * pxrd_2d_y: [m]   Offset of 2d-area detector centre perpendicular to the detector arm.
+* SDD_2D: [m] Sample-to-detector distance of the 2d-area detector
 * debugMon: [ ]    If nonzero, all intermediate monitors appear for debugging purposes.
 * beamStop: [ ]    If nonzero, a beamstop is in between sample and PXRD 2d-detector.
 * SPLITS: [ ]      Split-number at the sample position.
