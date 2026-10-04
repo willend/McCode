@@ -24,7 +24,7 @@ result against the target value recorded in the instrument header.
 | `--mccoderoot DIR` | root search folder for McCode installations |
 | `--testdir DIR` | write test results directly into `DIR` (default: cwd) |
 | `--local DIR` | pick up instruments to test from `DIR` instead of the McCode installation |
-| `--limit N` | test only the first `N` instruments per version |
+| `--limit N` | test only the first `N` instruments |
 | `--skipnontest` | skip compiling instruments that have no `%Example` test |
 | `--suffix SUFFIX` | append `SUFFIX` to the test directory name |
 | `--uid ID` | unique identifier for the suffix (default: timestamp) |
