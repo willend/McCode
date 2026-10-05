@@ -148,6 +148,44 @@ long off_init(  char *offfile, double xwidth, double yheight, double zdepth,
                 int notcenter, off_struct* data);
 
 /*******************************************************************************
+* RESULT CONVENTION of off_intersect, off_intersect_all, off_x_intersect and
+* their _idx variants (straight line or parabola through the object)
+*
+* All intersections of the trajectory with the faces are computed, for
+* negative as well as positive times, and duplicates are merged (a hit on an
+* edge or vertex shared by several faces counts once). Of these, the largest
+* negative time and the smallest positive times are used:
+*
+*   situation                          t0                 t3                return
+*   ---------------------------------  -----------------  ----------------  ------
+*   no intersection at all             unchanged          unchanged         0
+*   outside, object ahead              first hit (>0)     second hit (>0)   n >= 2
+*   inside the object                  last hit (<0)      next hit (>0)     n >= 2
+*   object entirely behind             last hit (<0)      0      (*)        1
+*   one single hit ahead (open mesh,   the hit (>0)       FLT_MAX (*)       1
+*     or grazing an edge)
+*
+*   (*) placeholder, not an intersection: n3 is then (0,0,0) and fi3 is 0.
+*   n is the number of distinct intersections, capped at 4.
+*
+* So: a return value > 1 guarantees that t0 and t3 are both real intersections;
+*     a return value of 1 means only t0 is real.
+* The two placeholder values are chosen so that the usual idioms in components
+* behave safely when only one intersection exists:
+*   - 't3 > 0' tests and paths 't3 - max(t0,0)' see "nothing ahead" (t3 = 0)
+*     when the object is behind,
+*   - 'propagate to t0 when t0 > 0' works for a single hit ahead, and a
+*     material path 't3 - t0' is then infinite (fully attenuated), never
+*     negative.
+* Times are in s for off_intersect*, lengths in m for off_x_intersect*.
+* n0/n3 are unit normals of the faces hit (orientation as given by the vertex
+* order in the file, not necessarily outward).
+* With -DOFF_LEGACY the full sorted list is kept in data->intersects; the
+* return value is then the number of intersections and t3 is left unchanged
+* when there is only one.
+*******************************************************************************/
+
+/*******************************************************************************
 * int off_intersect_all(double* t0, double* t3,
      Coords *n0, Coords *n3,
      double x, double y, double z,
@@ -158,10 +196,11 @@ long off_init(  char *offfile, double xwidth, double yheight, double zdepth,
 * INPUT:  x,y,z and vx,vy,vz are the position and velocity of the neutron
 *         ax, ay, az are the local acceleration vector
 *         data points to the OFF data structure
-* RETURN: the number of polyhedral which trajectory intersects
-*         t0 and t3 are the smallest incoming and outgoing intersection times
+* RETURN: see RESULT CONVENTION above (0: no intersection, 1: only t0 is an
+*         intersection, >1: t0 and t3 are both intersections)
 *         n0 and n3 are the corresponding (unit) normal vectors to the surface
-*         data is the full OFF structure, including a list intersection type
+*         data->numintersect is the number of distinct intersections (max 4)
+*         data->nextintersect the index of the face hit at t0
 *******************************************************************************/
 #pragma acc routine
 int off_intersect_all(double* t0, double* t3,
@@ -193,8 +232,8 @@ int off_intersect_all_idx(double* t0, double* t3,
 * INPUT:  x,y,z and vx,vy,vz are the position and velocity of the neutron
 *         ax, ay, az are the local acceleration vector
 *         data points to the OFF data structure
-* RETURN: the number of polyhedral which trajectory intersects
-*         t0 and t3 are the smallest incoming and outgoing intersection times
+* RETURN: see RESULT CONVENTION above (0: no intersection, 1: only t0 is an
+*         intersection, >1: t0 and t3 are both intersections)
 *         n0 and n3 are the corresponding (unit) normal vectors to the surface
 *******************************************************************************/
 #pragma acc routine
@@ -224,8 +263,7 @@ int off_intersect_idx(double* t0, double* t3,
 * ACTION: computes intersection of an xray trajectory with an object.
 * INPUT:  x,y,z and kx,ky,kz, are spatial coordinates and wavevector of the x-ray
 *         respectively. data points to the OFF data structure.
-* RETURN: the number of polyhedral the trajectory intersects
-*         l0 and l3 are the smallest incoming and outgoing intersection lengths
+* RETURN: see RESULT CONVENTION above, with lengths l0/l3 [m] instead of times
 *         n0 and n3 are the corresponding (unit) normal vectors to the surface
 *******************************************************************************/
 #pragma acc routine

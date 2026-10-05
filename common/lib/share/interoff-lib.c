@@ -1145,12 +1145,17 @@ int off_intersect_all_idx(double* t0, double* t3,
       if (faceindex0) *faceindex0 = t[i].index;
       if (faceindex3) *faceindex3 = t[i+1].index;
 
+      /* placeholders when there is no second intersection (see RESULT CONVENTION
+         in interoff-lib.h): FLT_MAX for a single hit ahead (set above, t[2]),
+         0 when the object is entirely behind */
       if (t[1].time == FLT_MAX)
       {
         if (t3) *t3 = 0.0;
       }
 
       data->nextintersect=(int)t[i].index;
+      /* > 1 only when t0 and t3 are both real intersections */
+      if (t[i+1].time == FLT_MAX) return 1;
       return t_size;
     }
 #endif
