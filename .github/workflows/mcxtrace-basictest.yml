@@ -393,6 +393,35 @@ jobs:
              mxtest${SUFFIX} --verbose --mpi=${{ matrix.nmpi }} --instr=JJ_SAXS,ESRF_BM29,Test_MCPL_input,Test_MCPL_output,Test_Absorption --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} --uid=${MYWORKERID}
            fi
 
+    - name: Direct binary run without $MCXTRACE (compiled-in resource dir, issue #2759)
+      id: direct-binary-resourcedir
+      # Re-uses the Test_Absorption binary built by the basic tests above. Running it
+      # directly (not via mxrun, which always exports $MCXTRACE), with $MCXTRACE
+      # removed and from an unrelated folder, so its material file (data/Mn.txt) can only be
+      # found via the resource dir baked into the binary by the code generator -
+      # the situation on mccode.org-style .deb installs, where $MCXTRACE is unset.
+      # classic only: the antlr code generator embeds a released runtime
+      if: matrix.cogen == 'classic' && matrix.nmpi != '0'
+      run: |
+           set -e
+           set -u
+           set -x
+           EXE=$(ls run_basictests/*/Test_Absorption/Test_Absorption.out run_basictests/*/Test_Absorption/Test_Absorption.exe 2>/dev/null | head -1 || true)
+           test -n "$EXE" || { echo "No Test_Absorption binary found below run_basictests"; exit 1; }
+           EXE="$(cd "$(dirname "$EXE")" && pwd)/$(basename "$EXE")"
+           RUNDIR=$(mktemp -d)
+           cd "$RUNDIR"
+           RC=0
+           env -u MCXTRACE "$EXE" --yes -n 1000 -d direct_run > direct_run.log 2>&1 || RC=$?
+           cat direct_run.log
+           test "$RC" == "0" || { echo "Test_Absorption binary failed (exit code $RC) without \$MCXTRACE"; exit 1; }
+           if grep -qi "could not" direct_run.log; then
+             echo "Test_Absorption binary could not locate installed resources without \$MCXTRACE"
+             exit 1
+           fi
+           # Positive check: the file was really picked up from the installed resources
+           grep -E "Opening input file '.*resources.*Mn\.txt'" direct_run.log
+
     - name: MPI event-list output regression test
       id: mpilisttest
       # classic only: the antlr code generator embeds a released runtime
