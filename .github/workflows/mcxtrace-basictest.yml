@@ -21,6 +21,9 @@ jobs:
           # --- built from source via cmake ---
           - { method: source, os: ubuntu-24.04,   CC: gcc-13,   CXX: g++-13,     python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
           - { method: source, os: ubuntu-24.04,   CC: clang,    CXX: clang++,    python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
+          # --- mccode.org-style .deb packages (buildscripts/build_debs_mcxtrace), apt-installed
+          #     in /usr, no $MCXTRACE set - as for users of the mccode.org apt repo ---
+          - { method: debian, os: ubuntu-24.04,   CC: gcc,      CXX: g++,        python: '3.12', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
           # --- built via conda ---
           - { method: conda,  os: ubuntu-latest,  CC: gcc,   CXX: g++,  python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'classic'}
           # - { method: conda,  os: ubuntu-latest,  CC: gcc,   CXX: g++,  python: '3.13', mpi: 'openmpi', nmpi: 'auto', cogen: 'antlr'}
@@ -320,6 +323,31 @@ jobs:
            if [ "${{ matrix.mpi }}" == "openmpi" ]; then
                sed -i.bak 's+mpirun+mpirun\ -mca\ regx\ naive\ --verbose\ --mca\ btl_tcp_if_include\ lo0+g' ${CONDA_PREFIX}/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
            fi
+
+    - name: Build and install mccode.org-style .deb packages (debian)
+      id: mcxtrace-install-debian
+      if: matrix.method == 'debian'
+      run: |
+           set -e
+           set -u
+           set -x
+           sudo apt-get update
+           # Build dependencies, as in dependency-scripts/getdeps_debian (minus LaTeX/equivs:
+           # the manuals package and the suite metapackage are not needed for testing)
+           sudo apt-get -y install git cmake gcc g++ gfortran flex bison build-essential rsync libopenmpi-dev openmpi-bin
+           cd src
+           ./buildscripts/build_debs_mcxtrace 3.99.99
+           ls -l dist
+           # Install everything that was built, except the manuals package. apt resolves the
+           # runtime dependencies declared by the packages themselves (python3-*, libxrl-dev, ...)
+           sudo apt-get -y install $(ls $PWD/dist/*.deb | grep -v -- '-manuals')
+           # Same openmpi transport settings as for the source builds
+           sudo sed -i.bak 's/"mpirun/"mpirun --mca btl self,vader,tcp/g' /usr/share/mcxtrace/tools/Python/mccodelib/mccode_config.json
+           test -x /usr/bin/mcxtrace
+           test -x /usr/bin/mxtest
+           test -d /usr/share/mcxtrace/resources/data
+           # The point of this leg: resources must be found without the environment variable
+           test -z "${MCXTRACE:-}"
 
     - name: Normalize PATH to installed McXtrace tools
       id: normalize-path
