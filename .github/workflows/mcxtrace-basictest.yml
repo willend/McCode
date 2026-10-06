@@ -579,7 +579,8 @@ jobs:
   compare:
     name: mcxtrace-basictest-comparison
     needs: build
-    if: always()
+    # Only when plots are requested (manual runs with the "plots" tickbox)
+    if: always() && inputs.plots
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -593,19 +594,16 @@ jobs:
 
     - name: Get conda dependency list
       id: conda-deps
-      if: inputs.plots
       run: |
            ./src/devel/bin/mccode-create-conda-yml -m mcxtrace -n mcxtrace -o dependencies.yml
 
     - uses: mamba-org/setup-micromamba@v3
-      if: inputs.plots
       with:
         environment-name: mcxtrace
         environment-file: dependencies.yml
 
     - name: Configure build and install mcxtrace
       id: mcxtrace-install
-      if: inputs.plots
       run: |
            # Only the Python tooling (mxviewtest, mxplotdiff-html, mxplot-html) is
            # actually needed here - the diff/report generation is platform-agnostic
@@ -676,7 +674,6 @@ jobs:
 
     - name: 'Run mxviewtest across all platform columns'
       id: viewtest
-      if: inputs.plots
       run: |
            set -e
            set -u

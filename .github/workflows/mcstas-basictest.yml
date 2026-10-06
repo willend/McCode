@@ -581,7 +581,8 @@ jobs:
   compare:
     name: mcstas-basictest-comparison
     needs: build
-    if: always()
+    # Only when plots are requested (manual runs with the "plots" tickbox)
+    if: always() && inputs.plots
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -595,19 +596,16 @@ jobs:
 
     - name: Get conda dependency list
       id: conda-deps
-      if: inputs.plots
       run: |
            ./src/devel/bin/mccode-create-conda-yml -m mcstas -n mcstas -o dependencies.yml
 
     - uses: mamba-org/setup-micromamba@v3
-      if: inputs.plots
       with:
         environment-name: mcstas
         environment-file: dependencies.yml
 
     - name: Configure build and install mcstas
       id: mcstas-install
-      if: inputs.plots
       run: |
            # Only the Python tooling (mcviewtest, mcplotdiff-html, mcplot-html) is
            # actually needed here - the diff/report generation is platform-agnostic
@@ -678,7 +676,6 @@ jobs:
 
     - name: 'Run mcviewtest across all platform columns'
       id: viewtest
-      if: inputs.plots
       run: |
            set -e
            set -u
