@@ -119,8 +119,8 @@ SHARE
     double time;
     double weight;
 
-    // The particle when the event was recorded, for its ID and user variables
-    _class_particle particle;
+    // The ID of the neutron (for the "neutron" column of the event list)
+    long long uid;
   };
 
   struct temp_abs_1D_event_data_struct {
@@ -196,7 +196,7 @@ SHARE
         storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].y_pol = 0.0;
         storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].z_pol = 1.0;
         storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].time = time;
-        storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].particle = *_particle;
+        storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].uid = _particle->_uid;
         storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements++].weight = p;
       } else {
         // No more space, need to allocate a larger buffer for this logger. Wish I had generics.
@@ -221,7 +221,7 @@ SHARE
           temporary_storage.elements[index].z_pol = storage->temp_abs_1D_event_data.elements[index].z_pol;
           temporary_storage.elements[index].time = storage->temp_abs_1D_event_data.elements[index].time;
           temporary_storage.elements[index].weight = storage->temp_abs_1D_event_data.elements[index].weight;
-          temporary_storage.elements[index].particle = storage->temp_abs_1D_event_data.elements[index].particle;
+          temporary_storage.elements[index].uid = storage->temp_abs_1D_event_data.elements[index].uid;
         }
 
         // free current data
@@ -247,7 +247,7 @@ SHARE
           storage->temp_abs_1D_event_data.elements[index].z_pol = temporary_storage.elements[index].z_pol;
           storage->temp_abs_1D_event_data.elements[index].time = temporary_storage.elements[index].time;
           storage->temp_abs_1D_event_data.elements[index].weight = temporary_storage.elements[index].weight;
-          storage->temp_abs_1D_event_data.elements[index].particle = temporary_storage.elements[index].particle;
+          storage->temp_abs_1D_event_data.elements[index].uid = temporary_storage.elements[index].uid;
         }
 
         // free temporary data
@@ -264,7 +264,7 @@ SHARE
         storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].y_pol = 0.0;
         storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].z_pol = 1.0;
         storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].time = time;
-        storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].particle = *_particle;
+        storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements].uid = _particle->_uid;
         storage->temp_abs_1D_event_data.elements[storage->temp_abs_1D_event_data.num_elements++].weight = p;
       }
 
@@ -320,7 +320,7 @@ SHARE
       given_y_vel = k[1] * K2V;
       given_z_vel = k[2] * K2V;
 
-      // Start from the real particle, for its ID and user variables
+      // Start from the real particle (for the ID of the neutron)
       _class_particle _localparticle = *_particle;
       _localparticle.x = given_x_pos;
       _localparticle.y = given_y_pos;
@@ -353,8 +353,11 @@ SHARE
     // Add all data points to the histogram, they are saved as index / weight combinations
     for (index = 0; index < storage->temp_abs_1D_event_data.num_elements; index++) {
 
-      // Start from the particle as recorded, for its ID and user variables
-      _class_particle _localparticle = storage->temp_abs_1D_event_data.elements[index].particle;
+      // The output of this logger uses the variables set below, and the ID of
+      // the neutron
+      _class_particle _localparticle;
+      memset (&_localparticle, 0, sizeof (_localparticle));
+      _localparticle._uid = storage->temp_abs_1D_event_data.elements[index].uid;
 
       _localparticle.x = storage->temp_abs_1D_event_data.elements[index].x_pos;
       _localparticle.y = storage->temp_abs_1D_event_data.elements[index].y_pos;
@@ -387,8 +390,11 @@ SHARE
     // Add all data points to the histogram, they are saved as index / weight combinations
     for (index = 0; index < storage->temp_abs_1D_event_data.num_elements; index++) {
 
-      // Start from the particle as recorded, for its ID and user variables
-      _class_particle _localparticle = storage->temp_abs_1D_event_data.elements[index].particle;
+      // The output of this logger uses the variables set below, and the ID of
+      // the neutron
+      _class_particle _localparticle;
+      memset (&_localparticle, 0, sizeof (_localparticle));
+      _localparticle._uid = storage->temp_abs_1D_event_data.elements[index].uid;
 
       _localparticle.x = storage->temp_abs_1D_event_data.elements[index].x_pos;
       _localparticle.y = storage->temp_abs_1D_event_data.elements[index].y_pos;
