@@ -79,13 +79,22 @@ jobs:
            sudo apt-get update
            # Build dependencies, as in dependency-scripts/getdeps_debian (minus LaTeX/equivs:
            # the manuals package and the suite metapackage are not needed for testing)
-           sudo apt-get -y install git cmake gcc g++ gfortran flex bison build-essential rsync libopenmpi-dev openmpi-bin
+           sudo apt-get -y install git cmake gcc g++ gfortran flex bison build-essential rsync libopenmpi-dev openmpi-bin python3-venv
            cd src
            ./buildscripts/build_debs_mcstas 3.99.99
            ls -l dist
            # Install everything that was built, except the manuals package. apt resolves the
            # runtime dependencies declared by the packages themselves (python3-*, libxrl-dev, ...)
            sudo apt-get -y install $(ls $PWD/dist/*.deb | grep -v -- '-manuals')
+           # KDSource is not packaged for Debian, pip is the only route (as for Debian users).
+           # Install it into its own venv, so its pip dependencies (numpy, scipy, mcpl-core, ...)
+           # do not shadow the apt-installed ones, and expose only kdsource-config (used for
+           # KDSOURCEFLAGS) on PATH. libkdsource then resolves libmcpl from the mcpl .deb.
+           sudo python3 -m venv /opt/kdsource
+           sudo /opt/kdsource/bin/python -m pip install kdsource
+           sudo ln -sf /opt/kdsource/bin/kdsource-config /usr/local/bin/kdsource-config
+           kdsource-config --show buildflags
+           which -a mcpl-config
            # Same openmpi transport settings as in the basictest source builds
            sudo sed -i.bak 's/"mpirun/"mpirun --mca btl self,vader,tcp/g' /usr/share/mcstas/tools/Python/mccodelib/mccode_config.json
            test -x /usr/bin/mcstas
