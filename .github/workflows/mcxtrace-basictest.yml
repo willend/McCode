@@ -429,8 +429,7 @@ jobs:
       # found via the resource dir baked into the binary by the code generator -
       # the situation on mccode.org-style .deb installs, where $MCXTRACE is unset.
       # classic only: the antlr code generator embeds a released runtime
-      # Not on Windows for now: the direct invocation (outside mxrun) fails there
-      if: matrix.cogen == 'classic' && matrix.nmpi != '0' && runner.os != 'Windows'
+      if: matrix.cogen == 'classic' && matrix.nmpi != '0'
       run: |
            set -e
            set -u
@@ -438,8 +437,10 @@ jobs:
            EXE=$(ls run_basictests/*/Test_Absorption/Test_Absorption.out run_basictests/*/Test_Absorption/Test_Absorption.exe 2>/dev/null | head -1 || true)
            test -n "$EXE" || { echo "No Test_Absorption binary found below run_basictests"; exit 1; }
            EXE="$(cd "$(dirname "$EXE")" && pwd)/$(basename "$EXE")"
-           RUNDIR=$(mktemp -d)
-           cd "$RUNDIR"
+           # Unrelated folder in the workspace (mktemp -d is not usable on the Windows
+           # runners: the conda/Git-bash /tmp mappings disagree)
+           mkdir -p direct_binary_run
+           cd direct_binary_run
            RC=0
            env -u MCXTRACE "$EXE" --yes -n 1000 -d direct_run > direct_run.log 2>&1 || RC=$?
            cat direct_run.log
