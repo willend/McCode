@@ -11,6 +11,15 @@ on:
         type: boolean
         description: Launch manual debugging tmate for inspection (automatic in case of errors)
         default: false
+      plots:
+        type: boolean
+        description: Generate test plots (mctest without --noplots) and run mcviewtest comparison tables
+        default: false
+
+# Plots and mcviewtest are off by default (push/PR/schedule); request them via
+# the "plots" tickbox when running the workflow manually
+env:
+  NOPLOTS: ${{ inputs.plots && '' || '--noplots' }}
 
 jobs:
   build:
@@ -390,7 +399,7 @@ jobs:
            fi
            test -n "$(command -v mcstas${EXESUFFIX})"
            mcstas${EXESUFFIX} --version
-           mctest${SUFFIX} --verbose --instr=Test_RNG_rand01 --testdir=run_rngtest --suffix=${{ matrix.cogen }}_${{ matrix.method }} --uid=${MYWORKERID}
+           mctest${SUFFIX} --verbose ${NOPLOTS} --instr=Test_RNG_rand01 --testdir=run_rngtest --suffix=${{ matrix.cogen }}_${{ matrix.method }} --uid=${MYWORKERID}
            export SUM=`find run_rngtest -name rngout.dat | xargs -n1 grep -v \# | ${MD5SUM} | cut -f1 -d\ `
            export EXPECTED="f192ce4609e2225bf9d42ce9c5fa5a86"
            if [ "${EXPECTED}" == "${SUM}" ];
@@ -420,7 +429,7 @@ jobs:
            mcstas${EXESUFFIX} --version
            if [ "${{ matrix.nmpi }}" != "0" ];
            then
-             mctest${SUFFIX}  --verbose --mpi=${{ matrix.nmpi }} --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource,Masked_ESS_butterfly_image --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} --uid=${MYWORKERID}
+             mctest${SUFFIX}  --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource,Masked_ESS_butterfly_image --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} --uid=${MYWORKERID}
            fi
 
     - name: Direct binary run without $MCSTAS (compiled-in resource dir, issue #2759)
@@ -538,8 +547,8 @@ jobs:
            fi
            if [ -n "$SCOPE" ]; then
              mkdir -p run_mctest && cd run_mctest
-             ${MCTEST_EXECUTABLE} --verbose --mpi=${{ matrix.nmpi }} --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --uid=${MYWORKERID} || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
-             ${MCVIEWTEST_EXECUTABLE} --nobrowse $PWD
+             ${MCTEST_EXECUTABLE} --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --uid=${MYWORKERID} || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+             if [ -z "${NOPLOTS}" ]; then ${MCVIEWTEST_EXECUTABLE} --nobrowse $PWD; fi
            else
              echo "No component or instrument code changes - nothing to test"
            fi
@@ -586,16 +595,19 @@ jobs:
 
     - name: Get conda dependency list
       id: conda-deps
+      if: inputs.plots
       run: |
            ./src/devel/bin/mccode-create-conda-yml -m mcstas -n mcstas -o dependencies.yml
 
     - uses: mamba-org/setup-micromamba@v3
+      if: inputs.plots
       with:
         environment-name: mcstas
         environment-file: dependencies.yml
 
     - name: Configure build and install mcstas
       id: mcstas-install
+      if: inputs.plots
       run: |
            # Only the Python tooling (mcviewtest, mcplotdiff-html, mcplot-html) is
            # actually needed here - the diff/report generation is platform-agnostic
@@ -666,6 +678,7 @@ jobs:
 
     - name: 'Run mcviewtest across all platform columns'
       id: viewtest
+      if: inputs.plots
       run: |
            set -e
            set -u
