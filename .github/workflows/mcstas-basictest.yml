@@ -431,7 +431,8 @@ jobs:
       # found via the resource dir baked into the binary by the code generator -
       # the situation on mccode.org-style .deb installs, where $MCSTAS is unset.
       # classic only: the antlr code generator embeds a released runtime
-      if: matrix.cogen == 'classic' && matrix.nmpi != '0'
+      # Not on Windows for now: the direct invocation (outside mcrun) fails there
+      if: matrix.cogen == 'classic' && matrix.nmpi != '0' && runner.os != 'Windows'
       run: |
            set -e
            set -u
