@@ -4,7 +4,7 @@
 *         Copyright (C) 1997-2026, All rights reserved
 *         DTU Physics, Kgs. Lyngby, Denmark
 *
-* Component: Unittest_IO_parent
+* Component: Unittest_IO_noinit
 *
 * %I
 * Written by: Peter Willendrup
@@ -14,8 +14,8 @@
 * Grammar unit test helper for Unittest_INHERIT_OVERRIDE
 *
 * %D
-* Parent: absorbs particles with x>0, and declares a USERVAR. Its DECLARE/
-* INITIALIZE set io_val=1; TRACE halves the weight if io_val is not set.
+* Inherits everything from Unittest_IO_parent but cancels its INITIALIZE with
+* an empty INITIALIZE EXTEND section: io_val stays 0, so TRACE halves the weight.
 * See docs/GRAMMAR/ADR-records/ADR_20261007_GRAMMAR_FIXES.md
 *
 * %P
@@ -23,28 +23,10 @@
 *
 * %E
 *******************************************************************************/
-DEFINE COMPONENT Unittest_IO_parent
-SETTING PARAMETERS ()
+DEFINE COMPONENT Unittest_IO_noinit INHERIT Unittest_IO_parent
 
-USERVARS
+INITIALIZE EXTEND
 %{
-  double io_tag;
-%}
-
-DECLARE
-%{
-  double io_val;
-%}
-
-INITIALIZE
-%{
-  io_val = 1;
-%}
-
-TRACE
-%{
-  if (x > 0) ABSORB;
-  if (!io_val) p *= 0.5;
 %}
 
 END
