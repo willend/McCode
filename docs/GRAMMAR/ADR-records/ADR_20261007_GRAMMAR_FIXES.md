@@ -50,9 +50,15 @@ Fix the following in the generator. No new keywords are introduced.
    having their memory read as a `double`. Arrays, pointers and structs
    report failure. USERVARS used with Monitor_nD should still be declared
    `double`.
-9. **Literal vector parameters** (`par={1.0, 0.0219, ...}`) are written
-   to the generated C with full double precision instead of `%g`
-   (6 significant digits).
+9. **Vector parameters given as `{...}`** are split at top-level commas,
+   and each element is written into the generated C as the expression it
+   is. Before, the elements were parsed as plain numbers (`strtod`), so
+   an expression became several wrong elements: `{1, 3.2*0.0219, ...}`
+   gave `{1, 3.2, 0, 0.0219, ...}`, one element too many and shifted.
+   Literals were also rounded to 6 significant digits (`%g`); they are now
+   copied exactly as written. Instrument parameters and function calls can
+   be used in such vectors. The vector length is still fixed at code
+   generation time.
 
 ## Consequences
 
@@ -67,10 +73,17 @@ Fix the following in the generator. No new keywords are introduced.
   `MYSELF` in component parameters, or `JUMP` to a non-existent target,
   now fail to generate with an error message. No shipped instrument does
   either.
-* Vector literals with more than 6 significant digits shift by at most
-  5e-6 relative. A worst-case test (all `Pol_mirror` reflectivity
-  parameters given 8 digits) showed no change in monitor output. Shipped
-  literals are reproduced exactly.
+* `ILL_H5` and `ILL_H5_new` **change results**: their `IN15_Vpolariser` /
+  `WASP_Vpolariser` (`Pol_guide_vmirror`) use expressions such as
+  `3.2*0.0219` in `rPar`/`rUpPar`/`rDownPar` and now get the intended
+  reflectivity parameters. Intensity downstream of these polarisers rises
+  by factors of about 3 to 12 (e.g. `H511_IN15_Detector` from 0 to
+  1.6e4); `H5_I` and the other detectors are unchanged. Their `%Example`
+  values may need updating.
+* Vector literals with more than 6 significant digits are now exact; the
+  old rounding was at most 5e-6 relative. A worst-case test (all
+  `Pol_mirror` reflectivity parameters given 8 digits) showed no change in
+  monitor output.
 * All other shipped instruments are unaffected. All 332 McStas and 112
   McXtrace examples generate the same code as before, apart from
   cosmetic lines and the `particle_getvar()` casts. Representative
@@ -94,6 +107,16 @@ COMPONENT c = Arm() AT (0,0,1) RELATIVE b
 COMPONENT s = Slit(xwidth=MYSELF)              /* error                  */
 COMPONENT s = Slit(xwidth=0.1) WHEN (MYSELF)   /* ok, MYSELF -> s        */
 ```
+
+Vector parameters with expressions (as in ILL_H5):
+
+```
+rUpPar={1, 3.2*0.0219, 4.07, 1, 0.003}
+/* now:    5 elements, rUpPar[1] = 3.2 * 0.0219                        */
+/* before: {1, 3.2, 0, 0.0219, 4.07, 1, 0.003}: 7 elements, wrong values */
+```
+
+Instrument parameters can now be used too, e.g. `rUpPar={1, 0.0219, 4.07, 2*m, 0.003}`.
 
 Whole-component inheritance:
 
