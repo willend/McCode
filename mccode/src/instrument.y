@@ -96,6 +96,7 @@ void run_command_to_add_search_dir(char * input);
 int metadata_construct_table(instr_ptr_t);
 void metadata_assign_from_definition(List metadata);
 void metadata_assign_from_instance(List metadata);
+static void dependency_add(char *s);
 
 %}
 
@@ -286,12 +287,8 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
       {
         /* inherit from another comp, and initiate it with given blocks */
         /* all redefined blocks override */
-        /* Parameter lists are parent + child, concatenated.
-           FIXME: the "block given?" tests below use ->linenum, but an absent
-           block comes from codeblock_new() with linenum -1, which is true.
-           So the child's (possibly empty) block always wins and the parent's
-           code blocks are never inherited this way. Testing
-           list_len($N->lines) was probably intended. */
+        /* Parameter lists are parent + child, concatenated. A code section
+           the child leaves empty is taken from the parent. */
         struct comp_def *def;
         def = read_component($5);
         if (def) {
@@ -314,14 +311,14 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
 
           c->flag_noacc = $10;
 	  
-          c->share_code   = ($11->linenum ? $11 : def->share_code);
-          c->uservar_code = ($12->linenum ? $12 : def->uservar_code);
-          c->decl_code    = ($13->linenum ? $13 : def->decl_code);
-          c->init_code    = ($14->linenum ? $14 : def->init_code);
-          c->trace_code   = ($15->linenum ? $15 : def->trace_code);
-          c->save_code    = ($16->linenum ? $16 : def->save_code);
-          c->finally_code = ($17->linenum ? $17 : def->finally_code);
-          c->display_code = ($18->linenum ? $18 : def->display_code);
+          c->share_code   = (list_len($11->lines) ? $11 : def->share_code);
+          c->uservar_code = (list_len($12->lines) ? $12 : def->uservar_code);
+          c->decl_code    = (list_len($13->lines) ? $13 : def->decl_code);
+          c->init_code    = (list_len($14->lines) ? $14 : def->init_code);
+          c->trace_code   = (list_len($15->lines) ? $15 : def->trace_code);
+          c->save_code    = (list_len($16->lines) ? $16 : def->save_code);
+          c->finally_code = (list_len($17->lines) ? $17 : def->finally_code);
+          c->display_code = (list_len($18->lines) ? $18 : def->display_code);
 
           /* Check definition and setting params for uniqueness */
           check_comp_formals(c->def_par, c->set_par, c->name);
@@ -703,9 +700,11 @@ comp_uservars:    /* empty */
       }
     | "USERVARS" codeblock comp_uservars_inherit_extend
       {
-        /* FIXME: unlike the other sections, the chain $3 is dropped here,
-           so EXTEND blocks after USERVARS are silently ignored. */
-        $$ = $2;
+        struct code_block *cb;
+        cb  = codeblock_new();
+        list_cat(cb->lines, $2->lines);
+        list_cat(cb->lines, $3->lines);
+        $$ = cb;
       }
 ;
 
@@ -1053,9 +1052,7 @@ instr_formal:   TOK_ID TOK_ID
         } else if(!strcmp($1, "double")) {
           formal->type = instr_type_vector;
         } else {
-          /* FIXME: "$s" should be "%s"; arguments are shifted by one in the
-             message (and %d gets a pointer). */
-          print_error("ERROR: Illegal type $s* for instrument "
+          print_error("ERROR: Illegal type %s* for instrument "
           "parameter %s at line %s:%d.\n", $1, $3, instr_current_filename, instr_current_line);
           formal->type = instr_type_double;
         }
@@ -1153,7 +1150,7 @@ instr_formal:   TOK_ID TOK_ID
         } else if(!strcmp($1, "double")) {
           formal->type = instr_type_vector;
         } else {
-          print_error("ERROR: Illegal type $s* for instrument "
+          print_error("ERROR: Illegal type %s* for instrument "
           "parameter %s at line %s:%d.\n", $1, $3, instr_current_filename, instr_current_line);
           formal->type = instr_type_double;
         }
@@ -1353,6 +1350,11 @@ instref: "COPY" '(' compref ')' actuallist /* make a copy of a previous instance
         struct comp_inst *comp_src;
         struct comp_inst *comp;
         comp_src = $3;
+        if (!comp_src) {
+          print_error("ERROR: COPY of an undefined component instance at line %s:%d.\n",
+            instr_current_filename, instr_current_line);
+          YYABORT;
+        }
         palloc(comp);
         comp->def    = comp_src->def;
         /* now catenate src and actual parameters */
@@ -1372,6 +1374,11 @@ instref: "COPY" '(' compref ')' actuallist /* make a copy of a previous instance
         struct comp_inst *comp_src;
         struct comp_inst *comp;
         comp_src = $3;
+        if (!comp_src) {
+          print_error("ERROR: COPY of an undefined component instance at line %s:%d.\n",
+            instr_current_filename, instr_current_line);
+          YYABORT;
+        }
         palloc(comp);
         comp->defpar = comp_src->defpar;
         comp->setpar = comp_src->setpar;
@@ -1421,9 +1428,8 @@ cpuonly:    /* empty */
     | "CPU"
       {
         $$ = 1;
-	if (strstr(instrument_definition->dependency," -DFUNNEL ") == NULL) {
-	  strncat(instrument_definition->dependency, " -DFUNNEL ", 1024);
-	}
+	if (strstr(instrument_definition->dependency," -DFUNNEL ") == NULL)
+	  dependency_add(" -DFUNNEL ");
       }
 ;
 
@@ -1433,9 +1439,9 @@ cpuonly:    /* empty */
      [JUMP ...]* [METADATA ...]*
    Split in two actions: the mid-rule action (after instref) names and
    numbers the instance and checks its parameters, so that MYSELF in
-   WHEN/AT/ROTATED/JUMP expressions resolves. Note: MYSELF inside the actual
-   parameters (instref) is parsed earlier, while myself_comp still points to
-   the previous instance. The final action stores the placement and
+   WHEN/AT/ROTATED/JUMP expressions resolves. MYSELF inside the actual
+   parameters (instref) is parsed before that and is an error (myself_comp is
+   reset to NULL after each instance). The final action stores the placement and
    GROUP/EXTEND/JUMP/METADATA. Positional values: $8 is the mid-rule action
    itself, so $9 = when ... $15 = metadata. */
 component: removable cpuonly split "COMPONENT" instname '=' instref
@@ -1443,17 +1449,12 @@ component: removable cpuonly split "COMPONENT" instname '=' instref
         struct comp_inst *comp;
         myself_comp = comp = $7;
 
-        // Trying to check or assign metadata before the previous line is accessing a null pointer!
         if (comp->metadata == NULL || list_undef(comp->metadata)) comp->metadata = list_create();
-        if (myself_comp->metadata == NULL || list_undef(myself_comp->metadata)) myself_comp->metadata = list_create();
 
         comp->name  = $5;
         comp->split = $3;
         comp->cpuonly = $2;
-        /* FIXME: comp->def is NULL when the component class was not found;
-           it is dereferenced here before the NULL check below, so a typo in
-           a component name segfaults instead of reporting the error. */
-        if (!comp->cpuonly) {
+        if (!comp->cpuonly && comp->def) { /* def is NULL if class not found */
           comp->cpuonly = comp->def->flag_noacc;
         }
         comp->removable = $1;
@@ -1519,6 +1520,7 @@ component: removable cpuonly split "COMPONENT" instname '=' instref
         debugn((DEBUG_HIGH, "Component[%i]: %s = %s().\n", comp_current_index, $5, $7->def->name));
         /* this comp will be 'previous' for the next, except if removed at include */
         if (!comp->removable) previous_comp = comp;
+        myself_comp = NULL; /* MYSELF is only valid inside an instance */
         $$ = comp;
 
       }
@@ -1832,10 +1834,7 @@ jumpcondition: "WHEN" exp
 ;
 
 /* JUMP target. index is relative (PREVIOUS=-1, NEXT=+1, MYSELF=0) or 0 for
-   a named target, which cogen.c resolves by name later.
-   FIXME: cogen.c only converts index 0 to absolute, so PREVIOUS[(n)] and
-   NEXT[(n)] are used as absolute indices: JUMP PREVIOUS crashes the
-   generator and JUMP NEXT goes to the first component. */
+   a named target. cogen.c (detect_skipable_transforms) makes it absolute. */
 jumpname: "PREVIOUS"
     {
       $$.name  = str_dup("PREVIOUS");
@@ -1903,17 +1902,14 @@ search: "SEARCH" TOK_STRING
       }
       while (fgets(svalue, sizeof(svalue), sfp) != NULL){
         // Make a copy of the char array -- We can't free this memory until the program is done, so we're going to leak it :/
-        char * path = calloc(strlen(svalue)+1, sizeof(char));
+        char * path = calloc(strlen(svalue)+2, sizeof(char)); // +1 for a PATHSEP
         strcpy(path, svalue);
         // Remove the trailing newline (and/or carriage return) which is almost-certainly present
         path[strcspn(path, "\r\n")] = 0;
+        size_t len = strlen(path);
+        if (!len) { free(path); continue; } // skip empty lines
         // Ensure the path specification *ends* in a PATHSEP character
-        // FIXME: path has no room for the extra separator (heap overflow by
-        // one byte), `last' is NULL when there is no separator, and the test
-        // is always true, so a separator is appended even if already there.
-        char * last = strrchr(path, MC_PATHSEP_S[0]);
-        unsigned int last_sep = last - path + 1;
-        if ((last - path) < strlen(path)) strcat(path, MC_PATHSEP_S);
+        if (path[len-1] != MC_PATHSEP_C) strcat(path, MC_PATHSEP_S);
         // Add the specified path to the search list
         add_search_dir(path);
       }
@@ -1923,17 +1919,15 @@ search: "SEARCH" TOK_STRING
 
 /* DEPENDENCY "flags": extra compiler flags, collected (de-duplicated) in
    instrument_definition->dependency and printed as "CFLAGS=..." at the end
-   of the run, plus in the generated file header, for mcrun to pick up.
-   Note: strncat's limit is the number of chars to append, not the buffer
-   size, so very many dependencies could overflow dependency[1024]. */
+   of the run, plus in the generated file header, for mcrun to pick up. */
 dependency:
     {
     }
   | "DEPENDENCY" TOK_STRING
     {
       if (strstr(instrument_definition->dependency,$2) == NULL) {
-	strncat(instrument_definition->dependency, " ", 1024);
-	strncat(instrument_definition->dependency, $2, 1023); // 1023 because we already appended a space
+	dependency_add(" ");
+	dependency_add($2);
       }
     }
 ;
@@ -1947,9 +1941,8 @@ noacc:
     {
       /* Comp class is CPU only */
       $$ = 1;
-      if (strstr(instrument_definition->dependency," -DFUNNEL ") == NULL) {
-	strncat(instrument_definition->dependency, " -DFUNNEL ", 1024);
-      }
+      if (strstr(instrument_definition->dependency," -DFUNNEL ") == NULL)
+	dependency_add(" -DFUNNEL ");
     }
 ;
 
@@ -1988,13 +1981,20 @@ topatexp:   "PREVIOUS"
         if (previous_comp) {
           $$ = exp_ctoken(previous_comp->name);
         } else {
-          /* FIXME: $$ is left unset here (garbage CExp) */
+          $$ = exp_number("0");
           print_error("ERROR: Found invalid PREVIOUS reference at line %s:%d. Please fix (add a component instance before).\n", instr_current_filename, instr_current_line);
         }
       }
     | "MYSELF"
       {
-        $$ = exp_ctoken(myself_comp->name);
+        if (myself_comp) {
+          $$ = exp_ctoken(myself_comp->name);
+        } else {
+          $$ = exp_number("0");
+          print_error("ERROR: MYSELF can not be used here at line %s:%d. It is only available "
+            "after the component parameters (WHEN, AT, ROTATED, JUMP, ...).\n",
+            instr_current_filename, instr_current_line);
+        }
       }
 
     | TOK_ID
@@ -2158,34 +2158,6 @@ code:     /* empty */
 /* end of grammar *********************************************************** */
 
 
-/* Pool of parser allocations. Note: nothing allocates from this pool any
-   more (all allocations use mem()/palloc), so it is created and freed empty. */
-static Pool parser_pool = NULL;
-
-static int mc_yyparse(void)
-{
-  int ret;
-  Pool oldpool;
-  oldpool = parser_pool;
-  parser_pool = pool_create();
-  ret = yyparse();
-  pool_free(parser_pool);
-  parser_pool = oldpool;
-  return ret;
-}
-
-// Separate identical parser to make debugging a bit easier
-static int mc_yyparse_component(void){
-  int ret;
-  Pool old;
-  old = parser_pool;
-  parser_pool = pool_create();
-  ret = yyparse();
-  pool_free(parser_pool);
-  parser_pool = old;
-  return ret;
-}
-
 /* Name of the file currently being parsed. */
 char *instr_current_filename = NULL;
 /* Number of the line currently being parsed. */
@@ -2243,6 +2215,15 @@ Symtab read_components = NULL;
 
 /* name of executable, e.g. mcstas or mcxtrace */
 char *executable_name=NULL;
+
+/* Append s to the instrument CFLAGS without overflowing the fixed buffer. */
+static void
+dependency_add(char *s)
+{
+  char  *d = instrument_definition->dependency;
+  size_t n = strlen(d);
+  snprintf(d + n, sizeof(instrument_definition->dependency) - n, "%s", s);
+}
 
 /* Print a summary of the command usage. */
 static void
@@ -2364,8 +2345,6 @@ parse_command_line(int argc, char *argv[])
   instrument_definition->include_runtime = 1;
   instrument_definition->enable_trace    = 1;
   instrument_definition->portable        = 0;
-  /* Note: strcmp (not strcpy), so this is a no-op; dependency starts empty. */
-  strcmp(instrument_definition->dependency, "-lm");
   executable_name                        = argv[0];
   for(i = 1; i < argc; i++)
   {
@@ -2497,7 +2476,7 @@ main(int argc, char *argv[])
   lex_new_file(file);
   read_components = symtab_create(); /* Create table of components. */
   lib_instances   = symtab_create(); /* Create table of libraries. */
-  err = mc_yyparse();
+  err = yyparse();
   fclose(file);
   if (err != 0 && !error_encountered) error_encountered++;
   if(error_encountered != 0)
@@ -2797,7 +2776,7 @@ read_component(char *name)
        must not be freed. */
     instr_current_filename = component_pathname;
     instr_current_line = 1;
-    err = mc_yyparse_component();   /* Read definition from file. */
+    err = yyparse();   /* Read definition from file. */
     if(err != 0)
       fatal_error("Errors encountered during autoload of component %s. The component definition has syntax errors.\n",
         name);

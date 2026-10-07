@@ -446,6 +446,15 @@ int var_in_list(List lst, struct comp_iformal* var) {
   return retval;
 }
 
+/* USERVARS that particle_getvar() can return as a double: numeric scalars */
+static int uservar_is_numeric(char *tpe, char *var)
+{
+  if (strpbrk(tpe, "[]*") || strchr(var, '[')) return 0;
+  return strstr(tpe, "double") || strstr(tpe, "float") || strstr(tpe, "int")
+      || strstr(tpe, "long")   || strstr(tpe, "short") || strstr(tpe, "char")
+      || strstr(tpe, "MCNUM");
+}
+
 /* *****************************************************************************
 * cogen_comp_declare: write the declaration part from the component instance
 *   that is, the component parameter structure and positioning code.
@@ -580,9 +589,7 @@ int cogen_comp_declare(struct comp_inst *comp)
     /* make struct: set, pos, rot, declare block */
     coutf("  char     _name[256]; /* e.g. %s */", comp->name);
     coutf("  char     _type[256]; /* %s */", comp->def->name);
-    /* note: `index' here is the loop counter above (always 2), not the
-       component index; it only affects this generated comment. */
-    coutf("  long     _index; /* e.g. %i index in TRACE list */", index);
+    coutf("  long     _index; /* e.g. %i index in TRACE list */", comp->index);
     cout( "  Coords   _position_absolute;");
     cout( "  Coords   _position_relative; /* wrt PREVIOUS */");
     cout( "  Rotation _rotation_absolute;");
@@ -645,14 +652,17 @@ static void cogen_comp_init_par(struct comp_inst *comp, struct instr_def *instr,
         }
         else if (par->type == instr_type_vector) {
           if (val[0] == '{') {
-      /* FIXME: no bounds check, a literal vector with > 100 elements
-         overflows values[] (the struct field is sized from the real count). */
-      double values[100];
-      int vl = parse_curlybrackets_vector(val, values);
+      int vl = parse_curlybrackets_vector(val, NULL);
+      double *values = mem((vl + 1) * sizeof(double));
       int i;
+      parse_curlybrackets_vector(val, values);
       for (i=0; i<vl; i++) {
-        coutf("  _%s_var._parameters.%s[%i] = %g;", comp->name, par->id, i, values[i]);
+        char num[32]; /* shortest of %.15g/%.17g that reads back exactly */
+        snprintf(num, sizeof(num), "%.15g", values[i]);
+        if (strtod(num, NULL) != values[i]) snprintf(num, sizeof(num), "%.17g", values[i]);
+        coutf("  _%s_var._parameters.%s[%i] = %s;", comp->name, par->id, i, num);
       }
+      memfree(values);
     } else
             coutf("  _%s_var._parameters.%s = %s; // default pointer allocation", comp->name, par->id, val);
         }
@@ -908,7 +918,6 @@ int cogen_comp_section_class(
               if (par->type == instr_type_symbol) {
                 entry = symtab_lookup(loopcomp->setpar, par->id);
                 val = exp_tostring(entry->val);
-                cout("    // HEST!"); /* leftover debug marker, emitted into generated code */
                 coutf("    %s = %s;", par->id, val);
               }
             }
@@ -1391,7 +1400,14 @@ int cogen_decls(struct instr_def *instr)
       }
       coutf("/* Shared user declarations for all components types '%s'. */", comp->def->name);
       codeblock_out(comp->def->share_code);
-      comp->def->flag_defined_share = 1; /* flag the component so that SHARE outputs only once */
+      /* flag so that SHARE outputs only once, also for classes that INHERIT
+         this very block (same pointer, e.g. "DEFINE COMPONENT X INHERIT Y") */
+      List_handle liter2 = list_iterate(instr->complist);
+      struct comp_inst *other;
+      while((other = list_next(liter2)))
+        if (other->def->share_code == comp->def->share_code)
+          other->def->flag_defined_share = 1;
+      list_iterate_end(liter2);
       cout("");
       index++;
     }
@@ -1515,8 +1531,6 @@ int cogen_section(struct instr_def *instr, char *section, char *section_lower,
   list_iterate_end(liter);
   cout("");
 
-  /* note: cone, polygon and polyhedron are #define'd above but not #undef'd
-     here, so those names stay mapped to mcdis_* for the rest of the file. */
   if (!strcmp(section, "DISPLAY")) {
     cout("  #undef magnify");
     cout("  #undef line");
@@ -1527,6 +1541,9 @@ int cogen_section(struct instr_def *instr, char *section, char *section_lower,
     cout("  #undef circle");
     cout("  #undef cylinder");
     cout("  #undef sphere");
+    cout("  #undef cone");
+    cout("  #undef polygon");
+    cout("  #undef polyhedron");
   }
   cout("");
 
@@ -1651,6 +1668,18 @@ int cogen_section(struct instr_def *instr, char *section, char *section_lower,
 } /* cogen_section */
 
 
+/* particle state parameter names, #define'd as _particle->name in TRACE */
+static char *statepars_all[] = {
+#if MCCODE_PROJECT == 1     /* neutron */
+  "x", "y", "z", "vx", "vy", "vz",
+  "t", "sx", "sy", "sz", "p", "mcgravitation", "mcMagnet", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
+#elif MCCODE_PROJECT == 2   /* xray */
+  "x", "y", "z", "kx", "ky", "kz",
+  "phi", "t", "Ex", "Ey","Ez", "p", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
+#endif
+};
+static const int num_state_pars = sizeof(statepars_all)/sizeof(statepars_all[0]);
+
 /*******************************************************************************
 * def_trace_section: #define symbols for entire TRACE section
 *******************************************************************************/
@@ -1658,18 +1687,6 @@ void def_trace_section(struct instr_def *instr)
 {
   List_handle liter;
   int i = 0;
-  static char *statepars_all[] =
-  { /* particle state parameter names are used for defines */
-  #if MCCODE_PROJECT == 1     /* neutron */
-  #define NUM_STATE_PARS 17
-          "x", "y", "z", "vx", "vy", "vz",
-          "t", "sx", "sy", "sz", "p", "mcgravitation", "mcMagnet", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
-  #elif MCCODE_PROJECT == 2   /* xray */
-  #define NUM_STATE_PARS 16
-          "x", "y", "z", "kx", "ky", "kz",
-          "phi", "t", "Ex", "Ey","Ez", "p", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
-  #endif
-  };
 
   cout("/*******************************************************************************");
   coutf("* components %s", "TRACE");
@@ -1677,7 +1694,7 @@ void def_trace_section(struct instr_def *instr)
   cout("");
 
   /* define state parameters for all TRACE*/
-  for(i=0; i<NUM_STATE_PARS; i++)
+  for(i=0; i<num_state_pars; i++)
     coutf("#define %s (_particle->%s)", statepars_all[i], statepars_all[i]);
 
   cout("/* if on GPU, globally nullify sprintf,fprintf,printfs   */");
@@ -1715,22 +1732,9 @@ void undef_trace_section(struct instr_def *instr)
 {
   List_handle liter;
   int i = 0;
-  static char *statepars_all[] =
-    { /* particle state parameter names are used for defines */
-    #if MCCODE_PROJECT == 1     /* neutron */
-    #define NUM_STATE_PARS 17
-            "x", "y", "z", "vx", "vy", "vz",
-            "t", "sx", "sy", "sz", "p", "mcgravitation", "mcMagnet", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
-    #elif MCCODE_PROJECT == 2   /* xray */
-    #define NUM_STATE_PARS 16
-            "x", "y", "z", "kx", "ky", "kz",
-            "phi", "t", "Ex", "Ey","Ez", "p", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
-    #endif
-    };
-  List l;
 
   // undef everything after the "raytrace" function
-  for(i = 0; i < NUM_STATE_PARS; i++)
+  for(i = 0; i < num_state_pars; i++)
     coutf("#undef %s", statepars_all[i]);
 
   cout("#ifdef OPENACC");
@@ -1843,20 +1847,6 @@ int cogen_raytrace(struct instr_def *instr)
   struct comp_inst *comp = NULL;
   int warnings = 0;
   int i = 0;
-  int split_counts = 0;
-  static char *statepars_all[] =
-    { /* particle state parameter names are used for defines */
-    #if MCCODE_PROJECT == 1     /* neutron */
-    #define NUM_STATE_PARS 17
-            "x", "y", "z", "vx", "vy", "vz",
-            "t", "sx", "sy", "sz", "p", "mcgravitation", "mcMagnet", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
-    #elif MCCODE_PROJECT == 2   /* xray */
-    #define NUM_STATE_PARS 16
-            "x", "y", "z", "kx", "ky", "kz",
-            "phi", "t", "Ex", "Ey","Ez", "p", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
-    #endif
-    };
-  List l;
     
   //
   // write the raytrace function
@@ -1895,21 +1885,7 @@ int cogen_raytrace(struct instr_def *instr)
         /* create counter for JUMP iteration */
         if (this_jump->iterate)
           coutf("  _particle->_logic.Jump_%s_%s=0;", comp->name, this_jump->target);
-        /* check that the target_index is defined, else search for the target comp index */
-        if (!this_jump->target_index) {
-          List_handle liter3 = list_iterate(instr->complist);
-          struct comp_inst *target=NULL;
-          while((target = list_next(liter3)) != NULL) {
-            if (!strcmp(target->name, this_jump->target))
-              this_jump->target_index = target->index;
-          }
-          list_iterate_end(liter3);
-        }
-        /* FIXME: only index 0 (MYSELF) is made absolute here; PREVIOUS (-1)
-           and NEXT (+1) are left relative and then used as absolute indices
-           (see also detect_skipable_transforms, which runs first). */
-        if (!this_jump->target_index) /* JUMP e.g. PREVIOUS/NEXT is relative -> absolute */
-          this_jump->target_index += comp->index;
+        /* target_index is already absolute, see detect_skipable_transforms */
       }
       list_iterate_end(liter2);
     }
@@ -2183,8 +2159,8 @@ int cogen_raytrace(struct instr_def *instr)
 * a new loop starts when the device changes or at a SPLIT. A SPLIT here
 * compacts the batch (absorbed particles last) and duplicates live ones into
 * the free slots. JUMP is not supported.
-* Note: GROUP handling differs from raytrace(): a non-scattering member sets
-* ABSORBED=0 instead of restoring the saved particle.
+* GROUP handling deliberately differs from raytrace(): a non-scattering
+* member sets ABSORBED=0 instead of restoring the saved particle.
 *
 *******************************************************************************/
 int cogen_rt_funnel(struct instr_def *instr)
@@ -2193,20 +2169,6 @@ int cogen_rt_funnel(struct instr_def *instr)
   struct comp_inst *comp = NULL;
   int warnings = 0;
   int i = 0;
-  int split_counts = 0;
-  static char *statepars_all[] =
-    { /* particle state parameter names are used for defines */
-    #if MCCODE_PROJECT == 1     /* neutron */
-    #define NUM_STATE_PARS 17
-            "x", "y", "z", "vx", "vy", "vz",
-            "t", "sx", "sy", "sz", "p", "mcgravitation", "mcMagnet", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
-    #elif MCCODE_PROJECT == 2   /* xray */
-    #define NUM_STATE_PARS 16
-            "x", "y", "z", "kx", "ky", "kz",
-            "phi", "t", "Ex", "Ey","Ez", "p", "allow_backprop", "_mctmp_a", "_mctmp_b", "_mctmp_c"
-    #endif
-    };
-  List l;
 
   printf("\n-----------------------------------------------------------\n");
   printf("\nGenerating GPU/CPU -DFUNNEL layout:\n");
@@ -2479,7 +2441,7 @@ cogen_header(struct instr_def *instr, char *output_name)
   else strcpy(pathsep, "\\\\");
 
   sysdir_orig = get_sys_dir();
-  sysdir_new  = (char *)mem(2*strlen(sysdir_orig));
+  sysdir_new  = (char *)mem(2*strlen(sysdir_orig)+1);
   for (i=0; i < strlen(sysdir_orig); i++)
   {
     if (sysdir_orig[i] == '\\')
@@ -2590,8 +2552,10 @@ cogen_header(struct instr_def *instr, char *output_name)
   *  list for later def/undef as state variables (see cogen_raytrace).
   *  (The type is in fact taken from the declaration; component USERVARS get
   *  the instance index appended, e.g. "flag" -> "flag_3".)
-  *  Note: particle_getvar() and particle_getuservar_byid() below read every
-  *  user var as a double, which is wrong for non-double types. */
+  *  particle_getvar() and particle_getuservar_byid() below return user vars
+  *  as double: numeric scalars are converted, others report failure (*suc).
+  *  To use a USERVAR with Monitor_nD (user1="var" ...), it must be declared
+  *  double. */
 
   instr->user_vars = list_create();
   instr->user_vars_types = list_create();
@@ -2724,10 +2688,14 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("  if(!str_comp(\"_mctmp_a\",name)){rval=p->_mctmp_a;s=0;}");
   cout("  if(!str_comp(\"_mctmp_b\",name)){rval=p->_mctmp_b;s=0;}");
   cout("  if(!str_comp(\"_mctmp_c\",name)){rval=p->_mctmp_c;s=0;}");
+  liter2 = list_iterate(instr->user_vars_types);
   while((var = list_next(liter))) {
-    coutf("  if(!str_comp(\"%s\",name)){rval=*( (double *)(&(p->%s)) );s=0;}",var,var);
+    tpe = list_next(liter2);
+    if (uservar_is_numeric(tpe, var))
+      coutf("  if(!str_comp(\"%s\",name)){rval=(double)(p->%s);s=0;}",var,var);
   }
   list_iterate_end(liter);
+  list_iterate_end(liter2);
   cout("  if (suc!=0x0) {*suc=s;}");
   cout("  return rval;");
   cout("}");
@@ -2875,9 +2843,14 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("  double rval=0;");
   cout("  switch(id){");
   int jvar=0;
+  liter2 = list_iterate(instr->user_vars_types);
   while((var = list_next(liter))) {
-    coutf("  case %d: { rval=*( (double *)(&(p->%s)) );s=0;break;}",jvar++,var);
+    tpe = list_next(liter2);
+    if (uservar_is_numeric(tpe, var)) // ids count all user vars, readable or not
+      coutf("  case %d: { rval=(double)(p->%s);s=0;break;}",jvar,var);
+    jvar++;
   }
+  list_iterate_end(liter2);
   cout("  }");
   cout("  if (suc!=0x0) {*suc=s;}");
   cout("  return rval;");
@@ -2938,8 +2911,6 @@ cogen_header(struct instr_def *instr, char *output_name)
     fprintf(stderr,"Dependency: %s.o\n", "mcxtrace-r");
 #endif
 
-    /* note: printed for McXtrace too (duplicate of the McStas line above) */
-    fprintf(stderr,"Dependency: %s.o\n", "mcstas-r");
     fprintf(stderr,"Dependency: '-DUSE_NEXUS -lNeXus' to enable NeXus support\n");
     fprintf(stderr,"To build instrument '%s', compile and link with these libraries (in %s%sshare)\n",
       instrument_definition->quoted_source, sysdir_new, pathsep);
@@ -3000,8 +2971,8 @@ cogen_header(struct instr_def *instr, char *output_name)
 /*******************************************************************************
 * varname_is_in_codeblock: Checks if variable varname appears as a whole word
 *   in code block code. Filters out comment sections.
-*   Side effect: comments are blanked out IN PLACE in code->lines, so the
-*   block is later written to the generated file without its comments.
+*   Side effect: comments are blanked out IN PLACE in code->lines. Harmless
+*   today, as the DECLARE/USERVARS blocks scanned here are not written out.
 *
 * code:     code block containing var, or not
 * varname:  variable declaration id
@@ -3124,8 +3095,7 @@ int get_codeblock_vars_allcustom(struct code_block *code, List custom_vars,
 * returns: the number of vars added
 *
 * This is a regex heuristic, not a C parser. It finds "type name;" or
-* "type name[N];" (no initialiser). Only the first declaration on each line
-* is found (idx below never changes, so the do-while runs once per line).
+* "type name[N];" (no initialiser), also several per line.
 *******************************************************************************/
 int get_codeblock_vars(struct code_block *code, List vars, List types,
   char* block_name, char* movetoblock_name) {
@@ -3135,56 +3105,35 @@ int get_codeblock_vars(struct code_block *code, List vars, List types,
 
   List_handle myiter;
   myiter = list_iterate(code->lines);
-
   char *l;
-  int idx = -1;
-  int pos = -1;
-  int len = -1;
   int ans = 0;
 
   while((l = list_next(myiter))) {
-    do {
-      // line must match this format
-      pos = re_match("\\w[\\s\\w\\*]+\\s+\\**\\w+\\[?\\w*\\]?\\[?\\w*\\]?;", l); // match general var decl pattern
+    int pos;
+    // one or more "type name;" declarations on this line
+    while ((pos = re_match("\\w[\\s\\w\\*]+\\s+\\**\\w+\\[?\\w*\\]?\\[?\\w*\\]?;", l)) > -1) {
+      // the type is everything up to the varname, the varname runs to ';'
+      int tlen = re_match("\\w+\\[?\\w*\\]?\\[?\\w*\\]?;", l+pos);
+      if (tlen < 0) break;
+      char *v = l + pos + tlen;
+      int vlen = re_match(";", v);
+      if (vlen < 0) break;
+      char *tpe = str_dup_n(l+pos, tlen);
+      char *vn  = str_dup_n(v, vlen);
+      l = v + vlen + 1; // continue after the ';'
 
-      if (pos <= -1) {
-        // skip
+      // check that symbol was not found inside a comment block
+      if (varname_is_in_codeblock(code, vn)) {
+        list_add(types, tpe);
+        list_add(vars, vn);
+        ans++;
+      } else {
+        str_free(tpe);
+        str_free(vn);
       }
-      else {
-        char* tpe;
-        char* vn;
-
-        // extract the type
-        len = re_match("\\w+\\[?\\w*\\]?\\[?\\w*\\]?;", l+pos); // end of type string
-        tpe = (char*) malloc((len + 1) * sizeof(char)); // new location
-        *(tpe+len) = '\0'; // null terminate
-        if (len > -1) {
-          strncpy(tpe, l+pos, len);
-        }
-
-        // extract the varname
-        pos = re_match("\\w+\\[?\\w*\\]?\\[?\\w*\\]?;", l); // match start of varname
-        if (pos > -1) {
-          len = re_match(";", l+pos); // match end of varname
-
-          if (len > -1) {
-            vn = (char*) malloc((len + 1) * sizeof(char)); // new location
-            *(vn+len) = '\0'; // null terminate
-
-            strncpy(vn, l+pos, len);
-            l = l + pos + len + 1; // inc line to pos after scolon
-            ans++;
-          }
-        }
-
-        // check that symbol was not found inside a comment block
-        if (varname_is_in_codeblock(code, vn)) {
-          list_add(types, tpe);
-          list_add(vars, vn);
-        }
-      }
-    } while(idx > -1);
+    }
   }
+  list_iterate_end(myiter);
 
   // print a warning if code block contains '=' char
   int warnings = 0;
@@ -3212,8 +3161,7 @@ int get_codeblock_vars(struct code_block *code, List vars, List types,
 *   component to the next one; setpos() chains relative coordinates
 *   accordingly. Must run after cogen_decls (which sets comp->index) and
 *   before cogen_section("INITIALISE") and cogen_raytrace.
-*   FIXME: a relative JUMP PREVIOUS gives target_index -1 and list_access()
-*   with a negative index (generator crash).
+*   Also turns every JUMP target into an absolute component index.
 *******************************************************************************/
 void detect_skipable_transforms(struct instr_def *instr) {
     //
@@ -3248,16 +3196,23 @@ void detect_skipable_transforms(struct instr_def *instr) {
             List_handle literJ = list_iterate(comp->jump);
             while ((this_jump = list_next(literJ))) {
                 
-                // Find target (not initialized yet)
-                List_handle liter3 = list_iterate(instr->complist);
-                struct comp_inst *target=NULL;
-                while((target = list_next(liter3)) != NULL) {
-                  if (!strcmp(target->name, this_jump->target))
-                    this_jump->target_index = target->index;
-                }
-                list_iterate_end(liter3);
-                if (!this_jump->target_index) /* JUMP e.g. PREVIOUS/NEXT is relative -> absolute */
+                // Resolve the target to an absolute component index (only
+                // here, cogen_raytrace relies on it). PREVIOUS/NEXT/MYSELF
+                // are offsets from this component, others are names.
+                if (this_jump->target_index || !strcmp(this_jump->target, "MYSELF"))
                   this_jump->target_index += comp->index;
+                else {
+                  List_handle liter3 = list_iterate(instr->complist);
+                  struct comp_inst *target=NULL;
+                  while((target = list_next(liter3)) != NULL) {
+                    if (!strcmp(target->name, this_jump->target))
+                      this_jump->target_index = target->index;
+                  }
+                  list_iterate_end(liter3);
+                }
+                if (this_jump->target_index < 1 || this_jump->target_index > list_len(instr->complist))
+                  fatal_error("JUMP at component %s: target %s is not a component of this instrument.\n",
+                    comp->name, this_jump->target);
 
                 // component list is 1 indexed so subtract one from target_index
                 target_comp = list_access(instr->complist, this_jump->target_index - 1);
