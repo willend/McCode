@@ -97,6 +97,7 @@ int metadata_construct_table(instr_ptr_t);
 void metadata_assign_from_definition(List metadata);
 void metadata_assign_from_instance(List metadata);
 static void dependency_add(char *s);
+static struct code_block *codeblock_present(struct code_block *cb, struct code_block *own);
 
 %}
 
@@ -288,7 +289,9 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
         /* inherit from another comp, and initiate it with given blocks */
         /* all redefined blocks override */
         /* Parameter lists are parent + child, concatenated. A code section
-           the child leaves empty is taken from the parent. */
+           the child does not write is taken from the parent; a section the
+           child writes, even an empty one, replaces the parent's (as in
+           mccode-antlr). codeblock_present() marks written sections. */
         struct comp_def *def;
         def = read_component($5);
         if (def) {
@@ -311,14 +314,14 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
 
           c->flag_noacc = $10;
 	  
-          c->share_code   = (list_len($11->lines) ? $11 : def->share_code);
-          c->uservar_code = (list_len($12->lines) ? $12 : def->uservar_code);
-          c->decl_code    = (list_len($13->lines) ? $13 : def->decl_code);
-          c->init_code    = (list_len($14->lines) ? $14 : def->init_code);
-          c->trace_code   = (list_len($15->lines) ? $15 : def->trace_code);
-          c->save_code    = (list_len($16->lines) ? $16 : def->save_code);
-          c->finally_code = (list_len($17->lines) ? $17 : def->finally_code);
-          c->display_code = (list_len($18->lines) ? $18 : def->display_code);
+          c->share_code   = ($11->linenum > 0 ? $11 : def->share_code);
+          c->uservar_code = ($12->linenum > 0 ? $12 : def->uservar_code);
+          c->decl_code    = ($13->linenum > 0 ? $13 : def->decl_code);
+          c->init_code    = ($14->linenum > 0 ? $14 : def->init_code);
+          c->trace_code   = ($15->linenum > 0 ? $15 : def->trace_code);
+          c->save_code    = ($16->linenum > 0 ? $16 : def->save_code);
+          c->finally_code = ($17->linenum > 0 ? $17 : def->finally_code);
+          c->display_code = ($18->linenum > 0 ? $18 : def->display_code);
 
           /* Check definition and setting params for uniqueness */
           check_comp_formals(c->def_par, c->set_par, c->name);
@@ -337,9 +340,12 @@ compdef:    "DEFINE" "COMPONENT" TOK_ID parameters metadata shell dependency noa
    - INHERIT <comp> appends that component's same section,
    - EXTEND %{...%} appends one more code block,
    - the result is one merged struct code_block, in source order.
-   Merged blocks are created with codeblock_new(), so they have no filename
-   and linenum -1 (only an INHERIT copies those from its parent). The
-   *_inherit_extend rules are right-recursive: $3 is "the rest of the chain". */
+   - there is no implicit parent: EXTEND only appends to what the section
+     lists itself; use INHERIT <comp> to include another component's code.
+   A section that is written at all, even as an empty %{ %} block, is marked
+   present (linenum > 0, see codeblock_present); an absent section keeps
+   linenum -1. DEFINE COMPONENT X INHERIT Y relies on that distinction.
+   The *_inherit_extend rules are right-recursive: $3 is "the rest of the chain". */
 
 /* SHARE component block included once. */
 comp_share: /* empty */
@@ -352,11 +358,11 @@ comp_share: /* empty */
         cb = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
-        $$ = cb;
+        $$ = codeblock_present(cb, $2);
       }
     | "SHARE" comp_share_inherit_extend
       {
-        $$ = $2;
+        $$ = codeblock_present($2, NULL);
       }
 ;
 
@@ -400,11 +406,11 @@ comp_trace: /* empty */
         cb  = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
-        $$ = cb;
+        $$ = codeblock_present(cb, $2);
       }
     | "TRACE" comp_trace_inherit_extend
       {
-        $$ = $2;
+        $$ = codeblock_present($2, NULL);
       }
 ;
 
@@ -656,11 +662,11 @@ comp_declare:    /* empty */
         cb  = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
-        $$ = cb;
+        $$ = codeblock_present(cb, $2);
       }
     | "DECLARE" comp_decl_inherit_extend
       {
-        $$ = $2;
+        $$ = codeblock_present($2, NULL);
       }
 ;
 
@@ -704,7 +710,11 @@ comp_uservars:    /* empty */
         cb  = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
-        $$ = cb;
+        $$ = codeblock_present(cb, $2);
+      }
+    | "USERVARS" comp_uservars_inherit_extend
+      {
+        $$ = codeblock_present($2, NULL);
       }
 ;
 
@@ -712,11 +722,19 @@ comp_uservars_inherit_extend: /* empty */
       {
         $$ = codeblock_new();
       }
-    | "USERVARS" codeblock comp_uservars_inherit_extend
+    | "INHERIT" TOK_ID comp_uservars_inherit_extend
       {
         struct code_block *cb;
+        struct comp_def *def;
         cb  = codeblock_new();
-        list_cat(cb->lines, $2->lines);
+        def = read_component($2);
+        if (def) {
+          struct code_block    *cb1 = def->uservar_code;
+          cb->filename        = cb1->filename;
+          cb->quoted_filename = cb1->quoted_filename;
+          cb->linenum         = cb1->linenum;
+          list_cat(cb->lines,   cb1->lines);
+        }
         list_cat(cb->lines, $3->lines);
         $$ = cb;
       }
@@ -740,11 +758,11 @@ comp_initialize:   /* empty */
         cb  = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
-        $$ = cb;
+        $$ = codeblock_present(cb, $2);
       }
     | "INITIALISE" comp_init_inherit_extend
       {
-        $$ = $2;
+        $$ = codeblock_present($2, NULL);
       }
 ;
 
@@ -784,7 +802,7 @@ comp_save:   /* empty */
       }
     | "SAVE" comp_save_inherit_extend
       {
-        $$ = $2;
+        $$ = codeblock_present($2, NULL);
       }
     | "SAVE" codeblock comp_save_inherit_extend
       {
@@ -792,7 +810,7 @@ comp_save:   /* empty */
         cb  = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
-        $$ = cb;
+        $$ = codeblock_present(cb, $2);
       }
 ;
 
@@ -832,7 +850,7 @@ comp_finally:    /* empty */
       }
     | "FINALLY" comp_finally_inherit_extend
       {
-        $$ = $2;
+        $$ = codeblock_present($2, NULL);
       }
     | "FINALLY" codeblock comp_finally_inherit_extend
       {
@@ -840,7 +858,7 @@ comp_finally:    /* empty */
         cb  = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
-        $$ = cb;
+        $$ = codeblock_present(cb, $2);
       }
 ;
 
@@ -880,7 +898,7 @@ comp_display:    /* empty */
       }
     | "DISPLAY" comp_display_inherit_extend
       {
-        $$ = $2;
+        $$ = codeblock_present($2, NULL);
       }
     | "DISPLAY" codeblock comp_display_inherit_extend
       {
@@ -888,7 +906,7 @@ comp_display:    /* empty */
         cb  = codeblock_new();
         list_cat(cb->lines, $2->lines);
         list_cat(cb->lines, $3->lines);
-        $$ = cb;
+        $$ = codeblock_present(cb, $2);
       }
 ;
 
@@ -2215,6 +2233,22 @@ Symtab read_components = NULL;
 
 /* name of executable, e.g. mcstas or mcxtrace */
 char *executable_name=NULL;
+
+/* Mark a component code section as written (present), even when empty.
+   Its line number comes from the section's own %{ block when there is one,
+   else from the current line. Absent sections keep linenum -1. */
+static struct code_block *
+codeblock_present(struct code_block *cb, struct code_block *own)
+{
+  if (own) {
+    cb->linenum         = own->linenum;
+    cb->filename        = own->filename;
+    cb->quoted_filename = own->quoted_filename;
+  }
+  if (cb->linenum <= 0)
+    cb->linenum = instr_current_line > 0 ? instr_current_line : 1;
+  return cb;
+}
 
 /* Append s to the instrument CFLAGS without overflowing the fixed buffer. */
 static void

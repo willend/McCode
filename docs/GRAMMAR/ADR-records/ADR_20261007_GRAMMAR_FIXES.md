@@ -26,10 +26,20 @@ it read about 16x the intensity measured behind the equivalent Slit.
 
 Fix the following in the generator. No new keywords are introduced.
 
-1. **Whole-component `INHERIT`**: a code section that `X` leaves empty is
-   taken from `Y`. Parameter lists keep being concatenated (unchanged).
-   `SHARE` is emitted once per code block, so `X` and `Y` in the same
-   instrument do not duplicate the shared code.
+1. **Whole-component `INHERIT`** (`DEFINE COMPONENT X INHERIT Y`): a code
+   section that `X` does not write is taken from `Y`. A section that `X`
+   writes, even an empty `%{ %}` block, replaces `Y`'s. This is the rule
+   mccode-antlr implements (mccode-dev/mccode-antlr#321, #325).
+   Parameter lists keep being concatenated (unchanged). `SHARE` is emitted
+   once per code block, so `X` and `Y` in the same instrument do not
+   duplicate the shared code.
+   Within one section, the parts are concatenated in the order given:
+   `SECTION [%{..%}] (INHERIT Z | EXTEND %{..%})*`. `EXTEND` never pulls in
+   `Y`'s code implicitly; write `INHERIT Y` inside the section for that.
+   `USERVARS` now has the same form as the other sections (`INHERIT` allowed,
+   the repeated `USERVARS` keyword is gone; no shipped file used it).
+   Unchanged: `COPY(instance)` never copies `EXTEND`
+   (mccode-dev/mccode-antlr#330).
 2. **`JUMP PREVIOUS[(n)]` / `NEXT[(n)]`** are resolved relative to the
    jumping component, as documented. A target that does not exist (an
    unknown name, or out of range) is an error.
@@ -124,4 +134,21 @@ Whole-component inheritance:
 DEFINE COMPONENT Diaphragm INHERIT Slit
 END
 /* now has Slit's INITIALIZE/TRACE/DISPLAY; before it had none */
+
+DEFINE COMPONENT X INHERIT Y
+TRACE
+%{
+%}
+END
+/* X has all of Y's sections except TRACE, which is empty (before: an
+   empty block counted as not written, so Y's TRACE was used) */
+
+DEFINE COMPONENT X INHERIT Y
+INITIALIZE INHERIT Y EXTEND
+%{
+  more();
+%}
+END
+/* Y's INITIALIZE followed by more(); all other sections from Y.
+   INITIALIZE EXTEND %{ more(); %} alone would give just more(). */
 ```
