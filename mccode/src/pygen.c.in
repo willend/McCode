@@ -101,30 +101,6 @@ int get_codeblock_vars_allcustom(struct code_block *code, List custom_vars,
 int get_codeblock_vars(struct code_block *code, List vars, List types,
          char* block_name, char* movetoblock_name);
 
-int parse_curlybrackets_vector(char* string, double* values) {
-  char* s = string;
-  int vidx = 0;
-  char* r;
-  while(*s != '\0') {
-    // jump to a non-trivial position
-    if (*s == ' ' || *s == ',' || *s == '{') {
-      ++s;
-      continue;
-    }
-    if (*s == '}') return vidx;
-
-    // extract a value
-    double val = strtod(s, &r);
-    if (values!=NULL) values[vidx] = val;
-    ++vidx;
-
-    // iterate
-    if (*r == '\0') return vidx;
-    s = r + 1;
-  }
-  return vidx;
-}
-
 /* Functions for outputting code. */
 
 /* Handle for output file. */
