@@ -14,7 +14,10 @@
 * %Description
 * Instrument to study tomographic imaging by means of the feature of OFF shape samples.
 *
-* Example: mcrun Tomography.instr offfile=bunny.off -n1e4 -N18 omega=0,340 -d TomoScan
+* %Scan: mcrun Tomography.instr omega=0,340 -N18 -n1e4 Detector: monitor_I={
+*   2.23321e-09,2.18277e-09,2.18764e-09,2.18301e-09,2.19154e-09,2.19422e-09,2.18277e-09,2.18521e-09,
+*   2.19178e-09,2.23662e-09,2.19154e-09,2.18374e-09,2.18935e-09,2.18325e-09,2.20397e-09,2.17789e-09,
+*   2.18033e-09,2.18691e-09 }
 * (Note that to achieve proper statistics for tomographic reconstruction, MUCH higher ncounts
 *  are needed)
 *

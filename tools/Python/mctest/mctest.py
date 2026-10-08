@@ -44,7 +44,7 @@ def paths_overlap(a: pathlib.Path, b: pathlib.Path) -> bool:
 
 def split_test_line(line):
     ''' Splits the parameter part of a %Example/%Scan line into (parvals, ncount).
-    "mcrun" and "*.instr" tokens are dropped, since the test setup defines those,
+    "mcrun"/"mxrun" and "*.instr" tokens are dropped, since the test setup defines those,
     and a -n/--ncount is taken out of parvals and returned separately (or None). '''
     toks = line.split()
     parvals = []
@@ -58,7 +58,7 @@ def split_test_line(line):
             if not ncount and i + 1 < len(toks):
                 i += 1
                 ncount = toks[i]
-        elif t != "mcrun" and not t.endswith(".instr"):
+        elif t not in ("mcrun", "mxrun") and not t.endswith(".instr"):
             parvals.append(t)
         i += 1
     return " ".join(parvals), ncount
