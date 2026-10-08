@@ -18,11 +18,11 @@
 * Documentation and results of the .instr here: https://gitlab.synchrotron-soleil.fr/grades/beamlines/-/tree/main/glitches
 * A jupyter notebook will soon be available regrouping everything.
 * You may scan like so for example:
-* %Scan: mxrun SSRL_bl_11_2_white_src.instr -N31 Etohit=6900,7500 detuning_percentage=40 -n1e6 Detector: EnergyMonitor_first_I={
-*   10046700.0,10650900.0,8528260.0,8296880.0,7986510.0,22446400.0,24820300.0,25166000.0,
-*   22197000.0,25054900.0,23876500.0,25019400.0,25330900.0,25429200.0,24424900.0,23806600.0,
-*   23187200.0,21946700.0,23304900.0,19717000.0,18597400.0,21596200.0,21184500.0,15963900.0,
-*   18022700.0,15979900.0,16987000.0,17278100.0,16956200.0,16034000.0,15923600.0 }
+* %Scan: mxrun SSRL_bl_11_2_white_src.instr -N31 Etohit=6900,7500 detuning_percentage=40 -n1e7 Detector: EnergyMonitor_first_I={
+*   9.6608e+06,9.36768e+06,8.8759e+06,8.45813e+06,8.60571e+06,2.19181e+07,2.5781e+07,2.47468e+07,
+*   2.33347e+07,2.36432e+07,2.44606e+07,2.54374e+07,2.50395e+07,2.47904e+07,2.48351e+07,2.48054e+07,
+*   2.25687e+07,2.16413e+07,2.15756e+07,2.08025e+07,2.13743e+07,2.14039e+07,2.09034e+07,1.55632e+07,
+*   1.75271e+07,1.73956e+07,1.73963e+07,1.72547e+07,1.72151e+07,1.74949e+07,1.71321e+07 }
 *
 * %Example: Etohit=6900 Detector: EnergyMonitor_first_I=4.24366e+07
 *
