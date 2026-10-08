@@ -18,9 +18,8 @@ Example: mcrun Tomography.instr offfile=bunny.off -n1e4 -N18 omega=0,340 -d Tomo
 (Note that to achieve proper statistics for tomographic reconstruction, MUCH higher ncounts
 are needed)
 
-Use the provided Matlab tomo_recon.m function (requires imaging toolbox, PGPLOT output data
-and a Unix/Mac) in the tools/matlab folder to reconstruct a 3D volume of the object. Use e.g.
-isosurface to do thresholding for extraction of the object surface.
+Use the provided tomo_recon.py (numpy + matplotlib) in this folder to reconstruct a 3D
+volume of the object from the scan directory: python tomo_recon.py TomoScan [--save]
 ```
 
 ## Examples

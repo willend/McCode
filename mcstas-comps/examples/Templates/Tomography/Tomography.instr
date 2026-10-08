@@ -14,16 +14,17 @@
 * %Description
 * Instrument to study tomographic imaging by means of the feature of OFF shape samples.
 *
-* %Scan: mcrun Tomography.instr omega=0,340 -N18 -n1e4 Detector: monitor_I={
-*   2.23321e-09,2.18277e-09,2.18764e-09,2.18301e-09,2.19154e-09,2.19422e-09,2.18277e-09,2.18521e-09,
-*   2.19178e-09,2.23662e-09,2.19154e-09,2.18374e-09,2.18935e-09,2.18325e-09,2.20397e-09,2.17789e-09,
-*   2.18033e-09,2.18691e-09 }
+* %Scan: mcrun Tomography.instr omega=0,350 -N36 -n1e6 Detector: monitor_I={
+*   2.23423e-09,2.20782e-09,2.18698e-09,2.17973e-09,2.18055e-09,2.17717e-09,2.17522e-09,2.18334e-09,
+*   2.19383e-09,2.21727e-09,2.19529e-09,2.18096e-09,2.17704e-09,2.17798e-09,2.18358e-09,2.18236e-09,
+*   2.18861e-09,2.20975e-09,2.23448e-09,2.20947e-09,2.18712e-09,2.18229e-09,2.1835e-09,2.17813e-09,
+*   2.17685e-09,2.1831e-09,2.19357e-09,2.2165e-09,2.19268e-09,2.18099e-09,2.17494e-09,2.17799e-09,
+*   2.18184e-09,2.18032e-09,2.18734e-09,2.20725e-09 }
 * (Note that to achieve proper statistics for tomographic reconstruction, MUCH higher ncounts
 *  are needed)
 *
-* Use the provided Matlab tomo_recon.m function (requires imaging toolbox, PGPLOT output data
-* and a Unix/Mac) in the tools/matlab folder to reconstruct a 3D volume of the object. Use e.g. 
-* isosurface to do thresholding for extraction of the object surface.
+* Use the provided tomo_recon.py (numpy + matplotlib) in this folder to reconstruct a 3D
+* volume of the object from the scan directory: python tomo_recon.py TomoScan [--save]
 *
 * %Example: omega=0 Detector: monitor_I=2.23492e-09
 *
