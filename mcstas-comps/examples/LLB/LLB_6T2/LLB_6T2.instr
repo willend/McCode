@@ -25,10 +25,6 @@
 * PG       002 DM=3.355 AA (Highly Oriented Pyrolythic Graphite)
 * Cu       220 DM=1.278 AA
 *
-* Example of a C60 200 rocking curve scan:
-* %Scan: mcrun LLB_6T2.instr -N8 lambda=2.4 phi=9.47,10.17 gamma=19.74 nu=0 monok=0 samp_f=C60.lau -n1e7 Detector: Mon_out_I={
-*   1275.57,1550.07,1814.4,1908.03,1887.14,1956.2,1833.21,1501.39 }
-*
 * %Parameters
 * lambda: [AA]  wavelength
 * phi: [Deg]      sample rotation along the vertical axis
@@ -36,6 +32,9 @@
 * nu: [Deg]       out of plane detector position
 * monok: [1]      monochromator to use (0: PG, 1: Cu, 5: test mode)
 * samp_f: [str]   LAU file describing sample
+*
+* Example of a C60 200 rocking curve scan:
+*    mcrun LLB_6T2.instr --mpi=NUM_CORES -N31 lambda=2.4 phi=8.37,11.37 gamma=19.74 nu=0 monok=0 samp_f="C60.lau" -n 1e8 -d C60_200
 *
 * %End
 *******************************************************************************/
