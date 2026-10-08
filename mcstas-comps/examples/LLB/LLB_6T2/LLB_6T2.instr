@@ -26,9 +26,8 @@
 * Cu       220 DM=1.278 AA
 *
 * Example of a C60 200 rocking curve scan:
-* %Scan: mcrun LLB_6T2.instr -N12 lambda=2.4 phi=9.27,10.37 gamma=19.74 nu=0 monok=0 samp_f=C60.lau -n1e7 Detector: Mon_out_I={
-*   495.535,1014.3,1265.26,1449.65,1783.28,2217.03,2013.63,2151.44,
-*   1934.61,1586.15,837.108,866.069 }
+* %Scan: mcrun LLB_6T2.instr -N8 lambda=2.4 phi=9.47,10.17 gamma=19.74 nu=0 monok=0 samp_f=C60.lau -n1e7 Detector: Mon_out_I={
+*   1275.57,1550.07,1814.4,1908.03,1887.14,1956.2,1833.21,1501.39 }
 *
 * %Parameters
 * lambda: [AA]  wavelength
@@ -204,7 +203,7 @@ COMPONENT Pos_2 = Arm(
 AT (0,0,b2mon) RELATIVE Bar_out
 ROTATED (0,monoc_ang,0) ABSOLUTE
 
-COMPONENT Monoc=Monochromator_curved(
+SPLIT 10 COMPONENT Monoc=Monochromator_curved(
     zwidth=0.015, yheight=0.1, gap=0.0005,
     NH=7, NV=1, mosaich=25.0, mosaicv=25.0,
     reflect="HOPG.rfl", transmit="HOPG.trm",
