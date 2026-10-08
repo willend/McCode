@@ -57,9 +57,15 @@ Fix the following in the generator. No new keywords are introduced.
    on one line (`double a; double b;`).
 8. **`USERVARS` read through `particle_getvar()`** (e.g. Monitor_nD
    `user1="var"`): numeric scalars are converted to `double` instead of
-   having their memory read as a `double`. Arrays, pointers and structs
-   report failure. USERVARS used with Monitor_nD should still be declared
-   `double`.
+   having their memory read as a `double`. A USERVAR counts as numeric when
+   it is not an array or pointer and every word of its type is one of
+   `char short int long float double signed unsigned _Bool bool const
+   volatile MCNUM size_t` or a `<stdint.h>` integer name
+   (`u?int(_least|_fast)?N_t`), the same rule as mccode-antlr's
+   `is_numeric_scalar`. Others (arrays, pointers, structs, and typedefs
+   such as `typedef double real;`) are not readable this way and report
+   failure. The same rule decides which USERVARS `particle_uservar_init()`
+   zeroes. USERVARS used with Monitor_nD should still be declared `double`.
 9. **Vector parameters given as `{...}`** are split at top-level commas,
    and each element is written into the generated C as the expression it
    is. Before, the elements were parsed as plain numbers (`strtod`), so

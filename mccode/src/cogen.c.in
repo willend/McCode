@@ -448,13 +448,44 @@ int var_in_list(List lst, struct comp_iformal* var) {
   return retval;
 }
 
-/* USERVARS that particle_getvar() can return as a double: numeric scalars */
+/* One word of a USERVAR type: a C arithmetic keyword, MCNUM, size_t or a
+   <stdint.h> integer name u?int(_least|_fast)?N_t. */
+static int uservar_numeric_word(const char *w, size_t n)
+{
+  static const char *words[] = { "char", "short", "int", "long", "float", "double",
+    "signed", "unsigned", "_Bool", "bool", "const", "volatile", "MCNUM", "size_t", NULL };
+  int i;
+  size_t d = 0;
+  for (i = 0; words[i]; i++)
+    if (strlen(words[i]) == n && !strncmp(w, words[i], n)) return 1;
+  if (n && *w == 'u') { w++; n--; }
+  if (n < 3 || strncmp(w, "int", 3)) return 0;
+  w += 3; n -= 3;
+  if (n >= 6 && !strncmp(w, "_least", 6))     { w += 6; n -= 6; }
+  else if (n >= 5 && !strncmp(w, "_fast", 5)) { w += 5; n -= 5; }
+  while (d < n && w[d] >= '0' && w[d] <= '9') d++;
+  return d > 0 && n == d + 2 && w[d] == '_' && w[d+1] == 't';
+}
+
+/* USERVARS that particle_getvar() can return as a double: numeric scalars,
+   i.e. not an array or pointer, and every word of the type is numeric (as
+   is_numeric_scalar in mccode-antlr). Other typedefs, e.g. "typedef double
+   real;", are not recognised. */
 static int uservar_is_numeric(char *tpe, char *var)
 {
+  int words = 0;
+  char *s = tpe;
   if (strpbrk(tpe, "[]*") || strchr(var, '[')) return 0;
-  return strstr(tpe, "double") || strstr(tpe, "float") || strstr(tpe, "int")
-      || strstr(tpe, "long")   || strstr(tpe, "short") || strstr(tpe, "char")
-      || strstr(tpe, "MCNUM");
+  while (*s) {
+    size_t n = strcspn(s, " \t\n");
+    if (n) {
+      if (!uservar_numeric_word(s, n)) return 0;
+      words++;
+    }
+    s += n;
+    s += strspn(s, " \t\n");
+  }
+  return words > 0;
 }
 
 /* *****************************************************************************
@@ -2864,14 +2895,12 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("void particle_uservar_init(_class_particle *p){");
   while((var = list_next(liter))) {
     tpe = list_next(liter2);
-    if (strstr(tpe, "double") || strstr(tpe, "MCNUM") || strstr(tpe, "int")){
-      if (!strstr(tpe, "[") && !strstr(tpe, "]") && !strstr(tpe, "*")) {
-	coutf("  p->%s=0;",var);
-      } else {
-	printf("\nWARNING:\n   --> USERVAR %s is of type %s (array/pointer?)\n", var,tpe);
-	printf("   --> and may need specific per-particle\n");
-	printf("   --> initialisation through an EXTEND block!\n");
-      }
+    if (uservar_is_numeric(tpe, var)) {
+      coutf("  p->%s=0;",var);
+    } else if (strpbrk(tpe, "[]*") || strchr(var, '[')) {
+      printf("\nWARNING:\n   --> USERVAR %s is of type %s (array/pointer?)\n", var,tpe);
+      printf("   --> and may need specific per-particle\n");
+      printf("   --> initialisation through an EXTEND block!\n");
     } else {
       printf("\nWARNING:\n   --> USERVAR %s is of type %s and may need specific\n", var,tpe);
       printf("   --> per-particle initialisation through an\n");
