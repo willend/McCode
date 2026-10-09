@@ -7,6 +7,26 @@ bars that every McStas and McXtrace run prints, instead of only a fixed ±20 %
 window. This note explains the rule, the assumptions behind it, and where it can
 mislead.
 
+## TL;DR
+
+- **Nothing changes unless you ask for it.** Without new options, mctest still
+  passes a value within ±20 % of its target.
+- **`mctest --nsigma 5`** also passes a value that is within 5 error bars of its
+  target. This helps noisy, low-statistics tests that miss ±20 % by bad luck. It
+  never fails anything ±20 % would pass, as long as targets carry no error bar
+  (and none do yet).
+- **Error bars from too few particles are ignored.** Fewer than ~100 effective
+  events, and mctest falls back to ±20 %, so a nearly empty run can't slip through.
+- **`--pvalue`** is the same threshold for people who think in p-values:
+  `--pvalue 5.7e-7` is `--nsigma 5`.
+- **`--statfactor F`** runs every test with F times the particles: `0.1` for a
+  quick check, `100` for reference-quality numbers.
+- **Use 5, not 3.** A full test run judges thousands of values, and at 3σ a few
+  of them would fail by chance alone every time.
+- **Error bars can lie.** Instruments using `SPLIT` report error bars that are
+  too small, and some targets are a few per cent off for non-statistical
+  reasons. That's why ±20 % stays in place for now.
+
 ## What a test compares
 
 Each test definition in an instrument header gives a target intensity for one

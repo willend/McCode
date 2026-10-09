@@ -60,6 +60,26 @@ em { color: #57606a; }
 bars that every McStas and McXtrace run prints, instead of only a fixed ±20 %
 window. This note explains the rule, the assumptions behind it, and where it can
 mislead.</p>
+<h2 id="tldr">TL;DR</h2>
+<ul>
+<li><strong>Nothing changes unless you ask for it.</strong> Without new options, mctest still
+  passes a value within ±20 % of its target.</li>
+<li><strong><code>mctest --nsigma 5</code></strong> also passes a value that is within 5 error bars of its
+  target. This helps noisy, low-statistics tests that miss ±20 % by bad luck. It
+  never fails anything ±20 % would pass, as long as targets carry no error bar
+  (and none do yet).</li>
+<li><strong>Error bars from too few particles are ignored.</strong> Fewer than ~100 effective
+  events, and mctest falls back to ±20 %, so a nearly empty run can't slip through.</li>
+<li><strong><code>--pvalue</code></strong> is the same threshold for people who think in p-values:
+  <code>--pvalue 5.7e-7</code> is <code>--nsigma 5</code>.</li>
+<li><strong><code>--statfactor F</code></strong> runs every test with F times the particles: <code>0.1</code> for a
+  quick check, <code>100</code> for reference-quality numbers.</li>
+<li><strong>Use 5, not 3.</strong> A full test run judges thousands of values, and at 3σ a few
+  of them would fail by chance alone every time.</li>
+<li><strong>Error bars can lie.</strong> Instruments using <code>SPLIT</code> report error bars that are
+  too small, and some targets are a few per cent off for non-statistical
+  reasons. That's why ±20 % stays in place for now.</li>
+</ul>
 <h2 id="what-a-test-compares">What a test compares</h2>
 <p>Each test definition in an instrument header gives a target intensity for one
 monitor, either as a single value (<code>%Test:</code>, also accepted under its older name
