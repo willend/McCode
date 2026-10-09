@@ -21,6 +21,10 @@ uses its own `-n` if given, otherwise at most `1e5` per point, and runs its
 points in parallel (`--scan_split=auto`) unless MPI is used. A scan passes when
 every point is within 20% of its target.
 
+A target may carry its error bar, written as in the simulation's own output, e.g.
+`%Example: ... Detector: NAME_I=2.00752e+08 NAME_ERR=2.28872e+06` or, for a scan,
+`Detector: NAME_I={...} NAME_ERR={...}`. It is used with `--sigma`.
+
 | Option | Description |
 |---|---|
 | `--ncount N`, `-n N` | ncount sent to `mcrun` (default: `1e6`) |
@@ -43,6 +47,7 @@ every point is within 20% of its target.
 | `--compilemax S` | max seconds allowed per compilation (default: 1800; x100 with `--lint`) |
 | `--runmax S` | max seconds allowed per test run (default: 3600) |
 | `--displaymax S` | max seconds allowed per test display run (default: 60) |
+| `--sigma S` | accept a test value (each point of a scan) within S × the combined error bar `sqrt(ERR_test² + ERR_target²)`, when the target line gives `NAME_ERR`; targets without it are assumed to have the test run's ERR (`√2·ERR_test`) and are also accepted within 20 % |
 | `--noscans` | skip the `%Scan` tests, only run the `%Example` tests |
 | `--noplots` | do not generate plots (`01_overview.pdf`, `02_plots.html`) of the test output |
 | `--permissive` | exit 0 even if some tests fail |

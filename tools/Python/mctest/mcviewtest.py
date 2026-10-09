@@ -3,6 +3,7 @@
 import logging
 import argparse
 import json
+import math
 import sys
 import os
 from os.path import join, dirname, isdir
@@ -22,6 +23,17 @@ def percent_of(testval, targetval):
     if targetval == 0:
         return 100 if testval == 0 else 0
     return 100.0 * testval / targetval
+
+def accepted(testval, testerr, targetval, targeterr=None, sigma=None):
+    ''' same rule as mctest: within 20% or, if the test ran with --sigma, within sigma x the
+    combined error bar (a target without _ERR is assumed to have the test run's error bar);
+    a target given with its _ERR is judged by the error bars alone '''
+    within20 = abs(percent_of(testval, targetval) - 100) <= ERROR_PERCENT_THRESSHOLD_ACCEPT
+    if sigma is None:
+        return within20
+    err = math.hypot(testerr, targeterr) if targeterr is not None else math.sqrt(2) * testerr
+    insigma = abs(testval - targetval) <= sigma * err
+    return insigma if targeterr is not None else (within20 or insigma)
 
 def scantree(path):
     """Recursively yield DirEntry objects for given directory."""
@@ -262,7 +274,9 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
             testvals = cellobj["testval"]
             refvals = cellobj["targetval"]
             percents = [percent_of(t, r) for t, r in zip(testvals, refvals)]
-            numok = len([p for p in percents if abs(p-100) <= ERROR_PERCENT_THRESSHOLD_ACCEPT])
+            testerrs = cellobj.get("testerr") or [0] * len(testvals)
+            targeterrs = cellobj.get("targeterr") or [None] * len(refvals)
+            numok = len([1 for t, e, r, re_ in zip(testvals, testerrs, refvals, targeterrs) if accepted(t, e, r, re_, cellobj.get("sigma"))])
             state = 1 if numok == len(percents) == len(refvals) else 2
             testval = "scan, %d/%d pts" % (len(testvals), len(refvals))
             refp = "%d/%d pts OK" % (numok, len(refvals))
@@ -284,7 +298,7 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
             refval = float(cellobj["targetval"])
             testval = float(cellobj["testval"])
             refp = abs(percent_of(testval, refval))
-            if abs(refp-100) > ERROR_PERCENT_THRESSHOLD_ACCEPT:
+            if not accepted(testval, cellobj.get("testerr") or 0, refval, cellobj.get("targeterr"), cellobj.get("sigma")):
                 state = 2
             else:
                 state = 1
