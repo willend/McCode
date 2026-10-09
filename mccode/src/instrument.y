@@ -2284,7 +2284,7 @@ print_usage(void)
   fprintf(stderr, "                                 style \"diagnostic\" linting.\n");
   fprintf(stderr, "      --instrument-name=NAME     Name of the McStasScript instrument\n");
   fprintf(stderr, "                                 (default: instrument name + \"_generated\").\n");
-  fprintf(stderr, "      --no-tests                 Do not translate %%Example lines into\n");
+  fprintf(stderr, "      --no-tests                 Do not translate %%Test/%%Example lines into\n");
   fprintf(stderr, "                                 McStasScript tests (instr.add_test).\n\n");
 #endif
   fprintf(stderr, "  The instrument description file will be processed and translated into " GENERATE_LANG ".\n");

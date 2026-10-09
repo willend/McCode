@@ -28,7 +28,7 @@ volume of the object from the scan directory: python tomo_recon.py TomoScan [--s
 ## Examples
 
 - **Test: omega=0 Detector: monitor_I=9.37708e-10**
-- **Scan: mcrun Tomography.instr omega=0,355 -N72 -n1e6 Detector: monitor_I={72 values}**
+- **TestScan: mcrun Tomography.instr omega=0,355 -N72 -n1e6 Detector: monitor_I={72 values}**
 
 ## Input parameters
 

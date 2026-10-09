@@ -12,6 +12,7 @@ import sys
 import re
 import time
 import math
+import statistics
 import pathlib
 import shutil
 import platform
@@ -76,6 +77,33 @@ def scan_first_point(parvals):
         out.append(key + "=" + re.split(r"[:,]" if numeric else r"(?<!\\),", value)[0])
     return " ".join(out)
 
+def combined_err(testerr, targeterr):
+    ''' error bar of testval - targetval. A target recorded without its _ERR is assumed to
+    come from the unscaled ncount, i.e. to have testerr*sqrt(statfactor), giving
+    sqrt(1 + statfactor)*testerr (sqrt(2)*testerr without --statfactor) '''
+    return math.hypot(testerr, targeterr) if targeterr is not None else math.sqrt(1 + statfactor) * testerr
+
+# error bars are only trusted for --nsigma/--pvalue from at least this many effective events,
+# N_eff = (I/ERR)^2 (the number of unweighted events giving the same relative error);
+# a value from a handful of rays falls back to the 20% rule
+NSIGMA_MIN_EVENTS = 100
+
+def nsigma_usable(testval, testerr, targetval, targeterr=None):
+    ''' --nsigma/--pvalue is given and the error bars come from enough events to judge by '''
+    def ok(v, e):
+        return v != 0 and bool(e) and (v / e) ** 2 >= NSIGMA_MIN_EVENTS
+    return nsigma is not None and ok(testval, testerr) and (targeterr is None or ok(targetval, targeterr))
+
+def accepted(testval, testerr, targetval, targeterr=None):
+    ''' testval agrees with targetval: within 20% or, with --nsigma, within nsigma x the combined
+    error bar. A target given with its _ERR is judged by the error bars alone. Error bars from
+    too few events (see NSIGMA_MIN_EVENTS) are not used, the 20% rule applies. '''
+    within20 = abs(round(percent_of(testval, targetval)) - 100) <= 20
+    if not nsigma_usable(testval, testerr, targetval, targeterr):
+        return within20
+    insigma = abs(testval - targetval) <= nsigma * combined_err(testerr, targeterr)
+    return insigma if targeterr is not None else (within20 or insigma)
+
 def percent_of(testval, targetval):
     ''' testval in percent of targetval, a 0 target counts as 100% only for a 0 testval '''
     if targetval == 0:
@@ -83,24 +111,35 @@ def percent_of(testval, targetval):
     return 100.0 * testval / targetval
 
 def create_instr_test_objs(sourcefile, localfile, header, noscans=False):
-    ''' returns a list containing one initialized test object pr %Example and %Scan within the instr file '''
+    ''' returns a list containing one initialized test object pr %Example/%Test and %Scan/%TestScan within the instr file '''
     tests = []
-    for m in re.findall(r"\%Example:([^\n]*)Detector\:([^\n]*)_I=([0-9.+-e]+)", header):
+    # the target may be followed by its error bar, as in the simulation's own output:
+    #   Detector: NAME_I=2.00752e+08 NAME_ERR=2.28872e+06 NAME_N=50752 "NAME.L_U1"
+    for m in re.findall(r"\%(?:Example|Test):([^\n]*)Detector\:([^\n]*)_I=([0-9.+-e]+)([^\n]*)", header):
         parvals, ncount = split_test_line(m[0])
-        tests.append(InstrExampleTest(sourcefile, localfile, parvals, m[1].strip(), float(m[2].strip()), len(tests) + 1, ncount=ncount))
+        detector = m[1].strip()
+        err = re.search(r"%s_ERR=([0-9.+-eE]+)" % re.escape(detector), m[3])
+        tests.append(InstrExampleTest(sourcefile, localfile, parvals, detector, float(m[2].strip()), len(tests) + 1, ncount=ncount,
+                                      targeterr=float(err.group(1)) if err else None))
     if not noscans:
-        # the target values are a {}-enclosed, comma-separated list that may span several header lines
-        for m in re.findall(r"\%Scan:([^\n]*)Detector\:([^\n]*)_I=\{([^}]*)\}", header):
+        # the target values (and their optional NAME_ERR={...} error bars) are {}-enclosed,
+        # comma-separated lists that may span several header lines
+        for m in re.findall(r"\%(?:Scan|TestScan):([^\n]*)Detector\:([^\n]*)_I=\{([^}]*)\}(?:[\s*]*\S+_ERR=\{([^}]*)\})?", header):
             parvals, ncount = split_test_line(m[0])
             targetvals = [float(v) for v in m[2].replace("*", " ").split(",") if v.strip()]
-            tests.append(InstrExampleTest(sourcefile, localfile, parvals, m[1].strip(), targetvals, len(tests) + 1, scan=True, ncount=ncount))
+            targeterrs = [float(v) for v in m[3].replace("*", " ").split(",") if v.strip()] or None
+            if targeterrs and len(targeterrs) != len(targetvals):
+                logging.info("WARNING: %s: %%Scan has %d _I but %d _ERR values, ignoring the _ERR values" % (sourcefile, len(targetvals), len(targeterrs)))
+                targeterrs = None
+            tests.append(InstrExampleTest(sourcefile, localfile, parvals, m[1].strip(), targetvals, len(tests) + 1, scan=True, ncount=ncount,
+                                          targeterr=targeterrs))
     if not tests:
         tests.append(InstrExampleTest(sourcefile, localfile))
     return tests
 
 class InstrExampleTest:
     ''' instruent test house keeping object, for a %Scan targetval and testval are lists '''
-    def __init__(self, sourcefile, localfile, parvals=None, detector=None, targetval=None, testnb=0, scan=False, ncount=None):
+    def __init__(self, sourcefile, localfile, parvals=None, detector=None, targetval=None, testnb=0, scan=False, ncount=None, targeterr=None):
         self.sourcefile = sourcefile
         self.localfile = localfile
         self.instrname = splitext(basename(sourcefile))[0]
@@ -112,6 +151,8 @@ class InstrExampleTest:
         self.detector = detector
         self.targetval = targetval
         self.testval = None
+        self.testerr = None
+        self.targeterr = targeterr
 
         self.linted = None
         self.compiled = None
@@ -136,6 +177,10 @@ class InstrExampleTest:
             "detector"     : self.detector,
             "targetval"    : self.targetval,
             "testval"      : self.testval,
+            "testerr"      : self.testerr,
+            "targeterr"    : self.targeterr,
+            "nsigma"       : nsigma,
+            "statfactor"   : statfactor,
 
             "linted"       : self.linted,
             "compiled"     : self.compiled,
@@ -166,6 +211,8 @@ class InstrExampleTest:
             self.detector=obj['detector']
             self.targetval=obj['targetval']
             self.testval=obj['testval']
+            self.testerr=obj.get('testerr')
+            self.targeterr=obj.get('targeterr')
             self.linted=obj['linted']
             self.compiled=obj['compiled']
             self.compiletime=obj['compiletime']
@@ -259,50 +306,41 @@ def extract_scanvals(datafolder, monitorname):
     Extract the list of monitor I values pr. scan point from the mccode.dat that mcrun
     writes for a scan (in both the McCode and NeXus formats).
 
-    Returns the list, or None if mccode.dat or the monitor column is missing.
+    Returns (values, errors), or None if mccode.dat or the monitor column is missing.
     '''
     datfile = join(datafolder, "mccode.dat")
     if not os.path.isfile(datfile):
         return None
     column = None
-    vals = []
+    vals, errs = [], []
     for l in open(datfile).read().splitlines():
         if l.startswith("# variables:"):
             variables = l.split(":", 1)[1].split()
-            if monitorname + "_I" not in variables:
+            if monitorname + "_I" not in variables or monitorname + "_ERR" not in variables:
                 return None
             column = variables.index(monitorname + "_I")
+            errcolumn = variables.index(monitorname + "_ERR")
         elif l.strip() and not l.startswith("#") and column is not None:
             vals.append(float(l.split()[column]))
-    return vals if column is not None else None
+            errs.append(float(l.split()[errcolumn]))
+    return (vals, errs) if column is not None else None
 
 def parse_detector_I_value(resfile_path, detector_name):
     """
-    Return (value_float, success_bool, raw_value_str_or_None).
-    value_float is the parsed float (or -1.0 on failure).
-    success_bool is True when a value was parsed successfully.
-    raw_value_str_or_None is the string extracted (before conversion) or None.
+    (I, ERR) from the simulation's stdout line
+      Detector: NAME_I=2.00752e+08 NAME_ERR=2.28872e+06 NAME_N=50752 "NAME.L_U1"
+    or None if the line is missing or unreadable.
     """
-    prefix = f"Detector: {detector_name}_I="
+    rx = re.compile(r"Detector: %s_I=(\S+) %s_ERR=(\S+)" % (re.escape(detector_name), re.escape(detector_name)))
     try:
         with open(resfile_path, "r", encoding="utf-8", errors="replace") as f:
             for line in f:
-                if line.startswith(prefix):
-                    # extract after first '=' then take up to first whitespace
-                    # matches the shell pipeline: cut -f2 -d= | cut -f1 -d' '
-                    _, _, after_eq = line.partition("=")
-                    raw = after_eq.split()[0] if after_eq else ""
-                    if raw == "":
-                        return -1.0, False, None
-                    try:
-                        return float(raw), True, raw
-                    except ValueError:
-                        return -1.0, False, raw
-        return -1.0, False, None
-    except FileNotFoundError:
-        return -1.0, False, None
-    except OSError:
-        return -1.0, False, None
+                m = rx.match(line)
+                if m:
+                    return float(m.group(1)), float(m.group(2))
+    except (OSError, ValueError):
+        pass
+    return None
 
 def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilter=None, configdir=None):
     ''' this main test function tests the given mccode installation, optionally with the
@@ -536,6 +574,9 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         if test.scan:
             testncount = test.ncount or "%g" % min(float(ncount), 1e5)
             timeout = runmax * len(test.targetval)
+        if statfactor != 1:
+            testncount = "%g" % (float(testncount) * statfactor)
+            timeout = timeout * max(1, statfactor)
             if mpi is None:
                 parvals = parvals + " --scan_split=auto"
         # Did test run already?
@@ -587,14 +628,16 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         resbase="(No file)"
         # test value extraction
         if test.scan:
-            test.testval = extract_scanvals(join(testdir, test.instrname, str(test.testnb)), test.detector)
-            if test.testval is None:
+            extraction = extract_scanvals(join(testdir, test.instrname, str(test.testnb)), test.detector)
+            if extraction is None:
                 runfailed=True
+            else:
+                test.testval, test.testerr = extraction
             resbase ="run_stdout_%d.txt" % (test.testnb)
         elif not didwrite_nexus:
             extraction = extract_testvals(join(testdir, test.instrname, str(test.testnb)), test.detector)
             if type(extraction) is tuple:
-                test.testval = extraction[0]
+                test.testval, test.testerr = extraction[0], extraction[1]
             else:
                 test.testval = -1
                 runfailed=True
@@ -605,9 +648,9 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
             metalog = LineLogger()
             resbase ="run_stdout_%d.txt" % (test.testnb)
             resfile = join(testdir,test.instrname,resbase)
-            val, ok, raw = parse_detector_I_value(resfile, test.detector)
-            if ok:
-                test.testval = val
+            extraction = parse_detector_I_value(resfile, test.detector)
+            if extraction:
+                test.testval, test.testerr = extraction
             else:
                 test.testval=-1
                 runfailed=True
@@ -620,20 +663,43 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 suffix += " + !! RUNTIME FAILURE - see %s !! " % (resbase)
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
+            if nsigma is None:
+                tolerance = "20%"
+            elif not test.scan and not nsigma_usable(test.testval, test.testerr, test.targetval, test.targeterr):
+                tolerance = "20%%, fewer than %d events for sigma" % NSIGMA_MIN_EVENTS
+            elif test.targeterr is not None:
+                tolerance = "%g sigma" % nsigma
+            else:   # no _ERR on the target line: target error assumed = test run's
+                tolerance = "20%% or %g sigma" % nsigma
             if test.scan:
                 testvals = test.testval or []
+                testerrs = test.testerr or []
                 percents = [round(percent_of(t, r)) for t, r in zip(testvals, test.targetval)]
-                numoff = len([p for p in percents if p<80 or p>120])
+                targeterrs = test.targeterr or [None] * len(test.targetval)
+                numoff = len([1 for t, e, r, re_ in zip(testvals, testerrs, test.targetval, targeterrs) if not accepted(t, e, r, re_)])
                 if len(testvals) != len(test.targetval) or numoff > 0:
                     suffix += " <--- BIG DISCREPANCY??"
                     num_valfail = num_valfail + 1
                     anyfailed=True
                 worst = max(percents, key=lambda p: abs(p-100)) if percents else 0
-                logging.info(formatstr % test.get_display_name() + "    [scan: %d/%d points within 20%%, worst %d %%, %d/%d points run]"
-                             % (len(percents)-numoff, len(test.targetval), worst, len(testvals), len(test.targetval)) + suffix)
+                if nsigma is not None:
+                    nlow = len([1 for t, e, r, re_ in zip(testvals, testerrs, test.targetval, targeterrs) if not nsigma_usable(t, e, r, re_)])
+                    if nlow:
+                        tolerance += " (%d pts on 20%%, fewer than %d events)" % (nlow, NSIGMA_MIN_EVENTS)
+                logging.info(formatstr % test.get_display_name() + "    [scan: %d/%d points within %s, worst %d %%, %d/%d points run]"
+                             % (len(percents)-numoff, len(test.targetval), tolerance, worst, len(testvals), len(test.targetval)) + suffix)
+            elif nsigma is not None: # --nsigma: |I - target| <= nsigma * combined error bar
+                if not accepted(test.testval, test.testerr, test.targetval, test.targeterr):
+                    suffix += " <--- BIG DISCREPANCY??"
+                    num_valfail = num_valfail + 1
+                    anyfailed=True
+                diff = test.testval - test.targetval
+                err = combined_err(test.testerr, test.targeterr)
+                nsig = diff / err if err else (0.0 if diff == 0 else float('inf'))
+                logging.info(formatstr % test.get_display_name() + "    [val: %s / %s, %.1f sigma (within %s)]" % (test.testval, test.targetval, nsig, tolerance) + suffix)
             elif test.targetval!=0: # Normal situation, non-zero target value
                 percent=round(100.0*test.testval/test.targetval)
-                if percent<80 or percent>120:
+                if not accepted(test.testval, test.testerr, test.targetval, test.targeterr):
                     suffix += " <--- BIG DISCREPANCY??"
                     num_valfail = num_valfail + 1
                     anyfailed=True
@@ -889,6 +955,8 @@ compilemax = None
 displaymax = None
 noplots = None
 noscans = None
+nsigma = None
+statfactor = 1
 
 def main(args):
     configfilter = args.config      # test only config matching this label (default: as installed)
@@ -946,7 +1014,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots, noscans
+    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots, noscans, nsigma, statfactor
     ncount = "1e6"
     no_mpi = False
     if args.ncount:
@@ -1008,6 +1076,13 @@ def main(args):
     else:
         uid = "_" + args.uid[0]
 
+    if args.statfactor is not None:
+        if args.statfactor <= 0:
+            logging.error("ERROR: --statfactor must be positive!")
+            exit(-1)
+        statfactor = args.statfactor
+        suffix = suffix + "_statfactor%g" % statfactor
+        logging.info("Statistics of every test scaled by %g" % statfactor)
     suffix=suffix + "_" + ncount + "_" + platform.system() + uid
     if runLocal:
         suffix = suffix + '_LOCAL'
@@ -1066,6 +1141,17 @@ def main(args):
 
     noplots = args.noplots
     noscans = args.noscans
+    if args.nsigma is not None and args.pvalue is not None:
+        logging.error("ERROR: --nsigma and --pvalue are two ways to give the same threshold, use one of them!")
+        exit(-1)
+    if args.pvalue is not None:
+        # two-sided Gaussian: p = 2*(1 - Phi(nsigma))
+        nsigma = statistics.NormalDist().inv_cdf(1 - args.pvalue / 2)
+        logging.info("--pvalue %g corresponds to --nsigma %.3g" % (args.pvalue, nsigma))
+    elif args.nsigma is not None:
+        nsigma = args.nsigma
+    if nsigma is not None:
+        logging.info("Test values accepted within %.3g x the combined error bar (from >= %d events)" % (nsigma, NSIGMA_MIN_EVENTS))
     if noscans:
         logging.info("%Scan tests are skipped")
     if noplots:
@@ -1103,6 +1189,9 @@ if __name__ == '__main__':
     parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional. Can not be combined with --strict.')
     parser.add_argument('--strict', action='store_true', help='Let instruments without %%Example line(s) instantly fail. Can not be combined with --permissive.')
     parser.add_argument('--noplots', action='store_true', help='Do not generate plots (01_overview.pdf and 02_plots.html) of the test output. Useful e.g. in CI, where the plots are not looked at, and can take long for instruments with many monitors.')
+    parser.add_argument('--nsigma', type=float, help='Accept a test value (each point for %%Scan tests) within NSIGMA x the combined error bar sqrt(ERR_test^2 + ERR_target^2), if the target line gives NAME_ERR. Targets without NAME_ERR are assumed to have the test run\'s ERR, and are also accepted within 20%%. Error bars from fewer than 100 effective events, (I/ERR)^2, are not used: the 20%% rule applies.')
+    parser.add_argument('--statfactor', type=float, help='Scale the ncount of every test (and pr. scan point) by this factor, e.g. 0.01 for quick runs or 100 for reference-quality ones. With --nsigma/--pvalue a target without NAME_ERR is assumed to come from the unscaled ncount, i.e. the combined error bar is sqrt(1 + STATFACTOR) x ERR_test.')
+    parser.add_argument('--pvalue', type=float, help='As --nsigma, but given as a two-sided Gaussian p-value, e.g. --pvalue 0.0027 for --nsigma 3, or 5.7e-7 for 5')
     parser.add_argument('--noscans', action='store_true', help='Skip the %%Scan tests, only run the %%Example tests.')
     parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR. Local path and --testdir can not overlap!')
     args = parser.parse_args()

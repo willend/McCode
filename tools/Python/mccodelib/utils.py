@@ -395,8 +395,9 @@ def parse_header(text):
     tag_E=2
     tag_P=3
     tag_L=4
-    # %Scan: lines are tests too, so the test section starts at the first %Example or %Scan
-    tag_E_pos = min([p for p in (text.find('%Ex'), text.find('%Scan:')) if p != -1], default=-1)
+    # %Scan: (and %Test:/%TestScan:, the future names of %Example:/%Scan:) lines are tests too,
+    # so the test section starts at the first of them
+    tag_E_pos = min([p for p in (text.find('%Ex'), text.find('%Scan:'), text.find('%Test:'), text.find('%TestScan:')) if p != -1], default=-1)
     lst = [text.find('%I'), text.find('%D'), tag_E_pos, text.find('%P'), text.find('%L')]
     # missing %Example tag
     if lst[tag_E] == -1:
@@ -495,9 +496,9 @@ def format_examples(test_text):
     '''
     Splits the raw %Example header text (as stored in
     InstrCompHeaderInfo.test) into an ordered list of (line, is_example)
-    tuples. Lines starting with the '%Example:' (or '%Scan:') tag have the
-    leading tag replaced with 'Test:' (or 'Scan:') (so they render as
-    'Test: ...' / 'Scan: ...') and are flagged True so that doc writers can highlight
+    tuples. Lines starting with the '%Example:'/'%Test:' (or '%Scan:'/'%TestScan:')
+    tag have the leading tag replaced with 'Test:' (or 'TestScan:') (so they render as
+    'Test: ...' / 'TestScan: ...') and are flagged True so that doc writers can highlight
     them (e.g. in bold); all other lines are passed through unchanged and
     flagged False. Order is preserved even when %Example: lines are
     interspersed with other text.
@@ -508,9 +509,9 @@ def format_examples(test_text):
     # a %Scan: {...} list of target values may span several lines, show it as "{N values}"
     test_text = re.sub(r'\{([-0-9.+eE,\s]*)\}', lambda m: '{%d values}' % len([v for v in m.group(1).split(',') if v.strip()]), test_text)
     for l in test_text.splitlines():
-        m = re.match(r'%(Example|Scan):\s*(.*)', l)
+        m = re.match(r'%(Example|Test|Scan|TestScan):\s*(.*)', l)
         if m:
-            lines.append((('Test: ' if m.group(1) == 'Example' else 'Scan: ') + m.group(2), True))
+            lines.append((('Test: ' if m.group(1) in ('Example', 'Test') else 'TestScan: ') + m.group(2), True))
         else:
             lines.append((l, False))
     return lines
