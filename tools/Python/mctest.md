@@ -10,6 +10,17 @@ Runs every `%Example` test embedded in the instrument library, compiling,
 displaying (single-particle), and running each one, then compares the
 result against the target value recorded in the instrument header.
 
+A `%Scan:` header line works the same way for a parameter scan. The
+parameters use the `mcrun` scan syntax, followed by one target value per
+scan point, e.g.
+
+    %Scan: dBz=-0.0001,0.0001 -N41 -n1e5 Detector: detector_I=79.2,102.7,...
+
+`mcrun` and `*.instr` tokens on `%Example:`/`%Scan:` lines are ignored. A scan
+uses its own `-n` if given, otherwise at most `1e5` per point, and runs its
+points in parallel (`--scan_split=auto`) unless MPI is used. A scan passes when
+every point is within 20% of its target.
+
 | Option | Description |
 |---|---|
 | `--ncount N`, `-n N` | ncount sent to `mcrun` (default: `1e6`) |
@@ -32,6 +43,7 @@ result against the target value recorded in the instrument header.
 | `--compilemax S` | max seconds allowed per compilation (default: 1800; x100 with `--lint`) |
 | `--runmax S` | max seconds allowed per test run (default: 3600) |
 | `--displaymax S` | max seconds allowed per test display run (default: 60) |
+| `--noscans` | skip the `%Scan` tests, only run the `%Example` tests |
 | `--noplots` | do not generate plots (`01_overview.pdf`, `02_plots.html`) of the test output |
 | `--permissive` | exit 0 even if some tests fail |
 | `--strict` | let instruments without `%Example` line(s) fail immediately (cannot be combined with `--permissive`) |

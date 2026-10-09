@@ -42,30 +42,72 @@ def paths_overlap(a: pathlib.Path, b: pathlib.Path) -> bool:
 # Functionality
 #
 
-def create_instr_test_objs(sourcefile, localfile, header):
-    ''' returns a list containing one initialized test object pr %Example within the instr file '''
+def split_test_line(line):
+    ''' Splits the parameter part of a %Example/%Scan line into (parvals, ncount).
+    "mcrun"/"mxrun" and "*.instr" tokens are dropped, since the test setup defines those,
+    and a -n/--ncount is taken out of parvals and returned separately (or None). '''
+    toks = line.split()
+    parvals = []
+    ncount = None
+    i = 0
+    while i < len(toks):
+        t = toks[i]
+        m = re.match(r"(-n|--ncount)=?(.*)$", t)
+        if m:
+            ncount = m.group(2)
+            if not ncount and i + 1 < len(toks):
+                i += 1
+                ncount = toks[i]
+        elif t not in ("mcrun", "mxrun") and not t.endswith(".instr"):
+            parvals.append(t)
+        i += 1
+    return " ".join(parvals), ncount
+
+def scan_first_point(parvals):
+    ''' parvals for a single run at the first point of a %Scan, e.g. for mcdisplay:
+    scan options (-N, -L, -M, ...) are dropped and each "par=a,b,..." or "par=a:delta:b"
+    is reduced to "par=a" '''
+    out = []
+    for t in parvals.split():
+        if t.startswith("-") or "=" not in t:
+            continue
+        key, value = t.split("=", 1)
+        numeric = re.fullmatch(r"[0-9.eE+:,-]+", value)
+        out.append(key + "=" + re.split(r"[:,]" if numeric else r"(?<!\\),", value)[0])
+    return " ".join(out)
+
+def percent_of(testval, targetval):
+    ''' testval in percent of targetval, a 0 target counts as 100% only for a 0 testval '''
+    if targetval == 0:
+        return 100 if testval == 0 else 0
+    return 100.0 * testval / targetval
+
+def create_instr_test_objs(sourcefile, localfile, header, noscans=False):
+    ''' returns a list containing one initialized test object pr %Example and %Scan within the instr file '''
     tests = []
-    ms = re.findall(r"\%Example:([^\n]*)Detector\:([^\n]*)_I=([0-9.+-e]+)", header)
-    if len(ms) > 0:
-        testnb = 1
-        for m in ms:
-            parvals = m[0].strip()
-            detector = m[1].strip()
-            targetval = float(m[2].strip())
-            tests.append(InstrExampleTest(sourcefile, localfile, parvals, detector, targetval, testnb))
-            testnb = testnb + 1
-    else:
+    for m in re.findall(r"\%Example:([^\n]*)Detector\:([^\n]*)_I=([0-9.+-e]+)", header):
+        parvals, ncount = split_test_line(m[0])
+        tests.append(InstrExampleTest(sourcefile, localfile, parvals, m[1].strip(), float(m[2].strip()), len(tests) + 1, ncount=ncount))
+    if not noscans:
+        # the target values are a {}-enclosed, comma-separated list that may span several header lines
+        for m in re.findall(r"\%Scan:([^\n]*)Detector\:([^\n]*)_I=\{([^}]*)\}", header):
+            parvals, ncount = split_test_line(m[0])
+            targetvals = [float(v) for v in m[2].replace("*", " ").split(",") if v.strip()]
+            tests.append(InstrExampleTest(sourcefile, localfile, parvals, m[1].strip(), targetvals, len(tests) + 1, scan=True, ncount=ncount))
+    if not tests:
         tests.append(InstrExampleTest(sourcefile, localfile))
     return tests
 
 class InstrExampleTest:
-    ''' instruent test house keeping object '''
-    def __init__(self, sourcefile, localfile, parvals=None, detector=None, targetval=None, testnb=0):
+    ''' instruent test house keeping object, for a %Scan targetval and testval are lists '''
+    def __init__(self, sourcefile, localfile, parvals=None, detector=None, targetval=None, testnb=0, scan=False, ncount=None):
         self.sourcefile = sourcefile
         self.localfile = localfile
         self.instrname = splitext(basename(sourcefile))[0]
         self.testnb = testnb
-        
+        self.scan = scan
+        self.ncount = ncount
+
         self.parvals = parvals
         self.detector = detector
         self.targetval = targetval
@@ -87,6 +129,8 @@ class InstrExampleTest:
             "localfile"    : self.localfile,
             "instrname"    : self.instrname,
             "testnb"       : self.testnb,
+            "scan"         : self.scan,
+            "ncount"       : self.ncount,
 
             "parvals"      : self.parvals,
             "detector"     : self.detector,
@@ -116,6 +160,8 @@ class InstrExampleTest:
             self.localfile=obj['localfile']
             self.instrname=obj['instrname']
             self.testnb=obj['testnb']
+            self.scan=obj.get('scan', False)
+            self.ncount=obj.get('ncount')
             self.parvals=obj['parvals']
             self.detector=obj['detector']
             self.targetval=obj['targetval']
@@ -208,6 +254,28 @@ def extract_testvals(datafolder, monitorname):
                 return (I, I_err, N)
                 break
 
+def extract_scanvals(datafolder, monitorname):
+    '''
+    Extract the list of monitor I values pr. scan point from the mccode.dat that mcrun
+    writes for a scan (in both the McCode and NeXus formats).
+
+    Returns the list, or None if mccode.dat or the monitor column is missing.
+    '''
+    datfile = join(datafolder, "mccode.dat")
+    if not os.path.isfile(datfile):
+        return None
+    column = None
+    vals = []
+    for l in open(datfile).read().splitlines():
+        if l.startswith("# variables:"):
+            variables = l.split(":", 1)[1].split()
+            if monitorname + "_I" not in variables:
+                return None
+            column = variables.index(monitorname + "_I")
+        elif l.strip() and not l.startswith("#") and column is not None:
+            vals.append(float(l.split()[column]))
+    return vals if column is not None else None
+
 def parse_detector_I_value(resfile_path, detector_name):
     """
     Return (value_float, success_bool, raw_value_str_or_None).
@@ -283,7 +351,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         text = open(f, encoding='utf-8').read()
         f_new=str(pathlib.Path(join(instrdir,os.path.basename(f))).as_posix())
         # create a test object for every test defined in the instrument header
-        instrtests = create_instr_test_objs(sourcefile=f, localfile=f_new, header=text)
+        instrtests = create_instr_test_objs(sourcefile=f, localfile=f_new, header=text, noscans=noscans)
         try:
             shutil.copytree(os.path.dirname(f),instrdir)
             tests = tests + instrtests
@@ -384,7 +452,8 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                     # Run mcdisplay (single particle only)
                     t1 = time.time()
                     if test.testnb>0:
-                        cmd = mccode_config.configuration["MCDISPLAY"]+'-classic %s --nobrowse %s %s -n0 -d display > displaylog.txt 2>&1' % (mpiswitch, test.instrname+'.instr', test.parvals if test.parvals else '-y')
+                        dispvals = scan_first_point(test.parvals) if test.scan else test.parvals
+                        cmd = mccode_config.configuration["MCDISPLAY"]+'-classic %s --nobrowse %s %s -n0 -d display > displaylog.txt 2>&1' % (mpiswitch, test.instrname+'.instr', dispvals if dispvals else '-y')
                     else:
                         cmd = mccode_config.configuration["MCDISPLAY"]+'-classic %s --nobrowse %s -y -n0 -d display > displaylog.txt 2>&1' % (mpiswitch, test.instrname+'.instr')
                     retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname), timeout=displaymax)
@@ -460,6 +529,15 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         # told to use the default values (-y can not be combined with
         # parameter values, since the instrument then ignores those):
         parvals = test.parvals if test.parvals else "-y"
+        # A %Scan uses its own -n if given, else at most 1e5 pr. point, and runs
+        # its points in parallel unless MPI already does that within each point
+        testncount = ncount
+        timeout = runmax
+        if test.scan:
+            testncount = test.ncount or "%g" % min(float(ncount), 1e5)
+            timeout = runmax * len(test.targetval)
+            if mpi is None:
+                parvals = parvals + " --scan_split=auto"
         # Did test run already?
         if not os.path.exists(join(testdir, test.instrname, str(test.testnb))):      
             if nexus:
@@ -468,23 +546,25 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 if openacc is True:
                     if configdir:
                         cmd = cmd + " --override-config=" + configdir
-                    cmd = cmd + " -s %s %s %s -n%s --openacc --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, parvals, ncount, mpi, test.testnb, test.testnb)
+                    cmd = cmd + " -s %s %s %s -n%s --openacc --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, parvals, testncount, mpi, test.testnb, test.testnb)
                 else:
                     if configdir:
                         cmd = cmd + " --override-config=" + configdir
-                    cmd = cmd + " -s %s %s %s -n%s --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, parvals, ncount, mpi, test.testnb, test.testnb)
+                    cmd = cmd + " -s %s %s %s -n%s --mpi=%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, parvals, testncount, mpi, test.testnb, test.testnb)
             else:
                 if configdir:
                     cmd = cmd + " --no-mpi --override-config=" + configdir
-                cmd = cmd + " --no-mpi -s %s %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, parvals, ncount, test.testnb, test.testnb)
+                cmd = cmd + " --no-mpi -s %s %s %s -n%s -d%d > run_stdout_%d.txt 2>&1" % (seed, test.instrname, parvals, testncount, test.testnb, test.testnb)
 
-            retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=runmax)
+            retcode = utils.run_subtool_noread(cmd, cwd=join(testdir, test.instrname),timeout=timeout)
             t2 = time.time()
             didwrite = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.sim"))
             didwrite_nexus = os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.h5"))
 
             # retcode is a tuple: (returncode, timed_out)
-            test.didrun = retcode[0] == 0 and not retcode[1] and (didwrite or didwrite_nexus)
+            # a scan always writes mccode.dat, but not always a top-level mccode.sim/mccode.h5 (NeXus + --scan_split)
+            didwrite_scan = test.scan and os.path.exists(join(testdir, test.instrname, str(test.testnb), "mccode.dat"))
+            test.didrun = retcode[0] == 0 and not retcode[1] and (didwrite or didwrite_nexus or didwrite_scan)
             test.runtime = t2 - t1
         else:
             suffix=" (cached)"
@@ -506,7 +586,12 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
 
         resbase="(No file)"
         # test value extraction
-        if not didwrite_nexus:
+        if test.scan:
+            test.testval = extract_scanvals(join(testdir, test.instrname, str(test.testnb)), test.detector)
+            if test.testval is None:
+                runfailed=True
+            resbase ="run_stdout_%d.txt" % (test.testnb)
+        elif not didwrite_nexus:
             extraction = extract_testvals(join(testdir, test.instrname, str(test.testnb)), test.detector)
             if type(extraction) is tuple:
                 test.testval = extraction[0]
@@ -535,7 +620,18 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 suffix += " + !! RUNTIME FAILURE - see %s !! " % (resbase)
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
-            if test.targetval!=0: # Normal situation, non-zero target value
+            if test.scan:
+                testvals = test.testval or []
+                percents = [round(percent_of(t, r)) for t, r in zip(testvals, test.targetval)]
+                numoff = len([p for p in percents if p<80 or p>120])
+                if len(testvals) != len(test.targetval) or numoff > 0:
+                    suffix += " <--- BIG DISCREPANCY??"
+                    num_valfail = num_valfail + 1
+                    anyfailed=True
+                worst = max(percents, key=lambda p: abs(p-100)) if percents else 0
+                logging.info(formatstr % test.get_display_name() + "    [scan: %d/%d points within 20%%, worst %d %%, %d/%d points run]"
+                             % (len(percents)-numoff, len(test.targetval), worst, len(testvals), len(test.targetval)) + suffix)
+            elif test.targetval!=0: # Normal situation, non-zero target value
                 percent=round(100.0*test.testval/test.targetval)
                 if percent<80 or percent>120:
                     suffix += " <--- BIG DISCREPANCY??"
@@ -792,6 +888,7 @@ runmax = None
 compilemax = None
 displaymax = None
 noplots = None
+noscans = None
 
 def main(args):
     configfilter = args.config      # test only config matching this label (default: as installed)
@@ -849,7 +946,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots
+    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots, noscans
     ncount = "1e6"
     no_mpi = False
     if args.ncount:
@@ -968,6 +1065,9 @@ def main(args):
         logging.info("Strict mode, tool will report failure for instruments without %Example")
 
     noplots = args.noplots
+    noscans = args.noscans
+    if noscans:
+        logging.info("%Scan tests are skipped")
     if noplots:
         logging.info("No plots of the test output will be generated")
 
@@ -1003,6 +1103,7 @@ if __name__ == '__main__':
     parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional. Can not be combined with --strict.')
     parser.add_argument('--strict', action='store_true', help='Let instruments without %%Example line(s) instantly fail. Can not be combined with --permissive.')
     parser.add_argument('--noplots', action='store_true', help='Do not generate plots (01_overview.pdf and 02_plots.html) of the test output. Useful e.g. in CI, where the plots are not looked at, and can take long for instruments with many monitors.')
+    parser.add_argument('--noscans', action='store_true', help='Skip the %%Scan tests, only run the %%Example tests.')
     parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR. Local path and --testdir can not overlap!')
     args = parser.parse_args()
 
