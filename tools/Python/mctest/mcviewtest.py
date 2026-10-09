@@ -17,6 +17,12 @@ ERROR_PERCENT_THRESSHOLD_ACCEPT = 20
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from mccodelib import utils, mccode_config
 
+def percent_of(testval, targetval):
+    ''' testval in percent of targetval, a 0 target counts as 100% only for a 0 testval '''
+    if targetval == 0:
+        return 100 if testval == 0 else 0
+    return 100.0 * testval / targetval
+
 def scantree(path):
     """Recursively yield DirEntry objects for given directory."""
     for entry in os.scandir(path):
@@ -249,6 +255,24 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
                 compiletime = ""
             state = 2
             return (state, compiletime, runtime, testval, "", url, display, displayurl)
+        elif cellobj.get("scan"):
+            # one cell pr. %Scan, per-point details in the hover tooltip
+            runtime = "%.2f s" % cellobj["runtime"]
+            compiletime = "%.2f s" % cellobj["compiletime"] if cellobj["testnb"] <= 1 else ""
+            testvals = cellobj["testval"]
+            refvals = cellobj["targetval"]
+            percents = [percent_of(t, r) for t, r in zip(testvals, refvals)]
+            numok = len([p for p in percents if abs(p-100) <= ERROR_PERCENT_THRESSHOLD_ACCEPT])
+            state = 1 if numok == len(percents) == len(refvals) else 2
+            testval = "scan, %d/%d pts" % (len(testvals), len(refvals))
+            refp = "%d/%d pts OK" % (numok, len(refvals))
+            tooltip = "\n".join("%d: %.4g / %.4g = %.0f%%" % (i, t, r, p) for i, (t, r, p) in enumerate(zip(testvals, refvals, percents)))
+            diffurl = None
+            coplotUrl = None
+            if diffall or state == 2:
+                diffurl = plan_diff_link(refcellobj, url, label, row, col_idx)
+                coplotUrl = plan_coplot_link(refcellobj, url, label, row, col_idx)
+            return (state, compiletime, runtime, testval, refp, url, display, displayurl, diffurl, coplotUrl, tooltip)
         else:
             testval = "%.2g" % float(cellobj["testval"])
             runtime = "%.2f s" % cellobj["runtime"]
@@ -259,14 +283,7 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
             # Always use embedded target value
             refval = float(cellobj["targetval"])
             testval = float(cellobj["testval"])
-            # Special case, target test value is 0 explicitly:
-            if refval==0:
-                if testval==0:
-                    refp=100
-                else:
-                    refp=0
-            else: # Standard case, target test value is non-zero
-                refp = abs(testval/refval*100)
+            refp = abs(percent_of(testval, refval))
             if abs(refp-100) > ERROR_PERCENT_THRESSHOLD_ACCEPT:
                 state = 2
             else:
