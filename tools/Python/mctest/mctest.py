@@ -97,11 +97,11 @@ def percent_of(testval, targetval):
     return 100.0 * testval / targetval
 
 def create_instr_test_objs(sourcefile, localfile, header, noscans=False):
-    ''' returns a list containing one initialized test object pr %Example and %Scan within the instr file '''
+    ''' returns a list containing one initialized test object pr %Example/%Test and %Scan/%TestScan within the instr file '''
     tests = []
     # the target may be followed by its error bar, as in the simulation's own output:
     #   Detector: NAME_I=2.00752e+08 NAME_ERR=2.28872e+06 NAME_N=50752 "NAME.L_U1"
-    for m in re.findall(r"\%Example:([^\n]*)Detector\:([^\n]*)_I=([0-9.+-e]+)([^\n]*)", header):
+    for m in re.findall(r"\%(?:Example|Test):([^\n]*)Detector\:([^\n]*)_I=([0-9.+-e]+)([^\n]*)", header):
         parvals, ncount = split_test_line(m[0])
         detector = m[1].strip()
         err = re.search(r"%s_ERR=([0-9.+-eE]+)" % re.escape(detector), m[3])
@@ -110,7 +110,7 @@ def create_instr_test_objs(sourcefile, localfile, header, noscans=False):
     if not noscans:
         # the target values (and their optional NAME_ERR={...} error bars) are {}-enclosed,
         # comma-separated lists that may span several header lines
-        for m in re.findall(r"\%Scan:([^\n]*)Detector\:([^\n]*)_I=\{([^}]*)\}(?:[\s*]*\S+_ERR=\{([^}]*)\})?", header):
+        for m in re.findall(r"\%(?:Scan|TestScan):([^\n]*)Detector\:([^\n]*)_I=\{([^}]*)\}(?:[\s*]*\S+_ERR=\{([^}]*)\})?", header):
             parvals, ncount = split_test_line(m[0])
             targetvals = [float(v) for v in m[2].replace("*", " ").split(",") if v.strip()]
             targeterrs = [float(v) for v in m[3].replace("*", " ").split(",") if v.strip()] or None

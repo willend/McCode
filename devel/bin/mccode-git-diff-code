@@ -6,8 +6,9 @@ Drop-in replacement for `git diff --name-only BASE [TARGET]` that leaves out
 A .comp/.instr file is listed only if its "code" differs between BASE and
 TARGET, where code means:
   - everything from the DEFINE COMPONENT / DEFINE INSTRUMENT line onward, and
-  - the %Example: and %Scan: lines of the header (mctest uses them as test
-    definitions), so a header edit that touches them still triggers a test run.
+  - the %Example:/%Test: and %Scan:/%TestScan: lines of the header (mctest
+    uses them as test definitions), so a header edit that touches them still
+    triggers a test run.
     A %Scan: line includes its {}-enclosed target values (and optional _ERR
     values), which may span several header lines; re-wrapping those values is
     not a change.
@@ -31,7 +32,7 @@ import sys
 
 DEFINE = re.compile(r'^[ \t]*DEFINE[ \t]+(COMPONENT|INSTRUMENT)\b', re.M)
 # a %Scan: line runs on to the } closing its target values, possibly over several lines
-TESTLINE = re.compile(r'%(?:Example:[^\n]*|Scan:[^\n{]*(?:\{[^}]*\}(?:[\s*]*\S+_ERR=\{[^}]*\})?[^\n]*)?)')
+TESTLINE = re.compile(r'%(?:(?:Example|Test):[^\n]*|(?:Scan|TestScan):[^\n{]*(?:\{[^}]*\}(?:[\s*]*\S+_ERR=\{[^}]*\})?[^\n]*)?)')
 
 
 def git(*args):
