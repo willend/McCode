@@ -350,6 +350,8 @@ FINALLY
 
 MCDISPLAY
 %{
+  // From the parameters rather than geoparams (filled in INITIALIZE), so tools
+  // drawing an instrument without running it can show the sample:
   if (radius > 0 && yheight > 0)
     mcdis_cylinder (0., 0., 0., radius, yheight, 0, 0.0, 1.0, 0.0);
   else if (radius > 0)
