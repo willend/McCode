@@ -721,10 +721,6 @@ cogen_searches(struct instr_def *instr, char *output_name)
 static void
 cogen_header(struct instr_def *instr, char *output_name)
 {
-  char *sysdir_orig;
-  char *sysdir_new;
-  char  pathsep[3];
-  int   i,j=0;
   time_t t;
   char  date[128];
   long  index=0;
@@ -777,21 +773,6 @@ cogen_header(struct instr_def *instr, char *output_name)
     coutf("    instr.set_dependency(%s)",q);
     memfree(q);
   }
-  /* handles Windows '\' chararcters for embedding sys_dir into source code */
-  if (MC_PATHSEP_C != '\\') strcpy(pathsep, MC_PATHSEP_S);
-  else strcpy(pathsep, "\\\\");
-
-  sysdir_orig = get_sys_dir();
-  sysdir_new  = (char *)mem(2*strlen(sysdir_orig));
-  for (i=0; i < strlen(sysdir_orig); i++)
-  {
-    if (sysdir_orig[i] == '\\')
-    { sysdir_new[j] = '\\'; j++; sysdir_new[j] = '\\'; }
-    else sysdir_new[j] = sysdir_orig[i];
-    j++;
-  }
-  sysdir_new[j] = '\0';
-
   instr->user_vars = list_create();
   instr->user_vars_types = list_create();
   int uvlist = get_codeblock_vars(instr->vars, instr->user_vars, instr->user_vars_types, "USERVARS", "EXTEND");
@@ -800,7 +781,6 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("    # *****************************************************************************");
   coutf("    # * Start of instrument '%s' generated code", instr->name);
   cout("    # *****************************************************************************");
-  coutf("    # " MCCODE_LIBENV " system dir is \"%s%s\"", sysdir_new,pathsep);
 
   cout("");
 
