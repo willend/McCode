@@ -23,7 +23,7 @@ every point is within 20% of its target.
 
 A target may carry its error bar, written as in the simulation's own output, e.g.
 `%Example: ... Detector: NAME_I=2.00752e+08 NAME_ERR=2.28872e+06` or, for a scan,
-`Detector: NAME_I={...} NAME_ERR={...}`. It is used with `--sigma`.
+`Detector: NAME_I={...} NAME_ERR={...}`. It is used with `--nsigma`/`--pvalue`.
 
 | Option | Description |
 |---|---|
@@ -47,7 +47,8 @@ A target may carry its error bar, written as in the simulation's own output, e.g
 | `--compilemax S` | max seconds allowed per compilation (default: 1800; x100 with `--lint`) |
 | `--runmax S` | max seconds allowed per test run (default: 3600) |
 | `--displaymax S` | max seconds allowed per test display run (default: 60) |
-| `--sigma S` | accept a test value (each point of a scan) within S × the combined error bar `sqrt(ERR_test² + ERR_target²)`, when the target line gives `NAME_ERR`; targets without it are assumed to have the test run's ERR (`√2·ERR_test`) and are also accepted within 20 % |
+| `--nsigma N` | accept a test value (each point of a scan) within N × the combined error bar `sqrt(ERR_test² + ERR_target²)`, when the target line gives `NAME_ERR`; targets without it are assumed to have the test run's ERR (`√2·ERR_test`) and are also accepted within 20 %. Error bars from fewer than 100 effective events `(I/ERR)²` are not used: the 20 % rule applies |
+| `--pvalue P` | as `--nsigma`, given as a two-sided Gaussian p-value (e.g. `0.0027` = 3σ, `5.7e-7` = 5σ) |
 | `--noscans` | skip the `%Scan` tests, only run the `%Example` tests |
 | `--noplots` | do not generate plots (`01_overview.pdf`, `02_plots.html`) of the test output |
 | `--permissive` | exit 0 even if some tests fail |

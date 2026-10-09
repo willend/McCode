@@ -12,6 +12,7 @@ import sys
 import re
 import time
 import math
+import statistics
 import pathlib
 import shutil
 import platform
@@ -81,24 +82,25 @@ def combined_err(testerr, targeterr):
     have the test run's error bar, i.e. sqrt(2)*testerr '''
     return math.hypot(testerr, targeterr) if targeterr is not None else math.sqrt(2) * testerr
 
-# the error bar is only trusted for --sigma below this relative error (~1/sqrt(N) for N
-# unweighted events, i.e. N >~ 16); a value from a handful of rays falls back to the 20% rule
-SIGMA_MAX_RELERR = 0.25
+# error bars are only trusted for --nsigma/--pvalue from at least this many effective events,
+# N_eff = (I/ERR)^2 (the number of unweighted events giving the same relative error);
+# a value from a handful of rays falls back to the 20% rule
+NSIGMA_MIN_EVENTS = 100
 
-def sigma_usable(testval, testerr, targetval, targeterr=None):
-    ''' --sigma is given and the error bars are small enough to judge by '''
+def nsigma_usable(testval, testerr, targetval, targeterr=None):
+    ''' --nsigma/--pvalue is given and the error bars come from enough events to judge by '''
     def ok(v, e):
-        return v != 0 and e is not None and e <= SIGMA_MAX_RELERR * abs(v)
-    return sigma is not None and ok(testval, testerr) and (targeterr is None or ok(targetval, targeterr))
+        return v != 0 and bool(e) and (v / e) ** 2 >= NSIGMA_MIN_EVENTS
+    return nsigma is not None and ok(testval, testerr) and (targeterr is None or ok(targetval, targeterr))
 
 def accepted(testval, testerr, targetval, targeterr=None):
-    ''' testval agrees with targetval: within 20% or, with --sigma, within sigma x the combined
+    ''' testval agrees with targetval: within 20% or, with --nsigma, within nsigma x the combined
     error bar. A target given with its _ERR is judged by the error bars alone. Error bars from
-    too few events (see SIGMA_MAX_RELERR) are not used, the 20% rule applies. '''
+    too few events (see NSIGMA_MIN_EVENTS) are not used, the 20% rule applies. '''
     within20 = abs(round(percent_of(testval, targetval)) - 100) <= 20
-    if not sigma_usable(testval, testerr, targetval, targeterr):
+    if not nsigma_usable(testval, testerr, targetval, targeterr):
         return within20
-    insigma = abs(testval - targetval) <= sigma * combined_err(testerr, targeterr)
+    insigma = abs(testval - targetval) <= nsigma * combined_err(testerr, targeterr)
     return insigma if targeterr is not None else (within20 or insigma)
 
 def percent_of(testval, targetval):
@@ -176,7 +178,7 @@ class InstrExampleTest:
             "testval"      : self.testval,
             "testerr"      : self.testerr,
             "targeterr"    : self.targeterr,
-            "sigma"        : sigma,
+            "nsigma"       : nsigma,
 
             "linted"       : self.linted,
             "compiled"     : self.compiled,
@@ -656,14 +658,14 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 suffix += " + !! RUNTIME FAILURE - see %s !! " % (resbase)
             formatstr = "%-" + "%ds: " % (maxnamelen+1) + \
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
-            if sigma is None:
+            if nsigma is None:
                 tolerance = "20%"
-            elif not test.scan and not sigma_usable(test.testval, test.testerr, test.targetval, test.targeterr):
-                tolerance = "20%%, ERR/I > %g%% is too uncertain for sigma" % (100 * SIGMA_MAX_RELERR)
+            elif not test.scan and not nsigma_usable(test.testval, test.testerr, test.targetval, test.targeterr):
+                tolerance = "20%%, fewer than %d events for sigma" % NSIGMA_MIN_EVENTS
             elif test.targeterr is not None:
-                tolerance = "%g sigma" % sigma
+                tolerance = "%g sigma" % nsigma
             else:   # no _ERR on the target line: target error assumed = test run's
-                tolerance = "20%% or %g sigma" % sigma
+                tolerance = "20%% or %g sigma" % nsigma
             if test.scan:
                 testvals = test.testval or []
                 testerrs = test.testerr or []
@@ -675,13 +677,13 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                     num_valfail = num_valfail + 1
                     anyfailed=True
                 worst = max(percents, key=lambda p: abs(p-100)) if percents else 0
-                if sigma is not None:
-                    nlow = len([1 for t, e, r, re_ in zip(testvals, testerrs, test.targetval, targeterrs) if not sigma_usable(t, e, r, re_)])
+                if nsigma is not None:
+                    nlow = len([1 for t, e, r, re_ in zip(testvals, testerrs, test.targetval, targeterrs) if not nsigma_usable(t, e, r, re_)])
                     if nlow:
-                        tolerance += " (%d pts on 20%%, ERR/I > %g%%)" % (nlow, 100 * SIGMA_MAX_RELERR)
+                        tolerance += " (%d pts on 20%%, fewer than %d events)" % (nlow, NSIGMA_MIN_EVENTS)
                 logging.info(formatstr % test.get_display_name() + "    [scan: %d/%d points within %s, worst %d %%, %d/%d points run]"
                              % (len(percents)-numoff, len(test.targetval), tolerance, worst, len(testvals), len(test.targetval)) + suffix)
-            elif sigma is not None: # --sigma: |I - target| <= sigma * ERR of this run
+            elif nsigma is not None: # --nsigma: |I - target| <= nsigma * combined error bar
                 if not accepted(test.testval, test.testerr, test.targetval, test.targeterr):
                     suffix += " <--- BIG DISCREPANCY??"
                     num_valfail = num_valfail + 1
@@ -948,7 +950,7 @@ compilemax = None
 displaymax = None
 noplots = None
 noscans = None
-sigma = None
+nsigma = None
 
 def main(args):
     configfilter = args.config      # test only config matching this label (default: as installed)
@@ -1006,7 +1008,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots, noscans, sigma
+    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots, noscans, nsigma
     ncount = "1e6"
     no_mpi = False
     if args.ncount:
@@ -1126,9 +1128,17 @@ def main(args):
 
     noplots = args.noplots
     noscans = args.noscans
-    if args.sigma is not None:
-        sigma = args.sigma
-        logging.info("Test values accepted within %g x the error bar (ERR) of the test run" % sigma)
+    if args.nsigma is not None and args.pvalue is not None:
+        logging.error("ERROR: --nsigma and --pvalue are two ways to give the same threshold, use one of them!")
+        exit(-1)
+    if args.pvalue is not None:
+        # two-sided Gaussian: p = 2*(1 - Phi(nsigma))
+        nsigma = statistics.NormalDist().inv_cdf(1 - args.pvalue / 2)
+        logging.info("--pvalue %g corresponds to --nsigma %.3g" % (args.pvalue, nsigma))
+    elif args.nsigma is not None:
+        nsigma = args.nsigma
+    if nsigma is not None:
+        logging.info("Test values accepted within %.3g x the combined error bar (from >= %d events)" % (nsigma, NSIGMA_MIN_EVENTS))
     if noscans:
         logging.info("%Scan tests are skipped")
     if noplots:
@@ -1166,7 +1176,8 @@ if __name__ == '__main__':
     parser.add_argument('--permissive', action='store_true', help='Use zero return-value even if some tests fail. Useful for full test con systems that are only partially functional. Can not be combined with --strict.')
     parser.add_argument('--strict', action='store_true', help='Let instruments without %%Example line(s) instantly fail. Can not be combined with --permissive.')
     parser.add_argument('--noplots', action='store_true', help='Do not generate plots (01_overview.pdf and 02_plots.html) of the test output. Useful e.g. in CI, where the plots are not looked at, and can take long for instruments with many monitors.')
-    parser.add_argument('--sigma', type=float, help='Accept a test value (each point for %%Scan tests) within SIGMA x the combined error bar sqrt(ERR_test^2 + ERR_target^2), if the target line gives NAME_ERR. Targets without NAME_ERR are assumed to have the test run\'s ERR, and are also accepted within 20%%.')
+    parser.add_argument('--nsigma', type=float, help='Accept a test value (each point for %%Scan tests) within NSIGMA x the combined error bar sqrt(ERR_test^2 + ERR_target^2), if the target line gives NAME_ERR. Targets without NAME_ERR are assumed to have the test run\'s ERR, and are also accepted within 20%%. Error bars from fewer than 100 effective events, (I/ERR)^2, are not used: the 20%% rule applies.')
+    parser.add_argument('--pvalue', type=float, help='As --nsigma, but given as a two-sided Gaussian p-value, e.g. --pvalue 0.0027 for --nsigma 3, or 5.7e-7 for 5')
     parser.add_argument('--noscans', action='store_true', help='Skip the %%Scan tests, only run the %%Example tests.')
     parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR. Local path and --testdir can not overlap!')
     args = parser.parse_args()

@@ -24,20 +24,20 @@ def percent_of(testval, targetval):
         return 100 if testval == 0 else 0
     return 100.0 * testval / targetval
 
-SIGMA_MAX_RELERR = 0.25   # as in mctest: larger relative errors are not used for --sigma
+NSIGMA_MIN_EVENTS = 100   # as in mctest: error bars from fewer effective events are not used
 
-def accepted(testval, testerr, targetval, targeterr=None, sigma=None):
-    ''' same rule as mctest: within 20% or, if the test ran with --sigma, within sigma x the
+def accepted(testval, testerr, targetval, targeterr=None, nsigma=None):
+    ''' same rule as mctest: within 20% or, if the test ran with --nsigma, within nsigma x the
     combined error bar (a target without _ERR is assumed to have the test run's error bar);
-    a target given with its _ERR is judged by the error bars alone. Error bars above
-    SIGMA_MAX_RELERR (too few events) are not used, the 20% rule applies. '''
+    a target given with its _ERR is judged by the error bars alone. Error bars from fewer
+    than NSIGMA_MIN_EVENTS effective events (I/ERR)^2 are not used, the 20% rule applies. '''
     within20 = abs(percent_of(testval, targetval) - 100) <= ERROR_PERCENT_THRESSHOLD_ACCEPT
     def ok(v, e):
-        return v != 0 and e is not None and e <= SIGMA_MAX_RELERR * abs(v)
-    if sigma is None or not ok(testval, testerr) or (targeterr is not None and not ok(targetval, targeterr)):
+        return v != 0 and bool(e) and (v / e) ** 2 >= NSIGMA_MIN_EVENTS
+    if nsigma is None or not ok(testval, testerr) or (targeterr is not None and not ok(targetval, targeterr)):
         return within20
     err = math.hypot(testerr, targeterr) if targeterr is not None else math.sqrt(2) * testerr
-    insigma = abs(testval - targetval) <= sigma * err
+    insigma = abs(testval - targetval) <= nsigma * err
     return insigma if targeterr is not None else (within20 or insigma)
 
 def scantree(path):
@@ -281,7 +281,7 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
             percents = [percent_of(t, r) for t, r in zip(testvals, refvals)]
             testerrs = cellobj.get("testerr") or [0] * len(testvals)
             targeterrs = cellobj.get("targeterr") or [None] * len(refvals)
-            numok = len([1 for t, e, r, re_ in zip(testvals, testerrs, refvals, targeterrs) if accepted(t, e, r, re_, cellobj.get("sigma"))])
+            numok = len([1 for t, e, r, re_ in zip(testvals, testerrs, refvals, targeterrs) if accepted(t, e, r, re_, cellobj.get("nsigma"))])
             state = 1 if numok == len(percents) == len(refvals) else 2
             testval = "scan, %d/%d pts" % (len(testvals), len(refvals))
             refp = "%d/%d pts OK" % (numok, len(refvals))
@@ -303,7 +303,7 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
             refval = float(cellobj["targetval"])
             testval = float(cellobj["testval"])
             refp = abs(percent_of(testval, refval))
-            if not accepted(testval, cellobj.get("testerr") or 0, refval, cellobj.get("targeterr"), cellobj.get("sigma")):
+            if not accepted(testval, cellobj.get("testerr") or 0, refval, cellobj.get("targeterr"), cellobj.get("nsigma")):
                 state = 2
             else:
                 state = 1
