@@ -25,6 +25,10 @@ A target may carry its error bar, written as in the simulation's own output, e.g
 `%Example: ... Detector: NAME_I=2.00752e+08 NAME_ERR=2.28872e+06` or, for a scan,
 `Detector: NAME_I={...} NAME_ERR={...}`. It is used with `--nsigma`/`--pvalue`.
 
+How `--nsigma`, `--pvalue` and `--statfactor` judge test values against their
+targets, and where that can mislead, is explained in
+[Statistical acceptance in mctest](mctest-statistics.md).
+
 | Option | Description |
 |---|---|
 | `--ncount N`, `-n N` | ncount sent to `mcrun` (default: `1e6`) |
