@@ -24,12 +24,17 @@ def percent_of(testval, targetval):
         return 100 if testval == 0 else 0
     return 100.0 * testval / targetval
 
+SIGMA_MAX_RELERR = 0.25   # as in mctest: larger relative errors are not used for --sigma
+
 def accepted(testval, testerr, targetval, targeterr=None, sigma=None):
     ''' same rule as mctest: within 20% or, if the test ran with --sigma, within sigma x the
     combined error bar (a target without _ERR is assumed to have the test run's error bar);
-    a target given with its _ERR is judged by the error bars alone '''
+    a target given with its _ERR is judged by the error bars alone. Error bars above
+    SIGMA_MAX_RELERR (too few events) are not used, the 20% rule applies. '''
     within20 = abs(percent_of(testval, targetval) - 100) <= ERROR_PERCENT_THRESSHOLD_ACCEPT
-    if sigma is None:
+    def ok(v, e):
+        return v != 0 and e is not None and e <= SIGMA_MAX_RELERR * abs(v)
+    if sigma is None or not ok(testval, testerr) or (targeterr is not None and not ok(targetval, targeterr)):
         return within20
     err = math.hypot(testerr, targeterr) if targeterr is not None else math.sqrt(2) * testerr
     insigma = abs(testval - targetval) <= sigma * err

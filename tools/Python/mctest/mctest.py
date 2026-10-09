@@ -81,11 +81,22 @@ def combined_err(testerr, targeterr):
     have the test run's error bar, i.e. sqrt(2)*testerr '''
     return math.hypot(testerr, targeterr) if targeterr is not None else math.sqrt(2) * testerr
 
+# the error bar is only trusted for --sigma below this relative error (~1/sqrt(N) for N
+# unweighted events, i.e. N >~ 16); a value from a handful of rays falls back to the 20% rule
+SIGMA_MAX_RELERR = 0.25
+
+def sigma_usable(testval, testerr, targetval, targeterr=None):
+    ''' --sigma is given and the error bars are small enough to judge by '''
+    def ok(v, e):
+        return v != 0 and e is not None and e <= SIGMA_MAX_RELERR * abs(v)
+    return sigma is not None and ok(testval, testerr) and (targeterr is None or ok(targetval, targeterr))
+
 def accepted(testval, testerr, targetval, targeterr=None):
     ''' testval agrees with targetval: within 20% or, with --sigma, within sigma x the combined
-    error bar. A target given with its _ERR is judged by the error bars alone. '''
+    error bar. A target given with its _ERR is judged by the error bars alone. Error bars from
+    too few events (see SIGMA_MAX_RELERR) are not used, the 20% rule applies. '''
     within20 = abs(round(percent_of(testval, targetval)) - 100) <= 20
-    if sigma is None:
+    if not sigma_usable(testval, testerr, targetval, targeterr):
         return within20
     insigma = abs(testval - targetval) <= sigma * combined_err(testerr, targeterr)
     return insigma if targeterr is not None else (within20 or insigma)
@@ -647,6 +658,8 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 "{:3d}.".format(math.floor(test.runtime)) + str(test.runtime-int(test.runtime)).split('.')[1][:2]
             if sigma is None:
                 tolerance = "20%"
+            elif not test.scan and not sigma_usable(test.testval, test.testerr, test.targetval, test.targeterr):
+                tolerance = "20%%, ERR/I > %g%% is too uncertain for sigma" % (100 * SIGMA_MAX_RELERR)
             elif test.targeterr is not None:
                 tolerance = "%g sigma" % sigma
             else:   # no _ERR on the target line: target error assumed = test run's
@@ -662,6 +675,10 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                     num_valfail = num_valfail + 1
                     anyfailed=True
                 worst = max(percents, key=lambda p: abs(p-100)) if percents else 0
+                if sigma is not None:
+                    nlow = len([1 for t, e, r, re_ in zip(testvals, testerrs, test.targetval, targeterrs) if not sigma_usable(t, e, r, re_)])
+                    if nlow:
+                        tolerance += " (%d pts on 20%%, ERR/I > %g%%)" % (nlow, 100 * SIGMA_MAX_RELERR)
                 logging.info(formatstr % test.get_display_name() + "    [scan: %d/%d points within %s, worst %d %%, %d/%d points run]"
                              % (len(percents)-numoff, len(test.targetval), tolerance, worst, len(testvals), len(test.targetval)) + suffix)
             elif sigma is not None: # --sigma: |I - target| <= sigma * ERR of this run
