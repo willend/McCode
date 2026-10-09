@@ -79,8 +79,9 @@ def scan_first_point(parvals):
 
 def combined_err(testerr, targeterr):
     ''' error bar of testval - targetval. A target recorded without its _ERR is assumed to
-    have the test run's error bar, i.e. sqrt(2)*testerr '''
-    return math.hypot(testerr, targeterr) if targeterr is not None else math.sqrt(2) * testerr
+    come from the unscaled ncount, i.e. to have testerr*sqrt(statfactor), giving
+    sqrt(1 + statfactor)*testerr (sqrt(2)*testerr without --statfactor) '''
+    return math.hypot(testerr, targeterr) if targeterr is not None else math.sqrt(1 + statfactor) * testerr
 
 # error bars are only trusted for --nsigma/--pvalue from at least this many effective events,
 # N_eff = (I/ERR)^2 (the number of unweighted events giving the same relative error);
@@ -179,6 +180,7 @@ class InstrExampleTest:
             "testerr"      : self.testerr,
             "targeterr"    : self.targeterr,
             "nsigma"       : nsigma,
+            "statfactor"   : statfactor,
 
             "linted"       : self.linted,
             "compiled"     : self.compiled,
@@ -572,6 +574,9 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
         if test.scan:
             testncount = test.ncount or "%g" % min(float(ncount), 1e5)
             timeout = runmax * len(test.targetval)
+        if statfactor != 1:
+            testncount = "%g" % (float(testncount) * statfactor)
+            timeout = timeout * max(1, statfactor)
             if mpi is None:
                 parvals = parvals + " --scan_split=auto"
         # Did test run already?
@@ -951,6 +956,7 @@ displaymax = None
 noplots = None
 noscans = None
 nsigma = None
+statfactor = 1
 
 def main(args):
     configfilter = args.config      # test only config matching this label (default: as installed)
@@ -1008,7 +1014,7 @@ def main(args):
             quit(1)
     logging.debug("")
 
-    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots, noscans, nsigma
+    global ncount, no_mpi, mpi, skipnontest, openacc, nexus, lint, permissive, runLocal, compilemax, displaymax, runmax, seed, strict, noplots, noscans, nsigma, statfactor
     ncount = "1e6"
     no_mpi = False
     if args.ncount:
@@ -1070,6 +1076,13 @@ def main(args):
     else:
         uid = "_" + args.uid[0]
 
+    if args.statfactor is not None:
+        if args.statfactor <= 0:
+            logging.error("ERROR: --statfactor must be positive!")
+            exit(-1)
+        statfactor = args.statfactor
+        suffix = suffix + "_statfactor%g" % statfactor
+        logging.info("Statistics of every test scaled by %g" % statfactor)
     suffix=suffix + "_" + ncount + "_" + platform.system() + uid
     if runLocal:
         suffix = suffix + '_LOCAL'
@@ -1177,6 +1190,7 @@ if __name__ == '__main__':
     parser.add_argument('--strict', action='store_true', help='Let instruments without %%Example line(s) instantly fail. Can not be combined with --permissive.')
     parser.add_argument('--noplots', action='store_true', help='Do not generate plots (01_overview.pdf and 02_plots.html) of the test output. Useful e.g. in CI, where the plots are not looked at, and can take long for instruments with many monitors.')
     parser.add_argument('--nsigma', type=float, help='Accept a test value (each point for %%Scan tests) within NSIGMA x the combined error bar sqrt(ERR_test^2 + ERR_target^2), if the target line gives NAME_ERR. Targets without NAME_ERR are assumed to have the test run\'s ERR, and are also accepted within 20%%. Error bars from fewer than 100 effective events, (I/ERR)^2, are not used: the 20%% rule applies.')
+    parser.add_argument('--statfactor', type=float, help='Scale the ncount of every test (and pr. scan point) by this factor, e.g. 0.01 for quick runs or 100 for reference-quality ones. With --nsigma/--pvalue a target without NAME_ERR is assumed to come from the unscaled ncount, i.e. the combined error bar is sqrt(1 + STATFACTOR) x ERR_test.')
     parser.add_argument('--pvalue', type=float, help='As --nsigma, but given as a two-sided Gaussian p-value, e.g. --pvalue 0.0027 for --nsigma 3, or 5.7e-7 for 5')
     parser.add_argument('--noscans', action='store_true', help='Skip the %%Scan tests, only run the %%Example tests.')
     parser.add_argument('--local', help='Instruments to test are NOT picked up from MCCODE installation, instead from --local=DIR. Local path and --testdir can not overlap!')
