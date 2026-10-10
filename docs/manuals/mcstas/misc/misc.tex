@@ -34,6 +34,18 @@ category split and were historically documented here).
 \newpage
 \section{MCPL: splitting simulations via portable neutron event files}
 \label{s:mcpl}
+\textbf{MCPL\_input} reads the events of an MCPL file as the starting
+rays of a simulation and sets the number of rays to the number of events
+in the file times \texttt{repeat\_count}. When running with MPI, the file
+is split between the processes, so each event is used once per repetition
+across the whole run. With \texttt{repeat\_count}$>1$ the events are
+replayed, with the weights divided accordingly; every replay after the
+first is smeared in velocity, position and/or direction
+(\texttt{v\_smear}, \texttt{pos\_smear}, \texttt{dir\_smear}), so at
+least one of these must be set. The former \textbf{MCPL\_input\_once}
+has been merged into \textbf{MCPL\_input} and is now in the obsolete
+category.
+
 \input{misc/MCPL_input}
 
 \input{misc/MCPL_output}
