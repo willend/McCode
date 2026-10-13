@@ -61,8 +61,20 @@ cd 3rdparty/mcpl/mcpl_core
 rm -rf build
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DMCPL_ENABLE_CPACK=ON
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DMCPL_ENABLE_CPACK=ON -DCMAKE_PROJECT_MCPL_INCLUDE=$WORK/buildscripts/mcpl-debian/mcpl_core.cmake
 make -j${CMAKE_BUILD_PARALLEL_LEVEL}
+cpack -G DEB .
+DEB=`ls *.deb`
+DEBNAME=`echo $DEB | sed s/Linux/$MCCODE_ARCH/g`
+mv $DEB $WORK/dist/$DEBNAME
+
+cd $WORK
+
+cd 3rdparty/mcpl/mcpl_python
+rm -rf build
+mkdir build
+cd build
+cmake $WORK/buildscripts/mcpl-debian/python -DMCPL_PYTHON_SRC=$WORK/3rdparty/mcpl/mcpl_python -DCMAKE_INSTALL_PREFIX=/usr
 cpack -G DEB .
 DEB=`ls *.deb`
 DEBNAME=`echo $DEB | sed s/Linux/$MCCODE_ARCH/g`
