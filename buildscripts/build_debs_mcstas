@@ -77,8 +77,20 @@ cd 3rdparty/ncrystal/ncrystal_core
 rm -rf build
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DNCRYSTAL_ENABLE_CPACK=ON
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DNCRYSTAL_ENABLE_CPACK=ON -DCMAKE_PROJECT_NCrystal_INCLUDE=$WORK/buildscripts/ncrystal-debian/ncrystal_core.cmake
 make -j${CMAKE_BUILD_PARALLEL_LEVEL}
+cpack -G DEB .
+DEB=`ls *.deb`
+DEBNAME=`echo $DEB | sed s/Linux/$MCCODE_ARCH/g`
+mv $DEB $WORK/dist/$DEBNAME
+
+cd $WORK
+
+cd 3rdparty/ncrystal/ncrystal_python
+rm -rf build
+mkdir build
+cd build
+cmake $WORK/buildscripts/ncrystal-debian/python -DNCRYSTAL_PYTHON_SRC=$WORK/3rdparty/ncrystal/ncrystal_python -DCMAKE_INSTALL_PREFIX=/usr
 cpack -G DEB .
 DEB=`ls *.deb`
 DEBNAME=`echo $DEB | sed s/Linux/$MCCODE_ARCH/g`
