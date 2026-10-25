@@ -360,7 +360,7 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
             rows.append(row)
             # instr, with the lead column's output type
             d = join(testdir, get_data_url(iterobj[key]))
-            fmt = " (McCode/NeXus)" if os.path.isfile(join(d, "mccode.h5")) else " (McCode/ASCII)" if has_output(d) else ""
+            fmt = " (NeXus)" if os.path.isfile(join(d, "mccode.h5")) else " (McCode)" if has_output(d) else ""
             row.append(key + fmt)
 
             # prepare row list to have the requested amount of cells (cols)
