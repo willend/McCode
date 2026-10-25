@@ -294,7 +294,7 @@ INITIALIZE
   int injected = 0;
 
   /* direct lattice vectors, as COMP_GETPAR3(type, target, ax) etc. */
-  #define UB_INJECT_ABC(T) \
+  #define UB_INJECT_ABC(T, EXTRA) \
     if (!strcmp(type, #T)) { \
       _class_##T##_parameters *p = (_class_##T##_parameters *) _getvar_parameters(target); \
       if (p->ax || p->ay || p->az || p->bx || p->by || p->bz || p->cx || p->cy || p->cz) { \
@@ -304,7 +304,7 @@ INITIALIZE
       p->ax = A[0]; p->ay = A[3]; p->az = A[6]; \
       p->bx = A[1]; p->by = A[4]; p->bz = A[7]; \
       p->cx = A[2]; p->cy = A[5]; p->cz = A[8]; \
-      p->recip_cell = 0; \
+      EXTRA \
       injected = 1; \
     }
   /* NCrystal orientation, appended to cfg: lab directions of (100) and (010) */
@@ -327,19 +327,22 @@ INITIALIZE
     }
 
   #ifdef MCCODE_COMP_TYPE_Single_crystal
-  UB_INJECT_ABC(Single_crystal)
+  UB_INJECT_ABC(Single_crystal, p->recip_cell = 0;)
   #endif
   #ifdef MCCODE_COMP_TYPE_Single_crystal_process
-  UB_INJECT_ABC(Single_crystal_process)
+  UB_INJECT_ABC(Single_crystal_process, p->recip_cell = 0;)
   #endif
   #ifdef MCCODE_COMP_TYPE_Single_magnetic_crystal
-  UB_INJECT_ABC(Single_magnetic_crystal)
+  UB_INJECT_ABC(Single_magnetic_crystal, p->recip_cell = 0;)
   #endif
   #ifdef MCCODE_COMP_TYPE_Single_crystal_inelastic
-  UB_INJECT_ABC(Single_crystal_inelastic)
+  UB_INJECT_ABC(Single_crystal_inelastic, p->recip_cell = 0;)
   #endif
   #ifdef MCCODE_COMP_TYPE_FluoCrystal
-  UB_INJECT_ABC(FluoCrystal)
+  UB_INJECT_ABC(FluoCrystal, p->recip_cell = 0;)
+  #endif
+  #ifdef MCCODE_COMP_TYPE_Dispersion_relation
+  UB_INJECT_ABC(Dispersion_relation, )
   #endif
   #ifdef MCCODE_COMP_TYPE_NCrystal_sample
   UB_INJECT_CFG(NCrystal_sample)
