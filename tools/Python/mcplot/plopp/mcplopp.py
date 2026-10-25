@@ -279,7 +279,7 @@ def main():
     p.add_argument('--sample', help='event data (NeXus, McStasToX): name of the sample component')
     args = p.parse_args()
     if not args.output:
-        return launch(f'import mcplopp\ndata = mcplopp.ui({os.path.abspath(args.simfile)!r})  # scipp DataGroup')
+        return launch(f'# Import and return the dataset as a scipp DataGroup object \nimport mcplopp\ndata = mcplopp.ui({os.path.abspath(args.simfile)!r})  # scipp DataGroup \ndata')
 
     figs = figures(load(args.simfile), args.log)
     if args.source and args.sample:
