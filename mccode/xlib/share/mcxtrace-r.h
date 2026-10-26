@@ -128,7 +128,7 @@ void SCATTER_func(_class_particle *_particle); /* provides function to SCATTER f
 /*adapted from PROP_DT(dt)*/
 #define PROP_DL(dl) \
   do{ \
-    if(dl < 0) { RESTORE=1; ABSORB; }; \
+    if(dl < 0 && allow_backprop == 0) { RESTORE=1; ABSORB; }; \
     mcPROP_DL(dl); \
     DISALLOW_BACKPROP;\
   } while (0)
