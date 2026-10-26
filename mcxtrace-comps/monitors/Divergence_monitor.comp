@@ -95,10 +95,11 @@ TRACE
   double h_div, v_div;
   double k, kn;
 
+  int backprop = allow_backprop; /* set by caller: also count backward hits */
   double t0 = t;
   ALLOW_BACKPROP;
   PROP_Z0;
-  if (t >= t0 && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax) {
+  if ((backprop || t >= t0) && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax) {
     /* Find length of projection onto the [nx ny nz] axis */
     kn = scalar_prod (kx, ky, kz, nx, ny, nz);
     if (rad) {

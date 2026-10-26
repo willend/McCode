@@ -102,11 +102,12 @@ TRACE
   double lambda;
   double v, vn;
 
+  int backprop = allow_backprop; /* set by caller: also count backward hits */
   double t0 = t;
   ALLOW_BACKPROP;
   PROP_Z0;
   lambda = (2 * PI / V2K) / sqrt (vx * vx + vy * vy + vz * vz);
-  if (t >= t0 && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax && lambda > Lmin && lambda < Lmax) {
+  if ((backprop || t >= t0) && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax && lambda > Lmin && lambda < Lmax) {
     /* Find length of projection onto the [nx ny nz] axis */
     vn = scalar_prod (vx, vy, vz, nx, ny, nz);
     div = RAD2DEG * atan2 (vx, vn);

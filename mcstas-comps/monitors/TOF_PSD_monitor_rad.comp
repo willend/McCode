@@ -83,6 +83,7 @@ TRACE
   int i, j;
   double dt, radpos;
 
+  int backprop = allow_backprop; /* set by caller: also count backward hits */
   double t0 = t;
   ALLOW_BACKPROP;
   PROP_Z0;
@@ -91,7 +92,7 @@ TRACE
   i = floor ((t - tt_0) * nt / (tt_1 - tt_0)); /* Bin number */
   j = floor (nr * radpos / rmax);
 
-  if (t >= t0 && z == 0.0 && radpos < rmax && i >= 0 && i < nt) {
+  if ((backprop || t >= t0) && z == 0.0 && radpos < rmax && i >= 0 && i < nt) {
     double p2 = p * p;
     #pragma acc atomic
     TOFPSDr_N[i][j] = TOFPSDr_N[i][j] + 1;

@@ -101,11 +101,12 @@ TRACE
   double div;
   double lambda;
 
+  int backprop = allow_backprop; /* set by caller: also count backward hits */
   double t0 = t;
   ALLOW_BACKPROP;
   PROP_Z0;
   lambda = (2 * PI / V2K) / sqrt (vx * vx + vy * vy + vz * vz);
-  if (t >= t0 && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax && lambda > Lmin && lambda < Lmax) {
+  if ((backprop || t >= t0) && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax && lambda > Lmin && lambda < Lmax) {
     if (t < tt_1 && t > tt_0) {
       i = floor ((lambda - Lmin) * nL / (Lmax - Lmin));
       j = floor ((t - tt_0) * nt / (tt_1 - tt_0));

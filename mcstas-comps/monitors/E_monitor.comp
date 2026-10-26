@@ -99,10 +99,11 @@ TRACE
   int i;
   double E;
 
+  int backprop = allow_backprop; /* set by caller: also count backward hits */
   double t0 = t;
   ALLOW_BACKPROP;
   PROP_Z0;
-  if (t >= t0 && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax) {
+  if ((backprop || t >= t0) && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax) {
     E = VS2E * (vx * vx + vy * vy + vz * vz);
 
     S_p += p;
