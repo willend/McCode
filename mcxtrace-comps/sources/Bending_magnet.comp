@@ -39,21 +39,18 @@
 * gauss_t:  [0/1] If 0 the target window will be sampled uniformly and the weight adjusted accordingly, otherwise we will use a gaussian sampling scheme
 * E0:       [keV] Center of emitted energy spectrum (overrides lambda0)
 * dE:       [keV] Half-width of emitted energy spectrum
-* lambda0:  [AA]  Center of emitted wavelength spectrum
-* dlambda:  [AA]  Half-width of emitted wavelength spectrum
 * 
 * %End
 **********************/
 
 DEFINE COMPONENT Bending_magnet
 
-SETTING PARAMETERS (E0=0, dE=0, lambda0=0,dlambda=0, phase=0, randomphase=1, Ee=2.4, Ie=0.4, B=1.6, sigey=0, sigex=0, focus_xw=0, focus_yh=0, dist=1, gauss_t=0)
+SETTING PARAMETERS (E0=0, dE=0, phase=0, randomphase=1, Ee=2.4, Ie=0.4, B=1.6, sigey=0, sigex=0, focus_xw=0, focus_yh=0, dist=1, gauss_t=0)
 
-/* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */ 
+/* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
 
 SHARE
 %{
-//  %include "read_table-lib"
 
 #ifndef MCCODE_BESSELKNU
 #define MCCODE_BESSELKNU 1
@@ -85,30 +82,6 @@ double besselKnu(double nu, double x){
 #define M_SQRT1_2 0.70710678118654752440
 #endif
 
-#ifndef MCCODE_INTEGBESSELKNU
-#define MCCODE_INTEGBESSELKNU 1
-
-  double IntegbesselKnu(double infbound){
-    //fprintf(stderr,"infbound (%g):.\n",infbound);
-    const double h=0.01;
-    double KK=0,dK;
-    int r=0;
-    const int maxiter=1000;
-    KK=0;
-    dK=1;
-    while (dK>DBL_EPSILON && r<maxiter){
-      r++;
-      dK=besselKnu(1.666666666666666666666666667,infbound+r*h);
-      KK+=dK;
-    }
-    //if (r>=maxiter) {
-    //  fprintf(stderr,"Warning (%s): Maximum number of iterations exceeded in IntegbesselKnu(%g).\n",NAME_CURRENT_COMP,infbound);
-    //}
-    KK*=h;
-    return KK;
-  }
-#endif /*MCCODE_INTEGBESSELKNU*/
-
 %}
 
 DECLARE
@@ -136,13 +109,14 @@ DECLARE
 INITIALIZE
 %{
 
-  // fprintf(stderr,"Warning (%s): Bending_magnet is an experimental component - testing is ongoing\n",NAME_CURRENT_COMP);
-
   if(B<=0 || Ee<=0 || Ie<=0 ){
-    fprintf(stderr, "Error (%s): B, Ee, and Ie must all be >= 0. Found (%g %g %g). Aborting.\n",NAME_CURRENT_COMP,B,Ee,Ie);
+    fprintf(stderr, "Error (%s): B, Ee, and Ie must all be > 0. Found (%g %g %g). Aborting.\n",NAME_CURRENT_COMP,B,Ee,Ie);
     exit(1);
   }
-
+  if (E0 <= 0 || dE <= 0) {
+    fprintf (stderr, "Error (%s): dE and E0 need to be set. Aborting.\n", NAME_CURRENT_COMP);
+    exit (1);
+  }
   if (sigex <0 || sigey<0){
     fprintf(stderr, "Error (%s): sigex and sigey must be > 0. Negative beam size isn't meaningful. Aborting.\n",NAME_CURRENT_COMP);
     exit(1);
@@ -171,15 +145,15 @@ INITIALIZE
   //s1x=sqrt(sigex*sigex + igamma*igamma*dist*dist);
   //s1y=sqrt(sigey*sigey + igamma*igamma*dist*dist);
   if (focus_xw){
-  s1x=focus_xw/2.0;
+    s1x=focus_xw/2.0;
   }
   if (focus_yh){
-  s1y=focus_yh/2.0;  
+    s1y=focus_yh/2.0;  
   }
   p0=1.0/mcget_ncount();
 
   cnstc = erf(1.0/(sqrt(2.0)));
-  qe = 1.0/(2.0*dE);   
+  qe = 1.0/(2.0*dE);    // requires dE > 0, no lambda handling here
 %}
 
 
@@ -205,27 +179,14 @@ TRACE
 
   // Gaussian distribution at origin
   p=p0;/*initial weight is p0*/
-  if (E0){
-    if(!dE){
-      e=E0;
-    }else {
-      //e=randpm1()*dE + E0;
-      e=randpm1()*dE + E0;
-    }
-    k=E2K*e;
-  }else if (lambda0){
-    if (!dlambda){
-      l=lambda0;
-    }else{
-      l=randpm1()*dlambda + lambda0;
-    }
-    k=(2*M_PI/l);
-  }
+  // E0 and dE are defined
+  e=randpm1()*dE + E0;
+  k=E2K*e;
   
   double oneoverk=1.0/k;
   double mu = k*M_C/(2*M_PI);
   double mumuc = mu/muc;
-      
+
   // targeted area calculation
   if (focus_xw){
     if (!gauss_t){
@@ -313,15 +274,14 @@ TRACE
   }
 
   /*set polarization vector*/
-  Ex=0;Ey=0;Ez=0;
+  Ex=Ey=Ez=0;
 %}
 
 MCDISPLAY
 %{
-  
 
   double radius,D;
-  radius=3.3*Ee/B;;
+  radius=3.3*Ee/B;
   D=0.1;
   double x0,x1,z0,z1;
   const double phimin=-2.0*DEG2RAD, phimax=2.0*DEG2RAD;
@@ -340,7 +300,7 @@ MCDISPLAY
   line(0.0,0.0,0.0,-D*sin(igamma), 0.0, D);
   line(0.0,0.0,0.0, 0.0, D*sin(igamma), D);
   line(0.0,0.0,0.0, 0.0,-D*sin(igamma), D);
-  
+
   phi =-igamma;
   dphi= 2.0*igamma/32;
   while(phi<igamma){
