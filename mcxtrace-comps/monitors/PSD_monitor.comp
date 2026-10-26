@@ -96,7 +96,7 @@ TRACE
   ALLOW_BACKPROP;
   PROP_Z0;
   if (!radius) {
-    if ((backprop || t >= t0) && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax) {
+    if ((backprop || t >= t0) && x > xmin && x < xmax && y > ymin && y < ymax) {
       i = floor ((x - xmin) * nx / (xmax - xmin));
       j = floor ((y - ymin) * ny / (ymax - ymin));
       p2 = p * p;
@@ -110,7 +110,7 @@ TRACE
     }
   } else {
     double r = sqrt (x * x + y * y);
-    if ((backprop || t >= t0) && z == 0.0 && r < radius) {
+    if ((backprop || t >= t0) && r < radius) {
       i = floor (r * nr / radius);
       p2 = p * p;
       #pragma acc atomic

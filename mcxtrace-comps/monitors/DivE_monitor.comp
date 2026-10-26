@@ -96,7 +96,7 @@ TRACE
   ALLOW_BACKPROP;
   PROP_Z0;
   e = K2E * sqrt (kx * kx + ky * ky + kz * kz);
-  if ((backprop || t >= t0) && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax && e > Emin && e < Emax) {
+  if ((backprop || t >= t0) && x > xmin && x < xmax && y > ymin && y < ymax && e > Emin && e < Emax) {
     /* Find length of projection onto the [nx ny nz] axis */
     kn = scalar_prod (kx, ky, kz, nx, ny, nz);
     div = RAD2DEG * atan2 (kx, kn);

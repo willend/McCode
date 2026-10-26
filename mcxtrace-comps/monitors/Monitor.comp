@@ -78,7 +78,7 @@ TRACE
   double t0 = t;
   ALLOW_BACKPROP;
   PROP_Z0;
-  if ((backprop || t >= t0) && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax) {
+  if ((backprop || t >= t0) && x > xmin && x < xmax && y > ymin && y < ymax) {
     double p2 = p * p;
     #pragma acc atomic
     Nsum = Nsum + 1;

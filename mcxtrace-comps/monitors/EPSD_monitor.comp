@@ -106,7 +106,7 @@ TRACE
   ALLOW_BACKPROP;
   PROP_Z0;
   e = sqrt (scalar_prod (kx, ky, kz, kx, ky, kz)) * K2E;
-  if ((backprop || t >= t0) && z == 0.0 && x > xmin && x < xmax && y > ymin && y < ymax && e < Emax && e > Emin) {
+  if ((backprop || t >= t0) && x > xmin && x < xmax && y > ymin && y < ymax && e < Emax && e > Emin) {
     i = floor ((x - xmin) * nx / (xmax - xmin));
     j = floor ((y - ymin) * ny / (ymax - ymin));
     k = floor ((e - Emin) * nE / (Emax - Emin));
