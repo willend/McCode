@@ -2778,6 +2778,14 @@ FILE *siminfo_init(FILE *f)
 	  else
 	    mcinfo_out_nexus(nxhandle);
 	  );
+#ifdef USE_MPI
+    { /* once per node, at the first call (from mccode_main, on every node): the
+         per-node event list files name their data sets after the master's
+         NXentry (mclist_node_dset), which a NeXus scan step increments */
+      static int sent = 0;
+      if (!sent++) MPI_Bcast(mcnxentry, CHAR_BUF_LENGTH, MPI_CHAR, mpi_node_root, MPI_COMM_WORLD);
+    }
+#endif
     return(siminfo_file); /* points to nxhandle */
   }
 #endif
@@ -3154,7 +3162,8 @@ static void mclist_node_dset(char *dset, char *f, char *c, int index)
 {
   char valid[CHAR_BUF_LENGTH+1];
   if (!strcpy_valid(valid, (f && strlen(f)) ? f : c)) strcpy(valid, "list");
-  snprintf(dset, 2*CHAR_BUF_LENGTH, "list%d_%s", index, valid);
+  /* prefixed by the NXentry: the steps of a NeXus scan share the per-node files */
+  snprintf(dset, 2*CHAR_BUF_LENGTH, "%s_list%d_%s", mcnxentry, index, valid);
 }
 
 /* string attribute on an HDF5 object */
@@ -3171,10 +3180,11 @@ static void mclist_vds_attr(hid_t obj, char *name, char *value)
 }
 
 /* append rows*cols values to data set dset of this node's file (created,
-   truncated, on the first append of the run). nxpath is where the events go
-   in mccode.h5, below the NXentry (stored as attribute 'mccode_path', for
-   nexus_vds.py). Returns the number of rows now in the data set (0 if none),
-   or -1 on error. No MPI communication. */
+   truncated, on the first append of a run writing entry1; reopened by the
+   later steps of a NeXus scan). nxpath is where the events go in mccode.h5,
+   below the NXentry (stored with the entry as attributes 'mccode_path' and
+   'mccode_entry', for nexus_vds.py). Returns the number of rows now in the
+   data set (0 if none), or -1 on error. No MPI communication. */
 static long long mclist_node_append(char *dset, char *nxpath, long long rows, long long cols, double *data)
 {
   char      name[CHAR_BUF_LENGTH];
@@ -3182,18 +3192,24 @@ static long long mclist_node_append(char *dset, char *nxpath, long long rows, lo
   hid_t     fid, did = -1, space;
   hsize_t   dims[2] = {0, 0};
   long long total = -1;
+  /* a new mccode.h5 starts afresh; a later NXentry is a NeXus scan step whose
+     predecessors' events are in the same per-node file */
+  int       fresh = !strcmp(mcnxentry, "entry1");
 
   snprintf(name, sizeof(name), "mccode_node%d", mpi_node_rank);
   if (!rows && !mclist_node_file_created) {
     /* nothing yet: only make sure no file of an earlier run is left over */
     static int checked = 0;
-    if (!checked) { file = mcfull_file(name, "h5"); remove(file); free(file); checked = 1; }
+    if (!checked && fresh) { file = mcfull_file(name, "h5"); remove(file); free(file); }
+    checked = 1;
     return(0);
   }
 
   file = mcfull_file(name, "h5");
   if (!mclist_node_file_created) {
-    fid = H5Fcreate(file, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    FILE *prev = fresh ? NULL : fopen(file, "rb");
+    if (prev) { fclose(prev); fid = H5Fopen(file, H5F_ACC_RDWR, H5P_DEFAULT); }
+    else        fid = H5Fcreate(file, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     if (fid >= 0) mclist_node_file_created = 1;
   } else
     fid = H5Fopen(file, H5F_ACC_RDWR, H5P_DEFAULT);
@@ -3226,7 +3242,10 @@ static long long mclist_node_append(char *dset, char *nxpath, long long rows, lo
       H5Pset_deflate(plist, level);
     }
     did = H5Dcreate2(fid, dset, H5T_NATIVE_DOUBLE, space, H5P_DEFAULT, plist, H5P_DEFAULT);
-    if (did >= 0) mclist_vds_attr(did, "mccode_path", nxpath);
+    if (did >= 0) {
+      mclist_vds_attr(did, "mccode_path",  nxpath);
+      mclist_vds_attr(did, "mccode_entry", mcnxentry);
+    }
     H5Sclose(space);
     H5Pclose(plist);
   } else { /* no data set and nothing to add */
