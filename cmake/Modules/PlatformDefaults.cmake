@@ -261,6 +261,10 @@ function( detect_platform_variables resultvarname )
   if ( DARWIN )
     set(MCCODE_CFLAGS "${MCCODE_CFLAGS} -D_DARWIN_C_SOURCE")
   endif()
+  if ( CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" )
+    #_POSIX_C_SOURCE (set in generated code) hides XSI, e.g. gettimeofday, on FreeBSD
+    set(MCCODE_CFLAGS "${MCCODE_CFLAGS} -D_XOPEN_SOURCE=700")
+  endif()
   if ( WINDOWS )
     if ("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
       if ( MCCODE_BUILD_CONDA_PKG )
@@ -273,7 +277,7 @@ function( detect_platform_variables resultvarname )
     set( MCCODE_CFLAGS "${MCCODE_CFLAGS} -I\$\{CONDA_PREFIX\}/include -Wl,-rpath,\$\{CONDA_PREFIX\}/lib -L\$\{CONDA_PREFIX\}/lib" )
   endif()
 
-  foreach( flag "-fno-PIC" "-fPIE" "-flto" "-O3" "-march=native" "-fno-math-errno" "-ftree-vectorize" "-g" "-DNDEBUG" "-D_POSIX_SOURCE" "-D_XOPEN_SOURCE=700" "-std=c99" "-lm" )
+  foreach( flag "-fno-PIC" "-fPIE" "-flto" "-O3" "-march=native" "-fno-math-errno" "-ftree-vectorize" "-g" "-DNDEBUG" "-D_POSIX_SOURCE" "-std=c99" "-lm" )
     #NB: plethora of "unset(tmp_test_c_flag_result ...)" statements below is
     #added for safety, to prevent CMake's CACHE system to give unpredictable
     #results.
