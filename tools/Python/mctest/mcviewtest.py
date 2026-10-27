@@ -6,7 +6,7 @@ import json
 import math
 import sys
 import os
-from os.path import join, dirname, isdir
+from os.path import join, dirname
 from os import walk
 import shutil
 import concurrent.futures
@@ -54,19 +54,14 @@ def accepted(testval, testerr, targetval, targeterr=None, nsigma=None, statfacto
     return insigma if targeterr is not None else (within20 or insigma)
 
 def scantree(path):
-    """Recursively yield DirEntry objects for given directory."""
+    """Yield DirEntry objects for complete test label dirs, i.e. holding testresults_<label>.json."""
     for entry in os.scandir(path):
-        if entry.is_dir(follow_symlinks=True):
+        if entry.is_dir() and os.path.isfile(join(entry.path, "testresults_%s.json" % entry.name)):
             yield entry
 
 def get_oldest_dir(directory_name):
-    files = []
-
-    for file in scantree(directory_name):
-        files.append((file.stat().st_mtime, file.path))
-
-    files.sort(key=lambda x:x[0])
-    return files[0][1]
+    files = [(e.stat().st_mtime, e.path) for e in scantree(directory_name)]
+    return min(files)[1] if files else None
 
 def get_default_diffworkers():
     ''' Number of mcplotdiff-html comparisons to run in parallel by default:
@@ -363,8 +358,10 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
         for key in list(iterobj.keys()): 
             row = []
             rows.append(row)
-            # instr
-            row.append(key)
+            # instr, with the lead column's output type
+            d = join(testdir, get_data_url(iterobj[key]))
+            fmt = " (NeXus)" if os.path.isfile(join(d, "mccode.h5")) else " (McCode)" if has_output(d) else ""
+            row.append(key + fmt)
 
             # prepare row list to have the requested amount of cells (cols)
             for i in range(ncols - len(otherobjs) - 1):
@@ -401,16 +398,7 @@ def run_normal_mode(testdir, reflabel, nodiff=False, diffmax=300, diffall=True, 
                     row.append(get_empty_cell_tuple("not on branch"))
 
     # load test data
-    alllabels = list()
-    for root, labels, files in walk(testdir):
-        for lab in labels:
-            if isdir(lab):
-                try:
-                    obj = json.loads(open(join(testdir, lab, "testresults_%s.json" % lab)).read())
-                    alllabels.append(lab)
-                except:
-                    pass
-    alllabels.sort()
+    alllabels = sorted(e.name for e in scantree(testdir))
     # get number of data columns
     numcols= len(alllabels)
 
