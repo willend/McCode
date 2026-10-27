@@ -36,7 +36,7 @@ jobs:
             # FreeBSD's clang does not search /usr/local, so HDF5 dirs are passed explicitly.
             # mpich, not openmpi: the openmpi pkg keeps mpicc/mpirun outside PATH.
             # Python modules by port origin: follows the default Python flavour (pyXYZ-) on pkg updates.
-            sudo pkg install -y cmake bison flex hdf5 mpich python3 devel/py-pyyaml devel/py-ply math/py-numpy science/py-h5py
+            sudo pkg install -y cmake bison flex hdf5 mpich python3 devel/py-pyyaml devel/py-ply sysutils/py-psutil math/py-numpy science/py-h5py
             cmake -S ./src -B ./build \
                 -DCMAKE_INSTALL_PREFIX=$PWD/install \
                 -DCMAKE_BUILD_TYPE=Release \
