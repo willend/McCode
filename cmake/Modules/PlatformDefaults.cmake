@@ -223,7 +223,7 @@ function( detect_platform_variables resultvarname )
   provide_var( MPICC )
 
 
-  #NeXus-flags:
+  #NeXus-flags: NeXus output is written with HDF5 (NEXUSLIB/NEXUSINCLUDE: where libhdf5 and hdf5.h are)
   if ( NOT NEXUSFLAGS )
     set(NEXUSFLAGS "-DUSE_NEXUS -DNX_COMPRESSION=NX_COMP_LZW_LVL1 -lhdf5")
     if ( MCCODE_BUILD_CONDA_PKG )

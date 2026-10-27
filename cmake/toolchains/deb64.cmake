@@ -10,8 +10,6 @@ set(MPICC "mpicc")
 set(OACCFLAGS "-fast -Minfo=accel -acc=gpu -gpu=managed -DOPENACC")
 set(MPILIB "mpi")
 set(MPIRUN "mpirun")
-set(NEXUSLIB "/usr/lib")
-set(NEXUSINCLUDE "/usr/include/nexus")
 # Packages are built before libhdf5-dev is installed: set the
 # full flags. Debian's serial HDF5 is in /usr/include/hdf5/serial, linked as libhdf5_serial
 set(NEXUSFLAGS "-Wl,-rpath,/usr/lib -L/usr/lib -DUSE_NEXUS -DNX_COMPRESSION=NX_COMP_LZW_LVL1 -lhdf5_serial -I/usr/include/hdf5/serial")
