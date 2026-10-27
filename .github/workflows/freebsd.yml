@@ -47,12 +47,12 @@ jobs:
           version: '14.2'
           run: |
             set -eux
-            # FreeBSD's clang does not search /usr/local, so HDF5 dirs are passed explicitly.
+            # FreeBSD's clang does not search /usr/local, so GSL and HDF5 dirs are passed explicitly.
             # mpich, not openmpi: the openmpi pkg keeps mpicc/mpirun outside PATH.
             # MPI builds use base cc + mpich paths, not mpich's mpicc: mpicc links with binutils ld,
             # which lacks LLVMgold.so for the -flto that cmake probed with cc/lld.
             # Python modules by port origin: follows the default Python flavour (pyXYZ-) on pkg updates.
-            sudo pkg install -y cmake bison flex hdf5 mpich python3 devel/py-pip devel/py-pyyaml devel/py-ply sysutils/py-psutil math/py-numpy science/py-h5py
+            sudo pkg install -y cmake bison flex gsl hdf5 mpich python3 devel/py-pip devel/py-pyyaml devel/py-ply sysutils/py-psutil math/py-numpy science/py-h5py
             # MCPL and NCrystal from PyPI (sdist builds, as in their own FreeBSD CI); McCode finds
             # them at instrument compile time via mcpl-config / ncrystal-config on PATH.
             python3 -mpip install --user mcpl ncrystal
@@ -75,6 +75,7 @@ jobs:
                 -DENSURE_NCRYSTAL=OFF \
                 -DENABLE_CIF2HKL=OFF \
                 -DENABLE_NEUTRONICS=OFF \
+                -DGSLFLAGS="-I/usr/local/include -Wl,-rpath,/usr/local/lib -L/usr/local/lib -lgsl -lgslcblas" \
                 -DNEXUSLIB=/usr/local/lib \
                 -DNEXUSINCLUDE=/usr/local/include \
                 -DMPICC=cc \
@@ -92,8 +93,9 @@ jobs:
             test "$SUM" = "6c203d69205b0656c1391555e6068c93"
             # Basic tests
             ${{ matrix.mctest }} --verbose --noplots --mpi=2 --instr=${{ matrix.instr }} --testdir=run_basictests --suffix=classic_freebsd_cc_mpich --uid=freebsd
-            # MPI event-list, NeXus output and mcplot loader regression tests
-            python3 src/${{ matrix.flavor }}-comps/examples/${{ matrix.mpilists }}/Test_Monitor_nD_list_MPI/test_mpi_lists.py --np 2 --mcrun ${{ matrix.mcrun }} --workdir run_mpilists
+            # MPI event-list, NeXus output and mcplot loader regression tests.
+            # No SIGTERM check: the runtime installs its sighandler with OpenMPI only (MPICH uses signals).
+            python3 src/${{ matrix.flavor }}-comps/examples/${{ matrix.mpilists }}/Test_Monitor_nD_list_MPI/test_mpi_lists.py --np 2 --mcrun ${{ matrix.mcrun }} --workdir run_mpilists --sigterm-ncount 0
             python3 src/${{ matrix.flavor }}-comps/examples/Tests_other/Test_NeXus_output/test_nexus_output.py --np 2 --mcrun ${{ matrix.mcrun }} --workdir run_nexusoutput
             python3 src/${{ matrix.flavor }}-comps/examples/Tests_other/Test_mcplot_loader/test_mcplot_loader.py --mcrun ${{ matrix.mcrun }} --workdir run_mcplotloader
 
