@@ -1,0 +1,62 @@
+name: freebsd
+
+# Source build of McStas/McXtrace in a FreeBSD VM, after the approach in
+# mctools/mcpl and mctools/ncrystal (.github/workflows/freebsd.yml).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '30 22 * * 0'  # 22:30 every Sunday
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { flavor: mcstas,   build: BUILD_MCSTAS,   mcrun: mcrun }
+          - { flavor: mcxtrace, build: BUILD_MCXTRACE, mcrun: mxrun }
+    name: freebsd.${{ matrix.flavor }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: src
+
+      - name: FreeBSD
+        uses: cross-platform-actions/action@v1.3.0
+        with:
+          operating_system: freebsd
+          version: '14.2'
+          run: |
+            set -eux
+            # FreeBSD's clang does not search /usr/local, so HDF5 dirs are passed explicitly.
+            # mpich, not openmpi: the openmpi pkg keeps mpicc/mpirun outside PATH.
+            sudo pkg install -y cmake bison flex hdf5 mpich python3 py311-pyyaml py311-ply py311-numpy py311-h5py
+            cmake -S ./src -B ./build \
+                -DCMAKE_INSTALL_PREFIX=$PWD/install \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DMCVERSION="3.99.99" \
+                -DMCCODE_BUILD_CONDA_PKG=OFF \
+                -DMCCODE_USE_LEGACY_DESTINATIONS=OFF \
+                -DBUILD_SHARED_LIBS=ON \
+                -DCMAKE_INSTALL_LIBDIR=lib \
+                -D${{ matrix.build }}=ON \
+                -DBUILD_TOOLS=ON \
+                -DENABLE_COMPONENTS=ON \
+                -DENSURE_MCPL=OFF \
+                -DENSURE_NCRYSTAL=OFF \
+                -DENABLE_CIF2HKL=OFF \
+                -DENABLE_NEUTRONICS=OFF \
+                -DNEXUSLIB=/usr/local/lib \
+                -DNEXUSINCLUDE=/usr/local/include
+            cmake --build ./build --config Release --parallel 2
+            cmake --install ./build --config Release
+            PATH="$PWD/install/bin:$PATH"
+            export PATH
+            cat install/share/${{ matrix.flavor }}/tools/Python/mccodelib/mccode_config.json
+            ${{ matrix.mcrun }} src/${{ matrix.flavor }}-comps/examples/Tests_RNG/Test_RNG_rand01/Test_RNG_rand01.instr -d run_rng -n 1e5
+            python3 src/${{ matrix.flavor }}-comps/examples/Tests_other/Test_NeXus_output/test_nexus_output.py --np 2 --mcrun ${{ matrix.mcrun }} --workdir run_nexusoutput
