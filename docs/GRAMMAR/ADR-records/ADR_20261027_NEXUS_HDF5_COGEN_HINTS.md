@@ -24,7 +24,7 @@ The real link flags still come from `NEXUSFLAGS` (`PlatformDefaults.cmake`, tool
 - The generated C code is unchanged. Only messages on stderr change, so there is no grammar or numerical change.
 - Users following the hint on a system with HDF5 but without libNeXus now get a working link line.
 - An existing `mccode_config.json` that still passes `-lNeXus` keeps working where libNeXus is installed: the runtime's own `NX*` functions take precedence (see #2895).
-- mccode-antlr has the same hint, in `translators/c.py`, and defaults its `nexus` flags to `-lNeXus` in `config/platforms.yaml`. It embeds the runtime of the McCode release it resolves, so its defaults can only switch to HDF5 for releases that contain #2895. This is tracked in mccode-antlr; see the linked issue and PR.
+- mccode-antlr has the same hint, in `translators/c.py`, and defaults its `nexus` flags to `-lNeXus` in `config/platforms.yaml`. It embeds the runtime of the McCode release it resolves, so its defaults can only switch to HDF5 for releases that contain #2895. Tracked in [mccode-antlr#405](https://github.com/mccode-dev/mccode-antlr/issues/405); [mccode-antlr#406](https://github.com/mccode-dev/mccode-antlr/pull/406) makes its hint version-neutral.
 
 ## Behaviour
 
