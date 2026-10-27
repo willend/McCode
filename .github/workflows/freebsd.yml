@@ -64,5 +64,5 @@ jobs:
             PATH="$PWD/install/bin:$PATH"
             export PATH
             cat install/share/${{ matrix.flavor }}/tools/Python/mccodelib/mccode_config.json
-            ${{ matrix.mcrun }} src/${{ matrix.flavor }}-comps/examples/Tests_RNG/Test_RNG_rand01/Test_RNG_rand01.instr -d run_rng -n 1e5
+            ${{ matrix.mcrun }} src/${{ matrix.flavor }}-comps/examples/Tests_RNG/Test_RNG_rand01/Test_RNG_rand01.instr -y -d run_rng -n 1e5
             python3 src/${{ matrix.flavor }}-comps/examples/Tests_other/Test_NeXus_output/test_nexus_output.py --np 2 --mcrun ${{ matrix.mcrun }} --workdir run_nexusoutput
