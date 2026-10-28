@@ -1948,7 +1948,7 @@ void union_mcdisplay_polyhedron(int N, struct geometry_struct **Geometries, int 
     for (i=0;i<17;i++) { z[i] = -R*cos(PI*i/16); r[i] = (i==0 || i==16) ? 0 : R*sin(PI*i/16); }
     union_tri_lathe(&t,g->center,coords_set(0,1,0),z,r,17);
   } else if (g->eShape == mesh) {
-    gmesh_struct *m = g->geometry_parameters.p_mesh;
+    gmesh_struct *m = &g->geometry_parameters.p_mesh_storage->mesh;
     struct pointer_to_1d_coords_list pts = g->shell_points(g,1); // all vertices, master frame
     for (i=0;i<m->faceSize;i+=m->faceArray[i]+1)
       for (j=1;j<m->faceArray[i]-1;j++) // fan over each polygon
