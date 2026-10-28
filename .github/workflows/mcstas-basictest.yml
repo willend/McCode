@@ -50,7 +50,7 @@ jobs:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
       # Extra mctest flags for the OpenACC leg: compile with nvc, never run
-      MCTEST_OACC: ${{ matrix.openacc && '--openacc --no-mpi -n0' || '' }}
+      MCTEST_OACC: ${{ matrix.openacc && '--openacc --no-mpi -n0 -j auto' || '' }}
     defaults:
       run:
         shell: bash -el {0}
