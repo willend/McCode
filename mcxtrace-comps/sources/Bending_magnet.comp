@@ -120,8 +120,8 @@ INITIALIZE
     // compute equivalent E0 and dE
     double E1 = (2 * M_PI / (lambda0+dlambda)) * K2E;
     double E2 = (2 * M_PI / (lambda0-dlambda)) * K2E;
-    E0 = fabs(E1 - E2);
-    dE = (E1 + E2)/2;
+    E0 =     (E1 + E2)/2;
+    dE = fabs(E1 - E2)/2;
   }
   if (E0 <= 0 || dE <= 0 || E0-dE <= 0) {
     fprintf (stderr, "Error (%s): dE and E0 need to be set. Aborting.\n", NAME_CURRENT_COMP);
