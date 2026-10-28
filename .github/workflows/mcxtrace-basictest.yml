@@ -22,6 +22,7 @@ on:
 env:
   NOPLOTS: ${{ inputs.plots && '' || '--noplots' }}
   NVHPC_VERSION: '26.9'
+  NVHPC_CUDA: '13.3'
 
 jobs:
   build:
@@ -65,21 +66,28 @@ jobs:
         # the single most recent commit - see that step for why.
         fetch-depth: 0
 
-    # nvhpc (~5 GB download, ~15 GB installed) installs in the background
-    # while the conda env and code generator (conda compilers) are built
+    # nvhpc single-CUDA tarball (~7 GB download), streamed and unpacked in the
+    # background while the conda env and code generator (conda compilers) are
+    # built. Only the compilers and the CUDA toolkit are kept (~3.4 GB of 15 GB):
+    # no math/comm libs, profilers, CUDA driver compat libs, debuggers or NPP
     - name: Start nvhpc install (background, OpenACC)
       if: matrix.openacc
       run: |
            { (
              set -euo pipefail
-             sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
-             curl -fsSL https://developer.download.nvidia.com/hpc-sdk/ubuntu/DEB-GPG-KEY-NVIDIA-HPC-SDK \
-               | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg
-             echo 'deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' \
-               | sudo tee /etc/apt/sources.list.d/nvhpc.list
-             sudo apt-get update -y
-             sudo apt-get install -y --no-install-recommends nvhpc-${NVHPC_VERSION/./-}
-             sudo apt-get clean
+             V=${NVHPC_VERSION}
+             T=nvhpc_20${V%%.*}_${V/./}_Linux_x86_64_cuda_${NVHPC_CUDA}
+             P=$T/install_components/Linux_x86_64/$V
+             mkdir -p $HOME/nvhpc/Linux_x86_64/$V
+             curl -fsSL https://developer.download.nvidia.com/hpc-sdk/$V/$T.tar.gz \
+               | tar xz -C $HOME/nvhpc/Linux_x86_64/$V --strip-components=4 \
+                   --exclude='*/cuda/*/compat' --exclude='*/cuda/*/extras' --exclude='*/cuda/*/compute-sanitizer' \
+                   --exclude='*/bin/cuda-gdb*' --exclude='*/lib/libnpp*' \
+                   $P/compilers $P/cuda
+             # As NVIDIA's install script: configure localrc for the system gcc
+             B=$HOME/nvhpc/Linux_x86_64/$V/compilers/bin
+             $B/makelocalrc -x $B
+             du -sh $HOME/nvhpc
            ) > nvhpc.log 2>&1; echo $? > nvhpc.done; } < /dev/null > /dev/null 2>&1 &
 
     - name: Setup python
@@ -392,7 +400,7 @@ jobs:
            while [ ! -f nvhpc.done ]; do sleep 15; done
            cat nvhpc.log
            test "$(cat nvhpc.done)" = 0
-           echo /opt/nvidia/hpc_sdk/Linux_x86_64/${NVHPC_VERSION}/compilers/bin >> "$GITHUB_PATH"
+           echo $HOME/nvhpc/Linux_x86_64/${NVHPC_VERSION}/compilers/bin >> "$GITHUB_PATH"
 
     - name: Normalize PATH to installed McXtrace tools
       id: normalize-path
