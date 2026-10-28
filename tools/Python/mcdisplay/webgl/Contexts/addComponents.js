@@ -39,9 +39,9 @@ export function loadComponents(parentnode, components) {
   let compList = {};
   components.forEach((component, i) => {
     compList[i] = new THREE.Group();
-    let color = component.color;
     let transparency = component.transparency;
     for (let j = 0; j < component.drawcalls.length; j++) {
+      let color = component.drawcalls[j].color || component.color; // pencolor, else component colour
       let args = [];
       if (component.drawcalls.length > 0) {
         args = component.drawcalls[j].args;

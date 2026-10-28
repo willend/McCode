@@ -604,6 +604,7 @@ int _getcomp_index(char* compname);
 
 /* send MCDISPLAY message to stdout to show gemoetry */
 void mcdis_magnify(char *what);
+void mcdis_pencolor(char *hex);
 void mcdis_line(double x1, double y1, double z1,
                 double x2, double y2, double z2);
 void mcdis_dashed_line(double x1, double y1, double z1,
