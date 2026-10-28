@@ -5836,7 +5836,7 @@ double _rand0max(double max, randstate_t* state) {
 }
 // Return a random number between min and max.
 double _randminmax(double min, double max, randstate_t* state) {
-	return _rand0max(max - min, state) + max;
+	return _rand0max(max - min, state) + min;
 }
 
 
