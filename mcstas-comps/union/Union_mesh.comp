@@ -190,7 +190,8 @@ SHARE
         corners[corner] = coords_add (rot_apply (geometry->rotation_matrix, local), geometry->center);
       }
       for (edge = 0; edge < 12; edge++) {
-        lines_to_draw_temp = draw_line_with_highest_priority (corners[box_edges[edge][0]], corners[box_edges[edge][1]], index, Geometries, number_of_volumes, 100);
+        lines_to_draw_temp
+            = draw_line_with_highest_priority (corners[box_edges[edge][0]], corners[box_edges[edge][1]], index, Geometries, number_of_volumes, 100);
         merge_lines_to_draw (lines_to_draw_output, &lines_to_draw_temp);
       }
     }
@@ -476,8 +477,8 @@ INITIALIZE
     if (layers > bvh_display_layers) {
       this_mesh_storage.display_layer = bvh_display_layers;
       if (mcdotrace)
-        MPI_MASTER (printf ("Union_mesh %s: mcdisplay draws the BVH boxes of layer %d of %d instead of the %d triangles\n", NAME_CURRENT_COMP,
-                            bvh_display_layers, layers, this_mesh_storage.mesh.ntris);)
+        MPI_MASTER (printf ("Union_mesh %s: mcdisplay draws the BVH boxes of layer %d of %d instead of the %d triangles\n", NAME_CURRENT_COMP, bvh_display_layers,
+                            layers, this_mesh_storage.mesh.ntris);)
     }
   }
   mesh_vol.geometry.geometry_p_interact = p_interact;
