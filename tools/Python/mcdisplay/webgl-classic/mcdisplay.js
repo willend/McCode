@@ -408,7 +408,7 @@ TraceLoader.prototype.loadInstr = function()
         for (var j = 0; j < drawcalls.length; j++) {
             call = drawcalls[j];
 
-            drawFunc(call, comp_node, acolor);
+            drawFunc(call, comp_node, call['color'] || acolor);
         }
 
         comp_matrix = new THREE.Matrix4();
