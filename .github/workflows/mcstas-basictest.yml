@@ -397,6 +397,11 @@ jobs:
            cat nvhpc.log
            test "$(cat nvhpc.done)" = 0
            echo /opt/nvidia/hpc_sdk/Linux_x86_64/${NVHPC_VERSION}/compilers/bin >> "$GITHUB_PATH"
+           # CI only: a single GPU target (Ampere) - without a GPU, nvc may otherwise build for all it supports
+           CFG=${CONDA_PREFIX}/share/mcstas/tools/Python/mccodelib/mccode_config.json
+           sed -i 's/-gpu=mem:managed/-gpu=cc80,mem:managed/' $CFG
+           grep -H OACCFLAGS $CFG | grep -q -- '-gpu=cc80,mem:managed'
+           grep -H OACCFLAGS $CFG
 
     - name: Normalize PATH to installed McStas tools
       id: normalize-path
