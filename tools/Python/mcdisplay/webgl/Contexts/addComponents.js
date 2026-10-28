@@ -20,18 +20,27 @@ function createSurface(geometry, color, transparency) {
     side: side,
   });
 
+  let surface;
   if (!isTransparent) {
-    return new THREE.Mesh(geometry, createMaterial(THREE.DoubleSide));
+    surface = new THREE.Mesh(geometry, createMaterial(THREE.DoubleSide));
+  } else {
+    // Render all translucent back faces before all translucent front faces.
+    // This avoids grouping both passes inside each object when shapes overlap.
+    surface = new THREE.Group();
+    const back = new THREE.Mesh(geometry, createMaterial(THREE.BackSide));
+    const front = new THREE.Mesh(geometry, createMaterial(THREE.FrontSide));
+    back.renderOrder = 1;
+    front.renderOrder = 2;
+    surface.add(back, front);
   }
 
-  // Render all translucent back faces before all translucent front faces.
-  // This avoids grouping both passes inside each object when shapes overlap.
-  const surface = new THREE.Group();
-  const back = new THREE.Mesh(geometry, createMaterial(THREE.BackSide));
-  const front = new THREE.Mesh(geometry, createMaterial(THREE.FrontSide));
-  back.renderOrder = 1;
-  front.renderOrder = 2;
-  surface.add(back, front);
+  // the shape's edges as lines, shown with or instead of the surface (showShapes)
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(geometry),
+    new THREE.LineBasicMaterial({ color: color })
+  );
+  edges.userData.isEdges = true;
+  surface.add(edges);
   return surface;
 }
 
@@ -206,17 +215,6 @@ export function loadComponents(parentnode, components) {
     );
     compList[i].applyMatrix4(comp_matrix);
     compList[i].name = components[i].name;
-    // --trace=2 shapes: their edges as lines, shown with or instead of the surface
-    compList[i].children
-      .filter((obj) => obj.isMesh)
-      .forEach((mesh) => {
-        const edges = new THREE.LineSegments(
-          new THREE.EdgesGeometry(mesh.geometry),
-          new THREE.LineBasicMaterial({ color: mesh.material.color })
-        );
-        edges.userData.isEdges = true;
-        mesh.add(edges);
-      });
     parentnode.add(compList[i]);
   }
   const shapes = parentnode.userData.shapes ?? { surfaces: true, lines: false };
