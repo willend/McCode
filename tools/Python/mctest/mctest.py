@@ -554,6 +554,11 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
                 formatstr = "%-" + "%ds:   Display FAILED (%ds)" % (maxnamelen+1, displaytime)
                 logging.info(formatstr % test.instrname)
 
+        # -n0 means compile only (e.g. --openacc on a GPU-less CI runner)
+        if float(ncount) == 0:
+            formatstr = "%-" + "%ds:   Compiled only (-n0)" % (maxnamelen+1)
+            logging.info(formatstr % test.get_display_name())
+            continue
         # runable tests have testnb > 0
         if test.testnb <= 0:
             formatstr = "%-" + "%ds:   NO TEST" % (maxnamelen+1)
@@ -1174,8 +1179,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--ncount', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
-    parser.add_argument('-n', nargs=1, help='ncount sent to %s' % (mccode_config.configuration["MCRUN"]) )
+    parser.add_argument('--ncount', nargs=1, help='ncount sent to %s (0: compile only, no test runs)' % (mccode_config.configuration["MCRUN"]) )
+    parser.add_argument('-n', nargs=1, help='ncount sent to %s (0: compile only, no test runs)' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--seed', nargs=1, help='seed sent to %s (default 1000 - use 0/NULL to "randomize")' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('-s', nargs=1, help='seed sent to %s (default 1000 - use 0/NULL to "randomize")' % (mccode_config.configuration["MCRUN"]) )
     parser.add_argument('--mpi', nargs=1, help='mpi nodecount sent to %s' % (mccode_config.configuration["MCRUN"]) )
