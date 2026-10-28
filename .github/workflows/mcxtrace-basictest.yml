@@ -49,7 +49,9 @@ jobs:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
       # Extra mctest flags for the OpenACC leg: compile with nvc, never run
-      MCTEST_OACC: ${{ matrix.openacc && '--openacc --no-mpi -n0 -j auto' || '' }}
+      MCTEST_OACC: ${{ matrix.openacc && '--openacc --no-mpi -n0' || '' }}
+      # Compile instruments in parallel, except with mccode-antlr (shared cogen cache)
+      MCTEST_JOBS: ${{ matrix.cogen != 'antlr' && '-j auto' || '' }}
     defaults:
       run:
         shell: bash -el {0}
@@ -464,7 +466,7 @@ jobs:
            mcxtrace${EXESUFFIX} --version
            if [ "${{ matrix.nmpi }}" != "0" ];
            then
-             mxtest${SUFFIX} --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} ${MCTEST_OACC} --instr=JJ_SAXS,ESRF_BM29,Test_MCPL_input,Test_MCPL_output,Test_Absorption --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} --uid=${MYWORKERID}
+             mxtest${SUFFIX} --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} ${MCTEST_OACC} ${MCTEST_JOBS} --instr=JJ_SAXS,ESRF_BM29,Test_MCPL_input,Test_MCPL_output,Test_Absorption --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} --uid=${MYWORKERID}
            fi
 
     - name: Direct binary run without $MCXTRACE (compiled-in resource dir, issue #2759)
@@ -601,7 +603,7 @@ jobs:
            fi
            if [ -n "$SCOPE" ]; then
              mkdir -p run_mxtest && cd run_mxtest
-             ${MXTEST_EXECUTABLE} --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} ${MCTEST_OACC} --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --uid=${MYWORKERID} || { echo "${MXTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+             ${MXTEST_EXECUTABLE} --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} ${MCTEST_OACC} ${MCTEST_JOBS} --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --uid=${MYWORKERID} || { echo "${MXTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
              if [ -z "${NOPLOTS}" ] && [ -z "${MCTEST_OACC}" ]; then ${MXVIEWTEST_EXECUTABLE} --nobrowse $PWD; fi
            else
              echo "No component or instrument code changes - nothing to test"

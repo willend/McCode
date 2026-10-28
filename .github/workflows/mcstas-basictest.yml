@@ -49,7 +49,9 @@ jobs:
       CC: ${{ matrix.CC }}
       CXX: ${{ matrix.CXX }}
       # Extra mctest flags for the OpenACC leg: compile with nvc, never run
-      MCTEST_OACC: ${{ matrix.openacc && '--openacc --no-mpi -n0 -j auto' || '' }}
+      MCTEST_OACC: ${{ matrix.openacc && '--openacc --no-mpi -n0' || '' }}
+      # Compile instruments in parallel, except with mccode-antlr (shared cogen cache)
+      MCTEST_JOBS: ${{ matrix.cogen != 'antlr' && '-j auto' || '' }}
     defaults:
       run:
         shell: bash -el {0}
@@ -466,7 +468,7 @@ jobs:
            mcstas${EXESUFFIX} --version
            if [ "${{ matrix.nmpi }}" != "0" ];
            then
-             mctest${SUFFIX}  --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} ${MCTEST_OACC} --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource,Masked_ESS_butterfly_image --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} --uid=${MYWORKERID}
+             mctest${SUFFIX}  --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} ${MCTEST_OACC} ${MCTEST_JOBS} --instr=BNL_H8,ISIS_CRISP,templateSANS_Mantid,NCrystal_example,ESS_BEER_MCPL,Test_MCPL_input,Test_MCPL_output,Test_KDSource,Masked_ESS_butterfly_image --testdir=run_basictests --suffix=${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} --uid=${MYWORKERID}
            fi
 
     - name: Direct binary run without $MCSTAS (compiled-in resource dir, issue #2759)
@@ -603,7 +605,7 @@ jobs:
            fi
            if [ -n "$SCOPE" ]; then
              mkdir -p run_mctest && cd run_mctest
-             ${MCTEST_EXECUTABLE} --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} ${MCTEST_OACC} --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --uid=${MYWORKERID} || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
+             ${MCTEST_EXECUTABLE} --verbose ${NOPLOTS} --mpi=${{ matrix.nmpi }} ${MCTEST_OACC} ${MCTEST_JOBS} --testdir $PWD $SCOPE --suffix=CHANGES_${{ matrix.cogen }}_${{ matrix.method }}_${{ matrix.CC || 'default' }}_${{ matrix.mpi }} $PERMISSIVE --uid=${MYWORKERID} || { echo "${MCTEST_EXECUTABLE} failed with exit code $?"; exit 1; }
              if [ -z "${NOPLOTS}" ] && [ -z "${MCTEST_OACC}" ]; then ${MCVIEWTEST_EXECUTABLE} --nobrowse $PWD; fi
            else
              echo "No component or instrument code changes - nothing to test"
