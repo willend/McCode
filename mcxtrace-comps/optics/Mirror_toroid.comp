@@ -41,7 +41,7 @@
 
 DEFINE COMPONENT Mirror_toroid
 
-SETTING PARAMETERS (string coating="", zdepth=0.1, xwidth=0.01, radius, radius_o,R0=0)
+SETTING PARAMETERS (string coating="", zdepth=0.1, xwidth=0.01, radius, radius_o,R0=1)
 
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */ 
 
