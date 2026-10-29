@@ -25,7 +25,7 @@
 *   14696400000.0,14927300000.0,15831200000.0,15905500000.0,16147000000.0,16044900000.0,16097800000.0,15847300000.0,
 *   15588300000.0,16880100000.0,16423800000.0,18149700000.0,17975600000.0,17924000000.0,18274500000.0 }
 *
-* Example: Etohit=6900 Detector: EnergyMonitor_first_I=1.3e+10
+* Example: Etohit=6900 Detector: EnergyMonitor_first_I=4.17271e+11
 *
 * %Parameters
 * Etohit: [eV.] Energy used to calculate the bragg angle the monochromator is put at. This is the energy we select.
