@@ -18,7 +18,15 @@
 * Model of a bending magnet source
 * 
 * %Description
-* A source model based on the derivation from B.D. Patterson, Am. J. Phys. 79, 1046 (2011); doi: 10.1119/1.3614033
+* A source model using the full angular distribution of synchrotron radiation from a bending magnet,
+* eq. (1) of K.-J. Kim, X-Ray Data Booklet, Section 2.1 (https://xdb.lbl.gov/Section2/Sec_2-1.html).
+* In the horizontal plane (psi=0) this reduces to eq. (28) of B.D. Patterson, Am. J. Phys. 79, 1046 (2011); doi: 10.1119/1.3614033
+*
+* The ray weight p is the flux in [photons/s] emitted into the sampled solid angle and the energy
+* band [E0-dE, E0+dE] (i.e. NOT per mrad^2 or per 0.1% bandwidth). The energy is sampled uniformly, so dE>0
+* is required. In lambda0/dlambda mode the corresponding energy interval is sampled uniformly in energy.
+* With focus_xw/focus_yh the target window is sampled; without them, the horizontal/vertical emission angle
+* is sampled uniformly within +-2.5 mrad, so the total flux is then the flux into a 5 mrad horizontal fan.
 *
 * Example: Bending_magnet(
 *   E0 = 14, dE = 7, Ee = 2.75,
@@ -94,18 +102,11 @@ DECLARE
   double igamma;
   double kc; /*characteristic wavenumber of radiation from bending magnet*/
   double s1x;
-  double s1y; /*beam's size at dist (convolution of sigex/sigey and igamma)*/
+  double s1y; /*sigma of the gaussian sampling of the target window (gauss_t)*/
   double p0;
-
-  /*fine structure constant from CODATA*/
-  //const double alpha=7.2973525698e-3;
-  //const double MELE=9.10938291e-31;
-  
   double ctemult;
   double muc;
-  double cnstc;
-  double qe;    
-  
+  double qe;
 %}
 
 
@@ -116,7 +117,7 @@ INITIALIZE
     fprintf(stderr, "Error (%s): B, Ee, and Ie must all be > 0. Found (%g %g %g). Aborting.\n",NAME_CURRENT_COMP,B,Ee,Ie);
     exit(1);
   }
-  if (lambda0 > 0 && dlambda > 0 && lambda0-dlambda > 0) {
+  if (!E0 && lambda0 > 0 && dlambda > 0 && lambda0-dlambda > 0) {
     // compute equivalent E0 and dE
     double E1 = (2 * M_PI / (lambda0+dlambda)) * K2E;
     double E2 = (2 * M_PI / (lambda0-dlambda)) * K2E;
@@ -124,7 +125,7 @@ INITIALIZE
     dE = fabs(E1 - E2)/2;
   }
   if (E0 <= 0 || dE <= 0 || E0-dE <= 0) {
-    fprintf (stderr, "Error (%s): dE and E0 need to be set. Aborting.\n", NAME_CURRENT_COMP);
+    fprintf (stderr, "Error (%s): E0 and dE>0 (or lambda0 and dlambda>0) need to be set, with E0-dE>0. Aborting.\n", NAME_CURRENT_COMP);
     exit (1);
   }
   if (sigex <0 || sigey<0){
@@ -152,8 +153,6 @@ INITIALIZE
 
   muc = kc*M_C/(2.0*M_PI);
 
-  //s1x=sqrt(sigex*sigex + igamma*igamma*dist*dist);
-  //s1y=sqrt(sigey*sigey + igamma*igamma*dist*dist);
   if (focus_xw){
     s1x=focus_xw/2.0;
   }
@@ -162,8 +161,7 @@ INITIALIZE
   }
   p0=1.0/mcget_ncount();
 
-  cnstc = erf(1.0/(sqrt(2.0)));
-  qe = 1.0/(2.0*dE);    // requires dE > 0, no lambda handling here
+  qe = 1.0/(2.0*dE);    // energy sampling density, dE > 0 checked above
 %}
 
 
@@ -171,15 +169,13 @@ TRACE
 %{
 
   double xx,yy,x1,y1,z1;
-  double k,e,l;
-  double F1=1.0;
+  double k,e;
   double dx,dy,dz;
   double dl;
 
-  double angle, psi, theta, xcap, oneplusxsquared, chi, K23, K13;
-  double qtheta;
-  double qpsi;
-    
+  const double angle=2.5e-3; /*without focus, psi and theta are sampled uniformly in (-angle,angle)*/
+  double psi, theta, xcap, oneplusxsquared, chi, K23, K13;
+
   // initial source area
   xx=randnorm();
   yy=randnorm();
@@ -192,8 +188,7 @@ TRACE
   // E0 and dE are defined
   e=randpm1()*dE + E0;
   k=E2K*e;
-  
-  double oneoverk=1.0/k;
+
   double mu = k*M_C/(2*M_PI);
   double mumuc = mu/muc;
 
@@ -208,21 +203,15 @@ TRACE
     }else {
       do {
         x1=randnorm()*s1x;
-      }while (focus_xw!=0 && fabs(x1)>focus_xw/2.0);
+      }while (fabs(x1)>focus_xw/2.0);
       theta = atan((x1-x)/dist);
       /*adjust for restricted sampling window*/            
       p*=erf(focus_xw*0.5*M_SQRT1_2/s1x)*s1x*sqrt(2.0*M_PI)*exp((x1*x1)/(2*s1x*s1x)); // 1/sampling probability density
       p*= dist/(dist*dist + (x1-x)*(x1-x));
     }
   }else{    
-    angle=2.5e-3; //angle is the angle psi and theta will be generated over. Range of (-angle,angle).
-    do {
-      theta = randnorm()*angle;
-    } while(theta>angle || theta<-angle);  
-
-    qtheta = 1.0/(sqrt(2*M_PI)*angle*cnstc)*exp(-(theta*theta)/(2*angle*angle)); //sampling probability density
-    p*=1.0/qtheta;
-    
+    theta = randpm1()*angle;
+    p*=2*angle; // 1/sampling probability density
     x1=x+dist*tan(theta);
   }
   if (focus_yh){
@@ -242,14 +231,8 @@ TRACE
       p*= dist/(dist*dist + (y1-y)*(y1-y));
     }
   }else{      
-    angle=2.5e-3; //angle is the angle psi and theta will be generated over. Range of (-angle,angle).
-    do {
-      psi = randnorm()*angle;
-    } while(psi>angle || psi<-angle);      
-    
-    qpsi = 1.0/(sqrt(2*M_PI)*angle*cnstc)*exp(-(psi*psi)/(2*angle*angle)); //sampling probability density
-    p*=1.0/qpsi;
-    
+    psi = randpm1()*angle;
+    p*=2*angle; // 1/sampling probability density
     y1=y+dist*tan(psi);
   }
   
