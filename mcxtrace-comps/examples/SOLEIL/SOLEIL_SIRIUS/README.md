@@ -30,7 +30,7 @@ Position | Element
 
 ## Examples
 
-- **Test: SIRIUS_E0=8 Detector: SIRIUS_def_loc_I=6.51e+09**
+- **Test: SIRIUS_E0=8 Detector: SIRIUS_def_loc_I=6.69e+09**
 
 ## Input parameters
 
