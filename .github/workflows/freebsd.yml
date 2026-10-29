@@ -52,7 +52,7 @@ jobs:
             # MPI builds use base cc + mpich paths, not mpich's mpicc: mpicc links with binutils ld,
             # which lacks LLVMgold.so for the -flto that cmake probed with cc/lld.
             # Python modules by port origin: follows the default Python flavour (pyXYZ-) on pkg updates.
-            sudo pkg install -y cmake bison flex gsl hdf5 mpich python3 devel/py-pip devel/py-pyyaml devel/py-ply sysutils/py-psutil math/py-numpy science/py-h5py
+            sudo pkg install -y devel/cmake-core bison flex gsl hdf5 mpich python3 devel/py-pip devel/py-pyyaml devel/py-ply sysutils/py-psutil math/py-numpy science/py-h5py
             # MCPL and NCrystal from PyPI (sdist builds, as in their own FreeBSD CI); McCode finds
             # them at instrument compile time via mcpl-config / ncrystal-config on PATH.
             python3 -mpip install --user mcpl ncrystal
