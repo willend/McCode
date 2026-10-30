@@ -109,6 +109,19 @@ _class_particle mcgetstate(_class_particle mcneutron, double *x, double *y, doub
 } /* mcgetstate */
 
 /*******************************************************************************
+* SCATTER0_func / ABSORB_func: bodies of the SCATTER / ABSORB macros. Particle
+* state is in local coords of the current component (_particle->_index).
+*******************************************************************************/
+void SCATTER0_func(_class_particle *_particle) {
+  _particle->_scattered++;
+}
+void ABSORB_func(_class_particle *_particle) {
+  DEBUG_ABSORB();
+  _particle->mcMagnet = 0; /* MAGNET_OFF */
+  _particle->_absorbed++;
+}
+
+/*******************************************************************************
 * SCATTER_func: provides function to SCATTER from within libaries
 *******************************************************************************/
 void SCATTER_func(_class_particle *_particle) {

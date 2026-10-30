@@ -49,10 +49,14 @@
 #define SE2V     437.393377        /* Convert sqrt(E)[meV] to v[m/s] */
 #define VS2E     5.22703725e-6     /* Convert (v[m/s])**2 to E[meV] */
 
-#define SCATTER0 do {DEBUG_SCATTER(); SCATTERED++;} while(0)
+#define SCATTER0 do {DEBUG_SCATTER(); SCATTER0_func(_particle);} while(0)
 #define SCATTER SCATTER0
 
 void SCATTER_func(_class_particle *_particle); /* provides function to SCATTER from within libaries */
+#pragma acc routine
+void SCATTER0_func(_class_particle *_particle); /* body of SCATTER */
+#pragma acc routine
+void ABSORB_func(_class_particle *_particle);   /* body of ABSORB (macro adds the return) */
 
 #define JUMPTOCOMP(comp) mcneutron->_index = INDEX_COMP(comp);
 

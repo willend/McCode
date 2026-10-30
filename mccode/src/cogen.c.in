@@ -1740,10 +1740,10 @@ void def_trace_section(struct instr_def *instr)
   coutf("#define %s (_particle->%s)", "RESTORE"  , "_restore");
 #if MCCODE_PROJECT == 1     /* neutron */
   coutf("#define RESTORE_NEUTRON(_index, ...) _particle->_restore = _index;");
-  cout( "#define ABSORB0 do { DEBUG_STATE(); DEBUG_ABSORB(); MAGNET_OFF; ABSORBED++; return; } while(0)");
+  cout( "#define ABSORB0 do { DEBUG_STATE(); ABSORB_func(_particle); return; } while(0)");
 #elif MCCODE_PROJECT == 2   /* xray */
   coutf("#define RESTORE_XRAY(_index, ...) _particle->_restore = _index;");
-  cout( "#define ABSORB0 do { DEBUG_STATE(); DEBUG_ABSORB(); ABSORBED++; return; } while(0)");
+  cout( "#define ABSORB0 do { DEBUG_STATE(); ABSORB_func(_particle); return; } while(0)");
 #endif
   coutf("#define %s (_particle->%s)", "ABSORBED" , "_absorbed");
   /* define mcget_run_num within trace scope to refer to the particle */
@@ -1893,7 +1893,7 @@ int cogen_raytrace(struct instr_def *instr)
   // we need this override, since "comp" is not defined in raytrace() - see section-wide define
   cout("  #undef ABSORB0");
   cout("  #undef ABSORB");
-  cout("  #define ABSORB0 do { DEBUG_ABSORB(); MAGNET_OFF; ABSORBED++;} while(0)");
+  cout("  #define ABSORB0 do { ABSORB_func(_particle);} while(0)");
   cout("  #define ABSORB ABSORB0");
 
   /* Debugging (initial state). */
@@ -2261,7 +2261,7 @@ int cogen_rt_funnel(struct instr_def *instr)
   // we need this override, since "comp" is not defined in raytrace() - see section-wide define
   cout("  #undef ABSORB0");
   cout("  #undef ABSORB");
-  cout("  #define ABSORB0 do { DEBUG_ABSORB(); MAGNET_OFF; ABSORBED++; } while(0)");
+  cout("  #define ABSORB0 do { ABSORB_func(_particle); } while(0)");
   cout("  #define ABSORB ABSORB0");
 
   // batches

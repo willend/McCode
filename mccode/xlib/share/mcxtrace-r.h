@@ -46,10 +46,14 @@
 #define RE       2.8179402894e-5   /*[AA] Thomson scattering length*/
 #define ALPHA    7.2973525698e-3   /*[ ] Fine structure constant CODATA 2006*/
 
-#define SCATTER0 do {DEBUG_SCATTER(); SCATTERED++;} while(0)
+#define SCATTER0 do {DEBUG_SCATTER(); SCATTER0_func(_particle);} while(0)
 #define SCATTER SCATTER0
 
 void SCATTER_func(_class_particle *_particle); /* provides function to SCATTER from within libaries */
+#pragma acc routine
+void SCATTER0_func(_class_particle *_particle); /* body of SCATTER */
+#pragma acc routine
+void ABSORB_func(_class_particle *_particle);   /* body of ABSORB (macro adds the return) */
 
 #define JUMPTOCOMP(comp) mcphoton->_index = INDEX_COMP(comp);
 
