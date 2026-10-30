@@ -99,19 +99,20 @@ TRACE
       } else if (fabs (radius * asin ((z + knz * l1) / radius)) < zdepth / 2.0 && fabs (y + (ky / k) * l1) < yheight / 2.0 && fabs (x + knx * l1) < fabs (radius)) {
         dl = l1;
       }
-    } else {
-      /*particle misses the mirror completely (l0<0 and l1<0)*/
-      RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
     }
+    /* else: particle misses the mirror completely (l0<0 and l1<0), dl stays 0 */
 
     if (dl != 0) {
       /*correction for only solving in xz-plane*/
       dl *= sqrt (scalar_prod (kx, ky, kz, kx, ky, kz) / scalar_prod (kx, 0, kz, kx, 0, kz));
 
+      /* undo the propagation by hand on a miss rather than RESTORE_XRAY: the runtime's restore
+         clears ABSORBED, which would cancel an ABSORB in the instrument EXTEND block */
+      double x0 = x, y0 = y, z0 = z, t0 = t, phi0 = phi;
       PROP_DL (dl);
       alpha = asin (z / radius);
       if ((zdepth / 2.0 < fabs (radius * alpha)) || (fabs (y) > yheight / 2.0)) {
-        RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+        x = x0; y = y0; z = z0; t = t0; phi = phi0;
       } else {
         SCATTER;
         /*reflection*/
