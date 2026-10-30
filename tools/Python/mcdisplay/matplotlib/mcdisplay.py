@@ -76,10 +76,10 @@ def dumpfile(frmat, filename = None):
     # Check for existance of earlier exports
     if os.path.isfile(saveto):
         index=1
-        saveto = f"{basename}_{index}{frmat}"
+        saveto = f"{basename}_{index}{ext}"
         while os.path.isfile(saveto):
             index += 1
-            saveto = f"{basename}_{index}{frmat}"
+            saveto = f"{basename}_{index}{ext}"
 
     savefig(saveto)
     print("Saved " + saveto)
