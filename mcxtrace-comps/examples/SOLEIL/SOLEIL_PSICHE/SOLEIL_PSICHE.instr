@@ -53,7 +53,7 @@ DECLARE
 INITIALIZE
 %{
    {
-     double DM= 5.4909;     // Si d-spacing
+     double DM= 5.4309;     // Si d-spacing
      double d = DM/sqrt(3); // <111> reflection |<111>|=3
      PSICHE_dcm_gap  = 0.02;       // gap between the 2 monochromator crystals
      PSICHE_dcm_scatter = PSICHE_DCM_present;

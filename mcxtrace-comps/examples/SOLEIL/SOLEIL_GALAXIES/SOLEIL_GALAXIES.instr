@@ -138,7 +138,7 @@ INITIALIZE
 %{
   {
     // --- DCM Si(111) Bragg angle from GALAXIES_E0
-    double DM = 5.4909;      // Si d-spacing
+    double DM = 5.4309;      // Si d-spacing
     double d111 = DM/sqrt(3);
     double sin_theta = 2*PI/E2K/GALAXIES_E0 / 2 / d111;
     if (fabs(sin_theta) >= 1)

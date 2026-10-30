@@ -64,7 +64,7 @@ INITIALIZE
 %{
   {
   // 1. Monochromator Setup (Si 111)
-  double DM= 5.4909; // Si d-spacing
+  double DM= 5.4309; // Si d-spacing
   SAMBA_d_si = DM/sqrt(3); // Si(111) d-spacing
   SAMBA_dcm_gap  = 0.01;       // gap between the 2 monochromator crystals
 

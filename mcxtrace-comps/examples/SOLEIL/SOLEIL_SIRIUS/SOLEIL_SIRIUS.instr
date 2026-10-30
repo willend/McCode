@@ -62,7 +62,7 @@ INITIALIZE
 %{
   {
   // 1. Monochromator Setup (Si 111)
-  double DM= 5.4909;     // Si d-spacing
+  double DM= 5.4309;     // Si d-spacing
   double d = DM/sqrt(3); // <111> reflection |<111>|=3
   double sin_theta = 2*PI/E2K/SIRIUS_E0 / 2 / d;
   SIRIUS_DCM_theta = asin(sin_theta)*RAD2DEG;
