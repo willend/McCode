@@ -73,38 +73,44 @@ INITIALIZE
 
 TRACE
 %{
-  double l0, l1, dl, alpha, n, nx, nz, s, k, knx, knz;
+  double l0, l1, dl, alpha, n, nx, nz, s, k, knx, knz, k_total;
   /* dl init - cppcheck complains about algorithm below */
   dl=0;
   /*do we hit the mirror within range?*/
   // PROP_Z0;
   k = sqrt (scalar_prod (kx, 0, kz, kx, 0, kz));
+  k_total = sqrt (scalar_prod (kx, ky, kz, kx, ky, kz));
   knx = kx / k;
   knz = kz / k;
   if (solve_2nd_order (&l0, &l1, knx* knx + knz * knz, 2 * (x * knx + z * knz - radius * knx), x* x - 2 * x * radius + z * z)) {
     if (l0 < 0 && l1 > 0) {
-      dl = l1;
+      if (fabs (x + knx * l1) < fabs (radius)) {
+        dl = l1;
+      }
     } else if (l1 < 0 && l0 > 0) {
-      dl = l0;
+      if (fabs (x + knx * l0) < fabs (radius)) {
+        dl = l0;
+      }
     } else if (l0 > 0 && l1 > 0) {
-      if (fabs (z + knz * l0) < zdepth / 2.0 && fabs (x + knx * l0) < fabs (radius)) {
+      if (fabs (radius * asin ((z + knz * l0) / radius)) < zdepth / 2.0 && fabs (y + (ky / k) * l0) < yheight / 2.0 && fabs (x + knx * l0) < fabs (radius)) {
         /*this means that the first positive match is on the mirror z-wise
           - this should be picked. This would work even if mirror is hit from behind*/
         dl = l0;
-      } else {
+      } else if (fabs (radius * asin ((z + knz * l1) / radius)) < zdepth / 2.0 && fabs (y + (ky / k) * l1) < yheight / 2.0 && fabs (x + knx * l1) < fabs (radius)) {
         dl = l1;
       }
     } else {
       /*particle misses the mirror completely (l0<0 and l1<0)*/
       RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
     }
-
+    
+    if(dl != 0){
     /*correction for only solving in xz-plane*/
     dl *= sqrt (scalar_prod (kx, ky, kz, kx, ky, kz) / scalar_prod (kx, 0, kz, kx, 0, kz));
 
     PROP_DL (dl);
     alpha = asin (z / radius);
-    if ((zdepth < radius * alpha) || (fabs (y) > yheight / 2.0)) {
+    if ((zdepth / 2.0 < fabs (radius * alpha)) || (fabs (y) > yheight / 2.0)) {
       RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
     } else {
       SCATTER;
@@ -122,9 +128,10 @@ TRACE
       double Q;
       /*length of wavevector transfer may be compute from s and n_ above*/
       Q = fabs (2 * s * sqrt (nx * nx + nz * nz));
-      cdouble R = refleccq (re, Q, 0, k, fabs (90 - acos (s / k) * RAD2DEG));
+      cdouble R = refleccq (re, Q, 0, k_total, fabs (90 - acos (s / k_total) * RAD2DEG));
       p *= sqrt (creal (cmul(R, conj (R))));
       phi += atan2 (cimag (R), creal (R));
+    }
     }
   } else if (fabs (kx) < DBL_EPSILON && fabs (kz) < DBL_EPSILON && ky != 0) {
     /*This to catch the extreme case where k//y.*/
