@@ -5102,7 +5102,7 @@ void mclog_add(double *h, _class_particle *_particle, double w) {
   if (!(fx >= 0 && fx < 1 && fz >= 0 && fz < 1)) return;
   long i = (long)(fx*mclog_nx), j = (long)(fz*mclog_nz);
   if (i >= mclog_nx || j >= mclog_nz) return;
-  long b = i*mclog_nz + j;
+  long b = j*mclog_nx + i; /* z is the first (horizontal) axis of the output */
   #pragma acc atomic
   h[b] += 1;
   #pragma acc atomic
@@ -5116,11 +5116,11 @@ void mclog_save(void) {
   Coords o = coords_set(0,0,0);
   Rotation r; rot_set_rotation(r, 0,0,0);
   #pragma acc update host(mclog_scatter[0:3*n], mclog_absorb[0:3*n])
-  mcdetector_out_2D("Scattered intensity (global coords)", "x [m]", "z [m]",
-    mclog_lim[0], mclog_lim[1], mclog_lim[2], mclog_lim[3], mclog_nx, mclog_nz,
+  mcdetector_out_2D("Scattered intensity (global coords)", "z [m]", "x [m]",
+    mclog_lim[2], mclog_lim[3], mclog_lim[0], mclog_lim[1], mclog_nz, mclog_nx,
     mclog_scatter, mclog_scatter+n, mclog_scatter+2*n, "SCATTERlog", "SCATTERlog", o, r, 0);
-  mcdetector_out_2D("Lost intensity (global coords)", "x [m]", "z [m]",
-    mclog_lim[0], mclog_lim[1], mclog_lim[2], mclog_lim[3], mclog_nx, mclog_nz,
+  mcdetector_out_2D("Lost intensity (global coords)", "z [m]", "x [m]",
+    mclog_lim[2], mclog_lim[3], mclog_lim[0], mclog_lim[1], mclog_nz, mclog_nx,
     mclog_absorb, mclog_absorb+n, mclog_absorb+2*n, "ABSORPTIONlog", "ABSORPTIONlog", o, r, 0);
 }
 #endif /* SCATTERLOG */
