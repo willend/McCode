@@ -816,6 +816,7 @@ static void cogen_comp_init_position(
   coutf("  DEBUG_COMPONENT(\"%s\", _%s_var._position_absolute, _%s_var._rotation_absolute);", comp->name, comp->name, comp->name);
   coutf("  instrument->_position_absolute[%i] = _%s_var._position_absolute;", comp->index, comp->name);
   coutf("  instrument->_position_relative[%i] = _%s_var._position_relative;", comp->index, comp->name);
+  coutf("  mclog_setpos(%i, _%s_var._position_absolute, _%s_var._rotation_absolute);", comp->index, comp->name, comp->name);
 
   coutf("    _%s_var._position_relative_is_zero =  coords_test_zero(_%s_var._position_relative);", comp->name, comp->name);
 
@@ -1632,6 +1633,7 @@ int cogen_section(struct instr_def *instr, char *section, char *section_lower,
       coutf("  _%s_%s(); /* type %s */", comp->name, "setpos", comp->def->name);
     }
     list_iterate_end(liter);
+    cout("  mclog_init();");
     cout("");
   }
 
@@ -1679,8 +1681,10 @@ int cogen_section(struct instr_def *instr, char *section, char *section_lower,
     cout("#pragma acc update device(_instrument_var)");
     cout("#endif");
   }
-  else if (!strcmp(section, "SAVE"))
+  else if (!strcmp(section, "SAVE")) {
+    cout("  mclog_save();");
     coutf("  if (!handle) siminfo_close(); ");
+  }
   else if (!strcmp(section, "FINALLY")) {
     coutf("  siminfo_close(); ");
   }
@@ -1992,6 +1996,7 @@ int cogen_raytrace(struct instr_def *instr)
     /* call the component when there are TRACE and/or EXTEND lines */
     if (list_len(comp->def->trace_code->lines) > 0 || list_len(comp->extend->lines) > 0) {
       // WHEN
+      cout( "      _particle->_p0 = p;");
       if (comp->when) {
         char *exp=exp_tostring(comp->when);
         coutf("      if ((%s)) // conditional WHEN execution", exp);
@@ -2351,6 +2356,7 @@ int cogen_rt_funnel(struct instr_def *instr)
     }
     // call the component with TRACE and/or EXTEND lines
     if (list_len(comp->def->trace_code->lines) > 0 || list_len(comp->extend->lines) > 0) {
+      cout( "        _particle->_p0 = p;");
       // WHEN
       if (comp->when) {
         char *exp=exp_tostring(comp->when);
@@ -2485,6 +2491,7 @@ cogen_header(struct instr_def *instr, char *output_name)
     cout("#define MC_TRACE_ENABLED");
   if(instr->portable)
     cout("#define MC_PORTABLE");
+  coutf("#define MCLOG_NCOMP %d", list_len(instr->complist)+2);
 
   /* Basic includes */
   cout("");
@@ -2572,6 +2579,7 @@ cogen_header(struct instr_def *instr, char *output_name)
   cout("  long _absorbed;  /* flag set to TRUE when this event is to be removed/ignored */");
   cout("  long _scattered; /* flag set to TRUE when this event has interacted with the last component instance */");
   cout("  long _restore;   /* set to true if neutron event must be restored */");
+  cout("  double _p0;     /* weight on entry of current component, for the SCATTER/ABSORB logs */");
   cout("  long flag_nocoordschange;   /* set to true if particle is jumping */");
   /* Include the struct defined earlier holding information on JUMP logic*/
   cout("  struct particle_logic_struct _logic;");

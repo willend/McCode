@@ -5051,6 +5051,80 @@ long sort_absorb_last_serial(_class_particle* particles, long len) {
     return i;
 }
 
+#ifdef SCATTERLOG
+/*******************************************************************************
+* mclog_*: instrument-wide x-z histograms in global coords, filled from
+* SCATTER/ABSORB. Component poses are kept here by index, as the instrument
+* struct is only defined after the runtime.
+*******************************************************************************/
+Coords   mclog_pos[MCLOG_NCOMP];
+Rotation mclog_rot[MCLOG_NCOMP];
+double   mclog_lim[4]; /* xmin xmax zmin zmax */
+long     mclog_nx, mclog_nz;
+double  *mclog_scatter, *mclog_absorb; /* [3][nx*nz]: N, p, p2 */
+#pragma acc declare create(mclog_pos, mclog_rot, mclog_lim, mclog_nx, mclog_nz)
+
+void mclog_setpos(int index, Coords pos, Rotation rot) {
+  if (index < 0 || index >= MCLOG_NCOMP) return;
+  mclog_pos[index] = pos;
+  rot_copy(mclog_rot[index], rot);
+}
+
+/* limits: bounding box of all component origins in x-z, MCLOG_DX square bins */
+void mclog_init(void) {
+  double xmin=mclog_pos[1].x, xmax=xmin, zmin=mclog_pos[1].z, zmax=zmin, pad;
+  for (int k=2; k < MCLOG_NCOMP-1; k++) {
+    if (mclog_pos[k].x < xmin) xmin = mclog_pos[k].x;
+    if (mclog_pos[k].x > xmax) xmax = mclog_pos[k].x;
+    if (mclog_pos[k].z < zmin) zmin = mclog_pos[k].z;
+    if (mclog_pos[k].z > zmax) zmax = mclog_pos[k].z;
+  }
+  // ponytail: origins + 5% (min 0.5 m) pad, events outside are dropped; use comp extents if that misses too much
+  pad = 0.05*fmax(xmax-xmin, zmax-zmin); if (pad < 0.5) pad = 0.5;
+  mclog_nx = (long)ceil((xmax-xmin+2*pad)/MCLOG_DX);
+  mclog_nz = (long)ceil((zmax-zmin+2*pad)/MCLOG_DX);
+  mclog_lim[0] = xmin-pad; mclog_lim[1] = mclog_lim[0] + mclog_nx*MCLOG_DX;
+  mclog_lim[2] = zmin-pad; mclog_lim[3] = mclog_lim[2] + mclog_nz*MCLOG_DX;
+  mclog_scatter = calloc(3*mclog_nx*mclog_nz, sizeof(double));
+  mclog_absorb  = calloc(3*mclog_nx*mclog_nz, sizeof(double));
+  if (!mclog_scatter || !mclog_absorb) { fprintf(stderr, "Error: cannot allocate SCATTER/ABSORPTION logs (mclog_init)\n"); exit(-1); }
+  #pragma acc update device(mclog_pos, mclog_rot, mclog_lim, mclog_nx, mclog_nz)
+  #pragma acc enter data copyin(mclog_scatter[0:3*mclog_nx*mclog_nz], mclog_absorb[0:3*mclog_nx*mclog_nz])
+}
+
+/* add weight w at the particle position (local coords of comp _index) */
+void mclog_add(double *h, _class_particle *_particle, double w) {
+  long k = _particle->_index, n = mclog_nx*mclog_nz;
+  if (k < 0 || k >= MCLOG_NCOMP) return;
+  double x=_particle->x, y=_particle->y, z=_particle->z;
+  double fx = (mclog_pos[k].x + mclog_rot[k][0][0]*x + mclog_rot[k][1][0]*y + mclog_rot[k][2][0]*z - mclog_lim[0])/(mclog_lim[1]-mclog_lim[0]);
+  double fz = (mclog_pos[k].z + mclog_rot[k][0][2]*x + mclog_rot[k][1][2]*y + mclog_rot[k][2][2]*z - mclog_lim[2])/(mclog_lim[3]-mclog_lim[2]);
+  if (!(fx >= 0 && fx < 1 && fz >= 0 && fz < 1)) return;
+  long i = (long)(fx*mclog_nx), j = (long)(fz*mclog_nz);
+  if (i >= mclog_nx || j >= mclog_nz) return;
+  long b = i*mclog_nz + j;
+  #pragma acc atomic
+  h[b] += 1;
+  #pragma acc atomic
+  h[n+b] += w;
+  #pragma acc atomic
+  h[2*n+b] += w*w;
+}
+
+void mclog_save(void) {
+  long n = mclog_nx*mclog_nz;
+  Coords o = coords_set(0,0,0);
+  Rotation r; rot_set_rotation(r, 0,0,0);
+  #pragma acc update host(mclog_scatter[0:3*n], mclog_absorb[0:3*n])
+  mcdetector_out_2D("Scattered intensity (global coords)", "x [m]", "z [m]",
+    mclog_lim[0], mclog_lim[1], mclog_lim[2], mclog_lim[3], mclog_nx, mclog_nz,
+    mclog_scatter, mclog_scatter+n, mclog_scatter+2*n, "SCATTERlog", "SCATTERlog", o, r, 0);
+  mcdetector_out_2D("Lost intensity (global coords)", "x [m]", "z [m]",
+    mclog_lim[0], mclog_lim[1], mclog_lim[2], mclog_lim[3], mclog_nx, mclog_nz,
+    mclog_absorb, mclog_absorb+n, mclog_absorb+2*n, "ABSORPTIONlog", "ABSORPTIONlog", o, r, 0);
+}
+#endif /* SCATTERLOG */
+
 /*******************************************************************************
 * mccoordschange: applies rotation to (x y z) and (vx vy vz) and Spin (sx,sy,sz)
 *******************************************************************************/

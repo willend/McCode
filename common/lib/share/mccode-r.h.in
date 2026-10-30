@@ -805,6 +805,29 @@ void mccoordschange(Coords a, Rotation t, _class_particle *particle);
 #pragma acc routine seq
 void mccoordschange_polarisation(Rotation t, double *sx, double *sy, double *sz);
 
+/* Instrument-wide x-z histograms (global coords) of weight at SCATTER and
+   weight lost / ABSORBed, saved as SCATTERlog and ABSORPTIONlog.
+   Enabled by compiling with -DSCATTERLOG. */
+#ifdef SCATTERLOG
+#ifndef MCLOG_DX
+#define MCLOG_DX 0.1 /* [m] bin size in x and z */
+#endif
+#ifndef MCLOG_NCOMP
+#define MCLOG_NCOMP 1024 /* set by cogen; fallback for a separately built runtime */
+#endif
+extern double *mclog_scatter, *mclog_absorb;
+void mclog_setpos(int index, Coords pos, Rotation rot);
+void mclog_init(void);
+void mclog_save(void);
+#pragma acc routine seq
+void mclog_add(double *h, _class_particle *_particle, double w);
+#else
+#define mclog_setpos(index, pos, rot)
+#define mclog_init()
+#define mclog_save()
+#define mclog_add(h, _particle, w) do {} while(0)
+#endif
+
 double mcestimate_error(double N, double p1, double p2);
 void mcreadparams(void);
 

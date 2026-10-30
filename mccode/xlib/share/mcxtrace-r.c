@@ -93,10 +93,15 @@ _class_particle mcgetstate(_class_particle mcphoton, double *x, double *y, doubl
 * state is in local coords of the current component (_particle->_index).
 *******************************************************************************/
 void SCATTER0_func(_class_particle *_particle) {
+  if (_particle->p < _particle->_p0)
+    mclog_add(mclog_absorb, _particle, _particle->_p0 - _particle->p);
+  mclog_add(mclog_scatter, _particle, _particle->p);
+  _particle->_p0 = _particle->p; /* a further SCATTER in this comp only logs new losses */
   _particle->_scattered++;
 }
 void ABSORB_func(_class_particle *_particle) {
   DEBUG_ABSORB();
+  mclog_add(mclog_absorb, _particle, _particle->p);
   _particle->_absorbed++;
 }
 
@@ -112,7 +117,7 @@ void SCATTER_func(_class_particle *_particle) {
 			 _particle->Ex,_particle->Ey,_particle->Ez,
 			 _particle->p);
   }
-  if (!_particle->_absorbed) _particle->_scattered++;
+  if (!_particle->_absorbed) SCATTER0_func(_particle);
 }  /* SCATTER_func */
 
 /*******************************************************************************
