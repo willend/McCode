@@ -817,12 +817,14 @@ void mccoordschange_polarisation(Rotation t, double *sx, double *sy, double *sz)
 #endif
 extern double *mclog_scatter, *mclog_absorb;
 void mclog_setpos(int index, Coords pos, Rotation rot);
+void mclog_setup(double zmin, double zmax, double xmin, double xmax, long nz, long nx);
 void mclog_init(void);
 void mclog_save(void);
 #pragma acc routine seq
 void mclog_add(double *h, _class_particle *_particle, double w);
 #else
 #define mclog_setpos(index, pos, rot)
+#define mclog_setup(zmin, zmax, xmin, xmax, nz, nx)
 #define mclog_init()
 #define mclog_save()
 #define mclog_add(h, _particle, w) do {} while(0)

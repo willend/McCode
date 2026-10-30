@@ -5070,21 +5070,33 @@ void mclog_setpos(int index, Coords pos, Rotation rot) {
   rot_copy(mclog_rot[index], rot);
 }
 
-/* limits: bounding box of all component origins in x-z, MCLOG_DX square bins */
-void mclog_init(void) {
-  double xmin=mclog_pos[1].x, xmax=xmin, zmin=mclog_pos[1].z, zmax=zmin, pad;
-  for (int k=2; k < MCLOG_NCOMP-1; k++) {
-    if (mclog_pos[k].x < xmin) xmin = mclog_pos[k].x;
-    if (mclog_pos[k].x > xmax) xmax = mclog_pos[k].x;
-    if (mclog_pos[k].z < zmin) zmin = mclog_pos[k].z;
-    if (mclog_pos[k].z > zmax) zmax = mclog_pos[k].z;
+/* optional user limits/binning, e.g. from instrument INITIALIZE (before mclog_init) */
+void mclog_setup(double zmin, double zmax, double xmin, double xmax, long nz, long nx) {
+  if (!(zmax > zmin && xmax > xmin && nz > 0 && nx > 0)) {
+    fprintf(stderr, "Warning: mclog_setup: invalid limits/bins, using automatic SCATTER/ABSORPTION log range\n");
+    return;
   }
-  // ponytail: origins + 5% (min 0.5 m) pad, events outside are dropped; use comp extents if that misses too much
-  pad = 0.05*fmax(xmax-xmin, zmax-zmin); if (pad < 0.5) pad = 0.5;
-  mclog_nx = (long)ceil((xmax-xmin+2*pad)/MCLOG_DX);
-  mclog_nz = (long)ceil((zmax-zmin+2*pad)/MCLOG_DX);
-  mclog_lim[0] = xmin-pad; mclog_lim[1] = mclog_lim[0] + mclog_nx*MCLOG_DX;
-  mclog_lim[2] = zmin-pad; mclog_lim[3] = mclog_lim[2] + mclog_nz*MCLOG_DX;
+  mclog_lim[0] = xmin; mclog_lim[1] = xmax; mclog_lim[2] = zmin; mclog_lim[3] = zmax;
+  mclog_nx = nx; mclog_nz = nz;
+}
+
+/* default limits: bounding box of all component origins in x-z, MCLOG_DX square bins */
+void mclog_init(void) {
+  if (mclog_nx <= 0) { /* not set by mclog_setup */
+    double xmin=mclog_pos[1].x, xmax=xmin, zmin=mclog_pos[1].z, zmax=zmin, pad;
+    for (int k=2; k < MCLOG_NCOMP-1; k++) {
+      if (mclog_pos[k].x < xmin) xmin = mclog_pos[k].x;
+      if (mclog_pos[k].x > xmax) xmax = mclog_pos[k].x;
+      if (mclog_pos[k].z < zmin) zmin = mclog_pos[k].z;
+      if (mclog_pos[k].z > zmax) zmax = mclog_pos[k].z;
+    }
+    // ponytail: origins + 5% (min 0.5 m) pad, events outside are dropped; use comp extents if that misses too much
+    pad = 0.05*fmax(xmax-xmin, zmax-zmin); if (pad < 0.5) pad = 0.5;
+    mclog_nx = (long)ceil((xmax-xmin+2*pad)/MCLOG_DX);
+    mclog_nz = (long)ceil((zmax-zmin+2*pad)/MCLOG_DX);
+    mclog_lim[0] = xmin-pad; mclog_lim[1] = mclog_lim[0] + mclog_nx*MCLOG_DX;
+    mclog_lim[2] = zmin-pad; mclog_lim[3] = mclog_lim[2] + mclog_nz*MCLOG_DX;
+  }
   mclog_scatter = calloc(3*mclog_nx*mclog_nz, sizeof(double));
   mclog_absorb  = calloc(3*mclog_nx*mclog_nz, sizeof(double));
   if (!mclog_scatter || !mclog_absorb) { fprintf(stderr, "Error: cannot allocate SCATTER/ABSORPTION logs (mclog_init)\n"); exit(-1); }
