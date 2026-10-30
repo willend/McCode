@@ -1111,6 +1111,8 @@ def main():
         mccode_config.check_env_vars()
 
         mcguiApp = QtWidgets.QApplication(sys.argv)
+        # Window/taskbar icon, and the Dock icon on macOS. ponytail: 115px logo, ship a 256px+ PNG if it looks soft
+        mcguiApp.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(os.path.abspath(__file__)), mccode_config.configuration["MCCODE"] + '-py.png')))
         mcguiApp.ctr = McGuiAppController()
         font = QFont()
         font.setFixedPitch(True)
