@@ -226,6 +226,10 @@ class McGuiState(QtCore.QObject):
     
     __thread_exc_signal = QtCore.Signal(str)
     def compile(self, mpi=True):
+        # replacing a running QThread aborts the application
+        if getattr(self, 'compilethread', None) is not None and self.compilethread.isRunning():
+            self.__emitter.status('Compile already in progress')
+            return
         # using Qt in-built cross-thread signaling
         self.__thread_exc_signal.connect(handleExceptionMsg)
         
@@ -616,7 +620,7 @@ class McGuiAppController():
     def handleRunOrInterruptSim(self):
         if self.state.isSimRunning():
             self.state.interrupt()
-        else:
+        elif self.state.canRun():
             # ensure auto-save
             self.view.ew.save()
 
@@ -639,6 +643,7 @@ class McGuiAppController():
                     em.message(msg)
                 handler = ThreadInfoHandler(lambda msg, em=self.emitter: em.message(msg))
 
+                instr = self.state.getInstrumentFile()
                 somethread = McRunQThread()
                 somethread.cmd = mccode_config.configuration["MCRUN"] + ' ' + os.path.basename(self.state.getInstrumentFile()) + " --info"
                 somethread.cwd = os.path.dirname(self.state.getInstrumentFile())
@@ -651,6 +656,11 @@ class McGuiAppController():
                 while not handler.finished:
                     time.sleep(0.2)
                     QtWidgets.QApplication.processEvents()
+
+                # The GUI stays live during --info; the user may have closed or switched instrument
+                if self.state.getInstrumentFile() != instr:
+                    self.emitter.status("Instrument changed while getting parameters, run cancelled")
+                    return
 
                 params = []
                 for l in handler.stdout_lst:
@@ -891,11 +901,12 @@ class McGuiAppController():
     
     def handleSaveAs(self):
         oldinstr = self.state.getInstrumentFile()
-        if oldinstr != '':
-            newinstr = self.view.showSaveAsDialog(oldinstr)
-            if self.displayNotSavedWhitespaceError(lambda: self.state.checkInstrFileCandidate(newinstr))==False:
-                return
-        
+        if oldinstr == '':
+            return
+        newinstr = self.view.showSaveAsDialog(oldinstr)
+        if self.displayNotSavedWhitespaceError(lambda: self.state.checkInstrFileCandidate(newinstr))==False:
+            return
+
         if newinstr != '':
             self.state.unloadInstrument()
             text = get_file_contents(oldinstr)
@@ -1012,7 +1023,7 @@ class McGuiAppController():
     def handleDefault(self):
         reply = QtWidgets.QMessageBox.question(self.view.mw,
                                            'Define system default?',
-                                           'Do you want to make the current ' +  mccode_config.configuration["MCCODE"] + ' the system default?'),
+                                           'Do you want to make the current ' +  mccode_config.configuration["MCCODE"] + ' the system default?')
  
         if reply == QtWidgets.QMessageBox.Yes:
              subprocess.Popen(mccode_config.configuration["MCCODE"] +'-postinst set_mccode_default', shell=True)
