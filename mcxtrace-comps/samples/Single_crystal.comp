@@ -1203,6 +1203,7 @@ SHARE
   struct sx_abs_data {
     int muc; // column where mu is to be found
     double atomic_weight;
+    double density; // mass density [g/cm^3]
     double delta_prefactor;
     t_Table table;
   };
@@ -1219,6 +1220,7 @@ SHARE
         exit (-1);
       }
       abs->muc = (abs->table.columns == 3 ? 1 : 5);
+      abs->density = 0;
 
       parsing = Table_ParseHeader (abs->table.header, "Z", "A[r]", "rho", NULL);
       if (parsing) {
@@ -1228,7 +1230,11 @@ SHARE
           info.mat_weight = strtod (parsing[1], NULL); // aka A[r] in g/mol
         if (parsing[2] && !info.rho)
           info.rho = strtod (parsing[2], NULL);
+        if (parsing[2])
+          abs->density = strtod (parsing[2], NULL); // nominal density of the absorption material
       }
+      if (info.mat_density > 0)
+        abs->density = info.mat_density; // crystal density from the reflections file wins
 
       if (info.rho && info.mat_weight)
         abs->delta_prefactor = NA * (info.rho * 1e-24) / info.mat_weight * 2.0 * M_PI * RE;
@@ -1540,12 +1546,15 @@ TRACE
     event_counter = 0;
 
     V0 = hkl_info.V0;
-    /* absorption: sigma [cm^2] = atomic_weight [g/mol] / NA [1/mol] * mu [cm^2/g],
-       then * 1e26 -> [fm^2] and / V0 [Angs^3] -> [1/m]. Independent of the barns flag. */
+    /* absorption: linear attenuation = mu [cm^2/g] * density [g/cm^3] = [1/cm], * 100 -> [1/m].
+       Without a density, fall back to one atom of atomic_weight per unit cell V0. */
     abs_xlen = 0;
     if (abs_info.muc) {
       double mu = Table_Value (abs_info.table, ki * K2E, abs_info.muc);
-      abs_xlen = abs_info.atomic_weight / NA * mu * 1e26 / V0;
+      if (abs_info.density > 0)
+        abs_xlen = mu * abs_info.density * 100;
+      else
+        abs_xlen = abs_info.atomic_weight / NA * mu * 1e26 / V0; // ponytail: per-atom weight over full cell, too weak for multi-atom cells; give a density
     }
 
     /*look into Compton scattering*/
