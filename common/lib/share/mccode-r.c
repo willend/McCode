@@ -5062,7 +5062,7 @@ Rotation mclog_rot[MCLOG_NCOMP];
 double   mclog_lim[4]; /* xmin xmax zmin zmax */
 long     mclog_nx, mclog_nz;
 double  *mclog_scatter, *mclog_absorb; /* [3][nx*nz]: N, p, p2 */
-#pragma acc declare create(mclog_pos, mclog_rot, mclog_lim, mclog_nx, mclog_nz)
+#pragma acc declare create(mclog_pos, mclog_rot, mclog_lim, mclog_nx, mclog_nz, mclog_scatter, mclog_absorb)
 
 void mclog_setpos(int index, Coords pos, Rotation rot) {
   if (index < 0 || index >= MCLOG_NCOMP) return;
