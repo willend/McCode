@@ -191,9 +191,19 @@ class McView(object):
         dlg.setNameFilter(mccode_config.configuration["MCCODE"]+" instruments (*.instr)");
         return dlg.getSaveFileName(parent=None, caption='Create Instrument file...')[0]
 
-    def showNewInstrFromTemplateDialog(self, instr):
-        dlg = QtWidgets.QFileDialog()
-        return dlg.getSaveFileName(parent=None, caption='Create Instrument file from Template...', directory=instr)[0]
+    def showNewInstrFromTemplateDialog(self, workdir):
+        return QtWidgets.QFileDialog.getExistingDirectory(self.mw, 'Copy template into folder...', workdir)
+
+    def askTemplateDirExists(self, trgdir, newdir):
+        box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Question, 'Folder exists',
+                                    str(trgdir) + ' already exists.', parent=self.mw)
+        open_btn = box.addButton('Open existing', QtWidgets.QMessageBox.AcceptRole)
+        new_btn = box.addButton('New copy (' + newdir.name + ')', QtWidgets.QMessageBox.AcceptRole)
+        repl_btn = box.addButton('Replace with template', QtWidgets.QMessageBox.DestructiveRole)
+        box.addButton(QtWidgets.QMessageBox.Cancel)
+        box.setDefaultButton(new_btn)
+        box.exec()
+        return {open_btn: 'open', new_btn: 'new', repl_btn: 'replace'}.get(box.clickedButton())
 
     def showSaveAsDialog(self, instr):
         dlg = QtWidgets.QFileDialog()

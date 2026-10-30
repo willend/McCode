@@ -930,29 +930,39 @@ class McGuiAppController():
             wd = pathlib.PurePath(self.state.getWorkDir())
             if wd.stem==instrbase.stem:
                 self.state.setWorkDir("..")
-        new_instr_req = self.view.showNewInstrFromTemplateDialog(os.path.join(self.state.getWorkDir(), os.path.basename(os.path.dirname(str(instr_templ)))))
-        if self.displayNotSavedWhitespaceError(lambda: self.state.checkInstrFileCandidate(new_instr_req))==False:
+        # Templates are copied including their containing folder, into a user-selected parent folder
+        srcdir = pathlib.Path(str(instr_templ)).parent
+        parent = self.view.showNewInstrFromTemplateDialog(self.state.getWorkDir())
+        if not parent:
             return
-        
-        if new_instr_req != '':
-            if self.view.closeCodeEditorWindow():
-                text = get_file_contents(instr_templ)
-                self.state.unloadInstrument()
-                # Templates are now copied including their containing folder
-                srcdir = os.path.dirname(str(instr_templ))
-                trgdir = pathlib.Path(new_instr_req)
-                # Case 1: destination folder already exists, "merge":
-                if pathlib.Path.exists(trgdir):
-                    files=os.listdir(srcdir)
-                    for fname in files:
-                        shutil.copy2(os.path.join(srcdir,fname), trgdir)
-                else:
-                    # Case 2: create a new folder:
-                    shutil.copytree(srcdir,trgdir)
+        parent = pathlib.Path(parent)
+        # User may have selected the template-named folder itself
+        trgdir = parent if parent.name == srcdir.name else parent / srcdir.name
+        new_instr = str(trgdir / pathlib.Path(str(instr_templ)).name)
+        if self.displayNotSavedWhitespaceError(lambda: self.state.checkInstrFileCandidate(new_instr))==False:
+            return
 
-                new_instr = os.path.join(trgdir, os.path.basename(str(instr_templ)))
-                self.state.loadInstrument(new_instr)
-                self.emitter.status("Instrument created: " + os.path.basename(str(new_instr)))
+        choice = 'copy'
+        if trgdir.exists():
+            n = 2
+            while (trgdir.parent / (srcdir.name + '_' + str(n))).exists():
+                n += 1
+            newdir = trgdir.parent / (srcdir.name + '_' + str(n))
+            choice = self.view.askTemplateDirExists(trgdir, newdir)
+            if choice is None:
+                return
+            if choice == 'new':
+                trgdir = newdir
+                new_instr = str(trgdir / pathlib.Path(str(instr_templ)).name)
+
+        if self.view.closeCodeEditorWindow():
+            self.state.unloadInstrument()
+            if choice == 'replace':
+                shutil.copytree(srcdir, trgdir, dirs_exist_ok=True)
+            elif choice != 'open':
+                shutil.copytree(srcdir, trgdir)
+            self.state.loadInstrument(new_instr)
+            self.emitter.status("Instrument created: " + os.path.basename(new_instr))
     
     def handleOpenInstrument(self):
         instr = self.view.showOpenInstrumentDlg(self.state.getWorkDir())
