@@ -103,35 +103,35 @@ TRACE
       /*particle misses the mirror completely (l0<0 and l1<0)*/
       RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
     }
-    
-    if(dl != 0){
-    /*correction for only solving in xz-plane*/
-    dl *= sqrt (scalar_prod (kx, ky, kz, kx, ky, kz) / scalar_prod (kx, 0, kz, kx, 0, kz));
 
-    PROP_DL (dl);
-    alpha = asin (z / radius);
-    if ((zdepth / 2.0 < fabs (radius * alpha)) || (fabs (y) > yheight / 2.0)) {
-      RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
-    } else {
-      SCATTER;
-      /*reflection*/
-      nx = radius - x;
-      nz = -z;
-      n = sqrt (nx * nx + nz * nz);
-      nx /= n;
-      nz /= n;
+    if (dl != 0) {
+      /*correction for only solving in xz-plane*/
+      dl *= sqrt (scalar_prod (kx, ky, kz, kx, ky, kz) / scalar_prod (kx, 0, kz, kx, 0, kz));
 
-      s = scalar_prod (kx, 0, kz, nx, 0, nz);
-      kx = kx - 2 * s * nx;
-      kz = kz - 2 * s * nz;
+      PROP_DL (dl);
+      alpha = asin (z / radius);
+      if ((zdepth / 2.0 < fabs (radius * alpha)) || (fabs (y) > yheight / 2.0)) {
+        RESTORE_XRAY (INDEX_CURRENT_COMP, x, y, z, kx, ky, kz, phi, t, Ex, Ey, Ez, p);
+      } else {
+        SCATTER;
+        /*reflection*/
+        nx = radius - x;
+        nz = -z;
+        n = sqrt (nx * nx + nz * nz);
+        nx /= n;
+        nz /= n;
 
-      double Q;
-      /*length of wavevector transfer may be compute from s and n_ above*/
-      Q = fabs (2 * s * sqrt (nx * nx + nz * nz));
-      cdouble R = refleccq (re, Q, 0, k_total, fabs (90 - acos (s / k_total) * RAD2DEG));
-      p *= sqrt (creal (cmul(R, conj (R))));
-      phi += atan2 (cimag (R), creal (R));
-    }
+        s = scalar_prod (kx, 0, kz, nx, 0, nz);
+        kx = kx - 2 * s * nx;
+        kz = kz - 2 * s * nz;
+
+        double Q;
+        /*length of wavevector transfer may be compute from s and n_ above*/
+        Q = fabs (2 * s * sqrt (nx * nx + nz * nz));
+        cdouble R = refleccq (re, Q, 0, k_total, fabs (90 - acos (s / k_total) * RAD2DEG));
+        p *= sqrt (creal (cmul(R, conj (R))));
+        phi += atan2 (cimag (R), creal (R));
+      }
     }
   } else if (fabs (kx) < DBL_EPSILON && fabs (kz) < DBL_EPSILON && ky != 0) {
     /*This to catch the extreme case where k//y.*/
