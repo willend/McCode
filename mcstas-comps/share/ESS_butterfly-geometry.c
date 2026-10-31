@@ -76,31 +76,25 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   int j;
   double rAx,rAz,rBx,rBz;
 
-  /* Arrow indicating proton beam direction */
+  /* Arrow indicating proton beam direction, in dark grey and in the style of Arm: a line
+     from 6 m upstream and a cone with its tip 13.7 cm below the moderator centre */
   double ax,az,bx,bz,bbx,bbz,cBcx,cBcz;
+  double ay=-0.137, anx, anz, al;
   az = -0.0925-Bcz;
   ax = 0.0585-Bcx;
   bz = -0.0925-Bcz;
   bx = 0.0585+6-Bcx;
-  bbx = 0.0585+0.1-Bcx;
-  bbz = -0.0925+0.03-Bcz;
-  cBcx = 0.0585+0.1-Bcx;
-  cBcz = -0.0925-0.03-Bcz;
   /* rAx,0,rAz is the centre of the moderator */
   rAx = Br11*(az) + Br12*(ax);
   rAz = Br21*(az) + Br22*(ax);
   rBx = Br11*(bz) + Br12*(bx);
   rBz = Br21*(bz) + Br22*(bx);
-  /* Main part of the arrow, in dark grey */
+  /* unit vector along the proton beam, from upstream towards the target */
+  anx = rAx-rBx; anz = rAz-rBz; al = sqrt(anx*anx+anz*anz);
+  anx /= al; anz /= al;
   mcdis_pencolor("#a9a9a9");
-  mcdis_line(rAx, 0, rAz, rBx, 0, rBz);
-  /* Inclined lines for arrow head */
-  rBx = Br11*(bbz) + Br12*(bbx);
-  rBz = Br21*(bbz) + Br22*(bbx);
-  mcdis_line(rAx, 0, rAz, rBx, 0, rBz);
-  rBx = Br11*(cBcz) + Br12*(cBcx);
-  rBz = Br21*(cBcz) + Br22*(cBcx);
-  mcdis_line(rAx, 0, rAz, rBx, 0, rBz);
+  mcdis_line(rBx, ay, rBz, rAx-0.05*anx, ay, rAz-0.05*anz);
+  mcdis_cone(rAx-0.05*anx, ay, rAz-0.05*anz, 0.03, 0.1, anx, 0, anz);
   mcdis_pencolor("#0099dc"); /* back to ESS blue, as set in ESS_butterfly MCDISPLAY */
 
   /* 120 degree "end of sector" lines */
