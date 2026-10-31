@@ -25,6 +25,42 @@ double butterfly_e_z2[]= {-1.8501e-01, -1.2719e-01, -1.8501e-01};
 double butterfly_e_x2[]= {3.3156e-05,  5.8985e-02,  1.1701e-01};
 #pragma acc declare create(butterfly_e_x2)
 
+/* Solid (--trace=2 only) vertical prism from y=-h to y=h over the closed ring of the n
+   points (px[ring[i]], pz[ring[i]]), as one polyhedron of triangles: two side-wall triangles
+   per ring edge, and top / bottom faces as fans over nsub convex sub-polygons, each given in
+   sub[] as (first ring index, number of vertices), wrapping around the ring */
+void butterfly_prism(int n, int *ring, double *px, double *pz, double h, int nsub, int *sub)
+{
+  int i, k, s, a, b, c, first=1;
+  char *json, *p;
+  if (mcdotrace!=2) return;
+  /* bounds per vertex / face as in mcdis_polygon; at most 2n side and 2(n+2nsub) cap triangles */
+  json = malloc(64 + (size_t)2*n*48 + (size_t)(4*n+4*nsub)*64);
+  if (!json) {
+    fprintf(stderr, "Error allocating butterfly_prism polyhedron\n");
+    return;
+  }
+  p = json + sprintf(json, "{ \"vertices\": [");
+  /* vertex i at the top (y=h), vertex n+i at the bottom (y=-h) */
+  for (i=0; i<2*n; i++)
+    p += sprintf(p, "%s[%g, %g, %g]", i ? ", " : "", px[ring[i%n]], i<n ? h : -h, pz[ring[i%n]]);
+  p += sprintf(p, "], \"faces\": [");
+  for (i=0; i<n; i++) {
+    k = (i+1)%n;
+    p += sprintf(p, "%s{ \"face\": [%d, %d, %d]}, { \"face\": [%d, %d, %d]}", first ? "" : ", ", i, n+k, k, i, n+i, n+k);
+    first = 0;
+  }
+  for (s=0; s<nsub; s++) {
+    for (k=1; k<sub[2*s+1]-1; k++) {
+      a = sub[2*s]; b = (a+k)%n; c = (a+k+1)%n;
+      p += sprintf(p, ", { \"face\": [%d, %d, %d]}, { \"face\": [%d, %d, %d]}", a, b, c, n+a, n+c, n+b);
+    }
+  }
+  sprintf(p, "]}");
+  mcdis_polyhedron(json);
+  free(json);
+}
+
 void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   double Borientation_angle, double *BBeamlines, double Btx, double Bty, double Btz,
   double BrC1_x, double BrC1_z, 
@@ -36,61 +72,9 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   double Br11, double Br12, double Br21, double Br22,
   double Bfoc_XW, double Bfoc_YH)
 {
-  /* Draw the two butterfly shapes at top and bottom level */
   double y0;
   int j;
   double rAx,rAz,rBx,rBz;
-
-  for (y0=-Bdelta_y; y0<2*Bdelta_y; y0+=2*Bdelta_y) {
-    for (j=0; j<63; j++) {
-      
-      rAx = Br11*(butterfly_z[j]-Bcz) + Br12*(butterfly_x[j]-Bcx);
-      rAz = Br21*(butterfly_z[j]-Bcz) + Br22*(butterfly_x[j]-Bcx);
-
-      rBx = Br11*(butterfly_z[j+1]-Bcz) + Br12*(butterfly_x[j+1]-Bcx);
-      rBz = Br21*(butterfly_z[j+1]-Bcz) + Br22*(butterfly_x[j+1]-Bcx);
-
-      mcdis_line(rAx, y0, rAz, rBx, y0, rBz);
-
-    }
-  }
-
-  /* Draw the "border" between the thermal and cold areas */
-  for (y0=-Bdelta_y; y0<2*Bdelta_y; y0+=2*Bdelta_y) {
-    for (j=0; j<2; j++) {
-      
-      rAx = Br11*(butterfly_e_z1[j]-Bcz) + Br12*(butterfly_e_x1[j]-Bcx);
-      rAz = Br21*(butterfly_e_z1[j]-Bcz) + Br22*(butterfly_e_x1[j]-Bcx);
-
-      rBx = Br11*(butterfly_e_z1[j+1]-Bcz) + Br12*(butterfly_e_x1[j+1]-Bcx);
-      rBz = Br21*(butterfly_e_z1[j+1]-Bcz) + Br22*(butterfly_e_x1[j+1]-Bcx);
-
-      mcdis_line(rAx, y0, rAz, rBx, y0, rBz);
-
-      rAx = Br11*(butterfly_e_z2[j]-Bcz) + Br12*(butterfly_e_x2[j]-Bcx);
-      rAz = Br21*(butterfly_e_z2[j]-Bcz) + Br22*(butterfly_e_x2[j]-Bcx);
-
-      rBx = Br11*(butterfly_e_z2[j+1]-Bcz) + Br12*(butterfly_e_x2[j+1]-Bcx);
-      rBz = Br21*(butterfly_e_z2[j+1]-Bcz) + Br22*(butterfly_e_x2[j+1]-Bcx);
-
-      mcdis_line(rAx, y0, rAz, rBx, y0, rBz);
-    }
-  }
-
-  /* Indicate the emission planes of cold/thermal moderator */
-  for (y0=-Bdelta_y; y0<2*Bdelta_y; y0+=2*Bdelta_y) {
-    mcdis_dashed_line(BrC1_x, y0, BrC1_z, BrC2_x, y0, BrC2_z, 11);
-    mcdis_dashed_line(BrC1_x, y0, BrC1_z, BrC3_x, y0, BrC3_z, 11);
-    mcdis_dashed_line(BrT1_x, y0, BrT1_z, BrT2_x, y0, BrT2_z, 11);
-    mcdis_dashed_line(BrT1_x, y0, BrT1_z, BrT3_x, y0, BrT3_z, 11);
-  }
-  mcdis_dashed_line(BrC1_x, -Bdelta_y, BrC1_z, BrC1_x, Bdelta_y, BrC1_z, 11);
-  mcdis_dashed_line(BrC2_x, -Bdelta_y, BrC2_z, BrC2_x, Bdelta_y, BrC2_z, 11);
-  mcdis_dashed_line(BrC3_x, -Bdelta_y, BrC3_z, BrC3_x, Bdelta_y, BrC3_z, 11);
-  mcdis_dashed_line(BrT1_x, -Bdelta_y, BrT1_z, BrT1_x, Bdelta_y, BrT1_z, 11);
-  mcdis_dashed_line(BrT2_x, -Bdelta_y, BrT2_z, BrT2_x, Bdelta_y, BrT2_z, 11);
-  mcdis_dashed_line(BrT3_x, -Bdelta_y, BrT3_z, BrT3_x, Bdelta_y, BrT3_z, 11);
-
 
   /* Arrow indicating proton beam direction */
   double ax,az,bx,bz,bbx,bbz,cBcx,cBcz;
@@ -107,7 +91,8 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   rAz = Br21*(az) + Br22*(ax);
   rBx = Br11*(bz) + Br12*(bx);
   rBz = Br21*(bz) + Br22*(bx);
-  /* Main part of the arrow */
+  /* Main part of the arrow, in dark grey */
+  mcdis_pencolor("#a9a9a9");
   mcdis_line(rAx, 0, rAz, rBx, 0, rBz);
   /* Inclined lines for arrow head */
   rBx = Br11*(bbz) + Br12*(bbx);
@@ -116,6 +101,7 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   rBx = Br11*(cBcz) + Br12*(cBcx);
   rBz = Br21*(cBcz) + Br22*(cBcx);
   mcdis_line(rAx, 0, rAz, rBx, 0, rBz);
+  mcdis_pencolor("#0099dc"); /* back to ESS blue, as set in ESS_butterfly MCDISPLAY */
 
   /* 120 degree "end of sector" lines */
   bbz = 2 * cos(DEG2RAD*61);
@@ -138,15 +124,20 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   rBx = Br11*(cBcz) + Br12*(cBcx);
   rBz = Br21*(cBcz) + Br22*(cBcx);
   mcdis_dashed_line(rAx, 0, rAz, rBx+rAx, 0, rBz+rAz,51);
-  /* Circles indicating extent of the "empBty" zone where optics is not allowed */
-  mcdis_circle("xz", rAx, 0, rAz, 2.0);
-  mcdis_circle("xz", rAx, -0.1, rAz, 2.0);
-  mcdis_circle("xz", rAx, 0.1, rAz, 2.0);
-
-  /* Circles indicating extent of the target monolith */
-  mcdis_circle("xz", rAx, 0, rAz, 5.5);
-  mcdis_circle("xz", rAx, -1, rAz, 5.5);
-  mcdis_circle("xz", rAx, 1, rAz, 5.5);
+  /* Open vertical cylinders (no lids, a ring of rectangles) indicating the extent of
+     the "empty" zone where optics is not allowed (r=2 m, h=0.2 m) and of the target
+     monolith (r=5.5 m, h=2 m) */
+  double cyl_r[2]={2.0, 5.5}, cyl_halfh[2]={0.1, 1.0};
+  double px1, pz1, px2, pz2, py;
+  int k;
+  for (j=0; j<2; j++) {
+    py = cyl_halfh[j];
+    for (k=0; k<36; k++) {
+      px1 = rAx + cyl_r[j]*cos(2*PI*k/36);     pz1 = rAz + cyl_r[j]*sin(2*PI*k/36);
+      px2 = rAx + cyl_r[j]*cos(2*PI*(k+1)/36); pz2 = rAz + cyl_r[j]*sin(2*PI*(k+1)/36);
+      mcdis_polygon(4, px1, -py, pz1, px2, -py, pz2, px2, py, pz2, px1, py, pz1);
+    }
+  }
 
   /* Beamport "plug" dimensions */
   double w1=0.206/2.0, w2=0.276/2.0, l1=2.0+rAz, l2=2.0+rAz+1.75, l3=2.0+rAz+3.5;
@@ -158,32 +149,32 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   mcdis_line(-w2, 0, l2, -w2, 0, l3);
 
   /* Draw all the BBeamlines in "this sector" +1 */
-  double xx1, yy1, zz1, xx2, yy2, zz2, delta_omega;
+  double xx1, yy1, zz1, xx2, yy2, zz2, delta_omega, b11, b12, b21, b22;
   for (j=0; j<Bjmax+1; j++) {
     delta_omega = Borientation_angle - BBeamlines[j];
-    Br11 = cos(DEG2RAD*delta_omega);
-    Br12 = -sin(DEG2RAD*delta_omega);
-    Br21 = sin(DEG2RAD*delta_omega);
-    Br22 = cos(DEG2RAD*delta_omega);
-    xx1 = Br11*(w1) + Br12*(l1);
-    zz1 = Br21*(w1) + Br22*(l1);
-    xx2 = Br11*(w1) + Br12*(l2);
-    zz2 = Br21*(w1) + Br22*(l2);
+    b11 = cos(DEG2RAD*delta_omega);
+    b12 = -sin(DEG2RAD*delta_omega);
+    b21 = sin(DEG2RAD*delta_omega);
+    b22 = cos(DEG2RAD*delta_omega);
+    xx1 = b11*(w1) + b12*(l1);
+    zz1 = b21*(w1) + b22*(l1);
+    xx2 = b11*(w1) + b12*(l2);
+    zz2 = b21*(w1) + b22*(l2);
     mcdis_dashed_line(xx1, 0, zz1, xx2, 0, zz2, 11);
-    xx1 = Br11*(-w1) + Br12*(l1);
-    zz1 = Br21*(-w1) + Br22*(l1);
-    xx2 = Br11*(-w1) + Br12*(l2);
-    zz2 = Br21*(-w1) + Br22*(l2);
+    xx1 = b11*(-w1) + b12*(l1);
+    zz1 = b21*(-w1) + b22*(l1);
+    xx2 = b11*(-w1) + b12*(l2);
+    zz2 = b21*(-w1) + b22*(l2);
     mcdis_dashed_line(xx1, 0, zz1, xx2, 0, zz2, 11);
-    xx1 = Br11*(w2) + Br12*(l2);
-    zz1 = Br21*(w2) + Br22*(l2);
-    xx2 = Br11*(w2) + Br12*(l3);
-    zz2 = Br21*(w2) + Br22*(l3);
+    xx1 = b11*(w2) + b12*(l2);
+    zz1 = b21*(w2) + b22*(l2);
+    xx2 = b11*(w2) + b12*(l3);
+    zz2 = b21*(w2) + b22*(l3);
     mcdis_dashed_line(xx1, 0, zz1, xx2, 0, zz2, 11);
-    xx1 = Br11*(-w2) + Br12*(l2);
-    zz1 = Br21*(-w2) + Br22*(l2);
-    xx2 = Br11*(-w2) + Br12*(l3);
-    zz2 = Br21*(-w2) + Br22*(l3);
+    xx1 = b11*(-w2) + b12*(l2);
+    zz1 = b21*(-w2) + b22*(l2);
+    xx2 = b11*(-w2) + b12*(l3);
+    zz2 = b21*(-w2) + b22*(l3);
     mcdis_dashed_line(xx1, 0, zz1, xx2, 0, zz2, 11);
   }
 
@@ -208,4 +199,85 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
 	      Btx -xx1 +xx2, Bty -yy1 +yy2, Btz -zz1 +zz2,5);
   mcdis_dashed_line(Btx +xx1 -xx2, Bty +yy1 -yy2, Btz +zz1 -zz2,
 	      Btx +xx1 +xx2, Bty +yy1 +yy2, Btz +zz1 +zz2,5);
+
+  /* Draw the two butterfly shapes at top and bottom level, last so they stay on top:
+     first the cold wings (pass 0), then the thermal "boxes" between them (pass 1),
+     i.e. outline segments 31-35 and 60-63,0-1 */
+  int pass, thermal;
+  /* Rotated outline points 0-63, plus the tips of the two thermal/cold "border" Vs as 64 and 65 */
+  double ox[66], oz[66];
+  for (j=0; j<66; j++) {
+    rBz = j<64 ? butterfly_z[j] : (j==64 ? butterfly_e_z1[1] : butterfly_e_z2[1]);
+    rBx = j<64 ? butterfly_x[j] : (j==64 ? butterfly_e_x1[1] : butterfly_e_x2[1]);
+    ox[j] = Br11*(rBz-Bcz) + Br12*(rBx-Bcx);
+    oz[j] = Br21*(rBz-Bcz) + Br22*(rBx-Bcx);
+  }
+  /* Solid cold wings: ring 1-31, 64, 35-60, 65, with the caps split at the border Vs into
+     two convex halves; solid thermal boxes: two chevrons, each as two convex quads */
+  int cold_ring[59], cold_sub[]={58, 33, 31, 28}, therm_sub[]={5, 4, 2, 4};
+  int therm_top[]={31, 32, 33, 34, 35, 64}, therm_bot[]={60, 61, 62, 0, 1, 65};
+  for (j=0; j<31; j++) cold_ring[j] = j+1;
+  cold_ring[31] = 64;
+  for (j=32; j<58; j++) cold_ring[j] = j+3;
+  cold_ring[58] = 65;
+  for (pass=0; pass<2; pass++) {
+    mcdis_pencolor(pass ? "#ff0000" : "#66ccff");
+    if (pass) {
+      butterfly_prism(6, therm_top, ox, oz, Bdelta_y, 2, therm_sub);
+      butterfly_prism(6, therm_bot, ox, oz, Bdelta_y, 2, therm_sub);
+    } else {
+      butterfly_prism(59, cold_ring, ox, oz, Bdelta_y, 2, cold_sub);
+    }
+    for (y0=-Bdelta_y; y0<2*Bdelta_y; y0+=2*Bdelta_y) {
+      for (j=0; j<63; j++) {
+        thermal = (j==0 || (j>=31 && j<35) || j>=60);
+        if (thermal != pass) continue;
+
+        rAx = Br11*(butterfly_z[j]-Bcz) + Br12*(butterfly_x[j]-Bcx);
+        rAz = Br21*(butterfly_z[j]-Bcz) + Br22*(butterfly_x[j]-Bcx);
+
+        rBx = Br11*(butterfly_z[j+1]-Bcz) + Br12*(butterfly_x[j+1]-Bcx);
+        rBz = Br21*(butterfly_z[j+1]-Bcz) + Br22*(butterfly_x[j+1]-Bcx);
+
+        mcdis_line(rAx, y0, rAz, rBx, y0, rBz);
+      }
+    }
+  }
+
+  /* Draw the "border" between the thermal and cold areas, closing the thermal outline */
+  for (y0=-Bdelta_y; y0<2*Bdelta_y; y0+=2*Bdelta_y) {
+    for (j=0; j<2; j++) {
+      
+      rAx = Br11*(butterfly_e_z1[j]-Bcz) + Br12*(butterfly_e_x1[j]-Bcx);
+      rAz = Br21*(butterfly_e_z1[j]-Bcz) + Br22*(butterfly_e_x1[j]-Bcx);
+
+      rBx = Br11*(butterfly_e_z1[j+1]-Bcz) + Br12*(butterfly_e_x1[j+1]-Bcx);
+      rBz = Br21*(butterfly_e_z1[j+1]-Bcz) + Br22*(butterfly_e_x1[j+1]-Bcx);
+
+      mcdis_line(rAx, y0, rAz, rBx, y0, rBz);
+
+      rAx = Br11*(butterfly_e_z2[j]-Bcz) + Br12*(butterfly_e_x2[j]-Bcx);
+      rAz = Br21*(butterfly_e_z2[j]-Bcz) + Br22*(butterfly_e_x2[j]-Bcx);
+
+      rBx = Br11*(butterfly_e_z2[j+1]-Bcz) + Br12*(butterfly_e_x2[j+1]-Bcx);
+      rBz = Br21*(butterfly_e_z2[j+1]-Bcz) + Br22*(butterfly_e_x2[j+1]-Bcx);
+
+      mcdis_line(rAx, y0, rAz, rBx, y0, rBz);
+    }
+  }
+
+  /* Indicate the emission planes of cold/thermal moderator, in yellow */
+  mcdis_pencolor("#ffff00");
+  for (y0=-Bdelta_y; y0<2*Bdelta_y; y0+=2*Bdelta_y) {
+    mcdis_dashed_line(BrC1_x, y0, BrC1_z, BrC2_x, y0, BrC2_z, 11);
+    mcdis_dashed_line(BrC1_x, y0, BrC1_z, BrC3_x, y0, BrC3_z, 11);
+    mcdis_dashed_line(BrT1_x, y0, BrT1_z, BrT2_x, y0, BrT2_z, 11);
+    mcdis_dashed_line(BrT1_x, y0, BrT1_z, BrT3_x, y0, BrT3_z, 11);
+  }
+  mcdis_dashed_line(BrC1_x, -Bdelta_y, BrC1_z, BrC1_x, Bdelta_y, BrC1_z, 11);
+  mcdis_dashed_line(BrC2_x, -Bdelta_y, BrC2_z, BrC2_x, Bdelta_y, BrC2_z, 11);
+  mcdis_dashed_line(BrC3_x, -Bdelta_y, BrC3_z, BrC3_x, Bdelta_y, BrC3_z, 11);
+  mcdis_dashed_line(BrT1_x, -Bdelta_y, BrT1_z, BrT1_x, Bdelta_y, BrT1_z, 11);
+  mcdis_dashed_line(BrT2_x, -Bdelta_y, BrT2_z, BrT2_x, Bdelta_y, BrT2_z, 11);
+  mcdis_dashed_line(BrT3_x, -Bdelta_y, BrT3_z, BrT3_x, Bdelta_y, BrT3_z, 11);
 }

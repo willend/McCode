@@ -665,10 +665,12 @@ TRACE
 MCDISPLAY
 %{
   #ifndef OPENACC
+  mcdis_pencolor ("#0099dc"); /* ESS blue, from the ess.eu logo */
   magnify ("");
   butterfly_geometry (delta_y, jmax, cx, cz, orientation_angle, Beamlines, tx, ty, tz, rC1_x, rC1_z, rC2_x, rC2_z, rC3_x, rC3_z, rT1_x, rT1_z, rT2_x, rT2_z,
                       rT3_x, rT3_z, r11, r12, r21, r22, focus_xw, focus_yh);
-  if (tbl_mode) { /* second cold wing emission plane */
+  if (tbl_mode) { /* second cold wing emission plane, yellow as the others */
+    mcdis_pencolor ("#ffff00");
     mcdis_dashed_line (rC4_x, -delta_y, rC4_z, rC5_x, -delta_y, rC5_z, 11);
     mcdis_dashed_line (rC4_x, delta_y, rC4_z, rC5_x, delta_y, rC5_z, 11);
     mcdis_dashed_line (rC5_x, -delta_y, rC5_z, rC5_x, delta_y, rC5_z, 11);
