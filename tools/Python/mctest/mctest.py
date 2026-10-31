@@ -19,7 +19,7 @@ import platform
 import subprocess
 import io
 import concurrent.futures
-from datetime import datetime
+from datetime import datetime, timedelta
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from mccodelib import utils, mccode_config
@@ -349,6 +349,7 @@ def parse_detector_I_value(resfile_path, detector_name):
 def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilter=None, configdir=None):
     ''' this main test function tests the given mccode installation, optionally with the
     mccode_config.json in configdir (passed to mcrun --override-config) '''
+    t0 = time.time()
     skipped=False
     global runLocal
     # copy instr files and record info
@@ -800,6 +801,7 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
     metainfo["user"] = username
     metainfo["cpu_type"] = cpu_type
     metainfo["gpu_type"] = gpu_type
+    metainfo["walltime"] = format_walltime(time.time() - t0)
 
     # displayname must be unique, we can return a dict, which eases comparison between tests
     obj = {}
@@ -811,6 +813,10 @@ def mccode_test(branchdir, testdir, limitinstrs=None, instrfilter=None, compfilt
 #
 # Utility
 #
+
+def format_walltime(seconds):
+    ''' h:mm:ss '''
+    return str(timedelta(seconds=round(seconds)))
 
 def activate_mccode_version(mccoderoot):
     '''
@@ -882,6 +888,7 @@ def run_default_test(testdir, mccoderoot, limit, instrfilter, compfilter, suffix
     logging.debug("")
     logging.debug("Test results written to: %s" % reportfile)
     print("======================================")
+    print("Total runtime: %s" % format_walltime(time.time() - starttime))
     print("Overall test result:")
     if (failed):
         if (not permissive):
@@ -969,6 +976,7 @@ def run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, compf
             deactivate_mccode_version(oldpath)
 
     print("======================================")
+    print("Total runtime: %s" % format_walltime(time.time() - starttime))
     print("Overall test result:")
     if anyfailed and not permissive:
         print("FAILED! One or more configs errored")
@@ -977,6 +985,7 @@ def run_config_test(testdir, mccoderoot, limit, configfilter, instrfilter, compf
 
 
 
+starttime = time.time()
 ncount = None
 mpi = None
 openacc = None
