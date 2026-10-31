@@ -78,6 +78,9 @@
 * An ad-hoc method for future implementation of "engineering reality" is included, use the
 * "c_performance/t_performance" parameters to down-scale performance uniformly across all wavelengths.
 * 
+* <b>ESS logo</b>
+* The ESS logo drawn in MCDISPLAY in place of the target wheel (logo=1) is © ESS. All rights reserved.
+* 
 * <b>References:</b>
 * <ol>
 * <li><A HREF="http://essbutterfly.mcstas.org/PDFs/Update_to_ESS_moderators_KHA_latest.pdf">Release document "Update to ESS Moderators, latest version"</a>
