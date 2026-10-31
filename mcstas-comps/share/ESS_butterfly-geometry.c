@@ -28,7 +28,8 @@ double butterfly_e_x2[]= {3.3156e-05,  5.8985e-02,  1.1701e-01};
 /* BEGIN generated ESS logo data (by ESS_butterfly-logo.py, do not edit by hand):
    ESS emblem from the ess.eu logo (themes/custom/ess/graphics/logo-small.svg), 7 contours
    (holes running opposite to outlines) of 439 points in total, centred and scaled to unit
-   diameter with u to the right and v up, plus 437 cap triangles (indices into the points) */
+   diameter with u to the right and v up, plus 437 cap triangles (indices into the points).
+   The ESS logo is (c) ESS. All rights reserved. */
 int ess_logo_ncontours = 7;
 int ess_logo_contours[] = {0, 90, 90, 101, 191, 87, 278, 89, 367, 9, 376, 25, 401, 38};
 int ess_logo_npoints = 439;

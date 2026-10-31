@@ -5,7 +5,7 @@ Flattens the emblem outline of the ess.eu logo (https://ess.eu/themes/custom/ess
 into polygon contours, triangulates the filled area (ear clipping, holes bridged in) and writes the
 result as C arrays into ESS_butterfly-geometry.c, between the "BEGIN/END generated ESS logo data"
 markers. Coordinates are centred on the emblem and scaled to unit diameter (largest extent 1),
-u to the right and v upwards (SVG y flipped).
+u to the right and v upwards (SVG y flipped). The ESS logo is (c) ESS. All rights reserved.
 
 Usage: python3 ESS_butterfly-logo.py logo-small.svg ESS_butterfly-geometry.c [--dry-run]
                                      [--tolerance 0.25] [--preview preview.png]
@@ -225,8 +225,9 @@ def main():
            "   ESS emblem from the ess.eu logo (themes/custom/ess/graphics/logo-small.svg), %d contours"
            % len(rings),
            "   (holes running opposite to outlines) of %d points in total, centred and scaled to unit" % len(V),
-           "   diameter with u to the right and v up, plus %d cap triangles (indices into the points) */"
+           "   diameter with u to the right and v up, plus %d cap triangles (indices into the points)."
            % len(tris),
+           "   The ESS logo is (c) ESS. All rights reserved. */",
            "int ess_logo_ncontours = %d;" % len(rings),
            "int ess_logo_contours[] = {%s};" % ", ".join("%d, %d" % c for c in contours),
            "int ess_logo_npoints = %d;" % len(V)]
