@@ -25,8 +25,9 @@ double butterfly_e_z2[]= {-1.8501e-01, -1.2719e-01, -1.8501e-01};
 double butterfly_e_x2[]= {3.3156e-05,  5.8985e-02,  1.1701e-01};
 #pragma acc declare create(butterfly_e_x2)
 
-/* ESS emblem, digitised from the ess.eu logo (themes/custom/ess/graphics/logo-small.svg):
-   7 contours (outlines, holes reversed) of 439 points in total, centred and scaled to unit
+/* BEGIN generated ESS logo data (by ESS_butterfly-logo.py, do not edit by hand):
+   ESS emblem from the ess.eu logo (themes/custom/ess/graphics/logo-small.svg), 7 contours
+   (holes running opposite to outlines) of 439 points in total, centred and scaled to unit
    diameter with u to the right and v up, plus 437 cap triangles (indices into the points) */
 int ess_logo_ncontours = 7;
 int ess_logo_contours[] = {0, 90, 90, 101, 191, 87, 278, 89, 367, 9, 376, 25, 401, 38};
@@ -185,6 +186,7 @@ int ess_logo_triangles[] = {
   356, 357, 358, 433, 356, 358, 433, 358, 359, 433, 359, 360, 433, 360, 361, 433, 361, 362,
   432, 433, 362, 432, 362, 363, 432, 363, 364, 432, 364, 365, 432, 365, 366
 };
+/* END generated ESS logo data */
 
 /* Solid (--trace=2 only) vertical slab from y=ybot to y=ytop over the n points (px[i], pz[i]),
    as one polyhedron of triangles: two side-wall triangles per edge of the ncont closed contours,
@@ -280,7 +282,7 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   double BrT2_x, double BrT2_z, 
   double BrT3_x, double BrT3_z,
   double Br11, double Br12, double Br21, double Br22,
-  double Bfoc_XW, double Bfoc_YH)
+  double Bfoc_XW, double Bfoc_YH, int Blogo)
 {
   double y0;
   int j;
@@ -308,8 +310,11 @@ void butterfly_geometry(double Bdelta_y, int Bjmax, double Bcx, double Bcz,
   mcdis_pencolor("#0099dc"); /* back to ESS blue, as set in ESS_butterfly MCDISPLAY */
 
   /* ESS emblem in place of the target wheel (2.6 m diameter, 8 cm tungsten bricks): at the
-     proton-beam level, its rim at the beam impact point, centred downstream of it */
-  butterfly_ess_logo(rAx+1.3*anx, ay, rAz+1.3*anz, 2.6, 0.08, anx, anz);
+     proton-beam level, centred downstream of the beam impact point such that the arrowhead
+     sits inside the nearest swoosh, whose inner edge is at most 1.258 m from the emblem centre
+     within the 3 cm cone radius: 1.258 - 0.02 margin - 0.1 cone length = 1.138 m */
+  if (Blogo)
+    butterfly_ess_logo(rAx+1.138*anx, ay, rAz+1.138*anz, 2.6, 0.08, anx, anz);
 
   /* 120 degree "end of sector" lines */
   bbz = 2 * cos(DEG2RAD*61);
