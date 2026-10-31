@@ -420,8 +420,9 @@ jobs:
 
     # Instrument simulations (the steps from here up to and including "Check
     # for modified instruments") only run when the code generator, the runtime,
-    # mcrun or the mcxtrace components changed; other changes (CI, other tools,
-    # docs) only build. Scheduled and manual runs always simulate.
+    # mcrun/mccodelib/mctest, the mcxtrace components or this workflow changed; other
+    # changes (other CI, other tools, docs) only build. Scheduled and manual
+    # runs always simulate.
     - name: Check for simulation-relevant changes
       id: sims
       run: |
@@ -463,7 +464,7 @@ jobs:
            # Changed files (doc-header-only .comp/.instr edits left out, see
            # devel/bin/mccode-git-diff-code) plus deleted files
            CHANGED=$(${PY} devel/bin/mccode-git-diff-code "$DIFFBASE" HEAD && git diff --name-only --diff-filter=D "$DIFFBASE" HEAD)
-           RELEVANT=$(echo "$CHANGED" | grep -E '^(mccode|common|tools/Python/mcrun|mcxtrace-comps)/' || true)
+           RELEVANT=$(echo "$CHANGED" | grep -E '^((mccode|common|tools/Python/(mcrun|mccodelib|mctest)|mcxtrace-comps)/|\.github/workflows/mcxtrace-basictest\.yml$)' || true)
            echo "Simulation-relevant changes: ${RELEVANT:-none}"
            if [ -n "$RELEVANT" ]; then
              echo "run=true" >> "$GITHUB_OUTPUT"
