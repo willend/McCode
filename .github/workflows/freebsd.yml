@@ -80,6 +80,18 @@ jobs:
                echo "run=false" >> "$GITHUB_OUTPUT"
              fi
 
+      # Shell comments are kept out of the VM script below: the action appears to cut off
+      # a long script (the McStas leg lost its last characters at ~3.7 kB).
+      # FreeBSD's clang does not search /usr/local, so GSL and HDF5 dirs are passed explicitly.
+      # mpich, not openmpi: the openmpi pkg keeps mpicc/mpirun outside PATH.
+      # MPI builds use base cc + mpich paths, not mpich's mpicc: mpicc links with binutils ld,
+      # which lacks LLVMgold.so for the -flto that cmake probed with cc/lld.
+      # Python modules by port origin: follows the default Python flavour (pyXYZ-) on pkg updates.
+      # MCPL (and NCrystal for McStas) from PyPI (sdist builds, as in their own FreeBSD CI);
+      # McCode finds them at instrument compile time via mcpl-config / ncrystal-config on PATH.
+      # RNG test (same expected checksum as the basictests)
+      # MPI event-list, NeXus output and mcplot loader regression tests.
+      # No SIGTERM check: the runtime installs its sighandler with OpenMPI only (MPICH uses signals).
       - name: FreeBSD
         uses: cross-platform-actions/action@v1.3.0
         with:
@@ -87,14 +99,7 @@ jobs:
           version: '14.2'
           run: |
             set -eux
-            # FreeBSD's clang does not search /usr/local, so GSL and HDF5 dirs are passed explicitly.
-            # mpich, not openmpi: the openmpi pkg keeps mpicc/mpirun outside PATH.
-            # MPI builds use base cc + mpich paths, not mpich's mpicc: mpicc links with binutils ld,
-            # which lacks LLVMgold.so for the -flto that cmake probed with cc/lld.
-            # Python modules by port origin: follows the default Python flavour (pyXYZ-) on pkg updates.
             sudo pkg install -y devel/cmake-core bison flex gsl hdf5 mpich python3 devel/py-pip devel/py-pyyaml devel/py-ply sysutils/py-psutil math/py-numpy science/py-h5py
-            # MCPL (and NCrystal for McStas) from PyPI (sdist builds, as in their own FreeBSD CI);
-            # McCode finds them at instrument compile time via mcpl-config / ncrystal-config on PATH.
             python3 -mpip install --user ${{ matrix.pip }}
             PATH="$HOME/.local/bin:$PATH"
             export PATH
@@ -130,14 +135,10 @@ jobs:
               echo "No simulation-relevant changes - skipping the instrument simulations"
               exit 0
             fi
-            # RNG test (same expected checksum as the basictests)
             ${{ matrix.mctest }} --verbose --noplots --instr=Test_RNG_rand01 --testdir=run_rngtest --suffix=classic_freebsd --uid=freebsd
             SUM=$(find run_rngtest -name rngout.dat | xargs -n1 grep -v \# | md5 -q)
             test "$SUM" = "6c203d69205b0656c1391555e6068c93"
-            # Basic tests
             ${{ matrix.mctest }} --verbose --noplots --mpi=2 --instr=${{ matrix.instr }} --testdir=run_basictests --suffix=classic_freebsd_cc_mpich --uid=freebsd
-            # MPI event-list, NeXus output and mcplot loader regression tests.
-            # No SIGTERM check: the runtime installs its sighandler with OpenMPI only (MPICH uses signals).
             python3 src/${{ matrix.flavor }}-comps/examples/${{ matrix.mpilists }}/Test_Monitor_nD_list_MPI/test_mpi_lists.py --np 2 --mcrun ${{ matrix.mcrun }} --workdir run_mpilists --sigterm-ncount 0
             python3 src/${{ matrix.flavor }}-comps/examples/Tests_other/Test_NeXus_output/test_nexus_output.py --np 2 --mcrun ${{ matrix.mcrun }} --workdir run_nexusoutput
             python3 src/${{ matrix.flavor }}-comps/examples/Tests_other/Test_mcplot_loader/test_mcplot_loader.py --mcrun ${{ matrix.mcrun }} --workdir run_mcplotloader
