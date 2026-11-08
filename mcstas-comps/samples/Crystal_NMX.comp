@@ -1,0 +1,71 @@
+/*******************************************************************************
+*
+* McStas, neutron ray-tracing package
+*         Copyright (C) 1997-2026, All rights reserved
+*         DTU Physics, Kgs. Lyngby, Denmark
+*
+* Component: Crystal_NMX
+*
+* %I
+* Written by: Peter Willendrup
+* Date: November 2026
+* Origin: DTU
+*
+* Macromolecular single crystal from a PDB or mmCIF model.
+*
+* %D
+* Single_crystal that also accepts a PDB (.pdb, .ent) or mmCIF (.cif, .mmcif)
+* model as 'reflections'. The model is converted at INITIALIZE by
+* mmcif2lau.py (in the McStas data directory, needs the gemmi Python package)
+* into a list of neutron |F|^2 down to 'dmin', saved as NAME_CURRENT_COMP.lau
+* in the output directory. Any other 'reflections' file is passed on unchanged.
+* All other parameters and behaviour are those of Single_crystal.
+*
+* The converter uses the atoms as given: X-ray models usually lack H/D, which
+* dominate neutron intensities, so add them to the model first. Set sigma_abs
+* and sigma_inc (per unit cell) yourself, they are not derived from the model.
+*
+* Example: Crystal_NMX(xwidth=0.001, yheight=0.001, zdepth=0.001, mosaic=1e-4,
+*          reflections="6lyz.pdb", dmin=2, order=1)
+*
+* %P
+* dmin: [Angs]          Smallest d-spacing of the computed reflection list.
+* reflections: [string] PDB/mmCIF model, or any Single_crystal reflection file.
+*
+* %L
+* gemmi: https://gemmi.readthedocs.io
+*
+* %E
+*******************************************************************************/
+
+DEFINE COMPONENT Crystal_NMX INHERIT Single_crystal
+SETTING PARAMETERS (dmin = 1.5)
+
+INITIALIZE
+EXTEND
+%{
+  const char* ext = strrchr (reflections, '.');
+  if (ext && (!strcasecmp (ext, ".pdb") || !strcasecmp (ext, ".ent") || !strcasecmp (ext, ".cif") || !strcasecmp (ext, ".mmcif"))) {
+    char model[1024], script[1024], lau[1024], cmd[4096];
+    FILE* f = Open_File (reflections, "r", model);
+    if (!f)
+      exit (fprintf (stderr, "Crystal_NMX: %s: ERROR: cannot open %s\n", NAME_CURRENT_COMP, reflections));
+    fclose (f);
+    f = Open_File ("mmcif2lau.py", "r", script);
+    if (!f)
+      exit (fprintf (stderr, "Crystal_NMX: %s: ERROR: cannot find mmcif2lau.py\n", NAME_CURRENT_COMP));
+    fclose (f);
+    snprintf (lau, sizeof (lau), "%s%s%s.lau", dirname ? dirname : "", dirname ? MC_PATHSEP_S : "", NAME_CURRENT_COMP);
+    // ponytail: assumes 'python' with gemmi on PATH (true in the conda env)
+    snprintf (cmd, sizeof (cmd), "python \"%s\" \"%s\" %g > \"%s\"", script, model, dmin, lau);
+    MPI_MASTER (printf ("Crystal_NMX: %s: converting %s with dmin=%g\n", NAME_CURRENT_COMP, model, dmin);
+                if (system (cmd)) exit (fprintf (stderr, "Crystal_NMX: %s: ERROR: failed: %s\n", NAME_CURRENT_COMP, cmd)););
+    #ifdef USE_MPI
+    MPI_Barrier (MPI_COMM_WORLD);
+    #endif
+    strcpy (reflections, lau);
+  }
+%}
+INHERIT Single_crystal
+
+END

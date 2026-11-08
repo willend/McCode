@@ -1,0 +1,54 @@
+/*******************************************************************************
+*         McStas instrument definition URL=http://www.mcstas.org
+*
+* Instrument: Test_Crystal_NMX
+*
+* %Identification
+* Written by: Peter Willendrup
+* Date: November 2026
+* Origin: DTU
+* %INSTRUMENT_SITE: Tests_samples
+*
+* Test of Crystal_NMX, the templateNMX Laue setup with a PDB model as input.
+*
+* %Description
+* A single crystal sample is illuminated with a white cold beam.
+*
+* %Test: Test_Crystal_NMX reflections=6lyz.pdb Detector: det_I=7.6e4
+*
+* %Parameters
+* REPS: [ ] Number of SPLIT repetitions
+* dmin: [Angs] Smallest d-spacing computed from the model
+* reflections: [string] PDB/mmCIF model or reflection list
+*
+* %End
+*******************************************************************************/
+/* Change name of instrument and input parameters with default values */
+DEFINE INSTRUMENT Test_Crystal_NMX(REPS=1, string reflections="6lyz.pdb", dmin=2)
+
+TRACE
+
+COMPONENT Origin = Progress_bar()
+  AT (0,0,0) ABSOLUTE
+
+COMPONENT source = Source_simple(
+  radius=0.02, focus_xw=0.001, focus_yh=0.001,
+  lambda0=7, dlambda=5, flux=1e12)
+AT (0,0,0) ABSOLUTE
+
+COMPONENT slit = Slit(
+  xwidth=0.001, yheight=0.001)
+AT (0,0,5) RELATIVE source
+
+SPLIT REPS COMPONENT sample = Crystal_NMX(
+          xwidth=0.001, yheight=0.001, zdepth=0.001, mosaic=1e-4,
+          reflections=reflections, dmin=dmin, order=1)
+AT (0,0,0.10) RELATIVE slit
+EXTEND %{
+  if (!SCATTERED) ABSORB; /* perfect beam stop */
+%}
+
+COMPONENT det= PSD_monitor_4PI(radius=1, nx=360,ny=180,filename="psd")
+AT (0,0,0) RELATIVE sample
+
+END
