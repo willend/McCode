@@ -667,6 +667,26 @@ static struct
   }
 };
 
+/* mcparm_print: the current value of instrument parameter i as a string, to be freed */
+static char *mcparm_print(int i)
+{
+  char  *par  = (char *)mcinputtable[i].par, *str;
+  size_t size = CHAR_BUF_LENGTH;
+  if (par && (mcinputtable[i].type == instr_type_string || mcinputtable[i].type == instr_type_char)
+   && *(char **)par)
+    size += 2*strlen(*(char **)par); /* escaped characters take two */
+  else if (!par && mcinputtable[i].val)
+    size += strlen(mcinputtable[i].val);
+  str = (char *)calloc(size, 1);
+  if (!str) {
+    fprintf(stderr, "Error: Out of memory %li (mcparm_print)\n", (long)size);
+    exit(-1);
+  }
+  if (par) (*mcinputtypes[mcinputtable[i].type].printer)(str, par);
+  else if (mcinputtable[i].val) strcpy(str, mcinputtable[i].val);
+  return(str);
+} /* mcparm_print */
+
 /*******************************************************************************
 * mcestimate_error: compute sigma from N,p,p2 in Gaussian large numbers approx
 *******************************************************************************/
@@ -1277,14 +1297,11 @@ static void mcruninfo_out(char *pre, FILE *f)
   /* output parameter string ================================================ */
   for(i = 0; i < numipar; i++) {
       if (mcinputtable[i].par){
-	/* Parameters with a default value */
-	if(mcinputtable[i].val && strlen(mcinputtable[i].val)){
-	  (*mcinputtypes[mcinputtable[i].type].printer)(Parameters, mcinputtable[i].par);
-	  fprintf(f, "%sParam: %s=%s\n", pre, mcinputtable[i].name, Parameters);
-        /* ... and those without */
-	}else{
-	  fprintf(f, "%sParam: %s=NULL\n", pre, mcinputtable[i].name);
-	}
+        char *value = mcparm_print(i);
+        /* stdout (--info): the options are not parsed yet, only defaults are known */
+        int   known = f != stdout || (mcinputtable[i].val && strlen(mcinputtable[i].val));
+        fprintf(f, "%sParam: %s=%s\n", pre, mcinputtable[i].name, known && strlen(value) ? value : "NULL");
+        free(value);
       }
   }
   fflush(f);
@@ -2096,17 +2113,11 @@ static void mcinfo_out_nexus(NXhandle f)
       if (NXmakegroup(f, "Param", "NXparameters") == NX_OK) {
 	NXopengroup(f,"Param", "NXparameters");
         int i;
-        char string[CHAR_BUF_LENGTH];
         for(i = 0; i < numipar; i++) {
-          if (mcget_run_num() || (mcinputtable[i].val && strlen(mcinputtable[i].val))) {
-            if (mcinputtable[i].par == NULL)
-              snprintf(string, CHAR_BUF_LENGTH, "%s", (mcinputtable[i].val ? mcinputtable[i].val : ""));
-            else
-              (*mcinputtypes[mcinputtable[i].type].printer)(string, mcinputtable[i].par);
-
-            nxprintf(f,  mcinputtable[i].name, "%s", string);
-            nxprintattr(f, mcinputtable[i].name, "%s", string);
-          }
+          char *value = mcparm_print(i);
+          nxprintf(f,  mcinputtable[i].name, "%s", value);
+          nxprintattr(f, mcinputtable[i].name, "%s", value);
+          free(value);
         }
         NXclosegroup(f); /* Param */
       } /* NXparameters */
