@@ -3228,6 +3228,32 @@ MCDETECTOR mcdetector_out_0D(char *t, double p0, double p1, double p2,
 
 
 /*******************************************************************************
+* mcsave_copy: copy of a monitor array for an intermediate save, as the output
+*   sums over MPI nodes and turns p2 into sigma in place. The final save works
+*   on the array itself, to not use more memory.
+*******************************************************************************/
+static double *mcsave_copy(double *p, long n)
+{
+  double *copy;
+  if (mcsave_final || !p || !n) return(p);
+  copy = (double *)malloc(n*sizeof(double));
+  if (!copy) {
+    fprintf(stderr, "Error: Out of memory %li (mcsave_copy)\n", (long)(n*sizeof(double)));
+    exit(-1);
+  }
+  return((double *)memcpy(copy, p, n*sizeof(double)));
+} /* mcsave_copy */
+
+/* mcsave_free: free the copies and let the detector refer to the monitor arrays */
+static void mcsave_free(MCDETECTOR *detector, double *p0, double *p1, double *p2,
+                        double *c0, double *c1, double *c2)
+{
+  if (c0 != p0) { if (detector->p0 == c0) detector->p0 = p0; free(c0); }
+  if (c1 != p1) { if (detector->p1 == c1) detector->p1 = p1; free(c1); }
+  if (c2 != p2) { if (detector->p2 == c2) detector->p2 = p2; free(c2); }
+} /* mcsave_free */
+
+/*******************************************************************************
 * mcdetector_out_1D: wrapper for 1D.
 *   Output 1d detector data (p0, p1, p2) for n bins linearly
 *   distributed across the range x1..x2 (x1 is lower limit of first
@@ -3257,6 +3283,7 @@ MCDETECTOR mcdetector_out_1D(char *t, char *xl, char *yl,
         char *c, Coords posa, Rotation rota, int index)
 {
   /* import and perform basic detector analysis (and handle MPI_Reduce) */
+  double *c0 = mcsave_copy(p0, labs(n)), *c1 = mcsave_copy(p1, labs(n)), *c2 = mcsave_copy(p2, labs(n));
   // detector_import calls mcdetector_statistics, which will return different
   // MCDETECTOR versions for 1-D data based on the value of mcformat.
   //
@@ -3266,8 +3293,11 @@ MCDETECTOR mcdetector_out_1D(char *t, char *xl, char *yl,
     xl, yl, (n > 1 ? "Signal per bin" : " Signal"),
     xvar, "(I,I_err)", "I",
     x1, x2, 0, 0, 0, 0, f,
-    p0, p1, p2, posa, rota, index); /* write Detector: line */
-  if (!detector.p1 || !detector.m) return(detector);
+    c0, c1, c2, posa, rota, index); /* write Detector: line */
+  if (!detector.p1 || !detector.m) {
+    mcsave_free(&detector, p0, p1, p2, c0, c1, c2);
+    return(detector);
+  }
 
 #ifdef USE_NEXUS
   if (strcasestr(detector.format, "NeXus"))
@@ -3275,7 +3305,7 @@ MCDETECTOR mcdetector_out_1D(char *t, char *xl, char *yl,
   else
 #endif
     detector = mcdetector_out_1D_ascii(detector);
-  if (detector.p1 != p1 && detector.p1) {
+  if (detector.p1 != c1 && detector.p1) {
     // mcdetector_statistics allocated memory but it hasn't been freed.
     free(detector.p1);
     // plus undo the other damage done there:
@@ -3286,6 +3316,7 @@ MCDETECTOR mcdetector_out_1D(char *t, char *xl, char *yl,
     detector.n = 1;  // not (n x n)
     detector.istransposed = n < 0 ? 1 : 0;
   }
+  mcsave_free(&detector, p0, p1, p2, c0, c1, c2);
   return detector;
 
 } /* mcdetector_out_1D */
@@ -3330,6 +3361,8 @@ MCDETECTOR mcdetector_out_2D(char *t, char *xl, char *yl,
   else strcpy(yvar, "y");
 
   MCDETECTOR detector;
+  long    mn = labs(m*n);
+  double *c0 = mcsave_copy(p0, mn), *c1 = mcsave_copy(p1, mn), *c2 = mcsave_copy(p2, mn);
 
   /* import and perform basic detector analysis (and handle MPI_Reduce) */
   if (labs(m) == 1) {/* n>1 on Y, m==1 on X: 1D, no X axis*/
@@ -3339,7 +3372,7 @@ MCDETECTOR mcdetector_out_2D(char *t, char *xl, char *yl,
       yl, "", "Signal per bin",
       yvar, "(I,Ierr)", "I",
       y1, y2, x1, x2, 0, 0, f,
-      p0, p1, p2, posa, rota, index); /* write Detector: line */
+      c0, c1, c2, posa, rota, index); /* write Detector: line */
   } else if (labs(n)==1) {/* m>1 on X, n==1 on Y: 1D, no Y axis*/
     detector = detector_import(mcformat,
       c, (t ? t : MCCODE_STRING " 1D data"),
@@ -3347,7 +3380,7 @@ MCDETECTOR mcdetector_out_2D(char *t, char *xl, char *yl,
       xl, "", "Signal per bin",
       xvar, "(I,Ierr)", "I",
       x1, x2, y1, y2, 0, 0, f,
-      p0, p1, p2, posa, rota, index); /* write Detector: line */
+      c0, c1, c2, posa, rota, index); /* write Detector: line */
   }else {
     detector = detector_import(mcformat,
       c, (t ? t : MCCODE_STRING " 2D data"),
@@ -3355,17 +3388,19 @@ MCDETECTOR mcdetector_out_2D(char *t, char *xl, char *yl,
       xl, yl, "Signal per bin",
       xvar, yvar, "I",
       x1, x2, y1, y2, 0, 0, f,
-      p0, p1, p2, posa, rota, index); /* write Detector: line */
+      c0, c1, c2, posa, rota, index); /* write Detector: line */
   }
 
-  if (!detector.p1 || !detector.m) return(detector);
-
+  if (detector.p1 && detector.m) {
 #ifdef USE_NEXUS
-  if (strcasestr(detector.format, "NeXus"))
-    return(mcdetector_out_2D_nexus(detector));
-  else
+    if (strcasestr(detector.format, "NeXus"))
+      detector = mcdetector_out_2D_nexus(detector);
+    else
 #endif
-    return(mcdetector_out_2D_ascii(detector));
+      detector = mcdetector_out_2D_ascii(detector);
+  }
+  mcsave_free(&detector, p0, p1, p2, c0, c1, c2);
+  return(detector);
 
 } /* mcdetector_out_2D */
 
