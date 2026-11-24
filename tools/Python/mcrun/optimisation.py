@@ -71,7 +71,8 @@ def build_header(options, params, intervals, detectors):
     date = datetime.strftime(datetime.now(), '%a %b %d %H %M %Y')
 
     # Strip header keys of -- (to make --seed -> seed
-    hdrparams = {key.lstrip('-') for key in params}
+    # in the order of the data columns
+    hdrparams = [key.lstrip('-') for key in params]
     xvars = ', '.join(hdrparams)
     lst = intervals[list(params)[0]]
     if options.list:
