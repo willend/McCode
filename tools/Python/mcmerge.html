@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>mcmerge / mxmerge</title>
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #fff;
+}
+h1, h2, h3 { line-height: 1.25; }
+h1 { border-bottom: 2px solid #e1e4e8; padding-bottom: 0.4rem; }
+h2 { border-bottom: 1px solid #e1e4e8; padding-bottom: 0.3rem; margin-top: 2.2rem; }
+h3 { margin-top: 1.6rem; }
+a { color: #0969da; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code {
+    background: #f6f8fa;
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+}
+pre {
+    background: #f6f8fa;
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+pre code { background: none; padding: 0; }
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.95em;
+}
+th, td {
+    border: 1px solid #d0d7de;
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+    vertical-align: top;
+}
+th { background: #f6f8fa; font-weight: 600; }
+tr:nth-child(even) { background: #fbfbfb; }
+hr { border: none; border-top: 1px solid #e1e4e8; margin: 2rem 0; }
+em { color: #57606a; }
+.nav-top, .nav-bottom { margin-bottom: 1.5rem; }
+.nav-bottom { margin-top: 2.5rem; }
+</style>
+</head>
+<body>
+<p><a href="README.html">&larr; back to overview</a></p>
+<h1 id="mcmerge-mxmerge">mcmerge / mxmerge</h1>
+<p>Merges 2 or more datasets (runs or scans, ASCII or NeXus) into a new one:</p>
+<pre><code>mcmerge -d OUT [--format McCode|NeXus] [--force] DATASET DATASET ...
+</code></pre>
+<ul>
+<li>Same parameter values: pooled, as if simulated in one run of all rays. Histograms and errors are combined
+  from the ray counts, event lists are concatenated with rescaled weights.</li>
+<li>Different parameter values: a new scan. The points of scans with the same values are pooled.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>datasets</code></td>
+<td>dataset directories, 2 or more</td>
+</tr>
+<tr>
+<td><code>-d</code>, <code>--dir OUT</code></td>
+<td>output directory, must not exist</td>
+</tr>
+<tr>
+<td><code>--format FMT</code></td>
+<td><code>McCode</code> (ASCII) or <code>NeXus</code> (default: as the first dataset)</td>
+</tr>
+<tr>
+<td><code>--force</code></td>
+<td>merge doubtful datasets anyway</td>
+</tr>
+</tbody>
+</table>
+<p>The output lists its input runs as <code>Merged_from</code>. Forced merges are marked with <code>Merged_forced</code>: <strong>the result may be wrong</strong>.</p>
+<h2 id="what-is-refused">What is refused</h2>
+<table>
+<thead>
+<tr>
+<th>Always</th>
+<th>Unless <code>--force</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OUT</code> exists, less than 2 datasets</td>
+<td>made before McCode 3.10.3 (may be an interrupted run)</td>
+</tr>
+<tr>
+<td>unreadable data, missing event files</td>
+<td>other McCode version, gravitation, trace mode or instrument source</td>
+</tr>
+<tr>
+<td>interrupted runs, incomplete scans</td>
+<td>parameter values that were not recorded</td>
+</tr>
+<tr>
+<td>other instrument or monitors</td>
+<td>overlapping seeds: with MPI, node <em>i</em> uses seed+<em>i</em></td>
+</tr>
+<tr>
+<td>same parameters, but other number of bins or list columns</td>
+<td>other limits of a monitor, e.g. <code>auto</code> in <code>Monitor_nD</code></td>
+</tr>
+<tr>
+<td>log of the signal in <code>Monitor_nD</code></td>
+<td>intensities that differ by more than 5 sigma</td>
+</tr>
+<tr>
+<td></td>
+<td>intermediate saves by McCode 3.10.3 or older</td>
+</tr>
+<tr>
+<td></td>
+<td>event lists without <code>p</code> column</td>
+</tr>
+</tbody>
+</table>
+<h2 id="not-seen-by-mcmerge">Not seen by mcmerge</h2>
+<ul>
+<li><code>signal=</code> monitors of <code>Monitor_nD</code> run with MPI in McCode 3.10.3 or older are wrong.</li>
+<li>Same MCPL input file in all runs: these are not independent, however different the seeds.</li>
+<li>Parameter values that differ beyond the 6 digits recorded.</li>
+<li>NeXus files do not record the number of MPI nodes: keep the seeds at least that far apart.</li>
+</ul>
+<p>MCPL files are not merged: use <code>mcpltool --merge</code>.</p>
+</body>
+</html>
