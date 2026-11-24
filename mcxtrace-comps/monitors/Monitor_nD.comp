@@ -44,8 +44,7 @@
 *
 * The 'bins' and 'limits' modifiers are to be used after each variable,
 * and 'auto','log' and 'abs' come before it. (eg: auto abs log hdiv bins=10
-* limits=[-5 5]) When placed after all variables,  these two latter modifiers
-* apply to the signal (e.g. intensity). Unknown keywords are ignored.
+* limits=[-5 5]) Unknown keywords are ignored.
 * If no limits are specified for a given observable, reasonable defaults will be
 * applied. Note that these implicit limits are <b>even</b> applied in list mode. 
 *
@@ -116,7 +115,7 @@
 *     incoming                  Monitor incoming beam in non flat det
 *     limits=[min max]          Lower/Upper limits for axes (see up for the variable unit)
 *     list=[counts=1000] or all For a long file of photon characteristics with [counts] or all events
-*     log                       Will monitor the log of the following variable or of the signal (if used after all variables)
+*     log                       Will monitor the log10 of the following variable
 *     min=[min_value]           Same as limits, but only sets the min or max
 *     max=[max_value]
 *     multiple                  Create multiple independant 1D monitors files

@@ -165,7 +165,7 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
     Vars->Flag_Auto_Limits  = 0;   /* get limits from first Buffer */
     Vars->Flag_Absorb       = 0;   /* monitor is also a slit */
     Vars->Flag_per_cm2      = 0;   /* flux is per cm2 */
-    Vars->Flag_log          = 0;   /* log10 of the flux */
+    Vars->Flag_log          = 0;   /* log10 of the next variable */
     Vars->Flag_parallel     = 0;   /* set neutron state back after detection (parallel components) */
     Vars->Flag_Binary_List  = 0;   /* save list as a binary file (smaller) */
     Vars->Coord_Number      = 0;   /* total number of variables to monitor, plus intensity (0) */
@@ -606,7 +606,9 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
 
     if ((Vars->Flag_Shape == DEFS->SHAPE_BOX) && (fabs(Vars->mzmax - Vars->mzmin) == 0)) Vars->Flag_Shape = DEFS->SHAPE_SQUARE;
 
-    if (Vars->Flag_log == 1) Vars->Coord_Type[0] |= DEFS->COORD_LOG;
+    if (Vars->Flag_log == 1)
+      MPI_MASTER(printf("Monitor_nD: %s: log of the signal is no longer supported, linear data is written.\n"
+                        "WARNING     use the log scale when plotting instead.\n", Vars->compcurname););
     if (Vars->Coord_Number == 0)
     { Vars->Flag_Auto_Limits=0; Vars->Flag_Multiple=0; Vars->Flag_List=0; }
 
@@ -765,7 +767,6 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
         strcat(Vars->Monitor_Label, " at ");
         strncat(Vars->Monitor_Label, Vars->UserName1,30);
     }
-    if (Vars->Flag_log == 1) strcat(Vars->Monitor_Label, " [log] ");
 
     /* now allocate memory to store variables in TRACE */
 
@@ -1827,14 +1828,6 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
             else
             {
               double *Ntot = Vars->Flag_signal != DEFS->COORD_P ? Monitor_nD_Ntot(Vars->Mon2D_N[i], Vars->Coord_Bin[i+1]) : NULL;
-              if (Vars->Flag_log != 0)
-              {
-                XY = FLT_MAX;
-                for (j=0; j < Vars->Coord_Bin[i+1]; j++) /* search min of signal */
-                  if ((XY > Vars->Mon2D_p[i][j]) && (Vars->Mon2D_p[i][j] > 0)) XY = Vars->Mon2D_p[i][j];
-                if (XY <= 0) XY = -log(FLT_MAX)/log(10); else XY = log(XY)/log(10)-1;
-              } /* if */
-
               for (j=0; j < Vars->Coord_Bin[i+1]; j++)
               {
                 p1m[j] = Vars->Mon2D_p[i][j];
@@ -1843,19 +1836,6 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
                 { /* normalize mean signal to the number of events */
                   p1m[j] /= Ntot[j];
                   p2m[j] /= Ntot[j]*Ntot[j];
-                }
-                if (Vars->Flag_log != 0)
-                {
-                  if ((p1m[j] > 0) && (p2m[j] > 0))
-                  {
-                    p2m[j] /= p1m[j]*p1m[j];
-                    p1m[j] = log(p1m[j])/log(10);
-                  }
-                  else
-                  {
-                    p1m[j] = XY;
-                    p2m[j] = 0;
-                  }
                 }
               } /* for */
               free(Ntot);
@@ -1898,14 +1878,6 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
         }
         else
         {
-          if (Vars->Flag_log != 0)
-          {
-            XY = FLT_MAX;
-            for (i= 0; i < Vars->Coord_Bin[1]; i++)
-              for (j= 0; j < Vars->Coord_Bin[2]; j++) /* search min of signal */
-                if ((XY > Vars->Mon2D_p[i][j]) && (Vars->Mon2D_p[i][j]>0)) XY = Vars->Mon2D_p[i][j];
-            if (XY <= 0) XY = -log(FLT_MAX)/log(10); else XY = log(XY)/log(10)-1;
-          }
           for (i= 0; i < Vars->Coord_Bin[1]; i++)
           {
             double *Ntot = Vars->Flag_signal != DEFS->COORD_P ? Monitor_nD_Ntot(Vars->Mon2D_N[i], Vars->Coord_Bin[2]) : NULL;
@@ -1920,21 +1892,6 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
               {
                   p1m[index] /= Ntot[j];
                   p2m[index] /= Ntot[j]*Ntot[j];
-              }
-
-              if (Vars->Flag_log != 0)
-              {
-                if ((p1m[index] > 0) && (p2m[index] > 0))
-                {
-                  p2m[index] /= (p1m[index]*p1m[index]);
-                  p1m[index] = log(p1m[index])/log(10);
-
-                }
-                else
-                {
-                  p1m[index] = XY;
-                  p2m[index] = 0;
-                }
               }
             }
             free(Ntot);

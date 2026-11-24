@@ -135,7 +135,7 @@
     char   Flag_Auto_Limits  ;   /* get limits from first Buffer */
     char   Flag_Absorb       ;   /* monitor is also a slit */
     char   Flag_per_cm2      ;   /* flux is per cm2 */
-    char   Flag_log          ;   /* log10 of the flux */
+    char   Flag_log          ;   /* log10 of the next variable */
     char   Flag_parallel     ;   /* set neutron state back after detection (parallel components) */
     char   Flag_Binary_List  ;
     char   Flag_capture      ;   /* lambda monitor with lambda/lambda(2200m/s = 1.7985 Angs) weightening */

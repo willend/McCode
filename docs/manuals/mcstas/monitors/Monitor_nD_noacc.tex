@@ -15,7 +15,7 @@ This component is a general Monitor that can output 0/1/2D signals
 \subsection*{Description}
 This component is a general Monitor that can output 0/1/2D signals It can produce many 1D signals (one for any variable specified in option list), or a single 2D output (two variables correlation). Also, an additional 'list' of neutron events can be produced. By default, monitor is square (in x/y plane). A disk shape is also possible The 'cylinder' and 'banana' option will change that for a banana shape The 'sphere' option simulates spherical detector. The 'box' is a box. The cylinder, sphere and banana should be centered on the scattering point. The 'geometry' parameter uses an OFF, PLY or STL mesh file as the detector surface instead, and overrides the shape options. Non-zero xwidth, yheight, zdepth resize the mesh bounding box (a single one keeps the proportions); the mesh is not re-centred. With the 'mantid' option, each face of the file is one pixel (pixel id = face index + pixel min). The monitored flux may be per monitor unit area, and weighted by a lambda/lambda(2200m/s) factor to obtain standard integrated capture flux. In normal configuration, the Monitor\_nD measures the current parameters of the neutron that is being detected. USERVARS may be used in order to study correlations between a neutron being detected in a Monitor\_nD place, and given parameters that are monitored elsewhere (at the point of initialisation of the USERVARS). The monitor can also act as a 3He gas detector, taking into account the detection efficiency.
 
-The 'bins' and 'limits' modifiers are to be used after each variable, and 'auto','log' and 'abs' come before it. (eg: auto abs log hdiv bins=10 limits=[-5 5]) When placed after all variables, these two latter modifiers apply to the signal (e.g. intensity). Unknown keywords are ignored. If no limits are specified for a given observable, reasonable defaults will be applied. Note that these implicit limits are \textbf{even} applied in list mode.
+The 'bins' and 'limits' modifiers are to be used after each variable, and 'auto','log' and 'abs' come before it. (eg: auto abs log hdiv bins=10 limits=[-5 5]) Unknown keywords are ignored. If no limits are specified for a given observable, reasonable defaults will be applied. Note that these implicit limits are \textbf{even} applied in list mode.
 
 \textbf{Implicit limits for typical variables:} (consult monitor\_nd-lib.c if you don't find your variable here) x, y, z: Derived from detection-object geometry
 
@@ -96,7 +96,7 @@ limits=[min max]          Lower/Upper limits for axes (see up for the variable u
 list=[counts=1000] or all For a long file of neutron characteristics with [counts] or all events
 
 \begin{verbatim}
-log                       Will monitor the log of the following variable or of the signal (if used after all variables)
+log                       Will monitor the log10 of the following variable
 min=[min_value]           Same as limits, but only sets the min or max
 \end{verbatim}
 
