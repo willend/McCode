@@ -1548,6 +1548,25 @@ int Monitor_nD_Trace(MonitornD_Defines_type *DEFS, MonitornD_Variables_type *Var
 } /* end Monitor_nD_Trace */
 
 /* ========================================================================= */
+/* Monitor_nD_Ntot: n event counts, summed over the MPI nodes. The mean      */
+/*   signal of a node is p/Ntot, as the output adds up the nodes             */
+/* ========================================================================= */
+
+static double *Monitor_nD_Ntot(double *N, long n)
+{
+  double *Ntot = (double *)malloc(n*sizeof(double));
+  if (!Ntot) {
+    fprintf(stderr, "Error: Out of memory %li (Monitor_nD_Ntot)\n", (long)(n*sizeof(double)));
+    exit(-1);
+  }
+  memcpy(Ntot, N, n*sizeof(double));
+  #ifdef USE_MPI
+  if (mpi_node_count > 1) mc_MPI_Sum(Ntot, n);
+  #endif
+  return Ntot;
+} /* Monitor_nD_Ntot */
+
+/* ========================================================================= */
 /* Monitor_nD_Save: this routine is used to save data files                  */
 /* ========================================================================= */
 
@@ -1722,8 +1741,12 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
       Nsum = Vars->Nsum;
       psum = Vars->psum;
       p2sum= Vars->p2sum;
-      if (Vars->Flag_signal != DEFS->COORD_P && Nsum > 0)
-      { psum /=Nsum; p2sum /= Nsum*Nsum; }
+      if (Vars->Flag_signal != DEFS->COORD_P)
+      {
+        double *Ntot = Monitor_nD_Ntot(&Nsum, 1);
+        if (*Ntot > 0) { psum /= *Ntot; p2sum /= *Ntot * *Ntot; }
+        free(Ntot);
+      }
       /* DETECTOR_OUT_0D(Vars->Monitor_Label, Vars->Nsum, Vars->psum, Vars->p2sum); */
       detector = mcdetector_out_0D(Vars->Monitor_Label, Nsum, psum, p2sum, Vars->compcurname, Vars->compcurpos, Vars->compcurrot,Vars->compcurindex);
     }
@@ -1803,6 +1826,7 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
             } /* if (p2m == NULL) */
             else
             {
+              double *Ntot = Vars->Flag_signal != DEFS->COORD_P ? Monitor_nD_Ntot(Vars->Mon2D_N[i], Vars->Coord_Bin[i+1]) : NULL;
               if (Vars->Flag_log != 0)
               {
                 XY = FLT_MAX;
@@ -1815,10 +1839,10 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
               {
                 p1m[j] = Vars->Mon2D_p[i][j];
                 p2m[j] = Vars->Mon2D_p2[i][j];
-                if (Vars->Flag_signal != DEFS->COORD_P && Vars->Mon2D_N[i][j] > 0)
+                if (Ntot && Ntot[j] > 0)
                 { /* normalize mean signal to the number of events */
-                  p1m[j] /= Vars->Mon2D_N[i][j];
-                  p2m[j] /= Vars->Mon2D_N[i][j]*Vars->Mon2D_N[i][j];
+                  p1m[j] /= Ntot[j];
+                  p2m[j] /= Ntot[j]*Ntot[j];
                 }
                 if (Vars->Flag_log != 0)
                 {
@@ -1834,6 +1858,7 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
                   }
                 }
               } /* for */
+              free(Ntot);
               detector = mcdetector_out_1D(
                 label,
                 Vars->Coord_Label[i+1],
@@ -1883,6 +1908,7 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
           }
           for (i= 0; i < Vars->Coord_Bin[1]; i++)
           {
+            double *Ntot = Vars->Flag_signal != DEFS->COORD_P ? Monitor_nD_Ntot(Vars->Mon2D_N[i], Vars->Coord_Bin[2]) : NULL;
             for (j= 0; j < Vars->Coord_Bin[2]; j++)
             {
               long index;
@@ -1890,10 +1916,10 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
               p0m[index] = Vars->Mon2D_N[i][j];
               p1m[index] = Vars->Mon2D_p[i][j];
               p2m[index] = Vars->Mon2D_p2[i][j];
-              if (Vars->Flag_signal != DEFS->COORD_P && p0m[index] > 0)
+              if (Ntot && Ntot[j] > 0)
               {
-                  p1m[index] /= p0m[index];
-                  p2m[index] /= p0m[index]*p0m[index];
+                  p1m[index] /= Ntot[j];
+                  p2m[index] /= Ntot[j]*Ntot[j];
               }
 
               if (Vars->Flag_log != 0)
@@ -1911,6 +1937,7 @@ MCDETECTOR Monitor_nD_Save(MonitornD_Defines_type *DEFS, MonitornD_Variables_typ
                 }
               }
             }
+            free(Ntot);
           }
           if (strchr(Vars->Mon_File,'.') == NULL)
           { strcat(fname, "."); strcat(fname, Vars->Coord_Var[1]);
