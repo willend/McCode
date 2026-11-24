@@ -80,7 +80,9 @@ int mccode_main(int argc, char *argv[])
   if (mpi_node_count > 1) {
     /* share the same seed, then adapt random seed for each node */
     MPI_Bcast(&mcseed, 1, MPI_LONG, 0, MPI_COMM_WORLD); /* root sends its seed to slaves */
-    mcseed += mpi_node_rank; /* make sure we use different seeds per node */
+    /* make sure we use different seeds per node. Seeds s..s+np-1 are used: independent
+       runs need seeds at least np apart */
+    mcseed += mpi_node_rank;
   }
 #endif
 

@@ -689,6 +689,7 @@ static char *mcparm_print(int i)
 
 /*******************************************************************************
 * mcestimate_error: compute sigma from N,p,p2 in Gaussian large numbers approx
+*   Invertible: p2 = sigma^2*(N-1)/N + (p/N)^2 for N>1, else sigma^2
 *******************************************************************************/
 double mcestimate_error(double N, double p1, double p2)
 {
@@ -896,7 +897,7 @@ MCDETECTOR mcdetector_statistics(
       N = detector.p0 ? detector.p0[index] : 1;
       E = detector.p2 ? detector.p2[index] : 0;
       if (detector.p2 && !israw)
-        detector.p2[index] = (*mcestimate_error_p)(detector.p0[index],detector.p1[index],detector.p2[index]); /* set sigma */
+        detector.p2[index] = (*mcestimate_error_p)(detector.p0[index],detector.p1[index],detector.p2[index]); /* set sigma, replaces p2 (see mcsave_copy) */
 
       if (detector.rank == 1 && this_p1 && strcasestr(detector.format,"McCode")) {
         /* fill-in 1D McCode array [x I E N] */
@@ -1282,6 +1283,7 @@ static void mcruninfo_out(char *pre, FILE *f)
   fprintf(f, "%sURL: %s\n",         pre, "http://www.mccode.org");
   fprintf(f, "%sCreator: %s\n",     pre, MCCODE_STRING);
   fprintf(f, "%sInstrument: %s\n", pre, instrument_source);
+  /* requested: total in mccode.sim, per MPI node in data files. The data block has the total */
   fprintf(f, "%sNcount: %llu\n",        pre, mcget_ncount());
   fprintf(f, "%sTrace: %s\n",       pre, mcdotrace ? "yes" : "no");
   fprintf(f, "%sGravitation: %s\n", pre, mcgravitation ? "yes" : "no");
@@ -3148,7 +3150,8 @@ long long mccode_time_ns(void)
 #endif
 }
 
-// durations in ns, set by mccode_main(); mctime_finally_t0 is 0 unless the normal end was reached
+// durations in ns, set by mccode_main(); mctime_finally_t0 is 0 unless the normal end was reached:
+// the timing output thus marks a completed run, an interrupted run has none
 long long mctime_init_ns = 0;
 long long mctime_trace_ns = 0;
 long long mctime_finally_t0 = 0;
@@ -4207,12 +4210,10 @@ unsigned long long int mcget_ncount(void)
   return mcncount;
 }
 
-/* mcget_run_num: get curent number of rays */
-/* Within the TRACE scope we are now using _particle->uid directly */
+/* mcget_run_num: within the TRACE scope this is a macro for _particle->_uid. */
+/* Elsewhere always 0: mcrun_num is not counted, so "ratio" is never written */
 unsigned long long int mcget_run_num() // shuld be (_class_particle* _particle) somehow
 {
-  /* This function only remains for the few cases outside TRACE where we need to know
-     the number of simulated particles */
   return mcrun_num;
 }
 

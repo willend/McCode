@@ -6,6 +6,7 @@ interrupted run (e.g. SIGTERM) the event lists are only in the per-node
 files; this creates the missing 'events' virtual data sets in mccode.h5,
 concatenating the nodes in rank order, as the final save would have.
 For a NeXus scan, each step's events go to their own NXentry.
+A missing per-node file later reads as zeros, without error.
 
 Usage: python3 nexus_vds.py DIR
 """

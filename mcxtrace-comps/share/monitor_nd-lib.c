@@ -144,7 +144,7 @@ void Monitor_nD_Init(MonitornD_Defines_type *DEFS,
     Vars->Flag_Multiple     = 0;   /* 1 when n1D, 0 for 2D */
     Vars->Flag_Verbose      = 0;
     Vars->Flag_Shape        = DEFS->SHAPE_SQUARE;
-    Vars->Flag_Auto_Limits  = 0;   /* get limits from first Buffer */
+    Vars->Flag_Auto_Limits  = 0;   /* get limits from first Buffer: differ between runs and MPI nodes, so do not add up bins */
     Vars->Flag_Absorb       = 0;   /* monitor is also a slit */
     Vars->Flag_per_cm2      = 0;   /* flux is per cm2 */
     Vars->Flag_log          = 0;   /* log10 of the next variable */

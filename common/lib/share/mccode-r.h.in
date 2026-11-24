@@ -420,7 +420,7 @@ static int mpi_node_count;
 void   mcset_ncount(unsigned long long count);    /* wrapper to get mcncount */
 #pragma acc routine
 unsigned long long int mcget_ncount(void);            /* wrapper to set mcncount */
-unsigned long long mcget_run_num(void);           /* wrapper to get mcrun_num=0:mcncount-1 */
+unsigned long long mcget_run_num(void);           /* ray number 0:mcncount-1 in TRACE, 0 elsewhere */
 
 /* wall-clock timing for the timing block in mccode.sim (see ADR_20261105_RUNTIME_TIMING) */
 long long mccode_time_ns(void);
